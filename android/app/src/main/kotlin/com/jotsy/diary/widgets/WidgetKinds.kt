@@ -4,8 +4,12 @@ import com.jotsy.diary.widgets.kinds.AnniversaryWidget
 import com.jotsy.diary.widgets.kinds.AnniversaryWidgetReceiver
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidgetReceiver
+import com.jotsy.diary.widgets.kinds.OnThisDayWidget
+import com.jotsy.diary.widgets.kinds.OnThisDayWidgetReceiver
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidget
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidgetReceiver
+import com.jotsy.diary.widgets.kinds.RecentDiariesWidget
+import com.jotsy.diary.widgets.kinds.RecentDiariesWidgetReceiver
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import com.jotsy.diary.widgets.kinds.TodayWidgetReceiver
 import com.jotsy.diary.widgets.kinds.TodosWidget
@@ -23,6 +27,8 @@ object WidgetKinds {
       AnniversaryWidget.KIND to AnniversaryWidgetReceiver::class.java.name,
       MoodCalendarWidget.KIND to MoodCalendarWidgetReceiver::class.java.name,
       TodosWidget.KIND to TodosWidgetReceiver::class.java.name,
+      OnThisDayWidget.KIND to OnThisDayWidgetReceiver::class.java.name,
+      RecentDiariesWidget.KIND to RecentDiariesWidgetReceiver::class.java.name,
     )
 
   /** 预览用：按种类 id 新建一个 Glance 小组件；认不出时为 null。 */
@@ -33,6 +39,8 @@ object WidgetKinds {
       AnniversaryWidget.KIND -> AnniversaryWidget()
       MoodCalendarWidget.KIND -> MoodCalendarWidget()
       TodosWidget.KIND -> TodosWidget()
+      OnThisDayWidget.KIND -> OnThisDayWidget()
+      RecentDiariesWidget.KIND -> RecentDiariesWidget()
       else -> null
     }
 

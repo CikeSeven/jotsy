@@ -6,7 +6,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.jotsy.diary.widgets.kinds.AnniversaryWidget
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
+import com.jotsy.diary.widgets.kinds.OnThisDayWidget
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidget
+import com.jotsy.diary.widgets.kinds.RecentDiariesWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import com.jotsy.diary.widgets.kinds.TodosWidget
 import java.io.File
@@ -20,13 +22,17 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** 一组渲染用例：名字（出图文件名的前缀）、种类、小组件、尺寸与内容覆盖。 */
+/**
+ * 一组渲染用例：名字（出图文件名的前缀）、种类、小组件、尺寸与内容覆盖；[redacted] 为按
+ * 开了应用锁的快照画（锁定占位）。
+ */
 private class RenderCase(
   val name: String,
   val kind: String,
   val widget: () -> JotsyGlanceWidget,
   val sizes: List<DpSize>,
   val content: JSONObject? = null,
+  val redacted: Boolean = false,
 )
 
 /** 各档的代表尺寸（比分档界线略大，像真实的格子）。 */
@@ -76,13 +82,38 @@ private val cases: List<RenderCase> =
       listOf(WIDE4),
       JSONObject().put("view", "all"),
     ),
+    RenderCase(
+      "quick_capture_media",
+      QuickCaptureWidget.KIND,
+      { QuickCaptureWidget() },
+      listOf(ROW4, SQ2),
+      JSONObject().put("actions", org.json.JSONArray(listOf("camera", "voice", "write"))),
+    ),
+    RenderCase(OnThisDayWidget.KIND, OnThisDayWidget.KIND, { OnThisDayWidget() }, listOf(SQ2, WIDE4, LARGE4)),
+    // 第二篇（只有文字）：没有照片的版式。
+    RenderCase(
+      "on_this_day_text",
+      OnThisDayWidget.KIND,
+      { OnThisDayWidget() },
+      listOf(SQ2, WIDE4, LARGE4),
+      JSONObject().put("photo", false),
+    ),
+    RenderCase(
+      RecentDiariesWidget.KIND,
+      RecentDiariesWidget.KIND,
+      { RecentDiariesWidget() },
+      listOf(WIDE4, LARGE4),
+    ),
+    RenderCase("recent_locked", RecentDiariesWidget.KIND, { RecentDiariesWidget() }, listOf(WIDE4), redacted = true),
+    RenderCase("on_this_day_locked", OnThisDayWidget.KIND, { OnThisDayWidget() }, listOf(SQ2), redacted = true),
   )
 
 /** 按用例逐个组合：每种小组件 × 每档尺寸 × 每种外观 × 明暗。 */
 private fun forEachRender(dark: List<Boolean> = listOf(false, true), block: (String, View) -> Unit) {
   val context = RuntimeEnvironment.getApplication()
-  val snapshot = WidgetRenderSupport.fixture(context)
+  val snapshots = mapOf(false to WidgetRenderSupport.fixture(context), true to WidgetRenderSupport.fixture(context, redacted = true))
   for (case in cases) {
+    val snapshot = snapshots.getValue(case.redacted)
     for (size in case.sizes) {
       for ((name, style) in WidgetRenderSupport.styles) {
         for (isDark in dark) {

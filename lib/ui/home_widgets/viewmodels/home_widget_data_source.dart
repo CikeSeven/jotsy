@@ -2,7 +2,13 @@
 // 一致，见 docs/rules/notebooks.md）。抽成接口是为了让快照构建可以脱离
 // 数据库单测（`test/ui/home_widgets/` 里的假数据源）。
 
+import 'dart:io';
+
+import 'package:drift/drift.dart' show Variable;
+
 import '../../../core/database/app_database.dart';
+import '../../../core/services/home_widgets/home_widget_content.dart';
+import '../../notebooks/models/notebook_scope_resolver.dart';
 import '../../notebooks/viewmodels/notebook_tree.dart';
 
 abstract class HomeWidgetDataSource {
@@ -36,6 +42,33 @@ abstract class HomeWidgetDataSource {
 
   /// 待办清单。
   Future<List<TodoListRow>> todoLists();
+
+  /// 发表时间落在任一 `[start, end)` 内的日记（不含私密日记，与日历的那年今日
+  /// 同一查询；含未到期的胶囊，由调用方排除）。
+  Future<List<DiaryWithTags>> diariesCreatedInRanges(
+    List<(DateTime, DateTime)> ranges,
+  );
+
+  /// 最近日记的一个来源下按发表时间从新到旧的前 [limit] 篇：不含归档、私密日记与
+  /// 未到期的胶囊。来源已失效（日记本被删除或变成私密、标签不存在）时为空。
+  Future<List<DiaryWithTags>> recentDiaries(
+    RecentDiariesSource source, {
+    String? notebookId,
+    String? tagName,
+    required DateTime now,
+    required int limit,
+  });
+
+  /// 能看的日记本：非私密（含继承）的普通与智能日记本，id → 名字。最近日记的
+  /// “某个日记本”只认这里面的。
+  Future<Map<String, String>> readableNotebooks();
+
+  /// 现有标签的名字。
+  Future<Set<String>> tagNames();
+
+  /// 日记图片来源对应的本机文件：只认存在的本地文件（网络图片、内置示例图与
+  /// base64 内嵌图不交给小组件），否则为 null。
+  String? localImage(String source);
 }
 
 class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
@@ -90,6 +123,86 @@ class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
     DateTime start,
     DateTime end,
   ) => _db.watchDiaryMarkersInRange(start, end).first;
+
+  @override
+  Future<List<DiaryWithTags>> diariesCreatedInRanges(
+    List<(DateTime, DateTime)> ranges,
+  ) => _db.watchDiariesCreatedInRanges(ranges).first;
+
+  @override
+  Future<List<DiaryWithTags>> recentDiaries(
+    RecentDiariesSource source, {
+    String? notebookId,
+    String? tagName,
+    required DateTime now,
+    required int limit,
+  }) async {
+    var scope = DiaryListScope.all;
+    var tagIds = const <int>[];
+    if (source == RecentDiariesSource.notebook) {
+      final tree = NotebookTree(await _db.watchNotebooks().first);
+      final notebook = notebookId == null ? null : tree[notebookId];
+      if (notebook == null || notebook.isPrivate) return const [];
+      // 按发表时间而不是本子自己的排序（书序）：小组件上是“最近”。
+      scope = resolveNotebookScope(
+        notebook,
+        tree: tree,
+        sort: NotebookSort.createdDesc,
+      );
+    } else if (source == RecentDiariesSource.tag) {
+      final tags = await _db.watchAllTags().first;
+      final tag = tags.where((tag) => tag.name == tagName).firstOrNull;
+      if (tag == null) return const [];
+      tagIds = <int>[tag.id];
+    }
+    // 未到期的胶囊发表时间就是解封日，按发表时间倒序会排在最前面，在 SQL 里排除，
+    // 不让它们占掉 [limit]。
+    final filter = DiaryScopePredicate(
+      sql:
+          '(d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)'
+          '${source == RecentDiariesSource.pinned ? ' AND d.is_pinned = 1' : ''}',
+      variables: <Variable<Object>>[Variable<DateTime>(now)],
+    );
+    return _db
+        .watchDiaries(
+          scope: scope,
+          requiredTagIds: tagIds,
+          sortMode: DiarySortMode.createdDesc,
+          filter: filter,
+          limit: limit,
+        )
+        .first;
+  }
+
+  @override
+  Future<Map<String, String>> readableNotebooks() async {
+    final rows = await _db.watchNotebooks().first;
+    return <String, String>{
+      for (final notebook in NotebookTree(rows).notebooks)
+        if (!notebook.isPrivate) notebook.id: notebook.name,
+    };
+  }
+
+  @override
+  Future<Set<String>> tagNames() async => <String>{
+    for (final tag in await _db.watchAllTags().first) tag.name,
+  };
+
+  @override
+  String? localImage(String source) {
+    final path = source.trim();
+    if (path.isEmpty ||
+        path.startsWith('asset:') ||
+        path.contains('base64,') ||
+        Uri.tryParse(path)?.hasScheme == true && !path.startsWith('/')) {
+      return null;
+    }
+    try {
+      return File(path).existsSync() ? path : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<Map<String, String>> writableNotebooks() async {

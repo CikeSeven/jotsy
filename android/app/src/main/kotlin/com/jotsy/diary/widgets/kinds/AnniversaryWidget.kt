@@ -227,9 +227,13 @@ private fun ListLayout(scope: WidgetScope, items: List<Pair<AnniversaryItem, Ann
         WidgetText(scope, scope.snapshot.string("anniversaryTitle"), 12.5f, colors.accent, FontWeight.Medium)
       }
       Spacer(GlanceModifier.height(6.dp))
+      // 每行连同它上面的分隔线包成一个 Column：Glance 的一个 Column 最多 10 个子项，4×4
+      // 时六行加五条分隔线直接排会超出，多出来的被丢掉。
       items.take(rows).forEachIndexed { index, (item, state) ->
-        if (index > 0) Box(modifier = GlanceModifier.fillMaxWidth().height(1.dp).background(colors.track)) {}
-        ListRow(scope, item, state)
+        Column(modifier = GlanceModifier.fillMaxWidth()) {
+          if (index > 0) Box(modifier = GlanceModifier.fillMaxWidth().height(1.dp).background(colors.track)) {}
+          ListRow(scope, item, state)
+        }
       }
     }
   }

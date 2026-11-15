@@ -17810,4 +17810,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetTodoUncheck => 'Mark as not done';
+
+  @override
+  String get homeWidgetKindOnThisDay => 'On this day';
+
+  @override
+  String get homeWidgetKindOnThisDayDescription =>
+      'What you wrote on this day in past years, photos first. Flip through them on the home screen.';
+
+  @override
+  String get homeWidgetKindRecentDiaries => 'Recent entries';
+
+  @override
+  String get homeWidgetKindRecentDiariesDescription =>
+      'The latest entries from all of them, a notebook, a tag or the pinned ones.';
+
+  @override
+  String get homeWidgetQuickActionCamera => 'Photo';
+
+  @override
+  String get homeWidgetQuickActionVoice => 'Voice';
+
+  @override
+  String get homeWidgetLocked => 'Locked';
+
+  @override
+  String get homeWidgetLockedHint => 'Tap to unlock';
+
+  @override
+  String get homeWidgetOnThisDayEmpty =>
+      'Nothing from this day in past years yet';
+
+  @override
+  String get homeWidgetWriteOne => 'Write one';
+
+  @override
+  String get homeWidgetRecentEmpty => 'No entries here yet';
+
+  @override
+  String get homeWidgetRecentPinned => 'Pinned entries';
+
+  @override
+  String get homeWidgetEntryPrevious => 'Previous entry';
+
+  @override
+  String get homeWidgetEntryNext => 'Next entry';
+
+  @override
+  String get homeWidgetShowPhoto => 'Photos first';
+
+  @override
+  String get homeWidgetShowPhotoHint =>
+      'Cover first, then the first photo in the entry.';
+
+  @override
+  String get homeWidgetShowExcerpt => 'Excerpt';
+
+  @override
+  String get homeWidgetRecentShowPhotos => 'Thumbnails';
+
+  @override
+  String get homeWidgetRecentShowPhotosHint =>
+      'Entries with photos show one at the start of the row.';
+
+  @override
+  String get homeWidgetRecentSource => 'Show';
+
+  @override
+  String get homeWidgetRecentNotebook => 'Notebook';
+
+  @override
+  String get homeWidgetRecentTag => 'Tag';
+
+  @override
+  String get homeWidgetPrivacyHint =>
+      'Entries in private notebooks never appear on the home screen. With the app lock on, these widgets show a lock instead.';
 }

@@ -124,6 +124,8 @@
     "greetingNight": "夜深了",
     "quickPrompt": "此刻在想什么？",
     "actionWrite": "写日记",
+    "actionCamera": "拍照记",
+    "actionVoice": "录音记",
     "actionTodo": "新待办",
     "actionCalendar": "日历",
     "actionSearch": "搜索",
@@ -154,7 +156,18 @@
     "todoAllDone": "今天的事都做完了",
     "todoAdd": "新待办",
     "todoCheck": "标记为完成",
-    "todoUncheck": "恢复为未完成"
+    "todoUncheck": "恢复为未完成",
+    "locked": "已锁定",
+    "lockedHint": "点按解锁",
+    "onThisDayTitle": "那年今日",
+    "onThisDayEmpty": "往年的今天还没有日记",
+    "entryPrevious": "上一篇",
+    "entryNext": "下一篇",
+    "writeOne": "写一篇",
+    "recentTitle": "最近日记",
+    "recentPinned": "置顶日记",
+    "recentEmpty": "这里还没有日记",
+    "untitled": "记录了一则内容"
   },
   "plurals": {
     "daysToGo": {
@@ -234,6 +247,30 @@
     "repeat": {
       "f": "packages/font_awesome_flutter/FontAwesomeSolid",
       "c": 61473
+    },
+    "camera": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61488
+    },
+    "voice": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61744
+    },
+    "lock": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61475
+    },
+    "memory": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61914
+    },
+    "diary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62744
+    },
+    "tag": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 35
     }
   },
   "instances": {
@@ -338,6 +375,44 @@
         "completed": true,
         "due": true
       }
+    },
+    "6": {
+      "kind": "on_this_day",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "match": "sameDay",
+        "photo": true,
+        "excerpt": true
+      }
+    },
+    "7": {
+      "kind": "recent_diaries",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "photos": true,
+        "excerpt": true
+      }
     }
   },
   "defaults": {
@@ -362,6 +437,44 @@
         ],
         "labels": true,
         "greeting": true
+      }
+    },
+    "on_this_day": {
+      "kind": "on_this_day",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "match": "sameDay",
+        "photo": true,
+        "excerpt": true
+      }
+    },
+    "recent_diaries": {
+      "kind": "recent_diaries",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "photos": true,
+        "excerpt": true
       }
     },
     "today": {
@@ -837,6 +950,141 @@
           }
         }
       }
+    }
+  },
+  "onThisDay": {
+    "days": {
+      "2026-11-15": {
+        "sameDay": [
+          {
+            "id": "otd-sea",
+            "label": "3年前的今天"
+          },
+          {
+            "id": "otd-start",
+            "label": "5年前的今天"
+          }
+        ]
+      },
+      "2026-11-16": {
+        "sameDay": []
+      },
+      "2026-11-17": {
+        "sameDay": []
+      },
+      "2026-11-18": {
+        "sameDay": []
+      },
+      "2026-11-19": {
+        "sameDay": []
+      },
+      "2026-11-20": {
+        "sameDay": []
+      },
+      "2026-11-21": {
+        "sameDay": []
+      },
+      "2026-11-22": {
+        "sameDay": []
+      },
+      "2026-11-23": {
+        "sameDay": []
+      },
+      "2026-11-24": {
+        "sameDay": []
+      },
+      "2026-11-25": {
+        "sameDay": []
+      },
+      "2026-11-26": {
+        "sameDay": []
+      },
+      "2026-11-27": {
+        "sameDay": []
+      },
+      "2026-11-28": {
+        "sameDay": []
+      }
+    }
+  },
+  "recent": {
+    "all": [
+      "recent-run",
+      "recent-book",
+      "recent-market",
+      "recent-rain",
+      "recent-walk",
+      "otd-sea",
+      "otd-start"
+    ]
+  },
+  "diaries": {
+    "otd-sea": {
+      "title": "第一次去海边",
+      "excerpt": "风很大，浪一层一层地扑过来。我们在礁石上坐到天黑，回去的路上谁都没说话。",
+      "created": "2023-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2023年11月15日",
+      "mood": "😊",
+      "photo": "/fixture/sea.png"
+    },
+    "otd-start": {
+      "title": "",
+      "excerpt": "今天开始写日记。希望能坚持下去，哪怕每天只写一句。",
+      "created": "2021-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2021年11月15日"
+    },
+    "recent-run": {
+      "title": "晨跑",
+      "excerpt": "五公里，配速比上周快了二十秒。",
+      "created": "2026-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2026年11月15日",
+      "mood": "💪",
+      "photo": "/fixture/run.png"
+    },
+    "recent-book": {
+      "title": "读书笔记",
+      "excerpt": "“我是雨和雪的老熟人了。”",
+      "created": "2026-11-14",
+      "day": 14,
+      "month": "11月",
+      "monthDay": "11月14日",
+      "date": "2026年11月14日"
+    },
+    "recent-market": {
+      "title": "周末的市集",
+      "excerpt": "买了一束干花和两罐蜂蜜。",
+      "created": "2026-11-12",
+      "day": 12,
+      "month": "11月",
+      "monthDay": "11月12日",
+      "date": "2026年11月12日",
+      "photo": "/fixture/market.png"
+    },
+    "recent-rain": {
+      "title": "",
+      "excerpt": "下了一整天雨，窝在家里把旧照片整理完了。",
+      "created": "2026-11-08",
+      "day": 8,
+      "month": "11月",
+      "monthDay": "11月8日",
+      "date": "2026年11月8日"
+    },
+    "recent-walk": {
+      "title": "散步",
+      "created": "2026-11-02",
+      "day": 2,
+      "month": "11月",
+      "monthDay": "11月2日",
+      "date": "2026年11月2日"
     }
   }
 }

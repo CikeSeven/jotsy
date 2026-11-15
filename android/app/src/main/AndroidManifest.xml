@@ -126,6 +126,28 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info_todos" />
         </receiver>
+        <receiver
+            android:name=".widgets.kinds.OnThisDayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_on_this_day_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_on_this_day" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.RecentDiariesWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_recent_diaries_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_recent_diaries" />
+        </receiver>
         <!-- 桌面上的操作（点心情脸等）交给 Dart 的后台回调写库。只接受本应用发出的
              显式广播（不导出），其他应用不能借它改数据。 -->
         <receiver

@@ -14,4 +14,8 @@
     <string name="widget_mood_calendar_description">This month at a glance: how each day felt and the days you wrote.</string>
     <string name="widget_todos_name">To-do list</string>
     <string name="widget_todos_description">Today\'s to-dos or any list. Check them off right on the home screen.</string>
+    <string name="widget_on_this_day_name">On this day</string>
+    <string name="widget_on_this_day_description">What you wrote on this day in past years, photos first.</string>
+    <string name="widget_recent_diaries_name">Recent entries</string>
+    <string name="widget_recent_diaries_description">The latest entries from all of them, a notebook, a tag or the pinned ones.</string>
 </resources>

@@ -8,6 +8,7 @@
 import 'home_widget_kind.dart';
 
 part 'home_widget_content_today.dart';
+part 'home_widget_content_diaries.dart';
 part 'home_widget_content_time.dart';
 part 'home_widget_content_todos.dart';
 
@@ -27,6 +28,8 @@ sealed class HomeWidgetContent {
     HomeWidgetKind.anniversary => AnniversaryContent.defaults,
     HomeWidgetKind.moodCalendar => MoodCalendarContent.defaults,
     HomeWidgetKind.todos => TodoListContent.defaults,
+    HomeWidgetKind.onThisDay => OnThisDayContent.defaults,
+    HomeWidgetKind.recentDiaries => RecentDiariesContent.defaults,
   };
 
   static HomeWidgetContent fromJson(HomeWidgetKind kind, Object? json) {
@@ -37,6 +40,8 @@ sealed class HomeWidgetContent {
       HomeWidgetKind.anniversary => AnniversaryContent._fromJson(map),
       HomeWidgetKind.moodCalendar => MoodCalendarContent._fromJson(map),
       HomeWidgetKind.todos => TodoListContent._fromJson(map),
+      HomeWidgetKind.onThisDay => OnThisDayContent._fromJson(map),
+      HomeWidgetKind.recentDiaries => RecentDiariesContent._fromJson(map),
     };
   }
 }
@@ -54,6 +59,12 @@ bool _bool(Object? raw, bool fallback) => raw is bool ? raw : fallback;
 enum QuickCaptureAction {
   /// 写日记（可指定写进哪个日记本）。
   write,
+
+  /// 拍照记：新建日记并直接打开相机，拍到的照片插进正文（能拍摄的平台）。
+  camera,
+
+  /// 录音记：新建日记并直接开始录音（能录音的平台）。
+  voice,
 
   /// 新待办（待办功能开启时）。
   todo,

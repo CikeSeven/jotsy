@@ -1,7 +1,9 @@
 package com.jotsy.diary.widgets
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -13,9 +15,11 @@ import androidx.glance.ImageProvider
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.appWidgetBackground
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
@@ -139,6 +143,64 @@ fun WidgetMessage(scope: WidgetScope, message: String) {
       )
     }
   }
+}
+
+/**
+ * 锁定占位（开了应用锁时，涉及日记内容的小组件）：色调圆底上的锁、“已锁定”与“点按
+ * 解锁”。点按打开应用，应用锁的遮罩盖在上面，解锁后才看得到内容。
+ */
+@Composable
+fun WidgetLocked(scope: WidgetScope) {
+  val colors = scope.colors
+  WidgetFrame(scope, WidgetLaunch.action(scope.context, "home")) {
+    Column(
+      modifier = GlanceModifier.fillMaxSize(),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Box(
+        modifier = GlanceModifier.size(36.dp).roundedBackground(colors.tile, 18.dp),
+        contentAlignment = Alignment.Center,
+      ) {
+        WidgetIcon(scope, "lock", 15.dp, colors.onTile)
+      }
+      Spacer(GlanceModifier.height(8.dp))
+      WidgetText(scope, scope.snapshot.string("locked"), 13f, colors.content, FontWeight.Medium)
+      Spacer(GlanceModifier.height(2.dp))
+      WidgetText(scope, scope.snapshot.string("lockedHint"), 11.5f, colors.contentVariant)
+    }
+  }
+}
+
+/** 强调色的小胶囊按钮（空状态里的“写一篇”）。 */
+@Composable
+fun WidgetPillButton(scope: WidgetScope, label: String, onClick: Action) {
+  Box(
+    modifier =
+      GlanceModifier.height(28.dp)
+        .roundedBackground(scope.colors.accent, 14.dp)
+        .clickable(onClick)
+        .padding(horizontal = 14.dp),
+    contentAlignment = Alignment.Center,
+  ) {
+    WidgetText(scope, label, 12f, scope.colors.onAccent, FontWeight.Medium)
+  }
+}
+
+/**
+ * 日记照片（位图由 [WidgetBitmaps.photo] 按区域的比例裁好）铺满 [modifier] 给的区域：桌面
+ * 上实际格子可能比分档大，`Crop` 让照片照样铺满。Android 12+ 由 `cornerRadius` 裁出
+ * [radius] 的圆角；更早的系统圆角已画在位图里，按原比例拉满（不裁，免得裁掉圆角）。
+ */
+@Composable
+fun WidgetPhoto(bitmap: Bitmap, radius: Dp, modifier: GlanceModifier) {
+  val modern = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+  Image(
+    provider = ImageProvider(bitmap),
+    contentDescription = null,
+    modifier = if (modern) modifier.cornerRadius(radius) else modifier,
+    contentScale = if (modern) ContentScale.Crop else ContentScale.FillBounds,
+  )
 }
 
 /** 点小组件打开应用的链接（`jotsy://widget/<目标>`，Dart `HomeWidgetLaunch.parse`）。 */

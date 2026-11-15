@@ -18501,4 +18501,79 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeWidgetTodoUncheck => 'Вернуть в работу';
+
+  @override
+  String get homeWidgetKindOnThisDay => 'В этот день';
+
+  @override
+  String get homeWidgetKindOnThisDayDescription =>
+      'Что вы писали в этот день в прошлые годы — сначала фото. Листайте прямо на главном экране.';
+
+  @override
+  String get homeWidgetKindRecentDiaries => 'Последние записи';
+
+  @override
+  String get homeWidgetKindRecentDiariesDescription =>
+      'Последние записи: все, из блокнота, с тегом или закреплённые.';
+
+  @override
+  String get homeWidgetQuickActionCamera => 'Фото';
+
+  @override
+  String get homeWidgetQuickActionVoice => 'Голос';
+
+  @override
+  String get homeWidgetLocked => 'Заблокировано';
+
+  @override
+  String get homeWidgetLockedHint => 'Нажмите, чтобы разблокировать';
+
+  @override
+  String get homeWidgetOnThisDayEmpty =>
+      'В этот день в прошлые годы записей пока нет';
+
+  @override
+  String get homeWidgetWriteOne => 'Написать';
+
+  @override
+  String get homeWidgetRecentEmpty => 'Здесь пока нет записей';
+
+  @override
+  String get homeWidgetRecentPinned => 'Закреплённые записи';
+
+  @override
+  String get homeWidgetEntryPrevious => 'Предыдущая запись';
+
+  @override
+  String get homeWidgetEntryNext => 'Следующая запись';
+
+  @override
+  String get homeWidgetShowPhoto => 'Сначала фото';
+
+  @override
+  String get homeWidgetShowPhotoHint =>
+      'Сначала обложка, затем первое фото в записи.';
+
+  @override
+  String get homeWidgetShowExcerpt => 'Отрывок';
+
+  @override
+  String get homeWidgetRecentShowPhotos => 'Миниатюры';
+
+  @override
+  String get homeWidgetRecentShowPhotosHint =>
+      'У записей с фото в начале строки — фото, у остальных — дата.';
+
+  @override
+  String get homeWidgetRecentSource => 'Показывать';
+
+  @override
+  String get homeWidgetRecentNotebook => 'Блокнот';
+
+  @override
+  String get homeWidgetRecentTag => 'Тег';
+
+  @override
+  String get homeWidgetPrivacyHint =>
+      'Записи из личных блокнотов не появляются на главном экране. При включённой блокировке такие виджеты показывают замок.';
 }

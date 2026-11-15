@@ -27753,6 +27753,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark as not done'**
   String get homeWidgetTodoUncheck;
+
+  /// Widget kind name: entries written on this day in past years.
+  ///
+  /// In en, this message translates to:
+  /// **'On this day'**
+  String get homeWidgetKindOnThisDay;
+
+  /// Widget gallery: description of the on-this-day widget.
+  ///
+  /// In en, this message translates to:
+  /// **'What you wrote on this day in past years, photos first. Flip through them on the home screen.'**
+  String get homeWidgetKindOnThisDayDescription;
+
+  /// Widget kind name: the latest diary entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent entries'**
+  String get homeWidgetKindRecentDiaries;
+
+  /// Widget gallery: description of the recent entries widget.
+  ///
+  /// In en, this message translates to:
+  /// **'The latest entries from all of them, a notebook, a tag or the pinned ones.'**
+  String get homeWidgetKindRecentDiariesDescription;
+
+  /// Quick capture action: start an entry by taking a photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get homeWidgetQuickActionCamera;
+
+  /// Quick capture action: start an entry by recording audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get homeWidgetQuickActionVoice;
+
+  /// Widget placeholder when the app lock is on and diary content is hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get homeWidgetLocked;
+
+  /// Widget placeholder hint under "Locked".
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to unlock'**
+  String get homeWidgetLockedHint;
+
+  /// On-this-day widget: empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing from this day in past years yet'**
+  String get homeWidgetOnThisDayEmpty;
+
+  /// Widget empty state button: write a new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Write one'**
+  String get homeWidgetWriteOne;
+
+  /// Recent entries widget: empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries here yet'**
+  String get homeWidgetRecentEmpty;
+
+  /// Recent entries widget header when showing pinned entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned entries'**
+  String get homeWidgetRecentPinned;
+
+  /// On-this-day widget: description of the previous button.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous entry'**
+  String get homeWidgetEntryPrevious;
+
+  /// On-this-day widget: description of the next button.
+  ///
+  /// In en, this message translates to:
+  /// **'Next entry'**
+  String get homeWidgetEntryNext;
+
+  /// On-this-day widget option: show the entry photo when it has one.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos first'**
+  String get homeWidgetShowPhoto;
+
+  /// On-this-day widget option: hint for photos first.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover first, then the first photo in the entry.'**
+  String get homeWidgetShowPhotoHint;
+
+  /// Diary widget option: show a few lines of the entry text.
+  ///
+  /// In en, this message translates to:
+  /// **'Excerpt'**
+  String get homeWidgetShowExcerpt;
+
+  /// Recent entries widget option: show photo thumbnails.
+  ///
+  /// In en, this message translates to:
+  /// **'Thumbnails'**
+  String get homeWidgetRecentShowPhotos;
+
+  /// Recent entries widget option: hint for thumbnails.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries with photos show one at the start of the row.'**
+  String get homeWidgetRecentShowPhotosHint;
+
+  /// Recent entries widget option: where the entries come from.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get homeWidgetRecentSource;
+
+  /// Recent entries widget option: which notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook'**
+  String get homeWidgetRecentNotebook;
+
+  /// Recent entries widget option: which tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get homeWidgetRecentTag;
+
+  /// Diary widget options: privacy note.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries in private notebooks never appear on the home screen. With the app lock on, these widgets show a lock instead.'**
+  String get homeWidgetPrivacyHint;
 }
 
 class _AppLocalizationsDelegate

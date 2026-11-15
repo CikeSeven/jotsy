@@ -30,34 +30,32 @@ enum HomeWidgetCellSize {
 
   /// 某种类可用的尺寸（与 `res/xml/widget_info_*.xml` 的缩放范围一致），
   /// 第一个是放到桌面时的默认尺寸。
-  static List<HomeWidgetCellSize> sizesOf(HomeWidgetKind kind) =>
-      switch (kind) {
-        HomeWidgetKind.quickCapture => const <HomeWidgetCellSize>[
-          s2x2,
-          s1x1,
-          s2x1,
-          s4x1,
-          s4x2,
-        ],
-        HomeWidgetKind.today => const <HomeWidgetCellSize>[
-          s2x2,
-          s2x1,
-          s4x1,
-          s4x2,
-        ],
-        HomeWidgetKind.anniversary => const <HomeWidgetCellSize>[
-          s2x2,
-          s1x1,
-          s2x1,
-          s4x2,
-          s4x4,
-        ],
-        HomeWidgetKind.moodCalendar => const <HomeWidgetCellSize>[
-          s3x3,
-          s2x2,
-          s4x2,
-          s4x4,
-        ],
-        HomeWidgetKind.todos => const <HomeWidgetCellSize>[s4x2, s2x2, s4x4],
-      };
+  static List<HomeWidgetCellSize> sizesOf(
+    HomeWidgetKind kind,
+  ) => switch (kind) {
+    HomeWidgetKind.quickCapture => const <HomeWidgetCellSize>[
+      s2x2,
+      s1x1,
+      s2x1,
+      s4x1,
+      s4x2,
+    ],
+    HomeWidgetKind.today => const <HomeWidgetCellSize>[s2x2, s2x1, s4x1, s4x2],
+    HomeWidgetKind.anniversary => const <HomeWidgetCellSize>[
+      s2x2,
+      s1x1,
+      s2x1,
+      s4x2,
+      s4x4,
+    ],
+    HomeWidgetKind.moodCalendar => const <HomeWidgetCellSize>[
+      s3x3,
+      s2x2,
+      s4x2,
+      s4x4,
+    ],
+    HomeWidgetKind.todos => const <HomeWidgetCellSize>[s4x2, s2x2, s4x4],
+    HomeWidgetKind.onThisDay => const <HomeWidgetCellSize>[s2x2, s4x2, s4x4],
+    HomeWidgetKind.recentDiaries => const <HomeWidgetCellSize>[s4x2, s4x4],
+  };
 }

@@ -12,6 +12,7 @@ import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import '../controllers/diary_block_selection.dart';
 import '../controllers/diary_editor_controller.dart' as editor;
 import '../models/diary_link_candidate.dart';
+import '../models/diary_create_initial_action.dart';
 import '../widgets/diary_editor/diary_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -161,6 +162,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.createTemplate,
     this.createNotebookId,
     this.createNotebookChapterId,
+    this.createInitialAction,
     this.initialCaret,
     this.initialDetail,
     this.coverHero,
@@ -193,6 +195,10 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   /// 与 [createNotebookId] 同时传入：首页正停在这本的某一章时，新日记落在
   /// 这一章（发布时写入，见 `createDiary.notebookChapterIds`）。
   final String? createNotebookChapterId;
+
+  /// 新建空白日记时入场后立即开始的拍照或录音（桌面小组件的拍照记 / 录音记，见
+  /// `runDiaryCreateEntryFlow`）；续写草稿时不使用。
+  final DiaryCreateInitialAction? createInitialAction;
 
   /// 编辑已有日记时打开后的光标位置（预览页双击正文处）：放好光标、等入场
   /// 转场结束再聚焦弹出键盘。位置在正文里找不到（块已不在、不是文字块）时
@@ -471,10 +477,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _contentController.blockSelection.active.addListener(_onBlockModeChanged);
     // 新建模式无需等详情查询，直接允许渲染编辑区域。
     _initialized = widget.diaryId == null;
-    if (_isCreateEntry) {
-      unawaited(_controller.prepareCreateEntry(draftId: widget.createDraftId));
-    }
-    if (widget.diaryId == null) {
+    final prepared = _isCreateEntry
+        ? _controller.prepareCreateEntry(draftId: widget.createDraftId)
+        : null;
+    if (prepared != null) unawaited(prepared);
+    final initialAction = _isCreateEntry && widget.createDraftId == null
+        ? widget.createInitialAction
+        : null;
+    if (initialAction != null) {
+      // 等入场转场结束、草稿基线（模板）就绪后再拍：照片插在模板之后的光标处，
+      // 草稿自动保存也从带着模板的基线算起。
+      _routeEntranceWaiter.schedule(
+        this,
+        () => unawaited(_runInitialAction(initialAction, prepared)),
+      );
+    } else if (widget.diaryId == null) {
       _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
     }
   }
@@ -1816,6 +1833,26 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
     if (question == null || !mounted) return;
     _insertAiPrompt(question);
+  }
+
+  /// 入场后立即开始的拍照或录音（[EditDiaryPage.createInitialAction]）。不能拍摄 /
+  /// 录音的平台照常聚焦正文。
+  Future<void> _runInitialAction(
+    DiaryCreateInitialAction action,
+    Future<void>? prepared,
+  ) async {
+    await prepared;
+    if (!mounted) return;
+    switch (action) {
+      case DiaryCreateInitialAction.camera
+          when AppPlatform.supportsCameraCapture:
+        await _controller.captureMedia(DiaryMediaKind.image);
+      case DiaryCreateInitialAction.voice when _recordingAvailable:
+        if (!_recordingPanelOpen) _toggleRecordingPanel();
+        await _controller.startRecording();
+      case _:
+        _contentFocusNode.requestFocus();
+    }
   }
 
   void _toggleRecordingPanel() {

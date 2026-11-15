@@ -20213,5 +20213,97 @@
   "homeWidgetTodoUncheck": "恢复为未完成",
   "@homeWidgetTodoUncheck": {
     "description": "待办小组件：已勾选圆圈的说明。"
+  },
+  "homeWidgetKindOnThisDay": "那年今日",
+  "@homeWidgetKindOnThisDay": {
+    "description": "小组件种类名：那年今日。"
+  },
+  "homeWidgetKindOnThisDayDescription": "往年今天写下的日记，照片优先，多篇时在桌面上翻看。",
+  "@homeWidgetKindOnThisDayDescription": {
+    "description": "组件库：那年今日的说明。"
+  },
+  "homeWidgetKindRecentDiaries": "最近日记",
+  "@homeWidgetKindRecentDiaries": {
+    "description": "小组件种类名：最近日记。"
+  },
+  "homeWidgetKindRecentDiariesDescription": "全部、某个日记本、某个标签或置顶的最近几篇。",
+  "@homeWidgetKindRecentDiariesDescription": {
+    "description": "组件库：最近日记的说明。"
+  },
+  "homeWidgetQuickActionCamera": "拍照记",
+  "@homeWidgetQuickActionCamera": {
+    "description": "快速记录动作：新建日记并直接拍照。"
+  },
+  "homeWidgetQuickActionVoice": "录音记",
+  "@homeWidgetQuickActionVoice": {
+    "description": "快速记录动作：新建日记并直接录音。"
+  },
+  "homeWidgetLocked": "已锁定",
+  "@homeWidgetLocked": {
+    "description": "小组件占位：开了应用锁、日记内容不显示。"
+  },
+  "homeWidgetLockedHint": "点按解锁",
+  "@homeWidgetLockedHint": {
+    "description": "小组件占位：“已锁定”下面的提示。"
+  },
+  "homeWidgetOnThisDayEmpty": "往年的今天还没有日记",
+  "@homeWidgetOnThisDayEmpty": {
+    "description": "那年今日小组件：空状态。"
+  },
+  "homeWidgetWriteOne": "写一篇",
+  "@homeWidgetWriteOne": {
+    "description": "小组件空状态按钮：写一篇。"
+  },
+  "homeWidgetRecentEmpty": "这里还没有日记",
+  "@homeWidgetRecentEmpty": {
+    "description": "最近日记小组件：空状态。"
+  },
+  "homeWidgetRecentPinned": "置顶日记",
+  "@homeWidgetRecentPinned": {
+    "description": "最近日记小组件：显示置顶时的表头。"
+  },
+  "homeWidgetEntryPrevious": "上一篇",
+  "@homeWidgetEntryPrevious": {
+    "description": "那年今日小组件：上一篇按钮的说明。"
+  },
+  "homeWidgetEntryNext": "下一篇",
+  "@homeWidgetEntryNext": {
+    "description": "那年今日小组件：下一篇按钮的说明。"
+  },
+  "homeWidgetShowPhoto": "照片优先",
+  "@homeWidgetShowPhoto": {
+    "description": "那年今日小组件选项：有照片时以照片为主。"
+  },
+  "homeWidgetShowPhotoHint": "封面优先，其次是正文里的第一张。",
+  "@homeWidgetShowPhotoHint": {
+    "description": "那年今日小组件选项：照片优先的说明。"
+  },
+  "homeWidgetShowExcerpt": "正文摘要",
+  "@homeWidgetShowExcerpt": {
+    "description": "日记类小组件选项：显示正文摘要。"
+  },
+  "homeWidgetRecentShowPhotos": "缩略图",
+  "@homeWidgetRecentShowPhotos": {
+    "description": "最近日记小组件选项：显示缩略图。"
+  },
+  "homeWidgetRecentShowPhotosHint": "有照片的日记在行首显示照片，其余显示日期。",
+  "@homeWidgetRecentShowPhotosHint": {
+    "description": "最近日记小组件选项：缩略图的说明。"
+  },
+  "homeWidgetRecentSource": "显示",
+  "@homeWidgetRecentSource": {
+    "description": "最近日记小组件选项：从哪里取日记。"
+  },
+  "homeWidgetRecentNotebook": "日记本",
+  "@homeWidgetRecentNotebook": {
+    "description": "最近日记小组件选项：哪个日记本。"
+  },
+  "homeWidgetRecentTag": "标签",
+  "@homeWidgetRecentTag": {
+    "description": "最近日记小组件选项：哪个标签。"
+  },
+  "homeWidgetPrivacyHint": "私密日记本里的日记不会出现在桌面上；开了应用锁时，这类小组件只显示锁定。",
+  "@homeWidgetPrivacyHint": {
+    "description": "日记类小组件选项：隐私说明。"
   }
 }

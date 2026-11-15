@@ -31,6 +31,9 @@ const int kHomeWidgetOnThisDayLimit = 12;
 /// 最近日记每个来源取几篇：4×4 也只放得下五六行。
 const int kHomeWidgetRecentLimit = 8;
 
+/// 照片回忆每个来源最多取几篇带照片的日记：每天换一张，一个多月不重样。
+const int kHomeWidgetPhotoLimit = 40;
+
 /// 摘要最多多少字（按字素）：小组件最多显示三四行。
 const int _excerptLength = 140;
 
@@ -110,6 +113,14 @@ class HomeWidgetDiaryCollector {
   /// 登记一篇日记，返回它的 id。
   String add(Diary diary) {
     _entries.putIfAbsent(diary.diaryId, () => _entry(diary));
+    return diary.diaryId;
+  }
+
+  /// 有本机照片时登记并返回 id；没有（只有网络图片、文件已不在）时不登记，返回 null。
+  String? addWithPhoto(Diary diary) {
+    final entry = _entries[diary.diaryId] ?? _entry(diary);
+    if (entry['photo'] == null) return null;
+    _entries[diary.diaryId] = entry;
     return diary.diaryId;
   }
 
@@ -198,6 +209,15 @@ ExploreOnThisDayMatch _exploreMatch(OnThisDayMatch match) => switch (match) {
   OnThisDayMatch.nearby => ExploreOnThisDayMatch.nearby,
   OnThisDayMatch.sameMonth => ExploreOnThisDayMatch.sameMonth,
 };
+
+/// 照片回忆一个来源的候选（有本机照片的日记 id，从新到旧）。
+List<Object?> buildHomeWidgetPhotoList(
+  List<DiaryWithTags> rows,
+  HomeWidgetDiaryCollector diaries,
+) => <Object?>[
+  for (final row in rows)
+    if (!diaries.isHidden(row.diary)) ?diaries.addWithPhoto(row.diary),
+];
 
 /// 一个来源的最近日记（id 列表，从新到旧）。
 List<Object?> buildHomeWidgetRecentList(

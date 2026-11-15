@@ -16,4 +16,8 @@
     <string name="widget_on_this_day_description">過去の今日に書いた日記。写真を優先して表示。</string>
     <string name="widget_recent_diaries_name">最近の日記</string>
     <string name="widget_recent_diaries_description">すべて・日記帳・タグ・ピン留めから最近の数件。</string>
+    <string name="widget_writing_stats_name">執筆の記録</string>
+    <string name="widget_writing_stats_description">連続記録の日数、今月と今年の記録、最近数週間のヒートマップ。</string>
+    <string name="widget_photo_memories_name">写真の思い出</string>
+    <string name="widget_photo_memories_description">日記の写真を毎日1枚。</string>
 </resources>

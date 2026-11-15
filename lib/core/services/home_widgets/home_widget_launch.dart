@@ -53,6 +53,8 @@ sealed class HomeWidgetLaunch {
         return HomeWidgetCalendarLaunch(day: _parseDay(query['day']));
       case 'search':
         return const HomeWidgetSearchLaunch();
+      case 'explore':
+        return const HomeWidgetExploreLaunch();
       case 'anniversary':
         final id = query['id'];
         return HomeWidgetAnniversaryLaunch(
@@ -135,6 +137,11 @@ class HomeWidgetCalendarLaunch extends HomeWidgetLaunch {
 /// 打开搜索。
 class HomeWidgetSearchLaunch extends HomeWidgetLaunch {
   const HomeWidgetSearchLaunch();
+}
+
+/// 切到探索 Tab（写作统计）。
+class HomeWidgetExploreLaunch extends HomeWidgetLaunch {
+  const HomeWidgetExploreLaunch();
 }
 
 /// 打开纪念日：给了 [anniversaryId] 打开它的详情，否则打开纪念日列表。

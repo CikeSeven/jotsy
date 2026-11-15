@@ -7,10 +7,12 @@ import androidx.compose.ui.unit.dp
 import com.jotsy.diary.widgets.kinds.AnniversaryWidget
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.OnThisDayWidget
+import com.jotsy.diary.widgets.kinds.PhotoMemoriesWidget
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidget
 import com.jotsy.diary.widgets.kinds.RecentDiariesWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import com.jotsy.diary.widgets.kinds.TodosWidget
+import com.jotsy.diary.widgets.kinds.WritingStatsWidget
 import java.io.File
 import org.json.JSONObject
 import org.junit.Assert.assertTrue
@@ -106,6 +108,27 @@ private val cases: List<RenderCase> =
     ),
     RenderCase("recent_locked", RecentDiariesWidget.KIND, { RecentDiariesWidget() }, listOf(WIDE4), redacted = true),
     RenderCase("on_this_day_locked", OnThisDayWidget.KIND, { OnThisDayWidget() }, listOf(SQ2), redacted = true),
+    RenderCase(WritingStatsWidget.KIND, WritingStatsWidget.KIND, { WritingStatsWidget() }, listOf(SQ2, WIDE4, LARGE4)),
+    RenderCase(
+      "writing_stats_words_plain",
+      WritingStatsWidget.KIND,
+      { WritingStatsWidget() },
+      listOf(WIDE4, LARGE4),
+      JSONObject().put("basis", "words").put("heatmap", false),
+    ),
+    RenderCase(
+      PhotoMemoriesWidget.KIND,
+      PhotoMemoriesWidget.KIND,
+      { PhotoMemoriesWidget() },
+      listOf(S1, SQ2, WIDE4, LARGE4),
+    ),
+    RenderCase(
+      "photo_memories_locked",
+      PhotoMemoriesWidget.KIND,
+      { PhotoMemoriesWidget() },
+      listOf(S1, SQ2),
+      redacted = true,
+    ),
   )
 
 /** 按用例逐个组合：每种小组件 × 每档尺寸 × 每种外观 × 明暗。 */

@@ -6,6 +6,8 @@
 //   关闭时按不指定处理。
 // - 今日：农历 / 节假日的“跟随语言”按界面语言落成显示与否；待办关闭时不显示
 //   待办数；日历关闭时点按改为打开应用。
+// - 照片回忆：来源同样落成快照「照片」一节的键（[homeWidgetPhotoSourceKey]），日记本
+//   不能看了时按全部。
 // - 最近日记：来源落成快照「最近日记」一节的键（[homeWidgetRecentSourceKey]），
 //   日记本已不能看（删除、变成私密）、日记本功能关闭或标签已不存在时按全部日记；
 //   表头的“写一篇”只在来源是能写进去的日记本时预先选好这本。
@@ -117,6 +119,14 @@ Map<String, Object?> homeWidgetNativeConfig(
         'excerpt': content.showExcerpt,
       },
       final RecentDiariesContent content => _recent(content, context),
+      final WritingStatsContent content => <String, Object?>{
+        'basis': content.basis.name,
+        'heatmap': content.showHeatmap,
+      },
+      final PhotoMemoriesContent content => <String, Object?>{
+        'source': homeWidgetPhotoSourceKey(content, context),
+        'date': content.showDate,
+      },
     },
   };
 }
@@ -163,6 +173,21 @@ Map<String, Object?> _today(
     'tap': tap.name,
   };
 }
+
+/// 照片回忆一个实例取照片的来源键：`all`、`onThisDay` 或 `notebook:<id>`；失效的
+/// 日记本落回 `all`。
+String homeWidgetPhotoSourceKey(
+  PhotoMemoriesContent content,
+  HomeWidgetNativeContext context,
+) => switch (content.source) {
+  PhotoMemorySource.all => 'all',
+  PhotoMemorySource.onThisDay => 'onThisDay',
+  PhotoMemorySource.notebook =>
+    context.features.notebooks &&
+            context.readableNotebooks.containsKey(content.notebookId)
+        ? 'notebook:${content.notebookId}'
+        : 'all',
+};
 
 Map<String, Object?> _recent(
   RecentDiariesContent content,

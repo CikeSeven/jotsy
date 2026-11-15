@@ -33,6 +33,7 @@ object WidgetRenderSupport {
       json.remove("diaries")
       json.remove("onThisDay")
       json.remove("recent")
+      json.remove("photos")
     }
     val preferences = context.getSharedPreferences("widget-render-test", Context.MODE_PRIVATE)
     preferences.edit().putString(WidgetSnapshot.KEY, json.toString()).commit()

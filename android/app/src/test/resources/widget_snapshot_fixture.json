@@ -167,7 +167,15 @@
     "recentTitle": "最近日记",
     "recentPinned": "置顶日记",
     "recentEmpty": "这里还没有日记",
-    "untitled": "记录了一则内容"
+    "untitled": "记录了一则内容",
+    "statsTitle": "写作统计",
+    "statsMonthEntries": "本月篇数",
+    "statsMonthWords": "本月字数",
+    "statsYearEntries": "今年篇数",
+    "statsWroteToday": "今天已写",
+    "statsNotYetToday": "今天还没写",
+    "photoShuffle": "换一张",
+    "photoEmpty": "还没有带照片的日记"
   },
   "plurals": {
     "daysToGo": {
@@ -181,6 +189,12 @@
     },
     "daysSince": {
       "other": "已经 %d 天"
+    },
+    "streakUnit": {
+      "other": "天连续记录"
+    },
+    "recentWeeks": {
+      "other": "最近 %d 周"
     }
   },
   "icons": {
@@ -271,6 +285,22 @@
     "tag": {
       "f": "packages/font_awesome_flutter/FontAwesomeSolid",
       "c": 35
+    },
+    "stats": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 58483
+    },
+    "streak": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61549
+    },
+    "shuffle": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61556
+    },
+    "photo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62210
     }
   },
   "instances": {
@@ -413,6 +443,42 @@
         "photos": true,
         "excerpt": true
       }
+    },
+    "8": {
+      "kind": "writing_stats",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "basis": "entries",
+        "heatmap": true
+      }
+    },
+    "9": {
+      "kind": "photo_memories",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "date": true
+      }
     }
   },
   "defaults": {
@@ -554,6 +620,42 @@
         "view": "today",
         "completed": true,
         "due": true
+      }
+    },
+    "writing_stats": {
+      "kind": "writing_stats",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "basis": "entries",
+        "heatmap": true
+      }
+    },
+    "photo_memories": {
+      "kind": "photo_memories",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "date": true
       }
     }
   },
@@ -845,29 +947,95 @@
     "months": {
       "2026-09": {
         "title": "2026年9月",
-        "writtenLabel": "写了 0 天",
+        "writtenLabel": "写了 18 天",
         "days": {
+          "2": {
+            "b": -1,
+            "w": 1
+          },
+          "3": {
+            "b": -1,
+            "w": 1
+          },
+          "5": {
+            "b": -1,
+            "w": 1
+          },
+          "6": {
+            "b": -1,
+            "w": 1
+          },
+          "8": {
+            "b": -1,
+            "w": 1
+          },
+          "9": {
+            "b": -1,
+            "w": 1
+          },
+          "12": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "15": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
           "20": {
+            "b": -1,
+            "w": 1,
             "h": "班",
             "hw": true
+          },
+          "21": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "24": {
+            "b": -1,
+            "w": 1
           },
           "25": {
             "h": "休",
             "hw": false
           },
           "26": {
+            "b": -1,
+            "w": 1,
             "h": "休",
             "hw": false
           },
           "27": {
+            "b": -1,
+            "w": 1,
             "h": "休",
             "hw": false
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          },
+          "30": {
+            "b": -1,
+            "w": 1
           }
         }
       },
       "2026-10": {
         "title": "2026年10月",
-        "writtenLabel": "写了 0 天",
+        "writtenLabel": "写了 16 天",
         "days": {
           "1": {
             "h": "休",
@@ -878,6 +1046,8 @@
             "hw": false
           },
           "3": {
+            "b": -1,
+            "w": 1,
             "h": "休",
             "hw": false
           },
@@ -886,10 +1056,14 @@
             "hw": false
           },
           "5": {
+            "b": -1,
+            "w": 1,
             "h": "休",
             "hw": false
           },
           "6": {
+            "b": -1,
+            "w": 1,
             "h": "休",
             "hw": false
           },
@@ -897,9 +1071,61 @@
             "h": "休",
             "hw": false
           },
+          "8": {
+            "b": -1,
+            "w": 1
+          },
           "10": {
             "h": "班",
             "hw": true
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "12": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "15": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "18": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1
+          },
+          "21": {
+            "b": -1,
+            "w": 1
+          },
+          "24": {
+            "b": -1,
+            "w": 1
+          },
+          "26": {
+            "b": -1,
+            "w": 1
+          },
+          "27": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
           }
         }
       },
@@ -952,6 +1178,20 @@
       }
     }
   },
+  "stats": {
+    "streak": 2,
+    "streakEnd": "2026-11-15",
+    "month": "2026-11",
+    "monthEntries": "8",
+    "monthWords": "2,400",
+    "year": 2026,
+    "yearEntries": "180",
+    "heat": {
+      "start": "2025-11-10",
+      "entries": "10110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100110110110110010110100111001001100011",
+      "words": "30330320110040330300220140430330020210400330330220110030330300220440330330020210400330330220140030330300220440330330020110400330330220140030330300210440330330020140400330330220440030330300210440330330020140400330330210440030330200110440330330020140400330320210440030330200140430330330020440300330320210440030330200140430330330010440300330220110440030330200222002002200022"
+    }
+  },
   "onThisDay": {
     "days": {
       "2026-11-15": {
@@ -964,46 +1204,96 @@
             "id": "otd-start",
             "label": "5年前的今天"
           }
+        ],
+        "nearby": [
+          {
+            "id": "otd-sea",
+            "label": "3年前的今天"
+          },
+          {
+            "id": "otd-start",
+            "label": "5年前的今天"
+          }
         ]
       },
       "2026-11-16": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "otd-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "otd-start",
+            "label": "2021年11月15日"
+          }
+        ]
       },
       "2026-11-17": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "otd-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "otd-start",
+            "label": "2021年11月15日"
+          }
+        ]
       },
       "2026-11-18": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "otd-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "otd-start",
+            "label": "2021年11月15日"
+          }
+        ]
       },
       "2026-11-19": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-20": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-21": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-22": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-23": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-24": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-25": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-26": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-27": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       },
       "2026-11-28": {
-        "sameDay": []
+        "sameDay": [],
+        "nearby": []
       }
     }
   },
@@ -1016,6 +1306,13 @@
       "recent-walk",
       "otd-sea",
       "otd-start"
+    ]
+  },
+  "photos": {
+    "all": [
+      "recent-run",
+      "recent-market",
+      "otd-sea"
     ]
   },
   "diaries": {

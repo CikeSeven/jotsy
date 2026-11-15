@@ -66,16 +66,21 @@ class DiaryEntry private constructor(
      * 那年今日这一天按实例的匹配口径选出的日记（快照里的顺序：最近的年份在前）。今天超出
      * 快照预算的天数（应用很久没打开）时为 null：不显示可能过期的内容。
      */
-    fun onThisDay(scope: WidgetScope): List<DiaryEntry>? {
+    fun onThisDay(
+      scope: WidgetScope,
+      match: String = scope.content.optString("match", "sameDay"),
+    ): List<DiaryEntry>? {
       val days = scope.snapshot.section("onThisDay")?.optJSONObject("days") ?: return null
       val day = days.optJSONObject(WidgetDates.key(scope.today)) ?: return null
-      val match = scope.content.optString("match", "sameDay")
       val list = day.optJSONArray(match) ?: day.optJSONArray("sameDay") ?: JSONArray()
       return (0 until list.length()).mapNotNull { index ->
         val item = list.optJSONObject(index) ?: return@mapNotNull null
         read(scope.snapshot, item.optString("id"), item.optString("label"))
       }
     }
+
+    /** 按 id 取一篇（照片回忆的候选只存 id）；快照里没有时为 null。 */
+    fun byId(snapshot: WidgetSnapshot, id: String): DiaryEntry? = read(snapshot, id, null)
 
     /** 最近日记这个实例的来源下的日记（从新到旧）。 */
     fun recent(scope: WidgetScope): List<DiaryEntry> {

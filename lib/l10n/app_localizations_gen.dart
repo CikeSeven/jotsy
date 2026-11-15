@@ -27891,6 +27891,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Entries in private notebooks never appear on the home screen. With the app lock on, these widgets show a lock instead.'**
   String get homeWidgetPrivacyHint;
+
+  /// Widget kind name: writing statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing stats'**
+  String get homeWidgetKindWritingStats;
+
+  /// Widget gallery: description of the writing stats widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Your writing streak, this month and this year at a glance, with a heatmap of recent weeks.'**
+  String get homeWidgetKindWritingStatsDescription;
+
+  /// Widget kind name: photos from diary entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo memories'**
+  String get homeWidgetKindPhotoMemories;
+
+  /// Widget gallery: description of the photo memories widget.
+  ///
+  /// In en, this message translates to:
+  /// **'A photo from your entries, a new one every day. Swap it right on the home screen.'**
+  String get homeWidgetKindPhotoMemoriesDescription;
+
+  /// Writing stats widget: caption under the big streak number.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{day in a row} other{days in a row}}'**
+  String homeWidgetStreakUnit(int count);
+
+  /// Writing stats widget: heatmap caption.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Last week} other{Last {count} weeks}}'**
+  String homeWidgetStatsRecentWeeks(int count);
+
+  /// Writing stats widget: number of entries this month.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get homeWidgetStatsMonthEntries;
+
+  /// Writing stats widget: words written this month.
+  ///
+  /// In en, this message translates to:
+  /// **'Words this month'**
+  String get homeWidgetStatsMonthWords;
+
+  /// Writing stats widget: number of entries this year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get homeWidgetStatsYearEntries;
+
+  /// Writing stats widget: today already has an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Written today'**
+  String get homeWidgetStatsWroteToday;
+
+  /// Writing stats widget: no entry yet today.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing yet today'**
+  String get homeWidgetStatsNotYetToday;
+
+  /// Writing stats widget option: show the heatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Heatmap'**
+  String get homeWidgetStatsShowHeatmap;
+
+  /// Writing stats widget option: hint for the heatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'On 4×2 and 4×4, how much you wrote each day in recent weeks.'**
+  String get homeWidgetStatsShowHeatmapHint;
+
+  /// Photo memories widget option: where photos come from.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from'**
+  String get homeWidgetPhotoSource;
+
+  /// Photo memories widget option: hint for the on-this-day source.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries from around this day in past years. When there are none with photos, recent photos show instead.'**
+  String get homeWidgetPhotoSourceOnThisDayHint;
+
+  /// Photo memories widget option: show the date on the photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get homeWidgetPhotoShowDate;
+
+  /// Photo memories widget: description of the swap button.
+  ///
+  /// In en, this message translates to:
+  /// **'Another photo'**
+  String get homeWidgetPhotoShuffle;
+
+  /// Photo memories widget: empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries with photos yet'**
+  String get homeWidgetPhotoEmpty;
 }
 
 class _AppLocalizationsDelegate

@@ -18576,4 +18576,82 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get homeWidgetPrivacyHint =>
       'Записи из личных блокнотов не появляются на главном экране. При включённой блокировке такие виджеты показывают замок.';
+
+  @override
+  String get homeWidgetKindWritingStats => 'Статистика записей';
+
+  @override
+  String get homeWidgetKindWritingStatsDescription =>
+      'Серия дней подряд, итоги месяца и года и тепловая карта последних недель.';
+
+  @override
+  String get homeWidgetKindPhotoMemories => 'Фотовоспоминания';
+
+  @override
+  String get homeWidgetKindPhotoMemoriesDescription =>
+      'Фото из ваших записей — каждый день новое. Можно сменить прямо на главном экране.';
+
+  @override
+  String homeWidgetStreakUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'дня подряд',
+      many: 'дней подряд',
+      few: 'дня подряд',
+      one: 'день подряд',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeWidgetStatsRecentWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Последние $count недели',
+      many: 'Последние $count недель',
+      few: 'Последние $count недели',
+      one: 'Последняя $count неделя',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetStatsMonthEntries => 'В этом месяце';
+
+  @override
+  String get homeWidgetStatsMonthWords => 'Слов за месяц';
+
+  @override
+  String get homeWidgetStatsYearEntries => 'В этом году';
+
+  @override
+  String get homeWidgetStatsWroteToday => 'Сегодня есть запись';
+
+  @override
+  String get homeWidgetStatsNotYetToday => 'Сегодня ещё нет записи';
+
+  @override
+  String get homeWidgetStatsShowHeatmap => 'Тепловая карта';
+
+  @override
+  String get homeWidgetStatsShowHeatmapHint =>
+      'В размерах 4×2 и 4×4 — сколько вы писали каждый день последних недель.';
+
+  @override
+  String get homeWidgetPhotoSource => 'Фото из';
+
+  @override
+  String get homeWidgetPhotoSourceOnThisDayHint =>
+      'Записи около этого дня в прошлые годы. Если фото нет, показываются недавние.';
+
+  @override
+  String get homeWidgetPhotoShowDate => 'Дата';
+
+  @override
+  String get homeWidgetPhotoShuffle => 'Другое фото';
+
+  @override
+  String get homeWidgetPhotoEmpty => 'Пока нет записей с фото';
 }

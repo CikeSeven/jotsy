@@ -35,12 +35,16 @@ Map<String, String> homeWidgetPluralForms(
 }
 
 /// 原生要用的复数文案（键名与 `WidgetStrings.kt` 一致）。
-Map<String, Object?> homeWidgetPluralsOf(AppLocalizations l10n) =>
-    <String, Object?>{
-      // 大号数字下方的单位：“天后”“天前”。
-      'daysToGo': homeWidgetPluralForms(l10n, l10n.anniversaryDaysToGo),
-      'daysAgo': homeWidgetPluralForms(l10n, l10n.anniversaryDaysAgo),
-      // 列表行尾的一句话：“还有 12 天”“已经 300 天”。
-      'daysLeft': homeWidgetPluralForms(l10n, l10n.anniversaryDaysLeft),
-      'daysSince': homeWidgetPluralForms(l10n, l10n.anniversaryDaysSince),
-    };
+Map<String, Object?> homeWidgetPluralsOf(
+  AppLocalizations l10n,
+) => <String, Object?>{
+  // 大号数字下方的单位：“天后”“天前”。
+  'daysToGo': homeWidgetPluralForms(l10n, l10n.anniversaryDaysToGo),
+  'daysAgo': homeWidgetPluralForms(l10n, l10n.anniversaryDaysAgo),
+  // 列表行尾的一句话：“还有 12 天”“已经 300 天”。
+  'daysLeft': homeWidgetPluralForms(l10n, l10n.anniversaryDaysLeft),
+  'daysSince': homeWidgetPluralForms(l10n, l10n.anniversaryDaysSince),
+  // 写作统计：连续天数大数字下的单位，热力图下的“最近 N 周”。
+  'streakUnit': homeWidgetPluralForms(l10n, l10n.homeWidgetStreakUnit),
+  'recentWeeks': homeWidgetPluralForms(l10n, l10n.homeWidgetStatsRecentWeeks),
+};

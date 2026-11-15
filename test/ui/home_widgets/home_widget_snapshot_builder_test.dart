@@ -231,6 +231,8 @@ void main() {
           InstalledHomeWidget(widgetId: 5, kind: HomeWidgetKind.todos),
           InstalledHomeWidget(widgetId: 6, kind: HomeWidgetKind.onThisDay),
           InstalledHomeWidget(widgetId: 7, kind: HomeWidgetKind.recentDiaries),
+          InstalledHomeWidget(widgetId: 8, kind: HomeWidgetKind.writingStats),
+          InstalledHomeWidget(widgetId: 9, kind: HomeWidgetKind.photoMemories),
         ],
         features: const AppFeatures(todos: true, anniversaries: true),
       ),
@@ -288,6 +290,14 @@ FakeHomeWidgetData _fixtureData() => FakeHomeWidgetData(
         createdAt: DateTime(2026, 11, day, 21),
         wordCount: 300,
       ),
+    // 更早的日子（写作统计的热力图）：大约隔两三天写一篇，字数有多有少。
+    for (var i = 16; i < 371; i++)
+      if (i % 3 != 0 && i % 7 != 2)
+        DiaryCalendarMarker(
+          diaryId: 'e$i',
+          createdAt: DateTime(2026, 11, 15 - i, 20),
+          wordCount: (i * 137) % 1900,
+        ),
   ],
   open: <TodoRow>[
     _todo('交房租', due: '2026-11-14', priority: 2),

@@ -20872,5 +20872,87 @@
   "homeWidgetPrivacyHint": "Записи из личных блокнотов не появляются на главном экране. При включённой блокировке такие виджеты показывают замок.",
   "@homeWidgetPrivacyHint": {
     "description": "Diary widget options: privacy note."
+  },
+  "homeWidgetKindWritingStats": "Статистика записей",
+  "@homeWidgetKindWritingStats": {
+    "description": "Widget kind name: writing statistics."
+  },
+  "homeWidgetKindWritingStatsDescription": "Серия дней подряд, итоги месяца и года и тепловая карта последних недель.",
+  "@homeWidgetKindWritingStatsDescription": {
+    "description": "Widget gallery: description of the writing stats widget."
+  },
+  "homeWidgetKindPhotoMemories": "Фотовоспоминания",
+  "@homeWidgetKindPhotoMemories": {
+    "description": "Widget kind name: photos from diary entries."
+  },
+  "homeWidgetKindPhotoMemoriesDescription": "Фото из ваших записей — каждый день новое. Можно сменить прямо на главном экране.",
+  "@homeWidgetKindPhotoMemoriesDescription": {
+    "description": "Widget gallery: description of the photo memories widget."
+  },
+  "homeWidgetStreakUnit": "{count, plural, one{день подряд} few{дня подряд} many{дней подряд} other{дня подряд}}",
+  "@homeWidgetStreakUnit": {
+    "description": "Writing stats widget: caption under the big streak number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsRecentWeeks": "{count, plural, one{Последняя {count} неделя} few{Последние {count} недели} many{Последние {count} недель} other{Последние {count} недели}}",
+  "@homeWidgetStatsRecentWeeks": {
+    "description": "Writing stats widget: heatmap caption.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsMonthEntries": "В этом месяце",
+  "@homeWidgetStatsMonthEntries": {
+    "description": "Writing stats widget: number of entries this month."
+  },
+  "homeWidgetStatsMonthWords": "Слов за месяц",
+  "@homeWidgetStatsMonthWords": {
+    "description": "Writing stats widget: words written this month."
+  },
+  "homeWidgetStatsYearEntries": "В этом году",
+  "@homeWidgetStatsYearEntries": {
+    "description": "Writing stats widget: number of entries this year."
+  },
+  "homeWidgetStatsWroteToday": "Сегодня есть запись",
+  "@homeWidgetStatsWroteToday": {
+    "description": "Writing stats widget: today already has an entry."
+  },
+  "homeWidgetStatsNotYetToday": "Сегодня ещё нет записи",
+  "@homeWidgetStatsNotYetToday": {
+    "description": "Writing stats widget: no entry yet today."
+  },
+  "homeWidgetStatsShowHeatmap": "Тепловая карта",
+  "@homeWidgetStatsShowHeatmap": {
+    "description": "Writing stats widget option: show the heatmap."
+  },
+  "homeWidgetStatsShowHeatmapHint": "В размерах 4×2 и 4×4 — сколько вы писали каждый день последних недель.",
+  "@homeWidgetStatsShowHeatmapHint": {
+    "description": "Writing stats widget option: hint for the heatmap."
+  },
+  "homeWidgetPhotoSource": "Фото из",
+  "@homeWidgetPhotoSource": {
+    "description": "Photo memories widget option: where photos come from."
+  },
+  "homeWidgetPhotoSourceOnThisDayHint": "Записи около этого дня в прошлые годы. Если фото нет, показываются недавние.",
+  "@homeWidgetPhotoSourceOnThisDayHint": {
+    "description": "Photo memories widget option: hint for the on-this-day source."
+  },
+  "homeWidgetPhotoShowDate": "Дата",
+  "@homeWidgetPhotoShowDate": {
+    "description": "Photo memories widget option: show the date on the photo."
+  },
+  "homeWidgetPhotoShuffle": "Другое фото",
+  "@homeWidgetPhotoShuffle": {
+    "description": "Photo memories widget: description of the swap button."
+  },
+  "homeWidgetPhotoEmpty": "Пока нет записей с фото",
+  "@homeWidgetPhotoEmpty": {
+    "description": "Photo memories widget: empty state."
   }
 }

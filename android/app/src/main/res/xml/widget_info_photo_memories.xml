@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 照片回忆（widgets/kinds/PhotoMemoriesWidget.kt）：默认 2×2，可缩到 1×1、拉到 4×4。
+     可用尺寸须与 Dart HomeWidgetCellSize.sizesOf 一致。
+     reconfigurable|configuration_optional：放置时不弹配置，长按“重新配置”进工作室。 -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
+    android:description="@string/widget_photo_memories_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

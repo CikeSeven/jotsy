@@ -9,6 +9,7 @@ import 'home_widget_kind.dart';
 
 part 'home_widget_content_today.dart';
 part 'home_widget_content_diaries.dart';
+part 'home_widget_content_stats.dart';
 part 'home_widget_content_time.dart';
 part 'home_widget_content_todos.dart';
 
@@ -30,6 +31,8 @@ sealed class HomeWidgetContent {
     HomeWidgetKind.todos => TodoListContent.defaults,
     HomeWidgetKind.onThisDay => OnThisDayContent.defaults,
     HomeWidgetKind.recentDiaries => RecentDiariesContent.defaults,
+    HomeWidgetKind.writingStats => WritingStatsContent.defaults,
+    HomeWidgetKind.photoMemories => PhotoMemoriesContent.defaults,
   };
 
   static HomeWidgetContent fromJson(HomeWidgetKind kind, Object? json) {
@@ -42,6 +45,8 @@ sealed class HomeWidgetContent {
       HomeWidgetKind.todos => TodoListContent._fromJson(map),
       HomeWidgetKind.onThisDay => OnThisDayContent._fromJson(map),
       HomeWidgetKind.recentDiaries => RecentDiariesContent._fromJson(map),
+      HomeWidgetKind.writingStats => WritingStatsContent._fromJson(map),
+      HomeWidgetKind.photoMemories => PhotoMemoriesContent._fromJson(map),
     };
   }
 }

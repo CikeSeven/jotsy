@@ -6,6 +6,7 @@
     android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
     android:description="@string/widget_on_this_day_description"
     android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_on_this_day"
     android:minWidth="110dp"
     android:minHeight="110dp"
     android:minResizeWidth="110dp"

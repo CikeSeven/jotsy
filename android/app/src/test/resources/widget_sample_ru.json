@@ -1,0 +1,1123 @@
+{
+  "v": 1,
+  "locale": "ru",
+  "redacted": false,
+  "displayFont": "HarmonyOSSansSC",
+  "palettes": {
+    "app": {
+      "light": {
+        "primary": 4280116614,
+        "onPrimary": 4294967295,
+        "primaryContainer": 4291094527,
+        "onPrimaryContainer": 4278209641,
+        "secondary": 4283326829,
+        "onSecondary": 4294967295,
+        "secondaryContainer": 4291945972,
+        "onSecondaryContainer": 4281813333,
+        "tertiary": 4284570237,
+        "onTertiary": 4294967295,
+        "tertiaryContainer": 4293385983,
+        "onTertiaryContainer": 4282991204,
+        "error": 4290386458,
+        "errorContainer": 4294957782,
+        "onErrorContainer": 4287823882,
+        "surface": 4294376190,
+        "onSurface": 4279770143,
+        "onSurfaceVariant": 4282468429,
+        "surfaceContainerLowest": 4294967295,
+        "surfaceContainerLow": 4293981432,
+        "surfaceContainer": 4293652211,
+        "surfaceContainerHigh": 4293257453,
+        "surfaceContainerHighest": 4292862951,
+        "outline": 4285626494,
+        "outlineVariant": 4290824141
+      },
+      "dark": {
+        "primary": 4287680244,
+        "onPrimary": 4278203466,
+        "primaryContainer": 4278209641,
+        "onPrimaryContainer": 4291094527,
+        "secondary": 4290169303,
+        "onSecondary": 4280300350,
+        "secondaryContainer": 4281813333,
+        "onSecondaryContainer": 4291945972,
+        "tertiary": 4291477993,
+        "onTertiary": 4281478220,
+        "tertiaryContainer": 4282991204,
+        "onTertiaryContainer": 4293385983,
+        "error": 4294948011,
+        "errorContainer": 4287823882,
+        "onErrorContainer": 4294957782,
+        "surface": 4279178263,
+        "onSurface": 4292862951,
+        "onSurfaceVariant": 4290824141,
+        "surfaceContainerLowest": 4278849298,
+        "surfaceContainerLow": 4279770143,
+        "surfaceContainer": 4280033315,
+        "surfaceContainerHigh": 4280691502,
+        "surfaceContainerHighest": 4281414969,
+        "outline": 4287337111,
+        "outlineVariant": 4282468429
+      }
+    }
+  },
+  "strings": {
+    "greetingMorning": "Доброе утро",
+    "greetingAfternoon": "Добрый день",
+    "greetingEvening": "Добрый вечер",
+    "greetingNight": "Не спится?",
+    "quickPrompt": "О чём думаете?",
+    "actionWrite": "Запись",
+    "actionCamera": "Фото",
+    "actionVoice": "Голос",
+    "actionTodo": "Задача",
+    "actionCalendar": "Календарь",
+    "actionSearch": "Поиск",
+    "todayNotWritten": "Сегодня ещё ничего не написано",
+    "yearProgress": "Прошло %s года",
+    "featureOff": "Отключено в управлении функциями",
+    "openToUpdate": "Откройте Jotsy, чтобы обновить",
+    "isToday": "Это сегодня",
+    "anniversaryTitle": "Памятные даты",
+    "anniversaryEmpty": "Памятных дат пока нет",
+    "moodPrompt": "Как настроение?",
+    "mood_awful": "Ужасно",
+    "mood_bad": "Плохо",
+    "mood_meh": "Так себе",
+    "mood_good": "Хорошо",
+    "mood_great": "Отлично",
+    "monthPrevious": "Предыдущий месяц",
+    "monthNext": "Следующий месяц",
+    "todoViewToday": "Сегодня",
+    "todoViewPlanned": "Запланировано",
+    "todoViewAll": "Все",
+    "todoToday": "Сегодня",
+    "todoTomorrow": "Завтра",
+    "todoYesterday": "Вчера",
+    "todoOverdue": "Просрочено",
+    "todoEmptyToday": "На сегодня задач нет",
+    "todoEmpty": "Здесь пока нет задач",
+    "todoAllDone": "На сегодня всё сделано",
+    "todoAdd": "Задача",
+    "todoCheck": "Отметить выполненной",
+    "todoUncheck": "Вернуть в работу",
+    "locked": "Заблокировано",
+    "lockedHint": "Нажмите, чтобы разблокировать",
+    "onThisDayTitle": "В этот день",
+    "onThisDayEmpty": "В этот день в прошлые годы записей пока нет",
+    "entryPrevious": "Предыдущая запись",
+    "entryNext": "Следующая запись",
+    "writeOne": "Написать",
+    "recentTitle": "Последние записи",
+    "recentPinned": "Закреплённые записи",
+    "recentEmpty": "Здесь пока нет записей",
+    "untitled": "Сделана запись",
+    "statsTitle": "Статистика записей",
+    "statsMonthEntries": "В этом месяце",
+    "statsMonthWords": "Слов за месяц",
+    "statsYearEntries": "В этом году",
+    "statsWroteToday": "Сегодня есть запись",
+    "statsNotYetToday": "Сегодня ещё нет записи",
+    "photoShuffle": "Другое фото",
+    "photoEmpty": "Пока нет записей с фото"
+  },
+  "plurals": {
+    "daysToGo": {
+      "one": "день остался",
+      "few": "дня осталось",
+      "many": "дней осталось",
+      "other": "дней осталось"
+    },
+    "daysAgo": {
+      "one": "день назад",
+      "few": "дня назад",
+      "many": "дней назад",
+      "other": "дней назад"
+    },
+    "daysLeft": {
+      "one": "Остался %d день",
+      "few": "Осталось %d дня",
+      "many": "Осталось %d дней",
+      "other": "Осталось %d дней"
+    },
+    "daysSince": {
+      "one": "Прошёл %d день",
+      "few": "Прошло %d дня",
+      "many": "Прошло %d дней",
+      "other": "Прошло %d дней"
+    },
+    "streakUnit": {
+      "one": "день подряд",
+      "few": "дня подряд",
+      "many": "дней подряд",
+      "other": "дней подряд"
+    },
+    "recentWeeks": {
+      "one": "Последняя %d неделя",
+      "few": "Последние %d недели",
+      "many": "Последние %d недель",
+      "other": "Последние %d недель"
+    }
+  },
+  "icons": {
+    "write": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62893
+    },
+    "todo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61770
+    },
+    "calendar": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61747
+    },
+    "search": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61442
+    },
+    "words": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62827
+    },
+    "list": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61614
+    },
+    "leaf": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61548
+    },
+    "anniversary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61444
+    },
+    "countdown": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61476
+    },
+    "pin": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61581
+    },
+    "previous": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61700
+    },
+    "next": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61701
+    },
+    "unchecked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61713
+    },
+    "checked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61528
+    },
+    "plus": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 43
+    },
+    "repeat": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61473
+    },
+    "camera": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61488
+    },
+    "voice": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61744
+    },
+    "lock": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61475
+    },
+    "memory": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61914
+    },
+    "diary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62744
+    },
+    "tag": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 35
+    },
+    "stats": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 58483
+    },
+    "streak": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61549
+    },
+    "shuffle": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61556
+    },
+    "photo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62210
+    }
+  },
+  "instances": {},
+  "defaults": {
+    "quick_capture": {
+      "kind": "quick_capture",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "actions": [
+          "write",
+          "todo",
+          "calendar"
+        ],
+        "labels": true,
+        "greeting": true
+      }
+    },
+    "on_this_day": {
+      "kind": "on_this_day",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "match": "sameDay",
+        "photo": true,
+        "excerpt": true
+      }
+    },
+    "recent_diaries": {
+      "kind": "recent_diaries",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "photos": true,
+        "excerpt": true
+      }
+    },
+    "today": {
+      "kind": "today",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "lunar": false,
+        "holiday": false,
+        "writing": true,
+        "todos": true,
+        "yearProgress": false,
+        "mood": true,
+        "tap": "calendar"
+      }
+    },
+    "anniversary": {
+      "kind": "anniversary",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "display": "single",
+        "date": true
+      }
+    },
+    "mood_calendar": {
+      "kind": "mood_calendar",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "moods": true,
+        "written": true,
+        "holiday": false
+      }
+    },
+    "todos": {
+      "kind": "todos",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "view": "today",
+        "completed": true,
+        "due": true
+      }
+    },
+    "writing_stats": {
+      "kind": "writing_stats",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "basis": "entries",
+        "heatmap": true
+      }
+    },
+    "photo_memories": {
+      "kind": "photo_memories",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "date": true
+      }
+    }
+  },
+  "today": {
+    "days": {
+      "2026-11-15": {
+        "weekday": "воскресенье",
+        "weekdayShort": "вс",
+        "monthDay": "15 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月初七",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-16": {
+        "weekday": "понедельник",
+        "weekdayShort": "пн",
+        "monthDay": "16 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月初八",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-17": {
+        "weekday": "вторник",
+        "weekdayShort": "вт",
+        "monthDay": "17 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月初九",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-18": {
+        "weekday": "среда",
+        "weekdayShort": "ср",
+        "monthDay": "18 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月初十",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-19": {
+        "weekday": "четверг",
+        "weekdayShort": "чт",
+        "monthDay": "19 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十一",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-20": {
+        "weekday": "пятница",
+        "weekdayShort": "пт",
+        "monthDay": "20 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十二",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-21": {
+        "weekday": "суббота",
+        "weekdayShort": "сб",
+        "monthDay": "21 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十三",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-22": {
+        "weekday": "воскресенье",
+        "weekdayShort": "вс",
+        "monthDay": "22 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十四",
+        "almanac": "小雪",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-23": {
+        "weekday": "понедельник",
+        "weekdayShort": "пн",
+        "monthDay": "23 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十五",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-24": {
+        "weekday": "вторник",
+        "weekdayShort": "вт",
+        "monthDay": "24 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十六",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-25": {
+        "weekday": "среда",
+        "weekdayShort": "ср",
+        "monthDay": "25 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十七",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-26": {
+        "weekday": "четверг",
+        "weekdayShort": "чт",
+        "monthDay": "26 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十八",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-27": {
+        "weekday": "пятница",
+        "weekdayShort": "пт",
+        "monthDay": "27 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月十九",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      },
+      "2026-11-28": {
+        "weekday": "суббота",
+        "weekdayShort": "сб",
+        "monthDay": "28 нояб.",
+        "month": "ноябрь",
+        "lunar": "十月二十",
+        "todos": 3,
+        "todosLabel": "3 задачи"
+      }
+    },
+    "words": {
+      "2026-11-15": 860
+    },
+    "wordsLabel": {
+      "2026-11-15": "Сегодня 860 слов"
+    },
+    "moods": {
+      "2026-11-15": "good"
+    }
+  },
+  "anniversaries": [
+    {
+      "id": "sample-anniversary-1",
+      "title": "День рождения мамы",
+      "pinned": true,
+      "repeats": true,
+      "base": "1968-11-24",
+      "baseLabel": "24 нояб. 1968 г.",
+      "occurrences": [
+        {
+          "date": "2026-11-24",
+          "dateLabel": "24 нояб. · вт",
+          "ordinalLabel": "58-я годовщина",
+          "todayLabel": "Сегодня 58-я годовщина"
+        },
+        {
+          "date": "2027-11-24",
+          "dateLabel": "24 нояб. 2027 г. · ср",
+          "ordinalLabel": "59-я годовщина",
+          "todayLabel": "Сегодня 59-я годовщина"
+        },
+        {
+          "date": "2028-11-24",
+          "dateLabel": "24 нояб. 2028 г. · пт",
+          "ordinalLabel": "60-я годовщина",
+          "todayLabel": "Сегодня 60-я годовщина"
+        }
+      ]
+    },
+    {
+      "id": "sample-anniversary-2",
+      "title": "Вместе",
+      "pinned": false,
+      "repeats": true,
+      "base": "2021-07-18",
+      "baseLabel": "18 июл. 2021 г.",
+      "occurrences": [
+        {
+          "date": "2027-07-18",
+          "dateLabel": "18 июл. 2027 г. · вс",
+          "ordinalLabel": "6-я годовщина",
+          "todayLabel": "Сегодня 6-я годовщина"
+        },
+        {
+          "date": "2028-07-18",
+          "dateLabel": "18 июл. 2028 г. · вт",
+          "ordinalLabel": "7-я годовщина",
+          "todayLabel": "Сегодня 7-я годовщина"
+        },
+        {
+          "date": "2029-07-18",
+          "dateLabel": "18 июл. 2029 г. · ср",
+          "ordinalLabel": "8-я годовщина",
+          "todayLabel": "Сегодня 8-я годовщина"
+        }
+      ]
+    }
+  ],
+  "todos": {
+    "lists": {},
+    "open": [
+      {
+        "id": "sample-todo-1",
+        "title": "Оплатить аренду",
+        "due": "2026-11-14",
+        "dueLabel": "14 нояб."
+      },
+      {
+        "id": "sample-todo-3",
+        "title": "Купить продукты",
+        "due": "2026-11-15",
+        "dueLabel": "15 нояб."
+      },
+      {
+        "id": "sample-todo-2",
+        "title": "Позвонить маме",
+        "due": "2026-11-15",
+        "dueLabel": "15 нояб.",
+        "time": "19:30"
+      },
+      {
+        "id": "sample-todo-4",
+        "title": "Дочитать книгу"
+      }
+    ],
+    "done": []
+  },
+  "calendar": {
+    "firstWeekday": 1,
+    "weekdays": [
+      "П",
+      "В",
+      "С",
+      "Ч",
+      "П",
+      "С",
+      "В"
+    ],
+    "months": {
+      "2026-09": {
+        "title": "сентябрь 2026 г.",
+        "writtenLabel": "Записи в 18 дней",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": -1,
+            "w": 1
+          },
+          "8": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": -1,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "19": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1,
+            "h": "Раб",
+            "hw": true
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "26": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "27": {
+            "h": "Вых",
+            "hw": false
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-10": {
+        "title": "октябрь 2026 г.",
+        "writtenLabel": "Записи в 19 дней",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "2": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "3": {
+            "h": "Вых",
+            "hw": false
+          },
+          "4": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "5": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "6": {
+            "h": "Вых",
+            "hw": false
+          },
+          "7": {
+            "b": -1,
+            "w": 1,
+            "h": "Вых",
+            "hw": false
+          },
+          "10": {
+            "b": -1,
+            "w": 1,
+            "h": "Раб",
+            "hw": true
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "16": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1
+          },
+          "26": {
+            "b": -1,
+            "w": 1
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          },
+          "31": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-11": {
+        "title": "ноябрь 2026 г.",
+        "writtenLabel": "Записи в 12 дней",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": 4
+          },
+          "3": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": 1,
+            "w": 1
+          },
+          "6": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": 3,
+            "w": 1
+          },
+          "9": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": 2,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "12": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": 4,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "15": {
+            "b": 3,
+            "w": 1
+          }
+        }
+      }
+    }
+  },
+  "stats": {
+    "streak": 7,
+    "streakEnd": "2026-11-15",
+    "month": "2026-11",
+    "monthEntries": "12",
+    "monthWords": "8 815",
+    "year": 2026,
+    "yearEntries": "197",
+    "heat": {
+      "start": "2025-11-10",
+      "entries": "01001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101111111",
+      "words": "03002203303300403303201303302203303002103303200303302203303302203303002303302200303302203303302303303004303302200303302103303201303302003303302100303202303302203303302003303302300303203303302203303302003303201300302203303302103303201003302203300302203303202303303203003302203300302403303201303302203003302103300201303302203303302203003202303300203303302203303302403333221"
+    }
+  },
+  "onThisDay": {
+    "days": {
+      "2026-11-15": {
+        "sameDay": [
+          {
+            "id": "sample-sea",
+            "label": "3 года назад в этот день"
+          },
+          {
+            "id": "sample-start",
+            "label": "5 лет назад в этот день"
+          }
+        ],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "3 года назад в этот день"
+          },
+          {
+            "id": "sample-start",
+            "label": "5 лет назад в этот день"
+          }
+        ]
+      },
+      "2026-11-16": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "15 нояб. 2023 г."
+          },
+          {
+            "id": "sample-start",
+            "label": "15 нояб. 2021 г."
+          }
+        ]
+      },
+      "2026-11-17": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "15 нояб. 2023 г."
+          },
+          {
+            "id": "sample-start",
+            "label": "15 нояб. 2021 г."
+          }
+        ]
+      },
+      "2026-11-18": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "15 нояб. 2023 г."
+          },
+          {
+            "id": "sample-start",
+            "label": "15 нояб. 2021 г."
+          }
+        ]
+      },
+      "2026-11-19": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-20": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-21": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-22": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-23": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-24": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-25": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-26": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-27": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-28": {
+        "sameDay": [],
+        "nearby": []
+      }
+    }
+  },
+  "recent": {
+    "all": [
+      "sample-run",
+      "sample-bread",
+      "sample-books",
+      "sample-sea",
+      "sample-start"
+    ]
+  },
+  "photos": {
+    "all": [
+      "sample-run",
+      "sample-books",
+      "sample-sea"
+    ]
+  },
+  "diaries": {
+    "sample-sea": {
+      "title": "Закат у моря",
+      "excerpt": "Ветер окрасил облака в оранжевый. Мы сидели на камнях до темноты.",
+      "created": "2023-11-15",
+      "day": 15,
+      "month": "нояб.",
+      "monthDay": "15 нояб.",
+      "date": "15 нояб. 2023 г.",
+      "mood": "😊",
+      "photo": "sample:sunset"
+    },
+    "sample-start": {
+      "title": "",
+      "excerpt": "Сегодня начала вести дневник. Хватит и строчки в день.",
+      "created": "2021-11-15",
+      "day": 15,
+      "month": "нояб.",
+      "monthDay": "15 нояб.",
+      "date": "15 нояб. 2021 г."
+    },
+    "sample-run": {
+      "title": "Утренняя пробежка",
+      "excerpt": "Пять километров, чуть быстрее, чем на прошлой неделе.",
+      "created": "2026-11-15",
+      "day": 15,
+      "month": "нояб.",
+      "monthDay": "15 нояб.",
+      "date": "15 нояб. 2026 г.",
+      "mood": "💪",
+      "photo": "sample:run"
+    },
+    "sample-bread": {
+      "title": "Мой первый хлеб",
+      "excerpt": "Немного кривой, но запах на всю квартиру.",
+      "created": "2026-11-14",
+      "day": 14,
+      "month": "нояб.",
+      "monthDay": "14 нояб.",
+      "date": "14 нояб. 2026 г.",
+      "mood": "😋"
+    },
+    "sample-books": {
+      "title": "Книжный в дождь",
+      "excerpt": "Пока пережидала дождь, нашла старый сборник стихов.",
+      "created": "2026-11-11",
+      "day": 11,
+      "month": "нояб.",
+      "monthDay": "11 нояб.",
+      "date": "11 нояб. 2026 г.",
+      "photo": "sample:books"
+    }
+  }
+}

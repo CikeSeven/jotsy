@@ -67,4 +67,19 @@ class FakeHomeWidgetGateway implements HomeWidgetGateway {
   Future<void> registerBackgroundCallback(
     FutureOr<void> Function(Uri? uri) callback,
   ) async => backgroundCallback = callback;
+
+  /// 发布过的生成预览：(示例快照, 口径)。
+  final List<(String, String)> publishedPreviews = <(String, String)>[];
+
+  /// 发布生成预览的结果（测试可改成限流或不支持）。
+  HomeWidgetPreviewPublish previewOutcome = HomeWidgetPreviewPublish.done;
+
+  @override
+  Future<HomeWidgetPreviewPublish> publishPreviews(
+    String sample,
+    String key,
+  ) async {
+    publishedPreviews.add((sample, key));
+    return previewOutcome;
+  }
 }

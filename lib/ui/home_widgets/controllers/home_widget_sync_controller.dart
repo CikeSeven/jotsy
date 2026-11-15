@@ -10,11 +10,14 @@
 // 2. 桌面上没有任何小组件、小组件页也没开着时到此为止——没用小组件的人
 //    不付任何代价；
 // 3. 构建快照，与上一份比较，相同就不写入、不刷新（编辑日记时每次自动保存
-//    都会推表变化，大多不改变小组件上的内容）；不同则写入并让桌面上用到的
-//    种类重画；
+//    都会推表变化，大多不改变小组件上的内容）；不同则写入，并只让用到变化那几节
+//    的种类重画（`homeWidgetKindsToRefresh`）；
 // 4. 每天第一次同步时为桌面上的种类排好之后 [kHomeWidgetDayHorizon] 个零点的
 //    刷新（快速记录另加问候换时段的整点，见 [homeWidgetRedrawTimes]），应用不在
 //    运行时日期也照样翻页（原生按本机日期挑快照里的那一天）。
+//
+// 另外每次同步都顺带发布启动器列表里的生成预览（`HomeWidgetPreviewPublisher`，口径
+// 不变就什么都不做），在第 2 步之前，桌面上没有小组件也照常发布。
 //
 // 同步串行执行：新的输入在上一次同步结束后再跑，不会两次交错写快照。
 
@@ -22,6 +25,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show TableUpdate, TableUpdateQuery;
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,6 +46,8 @@ import '../viewmodels/home_widget_data_source.dart';
 import '../viewmodels/home_widget_snapshot_builder.dart';
 import '../viewmodels/home_widget_today_section.dart';
 import 'home_widget_actions.dart';
+import 'home_widget_preview_publisher.dart';
+import 'home_widget_refresh_plan.dart';
 
 /// 防抖（非动画计时）：一次编辑常连着写好几张表。
 const Duration _syncDelay = Duration(milliseconds: 800);
@@ -123,8 +129,13 @@ class HomeWidgetSyncController {
   bool _dirty = false;
   Future<void> _running = Future<void>.value();
 
-  /// 上一次写入的快照（不含构建时刻），相同就跳过。
-  String? _lastSnapshot;
+  /// 上一次写入的快照按顶层字段拆开的编码（不含构建时刻），相同就跳过，不同时据此
+  /// 决定重画哪些种类。
+  Map<String, String>? _lastParts;
+
+  late final HomeWidgetPreviewPublisher _previews = HomeWidgetPreviewPublisher(
+    gateway,
+  );
 
   /// 上一次桌面上的实例，变了才通知小组件页重读。
   Set<InstalledHomeWidget> _lastInstalled = const <InstalledHomeWidget>{};
@@ -219,6 +230,17 @@ class HomeWidgetSyncController {
       // 写回后设置 provider 会再触发一次同步，内容相同时被快照比较挡掉。
       await settingsService.setHomeWidgetsRaw(reconciled.encode());
     }
+    final l10n = lookupAppLocalizations(settingsService.localeNotifier.value);
+    final appSeed = settingsService.themeSeedColorNotifier.value;
+    final weekStart = CalendarDisplayOptions.decode(
+      settingsService.calendarDisplayOptionsRaw,
+    ).weekStart;
+    await _previews.publish(
+      now: current,
+      l10n: l10n,
+      appSeed: appSeed,
+      weekStart: weekStart,
+    );
     final preview = previewing();
     if (installed.isEmpty && !preview) return;
 
@@ -228,36 +250,39 @@ class HomeWidgetSyncController {
     final snapshot = await builder.build(
       HomeWidgetSnapshotInput(
         now: current,
-        l10n: lookupAppLocalizations(settingsService.localeNotifier.value),
-        appSeed: settingsService.themeSeedColorNotifier.value,
+        l10n: l10n,
+        appSeed: appSeed,
         features: readFeatures(),
         appLocked: settingsService.isAppLockEnabled,
         settings: settings,
         installed: installed,
         kinds: kinds,
         moodOptions: settingsService.moodOptions,
-        weekStart: CalendarDisplayOptions.decode(
-          settingsService.calendarDisplayOptionsRaw,
-        ).weekStart,
+        weekStart: weekStart,
         previewContents: preview
             ? previewContents()
             : const <HomeWidgetContent>[],
       ),
     );
     if (_disposed) return;
-    final encoded = jsonEncode(snapshot);
+    final parts = homeWidgetSnapshotParts(snapshot);
     final installedKinds = <HomeWidgetKind>{
       for (final widget in installed) widget.kind,
     };
-    if (encoded != _lastSnapshot) {
+    final previous = _lastParts;
+    if (previous == null || !mapEquals(previous, parts)) {
       await gateway.saveSnapshot(
         jsonEncode(<String, Object?>{
           ...snapshot,
           'builtAt': current.millisecondsSinceEpoch,
         }),
       );
-      _lastSnapshot = encoded;
-      for (final kind in installedKinds) {
+      _lastParts = parts;
+      for (final kind in homeWidgetKindsToRefresh(
+        previous,
+        parts,
+        installedKinds,
+      )) {
         await gateway.refresh(kind);
       }
     }
@@ -296,27 +321,3 @@ class HomeWidgetSyncController {
 
 bool _sameSet<T>(Set<T> a, Set<T> b) =>
     a.length == b.length && a.containsAll(b);
-
-/// 快速记录的问候换时段的整点（早上 / 下午 / 晚上 / 深夜，原生 `greeting()` 同口径）。
-const List<int> _greetingHours = <int>[5, 11, 18, 23];
-
-/// 某种类在 [now] 之后要定时重画的时刻：之后 [kHomeWidgetDayHorizon] 天的零点；快速
-/// 记录再加上每天问候换时段的整点。都在整点后几秒，避开系统时钟与闹钟的毫秒级误差
-/// 落在前一刻。
-@visibleForTesting
-List<DateTime> homeWidgetRedrawTimes(HomeWidgetKind kind, DateTime now) {
-  final times = <DateTime>[
-    for (var day = 1; day <= kHomeWidgetDayHorizon; day++)
-      DateTime(now.year, now.month, now.day + day, 0, 0, 5),
-  ];
-  if (kind == HomeWidgetKind.quickCapture) {
-    for (var day = 0; day < kHomeWidgetDayHorizon; day++) {
-      for (final hour in _greetingHours) {
-        final time = DateTime(now.year, now.month, now.day + day, hour, 0, 5);
-        if (time.isAfter(now)) times.add(time);
-      }
-    }
-    times.sort();
-  }
-  return times;
-}

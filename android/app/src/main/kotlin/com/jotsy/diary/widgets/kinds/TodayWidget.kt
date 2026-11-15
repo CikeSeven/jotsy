@@ -44,7 +44,7 @@ import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
  * 跨零点：原生按本机日期取快照里这一天的预算内容（[TodayDay]），Dart 排好了之后几天
  * 零点的重画；超出预算的日子只显示公历日期与星期。
  */
-class TodayWidget : JotsyGlanceWidget(KIND, setOf(ROW, ROW_WIDE, SQUARE, TALL, WIDE)) {
+class TodayWidget : JotsyGlanceWidget(KIND, setOf(ROW, ROW_WIDE, SQUARE, SQUARE_ROOMY, TALL, WIDE, WIDE_TALL)) {
   @Composable
   override fun Content(scope: WidgetScope) {
     val day = TodayDay.of(scope)
@@ -72,6 +72,11 @@ class TodayWidget : JotsyGlanceWidget(KIND, setOf(ROW, ROW_WIDE, SQUARE, TALL, W
     val SQUARE = DpSize(110.dp, 110.dp)
     val TALL = DpSize(110.dp, 170.dp)
     val WIDE = DpSize(250.dp, 110.dp)
+
+    // 常见手机上的实际格子档（docs/rules/home_widgets.md「版式」）：桌面按挑中的那一档排版，
+    // 只有最小档时 4×2 只放得下最小档的内容。
+    val SQUARE_ROOMY = DpSize(140.dp, 140.dp)
+    val WIDE_TALL = DpSize(250.dp, 150.dp)
   }
 }
 

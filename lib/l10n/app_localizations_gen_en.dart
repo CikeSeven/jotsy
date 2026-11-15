@@ -18016,4 +18016,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeWidgetPresetNightDescription =>
       'Always dark with indigo accents, easy on the eyes';
+
+  @override
+  String get homeWidgetSampleDiaryTitle1 => 'Sunset by the sea';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt1 =>
+      'The wind turned the clouds orange. We sat on the rocks until dark.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle2 => 'My first loaf';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt2 =>
+      'A bit lopsided, but the whole flat smelled amazing.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle3 => 'Bookshop in the rain';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt3 =>
+      'Found an old book of poems while waiting out the rain.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle4 => 'Morning run';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt4 =>
+      'Five kilometres, a little faster than last week.';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt5 =>
+      'Started keeping a diary today. One line a day is enough.';
+
+  @override
+  String get homeWidgetSampleTodo1 => 'Call Mom';
+
+  @override
+  String get homeWidgetSampleTodo2 => 'Pay the rent';
+
+  @override
+  String get homeWidgetSampleTodo3 => 'Buy groceries';
+
+  @override
+  String get homeWidgetSampleTodo4 => 'Finish a book';
+
+  @override
+  String get homeWidgetSampleAnniversary1 => 'Together';
+
+  @override
+  String get homeWidgetSampleAnniversary2 => 'Mom\'s birthday';
 }

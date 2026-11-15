@@ -6,6 +6,7 @@
     android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
     android:description="@string/widget_recent_diaries_description"
     android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_recent_diaries"
     android:minWidth="250dp"
     android:minHeight="110dp"
     android:minResizeWidth="250dp"

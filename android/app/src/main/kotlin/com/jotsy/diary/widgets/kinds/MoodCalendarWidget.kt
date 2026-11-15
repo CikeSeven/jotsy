@@ -47,7 +47,7 @@ import org.json.JSONObject
  *
  * 跨月零点后快照里还没有新的一个月时，只画日期（不画心情与打点），等应用下次同步。
  */
-class MoodCalendarWidget : JotsyGlanceWidget(KIND, setOf(SMALL, MEDIUM, WIDE, LARGE)) {
+class MoodCalendarWidget : JotsyGlanceWidget(KIND, setOf(SMALL, MEDIUM, WIDE, LARGE, LARGE_TALL)) {
   @Composable
   override fun Content(scope: WidgetScope) {
     val section = scope.snapshot.section("calendar")
@@ -74,6 +74,10 @@ class MoodCalendarWidget : JotsyGlanceWidget(KIND, setOf(SMALL, MEDIUM, WIDE, LA
     val MEDIUM = DpSize(180.dp, 180.dp)
     val WIDE = DpSize(250.dp, 110.dp)
     val LARGE = DpSize(250.dp, 250.dp)
+
+    // 常见手机上的实际格子档（docs/rules/home_widgets.md「版式」）：桌面按挑中的那一档排版，
+    // 只有最小档时 4×2 只放得下最小档的内容。
+    val LARGE_TALL = DpSize(250.dp, 320.dp)
   }
 }
 

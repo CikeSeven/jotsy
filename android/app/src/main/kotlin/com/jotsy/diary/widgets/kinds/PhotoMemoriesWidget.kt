@@ -22,7 +22,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.TextAlign
 import com.jotsy.diary.widgets.JotsyGlanceWidget
 import com.jotsy.diary.widgets.WidgetActions
-import com.jotsy.diary.widgets.WidgetBitmaps
+import com.jotsy.diary.widgets.WidgetPhotos
 import com.jotsy.diary.widgets.WidgetFrame
 import com.jotsy.diary.widgets.WidgetIcon
 import com.jotsy.diary.widgets.WidgetLaunch
@@ -62,7 +62,7 @@ class PhotoMemoriesWidget :
       pool.indices.asSequence()
         .map { pool[Math.floorMod(scope.today.toEpochDay() + offset + it, pool.size.toLong()).toInt()] }
         .firstNotNullOfOrNull { entry ->
-          WidgetBitmaps.photo(
+          WidgetPhotos.load(
             scope.context,
             entry.photo ?: return@firstNotNullOfOrNull null,
             scope.size.width.value,

@@ -37,9 +37,12 @@ import org.json.JSONObject
  *
  * 重画串行：新的参数到来时取消还没画完的那一次。
  */
-class WidgetPreviewFactory(private val messenger: BinaryMessenger) :
-  PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+class WidgetPreviewFactory(
+  private val appContext: Context,
+  private val messenger: BinaryMessenger,
+) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
   private val views = HashMap<Int, WidgetPreviewView>()
+  private val publishScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val channel =
     MethodChannel(messenger, CHANNEL).apply {
       setMethodCallHandler { call, result ->
@@ -49,6 +52,19 @@ class WidgetPreviewFactory(private val messenger: BinaryMessenger) :
             val view = (args?.get("viewId") as? Number)?.toInt()?.let { views[it] }
             if (args != null) view?.update(args)
             result.success(null)
+          }
+          // 启动器小组件列表里的生成预览（WidgetPreviews）：示例快照与发布口径。
+          "publishPreviews" -> {
+            val sample = call.argument<String>("sample")
+            val key = call.argument<String>("key")
+            if (sample == null || key == null) {
+              result.error("bad_args", "sample and key are required", null)
+            } else {
+              publishScope.launch {
+                val outcome = WidgetPreviews.publish(appContext, sample, key)
+                withContext(Dispatchers.Main) { result.success(outcome) }
+              }
+            }
           }
           else -> result.notImplemented()
         }
@@ -65,6 +81,7 @@ class WidgetPreviewFactory(private val messenger: BinaryMessenger) :
 
   fun dispose() {
     channel.setMethodCallHandler(null)
+    publishScope.cancel()
     views.values.toList().forEach { it.dispose() }
     views.clear()
   }

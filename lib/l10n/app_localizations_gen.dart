@@ -28101,6 +28101,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Always dark with indigo accents, easy on the eyes'**
   String get homeWidgetPresetNightDescription;
+
+  /// Sample content in widget previews (launcher widget picker): diary title.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset by the sea'**
+  String get homeWidgetSampleDiaryTitle1;
+
+  /// Sample content in widget previews (launcher widget picker): diary excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'The wind turned the clouds orange. We sat on the rocks until dark.'**
+  String get homeWidgetSampleDiaryExcerpt1;
+
+  /// Sample content in widget previews (launcher widget picker): diary title.
+  ///
+  /// In en, this message translates to:
+  /// **'My first loaf'**
+  String get homeWidgetSampleDiaryTitle2;
+
+  /// Sample content in widget previews (launcher widget picker): diary excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'A bit lopsided, but the whole flat smelled amazing.'**
+  String get homeWidgetSampleDiaryExcerpt2;
+
+  /// Sample content in widget previews (launcher widget picker): diary title.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookshop in the rain'**
+  String get homeWidgetSampleDiaryTitle3;
+
+  /// Sample content in widget previews (launcher widget picker): diary excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Found an old book of poems while waiting out the rain.'**
+  String get homeWidgetSampleDiaryExcerpt3;
+
+  /// Sample content in widget previews (launcher widget picker): diary title.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning run'**
+  String get homeWidgetSampleDiaryTitle4;
+
+  /// Sample content in widget previews (launcher widget picker): diary excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Five kilometres, a little faster than last week.'**
+  String get homeWidgetSampleDiaryExcerpt4;
+
+  /// Sample content in widget previews (launcher widget picker): diary excerpt of an entry without a title.
+  ///
+  /// In en, this message translates to:
+  /// **'Started keeping a diary today. One line a day is enough.'**
+  String get homeWidgetSampleDiaryExcerpt5;
+
+  /// Sample content in widget previews (launcher widget picker): to-do title.
+  ///
+  /// In en, this message translates to:
+  /// **'Call Mom'**
+  String get homeWidgetSampleTodo1;
+
+  /// Sample content in widget previews (launcher widget picker): to-do title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay the rent'**
+  String get homeWidgetSampleTodo2;
+
+  /// Sample content in widget previews (launcher widget picker): to-do title.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy groceries'**
+  String get homeWidgetSampleTodo3;
+
+  /// Sample content in widget previews (launcher widget picker): to-do title.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish a book'**
+  String get homeWidgetSampleTodo4;
+
+  /// Sample content in widget previews (launcher widget picker): anniversary name.
+  ///
+  /// In en, this message translates to:
+  /// **'Together'**
+  String get homeWidgetSampleAnniversary1;
+
+  /// Sample content in widget previews (launcher widget picker): anniversary name.
+  ///
+  /// In en, this message translates to:
+  /// **'Mom\'s birthday'**
+  String get homeWidgetSampleAnniversary2;
 }
 
 class _AppLocalizationsDelegate

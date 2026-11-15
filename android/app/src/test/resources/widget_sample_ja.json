@@ -1,0 +1,1105 @@
+{
+  "v": 1,
+  "locale": "ja",
+  "redacted": false,
+  "displayFont": "HarmonyOSSansSC",
+  "palettes": {
+    "app": {
+      "light": {
+        "primary": 4280116614,
+        "onPrimary": 4294967295,
+        "primaryContainer": 4291094527,
+        "onPrimaryContainer": 4278209641,
+        "secondary": 4283326829,
+        "onSecondary": 4294967295,
+        "secondaryContainer": 4291945972,
+        "onSecondaryContainer": 4281813333,
+        "tertiary": 4284570237,
+        "onTertiary": 4294967295,
+        "tertiaryContainer": 4293385983,
+        "onTertiaryContainer": 4282991204,
+        "error": 4290386458,
+        "errorContainer": 4294957782,
+        "onErrorContainer": 4287823882,
+        "surface": 4294376190,
+        "onSurface": 4279770143,
+        "onSurfaceVariant": 4282468429,
+        "surfaceContainerLowest": 4294967295,
+        "surfaceContainerLow": 4293981432,
+        "surfaceContainer": 4293652211,
+        "surfaceContainerHigh": 4293257453,
+        "surfaceContainerHighest": 4292862951,
+        "outline": 4285626494,
+        "outlineVariant": 4290824141
+      },
+      "dark": {
+        "primary": 4287680244,
+        "onPrimary": 4278203466,
+        "primaryContainer": 4278209641,
+        "onPrimaryContainer": 4291094527,
+        "secondary": 4290169303,
+        "onSecondary": 4280300350,
+        "secondaryContainer": 4281813333,
+        "onSecondaryContainer": 4291945972,
+        "tertiary": 4291477993,
+        "onTertiary": 4281478220,
+        "tertiaryContainer": 4282991204,
+        "onTertiaryContainer": 4293385983,
+        "error": 4294948011,
+        "errorContainer": 4287823882,
+        "onErrorContainer": 4294957782,
+        "surface": 4279178263,
+        "onSurface": 4292862951,
+        "onSurfaceVariant": 4290824141,
+        "surfaceContainerLowest": 4278849298,
+        "surfaceContainerLow": 4279770143,
+        "surfaceContainer": 4280033315,
+        "surfaceContainerHigh": 4280691502,
+        "surfaceContainerHighest": 4281414969,
+        "outline": 4287337111,
+        "outlineVariant": 4282468429
+      }
+    }
+  },
+  "strings": {
+    "greetingMorning": "おはようございます",
+    "greetingAfternoon": "こんにちは",
+    "greetingEvening": "こんばんは",
+    "greetingNight": "夜更かしですね",
+    "quickPrompt": "今、何を考えていますか？",
+    "actionWrite": "日記を書く",
+    "actionCamera": "写真",
+    "actionVoice": "録音",
+    "actionTodo": "ToDo",
+    "actionCalendar": "カレンダー",
+    "actionSearch": "検索",
+    "todayNotWritten": "今日はまだ書いていません",
+    "yearProgress": "今年の %s が経過",
+    "featureOff": "機能管理でオフになっています",
+    "openToUpdate": "Jotsy を開いて更新",
+    "isToday": "今日がその日",
+    "anniversaryTitle": "記念日",
+    "anniversaryEmpty": "記念日はまだありません",
+    "moodPrompt": "今日の気分は？",
+    "mood_awful": "最悪",
+    "mood_bad": "いまいち",
+    "mood_meh": "ふつう",
+    "mood_good": "良い",
+    "mood_great": "最高",
+    "monthPrevious": "前の月",
+    "monthNext": "次の月",
+    "todoViewToday": "今日",
+    "todoViewPlanned": "予定",
+    "todoViewAll": "すべて",
+    "todoToday": "今日",
+    "todoTomorrow": "明日",
+    "todoYesterday": "昨日",
+    "todoOverdue": "期限切れ",
+    "todoEmptyToday": "今日のToDoはありません",
+    "todoEmpty": "まだToDoはありません",
+    "todoAllDone": "今日のToDoはすべて完了",
+    "todoAdd": "ToDo",
+    "todoCheck": "完了にする",
+    "todoUncheck": "未完了に戻す",
+    "locked": "ロック中",
+    "lockedHint": "タップしてロック解除",
+    "onThisDayTitle": "あの日の今日",
+    "onThisDayEmpty": "過去の今日の日記はまだありません",
+    "entryPrevious": "前の日記",
+    "entryNext": "次の日記",
+    "writeOne": "書く",
+    "recentTitle": "最近の日記",
+    "recentPinned": "ピン留めの日記",
+    "recentEmpty": "ここにはまだ日記がありません",
+    "untitled": "記録を残しました",
+    "statsTitle": "執筆の記録",
+    "statsMonthEntries": "今月の日記",
+    "statsMonthWords": "今月の文字数",
+    "statsYearEntries": "今年の日記",
+    "statsWroteToday": "今日は書きました",
+    "statsNotYetToday": "今日はまだです",
+    "photoShuffle": "別の写真",
+    "photoEmpty": "写真付きの日記はまだありません"
+  },
+  "plurals": {
+    "daysToGo": {
+      "other": "日後"
+    },
+    "daysAgo": {
+      "other": "日前"
+    },
+    "daysLeft": {
+      "other": "あと%d日"
+    },
+    "daysSince": {
+      "other": "%d日経過"
+    },
+    "streakUnit": {
+      "other": "日連続"
+    },
+    "recentWeeks": {
+      "other": "最近 %d 週間"
+    }
+  },
+  "icons": {
+    "write": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62893
+    },
+    "todo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61770
+    },
+    "calendar": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61747
+    },
+    "search": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61442
+    },
+    "words": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62827
+    },
+    "list": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61614
+    },
+    "leaf": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61548
+    },
+    "anniversary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61444
+    },
+    "countdown": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61476
+    },
+    "pin": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61581
+    },
+    "previous": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61700
+    },
+    "next": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61701
+    },
+    "unchecked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61713
+    },
+    "checked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61528
+    },
+    "plus": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 43
+    },
+    "repeat": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61473
+    },
+    "camera": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61488
+    },
+    "voice": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61744
+    },
+    "lock": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61475
+    },
+    "memory": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61914
+    },
+    "diary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62744
+    },
+    "tag": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 35
+    },
+    "stats": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 58483
+    },
+    "streak": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61549
+    },
+    "shuffle": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61556
+    },
+    "photo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62210
+    }
+  },
+  "instances": {},
+  "defaults": {
+    "quick_capture": {
+      "kind": "quick_capture",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "actions": [
+          "write",
+          "todo",
+          "calendar"
+        ],
+        "labels": true,
+        "greeting": true
+      }
+    },
+    "on_this_day": {
+      "kind": "on_this_day",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "match": "sameDay",
+        "photo": true,
+        "excerpt": true
+      }
+    },
+    "recent_diaries": {
+      "kind": "recent_diaries",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "photos": true,
+        "excerpt": true
+      }
+    },
+    "today": {
+      "kind": "today",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "lunar": false,
+        "holiday": false,
+        "writing": true,
+        "todos": true,
+        "yearProgress": false,
+        "mood": true,
+        "tap": "calendar"
+      }
+    },
+    "anniversary": {
+      "kind": "anniversary",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "display": "single",
+        "date": true
+      }
+    },
+    "mood_calendar": {
+      "kind": "mood_calendar",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "moods": true,
+        "written": true,
+        "holiday": false
+      }
+    },
+    "todos": {
+      "kind": "todos",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "view": "today",
+        "completed": true,
+        "due": true
+      }
+    },
+    "writing_stats": {
+      "kind": "writing_stats",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "basis": "entries",
+        "heatmap": true
+      }
+    },
+    "photo_memories": {
+      "kind": "photo_memories",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "date": true
+      }
+    }
+  },
+  "today": {
+    "days": {
+      "2026-11-15": {
+        "weekday": "日曜日",
+        "weekdayShort": "日",
+        "monthDay": "11月15日",
+        "month": "11月",
+        "lunar": "十月初七",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-16": {
+        "weekday": "月曜日",
+        "weekdayShort": "月",
+        "monthDay": "11月16日",
+        "month": "11月",
+        "lunar": "十月初八",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-17": {
+        "weekday": "火曜日",
+        "weekdayShort": "火",
+        "monthDay": "11月17日",
+        "month": "11月",
+        "lunar": "十月初九",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-18": {
+        "weekday": "水曜日",
+        "weekdayShort": "水",
+        "monthDay": "11月18日",
+        "month": "11月",
+        "lunar": "十月初十",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-19": {
+        "weekday": "木曜日",
+        "weekdayShort": "木",
+        "monthDay": "11月19日",
+        "month": "11月",
+        "lunar": "十月十一",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-20": {
+        "weekday": "金曜日",
+        "weekdayShort": "金",
+        "monthDay": "11月20日",
+        "month": "11月",
+        "lunar": "十月十二",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-21": {
+        "weekday": "土曜日",
+        "weekdayShort": "土",
+        "monthDay": "11月21日",
+        "month": "11月",
+        "lunar": "十月十三",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-22": {
+        "weekday": "日曜日",
+        "weekdayShort": "日",
+        "monthDay": "11月22日",
+        "month": "11月",
+        "lunar": "十月十四",
+        "almanac": "小雪",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-23": {
+        "weekday": "月曜日",
+        "weekdayShort": "月",
+        "monthDay": "11月23日",
+        "month": "11月",
+        "lunar": "十月十五",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-24": {
+        "weekday": "火曜日",
+        "weekdayShort": "火",
+        "monthDay": "11月24日",
+        "month": "11月",
+        "lunar": "十月十六",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-25": {
+        "weekday": "水曜日",
+        "weekdayShort": "水",
+        "monthDay": "11月25日",
+        "month": "11月",
+        "lunar": "十月十七",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-26": {
+        "weekday": "木曜日",
+        "weekdayShort": "木",
+        "monthDay": "11月26日",
+        "month": "11月",
+        "lunar": "十月十八",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-27": {
+        "weekday": "金曜日",
+        "weekdayShort": "金",
+        "monthDay": "11月27日",
+        "month": "11月",
+        "lunar": "十月十九",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      },
+      "2026-11-28": {
+        "weekday": "土曜日",
+        "weekdayShort": "土",
+        "monthDay": "11月28日",
+        "month": "11月",
+        "lunar": "十月二十",
+        "todos": 3,
+        "todosLabel": "ToDo 3 件"
+      }
+    },
+    "words": {
+      "2026-11-15": 860
+    },
+    "wordsLabel": {
+      "2026-11-15": "今日は 860 字"
+    },
+    "moods": {
+      "2026-11-15": "good"
+    }
+  },
+  "anniversaries": [
+    {
+      "id": "sample-anniversary-1",
+      "title": "母の誕生日",
+      "pinned": true,
+      "repeats": true,
+      "base": "1968-11-24",
+      "baseLabel": "1968年11月24日",
+      "occurrences": [
+        {
+          "date": "2026-11-24",
+          "dateLabel": "11月24日 · 火",
+          "ordinalLabel": "58周年",
+          "todayLabel": "今日で58周年"
+        },
+        {
+          "date": "2027-11-24",
+          "dateLabel": "2027年11月24日 · 水",
+          "ordinalLabel": "59周年",
+          "todayLabel": "今日で59周年"
+        },
+        {
+          "date": "2028-11-24",
+          "dateLabel": "2028年11月24日 · 金",
+          "ordinalLabel": "60周年",
+          "todayLabel": "今日で60周年"
+        }
+      ]
+    },
+    {
+      "id": "sample-anniversary-2",
+      "title": "付き合った日",
+      "pinned": false,
+      "repeats": true,
+      "base": "2021-07-18",
+      "baseLabel": "2021年7月18日",
+      "occurrences": [
+        {
+          "date": "2027-07-18",
+          "dateLabel": "2027年7月18日 · 日",
+          "ordinalLabel": "6周年",
+          "todayLabel": "今日で6周年"
+        },
+        {
+          "date": "2028-07-18",
+          "dateLabel": "2028年7月18日 · 火",
+          "ordinalLabel": "7周年",
+          "todayLabel": "今日で7周年"
+        },
+        {
+          "date": "2029-07-18",
+          "dateLabel": "2029年7月18日 · 水",
+          "ordinalLabel": "8周年",
+          "todayLabel": "今日で8周年"
+        }
+      ]
+    }
+  ],
+  "todos": {
+    "lists": {},
+    "open": [
+      {
+        "id": "sample-todo-1",
+        "title": "家賃を払う",
+        "due": "2026-11-14",
+        "dueLabel": "11月14日"
+      },
+      {
+        "id": "sample-todo-3",
+        "title": "買い物",
+        "due": "2026-11-15",
+        "dueLabel": "11月15日"
+      },
+      {
+        "id": "sample-todo-2",
+        "title": "母に電話する",
+        "due": "2026-11-15",
+        "dueLabel": "11月15日",
+        "time": "19:30"
+      },
+      {
+        "id": "sample-todo-4",
+        "title": "本を一冊読み終える"
+      }
+    ],
+    "done": []
+  },
+  "calendar": {
+    "firstWeekday": 7,
+    "weekdays": [
+      "月",
+      "火",
+      "水",
+      "木",
+      "金",
+      "土",
+      "日"
+    ],
+    "months": {
+      "2026-09": {
+        "title": "2026年9月",
+        "writtenLabel": "18 日書いた",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": -1,
+            "w": 1
+          },
+          "8": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": -1,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "19": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1,
+            "h": "出",
+            "hw": true
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "26": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "27": {
+            "h": "休",
+            "hw": false
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-10": {
+        "title": "2026年10月",
+        "writtenLabel": "19 日書いた",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "2": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "3": {
+            "h": "休",
+            "hw": false
+          },
+          "4": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "5": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "6": {
+            "h": "休",
+            "hw": false
+          },
+          "7": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "10": {
+            "b": -1,
+            "w": 1,
+            "h": "出",
+            "hw": true
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "16": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1
+          },
+          "26": {
+            "b": -1,
+            "w": 1
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          },
+          "31": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-11": {
+        "title": "2026年11月",
+        "writtenLabel": "12 日書いた",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": 4
+          },
+          "3": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": 1,
+            "w": 1
+          },
+          "6": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": 3,
+            "w": 1
+          },
+          "9": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": 2,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "12": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": 4,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "15": {
+            "b": 3,
+            "w": 1
+          }
+        }
+      }
+    }
+  },
+  "stats": {
+    "streak": 7,
+    "streakEnd": "2026-11-15",
+    "month": "2026-11",
+    "monthEntries": "12",
+    "monthWords": "8,815",
+    "year": 2026,
+    "yearEntries": "197",
+    "heat": {
+      "start": "2025-11-16",
+      "entries": "01101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101111111",
+      "words": "03303300403303201303302203303002103303200303302203303302203303002303302200303302203303302303303004303302200303302103303201303302003303302100303202303302203303302003303302300303203303302203303302003303201300302203303302103303201003302203300302203303202303303203003302203300302403303201303302203003302103300201303302203303302203003202303300203303302203303302403333221"
+    }
+  },
+  "onThisDay": {
+    "days": {
+      "2026-11-15": {
+        "sameDay": [
+          {
+            "id": "sample-sea",
+            "label": "3年前の今日"
+          },
+          {
+            "id": "sample-start",
+            "label": "5年前の今日"
+          }
+        ],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "3年前の今日"
+          },
+          {
+            "id": "sample-start",
+            "label": "5年前の今日"
+          }
+        ]
+      },
+      "2026-11-16": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "sample-start",
+            "label": "2021年11月15日"
+          }
+        ]
+      },
+      "2026-11-17": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "sample-start",
+            "label": "2021年11月15日"
+          }
+        ]
+      },
+      "2026-11-18": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "sample-start",
+            "label": "2021年11月15日"
+          }
+        ]
+      },
+      "2026-11-19": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-20": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-21": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-22": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-23": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-24": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-25": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-26": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-27": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-28": {
+        "sameDay": [],
+        "nearby": []
+      }
+    }
+  },
+  "recent": {
+    "all": [
+      "sample-run",
+      "sample-bread",
+      "sample-books",
+      "sample-sea",
+      "sample-start"
+    ]
+  },
+  "photos": {
+    "all": [
+      "sample-run",
+      "sample-books",
+      "sample-sea"
+    ]
+  },
+  "diaries": {
+    "sample-sea": {
+      "title": "海辺の夕暮れ",
+      "excerpt": "風が雲をオレンジ色に染めた。暗くなるまで岩の上に座っていた。",
+      "created": "2023-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2023年11月15日",
+      "mood": "😊",
+      "photo": "sample:sunset"
+    },
+    "sample-start": {
+      "title": "",
+      "excerpt": "今日から日記を始めた。一日一行でいい。",
+      "created": "2021-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2021年11月15日"
+    },
+    "sample-run": {
+      "title": "朝のランニング",
+      "excerpt": "5キロ、先週より少し速く。",
+      "created": "2026-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2026年11月15日",
+      "mood": "💪",
+      "photo": "sample:run"
+    },
+    "sample-bread": {
+      "title": "初めてのパン",
+      "excerpt": "少し歪んだけど、部屋中いい香り。",
+      "created": "2026-11-14",
+      "day": 14,
+      "month": "11月",
+      "monthDay": "11月14日",
+      "date": "2026年11月14日",
+      "mood": "😋"
+    },
+    "sample-books": {
+      "title": "雨の日の本屋",
+      "excerpt": "雨宿りの間に古い詩集を見つけて買った。",
+      "created": "2026-11-11",
+      "day": 11,
+      "month": "11月",
+      "monthDay": "11月11日",
+      "date": "2026年11月11日",
+      "photo": "sample:books"
+    }
+  }
+}

@@ -6,6 +6,7 @@
     android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
     android:description="@string/widget_mood_calendar_description"
     android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_mood_calendar"
     android:minWidth="180dp"
     android:minHeight="180dp"
     android:minResizeWidth="110dp"

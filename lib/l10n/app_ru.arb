@@ -21022,5 +21022,65 @@
   "homeWidgetPresetNightDescription": "Всегда тёмный, индиго, не режет глаза",
   "@homeWidgetPresetNightDescription": {
     "description": "Widget look preset description."
+  },
+  "homeWidgetSampleDiaryTitle1": "Закат у моря",
+  "@homeWidgetSampleDiaryTitle1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt1": "Ветер окрасил облака в оранжевый. Мы сидели на камнях до темноты.",
+  "@homeWidgetSampleDiaryExcerpt1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle2": "Мой первый хлеб",
+  "@homeWidgetSampleDiaryTitle2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt2": "Немного кривой, но запах на всю квартиру.",
+  "@homeWidgetSampleDiaryExcerpt2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle3": "Книжный в дождь",
+  "@homeWidgetSampleDiaryTitle3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt3": "Пока пережидала дождь, нашла старый сборник стихов.",
+  "@homeWidgetSampleDiaryExcerpt3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle4": "Утренняя пробежка",
+  "@homeWidgetSampleDiaryTitle4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt4": "Пять километров, чуть быстрее, чем на прошлой неделе.",
+  "@homeWidgetSampleDiaryExcerpt4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryExcerpt5": "Сегодня начала вести дневник. Хватит и строчки в день.",
+  "@homeWidgetSampleDiaryExcerpt5": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt of an entry without a title."
+  },
+  "homeWidgetSampleTodo1": "Позвонить маме",
+  "@homeWidgetSampleTodo1": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo2": "Оплатить аренду",
+  "@homeWidgetSampleTodo2": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo3": "Купить продукты",
+  "@homeWidgetSampleTodo3": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo4": "Дочитать книгу",
+  "@homeWidgetSampleTodo4": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleAnniversary1": "Вместе",
+  "@homeWidgetSampleAnniversary1": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "homeWidgetSampleAnniversary2": "День рождения мамы",
+  "@homeWidgetSampleAnniversary2": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
   }
 }

@@ -20455,5 +20455,65 @@
   "homeWidgetPresetNightDescription": "固定深色、靛蓝强调，夜里不刺眼",
   "@homeWidgetPresetNightDescription": {
     "description": "小组件外观预设说明。"
+  },
+  "homeWidgetSampleDiaryTitle1": "海边的黄昏",
+  "@homeWidgetSampleDiaryTitle1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt1": "风把云吹成了橘色，我们在礁石上一直坐到天黑。",
+  "@homeWidgetSampleDiaryExcerpt1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryTitle2": "第一次烤面包",
+  "@homeWidgetSampleDiaryTitle2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt2": "烤出来有点歪，但整个屋子都是香的。",
+  "@homeWidgetSampleDiaryExcerpt2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryTitle3": "雨天的书店",
+  "@homeWidgetSampleDiaryTitle3": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt3": "躲雨时翻到一本旧诗集，买了下来。",
+  "@homeWidgetSampleDiaryExcerpt3": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryTitle4": "晨跑",
+  "@homeWidgetSampleDiaryTitle4": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt4": "五公里，比上周快了一点。",
+  "@homeWidgetSampleDiaryExcerpt4": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryExcerpt5": "今天开始写日记，每天一句也好。",
+  "@homeWidgetSampleDiaryExcerpt5": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：没有标题的日记的摘要。"
+  },
+  "homeWidgetSampleTodo1": "给妈妈打电话",
+  "@homeWidgetSampleTodo1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleTodo2": "交房租",
+  "@homeWidgetSampleTodo2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleTodo3": "买菜",
+  "@homeWidgetSampleTodo3": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleTodo4": "读完一本书",
+  "@homeWidgetSampleTodo4": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleAnniversary1": "在一起",
+  "@homeWidgetSampleAnniversary1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：纪念日名称。"
+  },
+  "homeWidgetSampleAnniversary2": "妈妈生日",
+  "@homeWidgetSampleAnniversary2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：纪念日名称。"
   }
 }

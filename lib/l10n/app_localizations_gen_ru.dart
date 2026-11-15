@@ -18654,4 +18654,62 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeWidgetPhotoEmpty => 'Пока нет записей с фото';
+
+  @override
+  String get homeWidgetTabPresets => 'Шаблоны';
+
+  @override
+  String get homeWidgetPresetClassic => 'Классика';
+
+  @override
+  String get homeWidgetPresetClassicDescription =>
+      'Сплошная карточка в цвете темы, как в приложении';
+
+  @override
+  String get homeWidgetPresetWallpaper => 'Под обои';
+
+  @override
+  String get homeWidgetPresetWallpaperDescription =>
+      'Тональные цвета из ваших обоев';
+
+  @override
+  String get homeWidgetPresetVivid => 'Яркий';
+
+  @override
+  String get homeWidgetPresetVividDescription =>
+      'Заливка цветом темы, светлый текст';
+
+  @override
+  String get homeWidgetPresetGlass => 'Стекло';
+
+  @override
+  String get homeWidgetPresetGlassDescription =>
+      'Полупрозрачная карточка, более круглые углы и простор';
+
+  @override
+  String get homeWidgetPresetClear => 'Минимализм';
+
+  @override
+  String get homeWidgetPresetClearDescription => 'Без фона, только содержимое';
+
+  @override
+  String get homeWidgetPresetSunrise => 'Рассвет';
+
+  @override
+  String get homeWidgetPresetSunriseDescription =>
+      'Мягкие тёплые оранжевые тона';
+
+  @override
+  String get homeWidgetPresetForest => 'Лес';
+
+  @override
+  String get homeWidgetPresetForestDescription =>
+      'Спокойная глубокая зелёная заливка';
+
+  @override
+  String get homeWidgetPresetNight => 'Ночь';
+
+  @override
+  String get homeWidgetPresetNightDescription =>
+      'Всегда тёмный, индиго, не режет глаза';
 }

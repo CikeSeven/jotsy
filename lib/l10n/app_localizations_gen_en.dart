@@ -17959,4 +17959,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetPhotoEmpty => 'No entries with photos yet';
+
+  @override
+  String get homeWidgetTabPresets => 'Presets';
+
+  @override
+  String get homeWidgetPresetClassic => 'Classic';
+
+  @override
+  String get homeWidgetPresetClassicDescription =>
+      'Solid card in your theme color, like the app';
+
+  @override
+  String get homeWidgetPresetWallpaper => 'Wallpaper';
+
+  @override
+  String get homeWidgetPresetWallpaperDescription =>
+      'Tonal colors picked from your wallpaper';
+
+  @override
+  String get homeWidgetPresetVivid => 'Vivid';
+
+  @override
+  String get homeWidgetPresetVividDescription =>
+      'Filled with your theme color, content in reverse';
+
+  @override
+  String get homeWidgetPresetGlass => 'Glass';
+
+  @override
+  String get homeWidgetPresetGlassDescription =>
+      'See-through card with rounder corners and more room';
+
+  @override
+  String get homeWidgetPresetClear => 'Minimal';
+
+  @override
+  String get homeWidgetPresetClearDescription =>
+      'No background, just the content';
+
+  @override
+  String get homeWidgetPresetSunrise => 'Sunrise';
+
+  @override
+  String get homeWidgetPresetSunriseDescription => 'Soft, warm orange tones';
+
+  @override
+  String get homeWidgetPresetForest => 'Forest';
+
+  @override
+  String get homeWidgetPresetForestDescription => 'Calm deep green fill';
+
+  @override
+  String get homeWidgetPresetNight => 'Night';
+
+  @override
+  String get homeWidgetPresetNightDescription =>
+      'Always dark with indigo accents, easy on the eyes';
 }

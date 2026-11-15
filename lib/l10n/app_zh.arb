@@ -20387,5 +20387,73 @@
   "homeWidgetPhotoEmpty": "还没有带照片的日记",
   "@homeWidgetPhotoEmpty": {
     "description": "照片回忆小组件：空状态。"
+  },
+  "homeWidgetTabPresets": "预设",
+  "@homeWidgetTabPresets": {
+    "description": "小组件工作室标签页：内置外观、我的样式与样式码。"
+  },
+  "homeWidgetPresetClassic": "经典",
+  "@homeWidgetPresetClassic": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetClassicDescription": "跟随主题色的实色卡片，与应用一致",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetWallpaper": "随壁纸",
+  "@homeWidgetPresetWallpaper": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetWallpaperDescription": "跟随壁纸取色的色调底",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetVivid": "浓郁",
+  "@homeWidgetPresetVivid": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetVividDescription": "主题色铺底，内容反白，醒目",
+  "@homeWidgetPresetVividDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetGlass": "通透",
+  "@homeWidgetPresetGlass": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetGlassDescription": "半透明底、更大的圆角与宽松的间距",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetClear": "极简",
+  "@homeWidgetPresetClear": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetClearDescription": "没有底色，只有内容",
+  "@homeWidgetPresetClearDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetSunrise": "暖阳",
+  "@homeWidgetPresetSunrise": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetSunriseDescription": "暖橙色调，柔和明亮",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetForest": "森林",
+  "@homeWidgetPresetForest": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetForestDescription": "沉静的绿色铺底",
+  "@homeWidgetPresetForestDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetNight": "夜读",
+  "@homeWidgetPresetNight": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetNightDescription": "固定深色、靛蓝强调，夜里不刺眼",
+  "@homeWidgetPresetNightDescription": {
+    "description": "小组件外观预设说明。"
   }
 }

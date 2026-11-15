@@ -15654,4 +15654,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetPhotoEmpty => '还没有带照片的日记';
+
+  @override
+  String get homeWidgetTabPresets => '预设';
+
+  @override
+  String get homeWidgetPresetClassic => '经典';
+
+  @override
+  String get homeWidgetPresetClassicDescription => '跟随主题色的实色卡片，与应用一致';
+
+  @override
+  String get homeWidgetPresetWallpaper => '随壁纸';
+
+  @override
+  String get homeWidgetPresetWallpaperDescription => '跟随壁纸取色的色调底';
+
+  @override
+  String get homeWidgetPresetVivid => '浓郁';
+
+  @override
+  String get homeWidgetPresetVividDescription => '主题色铺底，内容反白，醒目';
+
+  @override
+  String get homeWidgetPresetGlass => '通透';
+
+  @override
+  String get homeWidgetPresetGlassDescription => '半透明底、更大的圆角与宽松的间距';
+
+  @override
+  String get homeWidgetPresetClear => '极简';
+
+  @override
+  String get homeWidgetPresetClearDescription => '没有底色，只有内容';
+
+  @override
+  String get homeWidgetPresetSunrise => '暖阳';
+
+  @override
+  String get homeWidgetPresetSunriseDescription => '暖橙色调，柔和明亮';
+
+  @override
+  String get homeWidgetPresetForest => '森林';
+
+  @override
+  String get homeWidgetPresetForestDescription => '沉静的绿色铺底';
+
+  @override
+  String get homeWidgetPresetNight => '夜读';
+
+  @override
+  String get homeWidgetPresetNightDescription => '固定深色、靛蓝强调，夜里不刺眼';
 }

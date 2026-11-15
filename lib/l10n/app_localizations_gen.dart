@@ -27999,6 +27999,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No entries with photos yet'**
   String get homeWidgetPhotoEmpty;
+
+  /// Widget studio tab: built-in looks, my styles and style codes.
+  ///
+  /// In en, this message translates to:
+  /// **'Presets'**
+  String get homeWidgetTabPresets;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get homeWidgetPresetClassic;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid card in your theme color, like the app'**
+  String get homeWidgetPresetClassicDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper'**
+  String get homeWidgetPresetWallpaper;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonal colors picked from your wallpaper'**
+  String get homeWidgetPresetWallpaperDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivid'**
+  String get homeWidgetPresetVivid;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled with your theme color, content in reverse'**
+  String get homeWidgetPresetVividDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get homeWidgetPresetGlass;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'See-through card with rounder corners and more room'**
+  String get homeWidgetPresetGlassDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get homeWidgetPresetClear;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'No background, just the content'**
+  String get homeWidgetPresetClearDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise'**
+  String get homeWidgetPresetSunrise;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft, warm orange tones'**
+  String get homeWidgetPresetSunriseDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest'**
+  String get homeWidgetPresetForest;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm deep green fill'**
+  String get homeWidgetPresetForestDescription;
+
+  /// Widget look preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get homeWidgetPresetNight;
+
+  /// Widget look preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Always dark with indigo accents, easy on the eyes'**
+  String get homeWidgetPresetNightDescription;
 }
 
 class _AppLocalizationsDelegate

@@ -14,8 +14,10 @@ import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../settings/widgets/style_editor/style_editor_scaffold.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../controllers/home_widget_studio_controller.dart';
+import '../controllers/home_widget_style_library_controller.dart';
 import '../providers/home_widget_providers.dart';
 import '../sections/home_widget_content_tab.dart';
+import '../sections/home_widget_library_tab.dart';
 import '../sections/home_widget_studio_preview.dart';
 import '../sections/home_widget_style_tab.dart';
 import '../widgets/home_widget_kind_labels.dart';
@@ -64,6 +66,10 @@ class _HomeWidgetStudioPageState extends ConsumerState<HomeWidgetStudioPage>
           ? HomeWidgetInstance.defaultsFor(widget.kind)
           : settings.instanceFor(widgetId, widget.kind),
     );
+    _library = HomeWidgetStyleLibraryController(
+      settingsService: widget.settingsService,
+      readSettings: () => ref.read(homeWidgetSettingsProvider),
+    );
     // 草稿的内容交给快照（预览要画出它选的来源）；进出页面在帧回调里改 provider，
     // 理由同 HomeWidgetPreviewDemandMixin。
     _previewContent = ref.read(homeWidgetPreviewContentProvider.notifier);
@@ -71,6 +77,7 @@ class _HomeWidgetStudioPageState extends ConsumerState<HomeWidgetStudioPage>
     WidgetsBinding.instance.addPostFrameCallback((_) => _showPreviewContent());
   }
 
+  late final HomeWidgetStyleLibraryController _library;
   late final HomeWidgetPreviewContent _previewContent;
   HomeWidgetContent? _shownContent;
 
@@ -144,8 +151,13 @@ class _HomeWidgetStudioPageState extends ConsumerState<HomeWidgetStudioPage>
       listenable: _controller,
       isDefault: () => _controller.isDefault,
       onReset: _reset,
-      tabs: <String>[l10n.homeWidgetTabContent, l10n.homeWidgetTabStyle],
+      tabs: <String>[
+        l10n.homeWidgetTabPresets,
+        l10n.homeWidgetTabContent,
+        l10n.homeWidgetTabStyle,
+      ],
       tabViews: () => <Widget>[
+        HomeWidgetLibraryTab(controller: _controller, library: _library),
         HomeWidgetContentTab(controller: _controller),
         HomeWidgetStyleTab(controller: _controller),
       ],

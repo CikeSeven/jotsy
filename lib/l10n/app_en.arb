@@ -7053,6 +7053,14 @@
   "@diaryExportFormatPdfDescription": {
     "description": "Export format description: PDF."
   },
+  "diaryExportFormatEpub": "EPUB e-book",
+  "@diaryExportFormatEpub": {
+    "description": "Export format name: EPUB e-book."
+  },
+  "diaryExportFormatEpubDescription": "Text reflows to fit any screen in reading apps; images and a table of contents included",
+  "@diaryExportFormatEpubDescription": {
+    "description": "Export format description: EPUB e-book."
+  },
   "diaryExportFormatWord": "Word document",
   "@diaryExportFormatWord": {
     "description": "Export format name: Word document."

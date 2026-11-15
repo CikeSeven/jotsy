@@ -5563,6 +5563,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fixed layout for reading and printing';
 
   @override
+  String get diaryExportFormatEpub => 'EPUB e-book';
+
+  @override
+  String get diaryExportFormatEpubDescription =>
+      'Text reflows to fit any screen in reading apps; images and a table of contents included';
+
+  @override
   String get diaryExportFormatWord => 'Word document';
 
   @override

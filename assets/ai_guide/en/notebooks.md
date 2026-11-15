@@ -37,7 +37,7 @@ The header card above the list shows entries, words and time span, followed by a
 
 A regular notebook with chapters has a row of chapter chips at the bottom of the header (All, each chapter, No chapter); tap one to see only that chapter's entries.
 
-The header's menu at the top right lets you edit, export as a book, close or delete the notebook. Export as book uses the same panel as a normal export, with all seven formats: PDF, Word document, Markdown, Web page and Plain text can turn on "Book structure" (title page, contents and chapter headings, on by default); Spreadsheet (CSV) and Jotsy diary file export as usual, without book structure.
+The header's menu at the top right lets you edit, export as a book, close or delete the notebook. Export as book uses the same panel as a normal export, with all eight formats: PDF, EPUB e-book, Word document, Markdown, Web page and Plain text can turn on "Book structure" (title page, contents and chapter headings, on by default); Spreadsheet (CSV) and Jotsy diary file export as usual, without book structure.
 
 ## Privacy and locks
 With "Hide from All entries" or "Lock", the notebook's entries stay out of All entries, search, the calendar, Explore and exports, and only show inside that notebook. A locked notebook asks you to verify your identity before opening, editing or deleting (the same method as the app lock, see "App lock and passcode") and locks again after you leave the app. Sub-notebooks of a private parent are private too.

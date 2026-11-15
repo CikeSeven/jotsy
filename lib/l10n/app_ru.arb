@@ -7106,6 +7106,14 @@
   "@diaryExportFormatPdfDescription": {
     "description": "Export format description: PDF."
   },
+  "diaryExportFormatEpub": "Электронная книга EPUB",
+  "@diaryExportFormatEpub": {
+    "description": "Export format name: EPUB e-book."
+  },
+  "diaryExportFormatEpubDescription": "Текст подстраивается под экран в приложениях для чтения; с изображениями и оглавлением",
+  "@diaryExportFormatEpubDescription": {
+    "description": "Export format description: EPUB e-book."
+  },
   "diaryExportFormatWord": "Документ Word",
   "@diaryExportFormatWord": {
     "description": "Export format name: Word document."

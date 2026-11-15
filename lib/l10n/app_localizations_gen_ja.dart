@@ -5116,6 +5116,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryExportFormatPdfDescription => 'レイアウトが固定され、閲覧や印刷に最適';
 
   @override
+  String get diaryExportFormatEpub => 'EPUB 電子書籍';
+
+  @override
+  String get diaryExportFormatEpubDescription =>
+      '画面に合わせて文字が流れ、読書アプリで読めます。画像と目次付き';
+
+  @override
   String get diaryExportFormatWord => 'Word 文書';
 
   @override

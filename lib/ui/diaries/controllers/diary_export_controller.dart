@@ -16,6 +16,7 @@ import '../export/diary_export_book.dart';
 import '../export/diary_export_code.dart';
 import '../export/diary_export_docx.dart';
 import '../export/diary_export_entry.dart';
+import '../export/diary_export_epub.dart';
 import '../export/diary_export_font.dart';
 import '../export/diary_export_format.dart';
 import '../export/diary_export_html.dart';
@@ -78,16 +79,17 @@ class DiaryExportEmptyException implements Exception {
 ///   对话框与分享面板都直接显示这个名字。每次生成前清空上一次的暂存：
 ///   分享出去的文件由目标应用在被拉起时读取，那时上一次早已结束；保存
 ///   完成（含取消、失败）后立即删除本次暂存。
-/// - 多文件的产物（带媒体的 Markdown、多篇带图的网页、Word 文档本身）
-///   打包成 zip 容器，媒体经 [ZipFileEncoder] 流式写入，照片与视频不整段
+/// - 多文件的产物（带媒体的 Markdown、多篇带图的网页、Word 文档与 EPUB
+///   本身）打包成 zip 容器，按写出器给的顺序写入（EPUB 的 `mimetype` 在
+///   最前且不压缩），媒体经 [ZipFileEncoder] 流式写入，照片与视频不整段
 ///   读进内存。
 /// - 正文字体跟随正文排版：[loadBodyFont] 给出用户选的导入字体（见
-///   [DiaryExportFont]），PDF 嵌入它，Word 与网页按字族名引用；只在这三种
-///   格式下读取。没给或读不到时各格式保持原有字体。
+///   [DiaryExportFont]），PDF 嵌入它，Word、网页与 EPUB 按字族名引用；只在
+///   这四种格式下读取。没给或读不到时各格式保持原有字体。
 /// - Word 正文数值与 PDF 的首行缩进由 [build] 的 `typography` 快照给出，
 ///   写出器只换算单位，不自行读取设置，避免生成途中混入另一份排版参数。
-/// - 代码高亮跟随代码块样式：[build] 的 `code` 交给 PDF、Word 与网页写出器；
-///   没给时代码块只是等宽文字。
+/// - 代码高亮跟随代码块样式：[build] 的 `code` 交给 PDF、Word、网页与 EPUB
+///   写出器；没给时代码块只是等宽文字。
 /// - 留言：[build] 的 `commentsEnabled`（留言功能开启）、导出选项的“包含
 ///   留言”与格式支持三者都满足时，才一次批量读出各篇的留言交给写出器，
 ///   每篇写在正文之后；任一不满足时不读留言，产物与没有留言功能时相同。
@@ -230,6 +232,19 @@ class DiaryExportController {
           code: code,
           typography: typography,
         ),
+        DiaryExportFormat.epub => await DiaryEpubWriter.write(
+          entries,
+          options: options,
+          labels: labels,
+          media: media,
+          documentTitle: documentTitle,
+          languageTag: languageTag,
+          fontFamilies: await _bodyFontFamilies(),
+          book: layout,
+          code: code,
+          typography: typography,
+          now: now,
+        ),
         DiaryExportFormat.word => await DiaryDocxWriter.write(
           entries,
           options: options,
@@ -351,8 +366,11 @@ class DiaryExportController {
         if (entry.file != null) {
           await encoder.addFile(entry.file!, entry.path);
         } else {
+          final bytes = entry.bytes!;
           encoder.addArchiveFile(
-            ArchiveFile(entry.path, entry.bytes!.length, entry.bytes!),
+            entry.stored
+                ? ArchiveFile.noCompress(entry.path, bytes.length, bytes)
+                : ArchiveFile(entry.path, bytes.length, bytes),
           );
         }
       }

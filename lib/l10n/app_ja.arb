@@ -7106,6 +7106,14 @@
   "@diaryExportFormatPdfDescription": {
     "description": "Export format description: PDF."
   },
+  "diaryExportFormatEpub": "EPUB 電子書籍",
+  "@diaryExportFormatEpub": {
+    "description": "Export format name: EPUB e-book."
+  },
+  "diaryExportFormatEpubDescription": "画面に合わせて文字が流れ、読書アプリで読めます。画像と目次付き",
+  "@diaryExportFormatEpubDescription": {
+    "description": "Export format description: EPUB e-book."
+  },
   "diaryExportFormatWord": "Word 文書",
   "@diaryExportFormatWord": {
     "description": "Export format name: Word document."

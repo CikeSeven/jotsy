@@ -60,6 +60,7 @@ DiaryExportLabels buildDiaryExportLabels(AppLocalizations l10n) {
 String diaryExportFormatName(AppLocalizations l10n, DiaryExportFormat format) {
   return switch (format) {
     DiaryExportFormat.pdf => l10n.diaryExportFormatPdf,
+    DiaryExportFormat.epub => l10n.diaryExportFormatEpub,
     DiaryExportFormat.word => l10n.diaryExportFormatWord,
     DiaryExportFormat.markdown => l10n.diaryExportFormatMarkdown,
     DiaryExportFormat.html => l10n.diaryExportFormatHtml,
@@ -75,6 +76,7 @@ String diaryExportFormatDescription(
 ) {
   return switch (format) {
     DiaryExportFormat.pdf => l10n.diaryExportFormatPdfDescription,
+    DiaryExportFormat.epub => l10n.diaryExportFormatEpubDescription,
     DiaryExportFormat.word => l10n.diaryExportFormatWordDescription,
     DiaryExportFormat.markdown => l10n.diaryExportFormatMarkdownDescription,
     DiaryExportFormat.html => l10n.diaryExportFormatHtmlDescription,

@@ -24,6 +24,14 @@ enum DiaryExportFormat {
     media: DiaryExportMediaSupport.images,
   ),
 
+  /// EPUB 电子书：文字随屏幕重排，在阅读器里按篇翻看，带目录；图片收进
+  /// 书里，录音、视频、附件写成一行名称。
+  epub(
+    extension: 'epub',
+    mimeType: 'application/epub+zip',
+    media: DiaryExportMediaSupport.images,
+  ),
+
   /// Word 文档，可继续编辑与排版打印。
   word(
     extension: 'docx',
@@ -208,22 +216,31 @@ class DiaryExportOptions {
 /// [file] 以便流式写入，不整段读进内存。
 @immutable
 class DiaryExportBundleFile {
-  const DiaryExportBundleFile.bytes(this.path, List<int> this.bytes)
-    : file = null;
+  const DiaryExportBundleFile.bytes(
+    this.path,
+    List<int> this.bytes, {
+    this.stored = false,
+  }) : file = null;
 
-  const DiaryExportBundleFile.file(this.path, File this.file) : bytes = null;
+  const DiaryExportBundleFile.file(this.path, File this.file)
+    : bytes = null,
+      stored = false;
 
   /// zip 内的相对路径（`/` 分隔）。
   final String path;
   final List<int>? bytes;
   final File? file;
+
+  /// 不压缩、原样存入：EPUB 的 `mimetype` 必须如此，阅读器只看文件开头的
+  /// 固定位置识别格式。
+  final bool stored;
 }
 
 /// 写出器产物：单个文件内容，或需要打包的多个文件。
 ///
-/// 打包产物默认是 zip；Word 文档本身就是 zip 容器，经 [containerExtension]
-/// 与 [containerMimeType] 指定为 `.docx`，由控制器流式写出，图片不整份
-/// 读进内存。
+/// 打包产物默认是 zip；Word 文档与 EPUB 本身就是 zip 容器，经
+/// [containerExtension] 与 [containerMimeType] 指定为 `.docx` / `.epub`，由
+/// 控制器按 [files] 的顺序流式写出，图片不整份读进内存。
 @immutable
 class DiaryExportOutput {
   const DiaryExportOutput.single(List<int> this.bytes)

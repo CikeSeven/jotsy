@@ -32,6 +32,17 @@ object WidgetOverlay {
     return if (mood.isEmpty()) fallback else WidgetMoodFace.MOODS.indexOf(mood).takeIf { it >= 0 }
   }
 
+  /** 桌面上刚勾选 / 取消的待办：true 已完成，false 恢复为未完成，null 没有更新的乐观值。 */
+  fun todoDone(overlay: JSONObject?, snapshot: WidgetSnapshot, todoId: String): Boolean? {
+    val entry = overlay?.optJSONObject("todos")?.optJSONObject(todoId) ?: return null
+    if (entry.optLong("at") <= snapshot.builtAt) return null
+    return entry.optBoolean("done")
+  }
+
+  /** 记下一次待办的乐观更新。 */
+  fun putTodo(context: Context, todoId: String, done: Boolean) =
+    put(context, "todos", todoId, JSONObject().put("done", done))
+
   fun read(preferences: SharedPreferences): JSONObject? =
     try {
       preferences.getString(KEY, null)?.let { JSONObject(it) }
@@ -39,19 +50,22 @@ object WidgetOverlay {
       null
     }
 
-  /** 记下一次乐观更新（[mood] 为空串表示取消）。 */
-  fun putMood(context: Context, day: String, mood: String) {
+  /** 记下一次心情的乐观更新（[mood] 为空串表示取消）。 */
+  fun putMood(context: Context, day: String, mood: String) =
+    put(context, "moods", day, JSONObject().put("m", mood))
+
+  /** 在 [group]（moods / todos）里记下 [key] 的新值，带上此刻；顺手删掉已被快照追上的旧条目。 */
+  private fun put(context: Context, group: String, key: String, value: JSONObject) {
     val preferences = WidgetState.homeWidgetPreferences(context)
     val snapshot = WidgetSnapshot.read(preferences)
     val root = read(preferences) ?: JSONObject()
-    val moods = root.optJSONObject("moods") ?: JSONObject()
-    // 顺手删掉已被快照追上的旧条目。
-    val stale = moods.keys().asSequence().filter {
-      (moods.optJSONObject(it)?.optLong("at") ?: 0L) <= snapshot.builtAt
+    val entries = root.optJSONObject(group) ?: JSONObject()
+    val stale = entries.keys().asSequence().filter {
+      (entries.optJSONObject(it)?.optLong("at") ?: 0L) <= snapshot.builtAt
     }.toList()
-    stale.forEach { moods.remove(it) }
-    moods.put(day, JSONObject().put("m", mood).put("at", System.currentTimeMillis()))
-    root.put("moods", moods)
+    stale.forEach { entries.remove(it) }
+    entries.put(key, value.put("at", System.currentTimeMillis()))
+    root.put(group, entries)
     preferences.edit().putString(KEY, root.toString()).apply()
   }
 }

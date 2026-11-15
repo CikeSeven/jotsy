@@ -20173,5 +20173,45 @@
   "homeWidgetMonthNext": "下个月",
   "@homeWidgetMonthNext": {
     "description": "心情月历：下个月按钮。"
+  },
+  "homeWidgetKindTodos": "待办清单",
+  "@homeWidgetKindTodos": {
+    "description": "小组件种类名：待办清单。"
+  },
+  "homeWidgetKindTodosDescription": "今天的待办或某个清单，在桌面上直接勾选完成。",
+  "@homeWidgetKindTodosDescription": {
+    "description": "组件库：待办清单的说明。"
+  },
+  "homeWidgetTodoView": "显示",
+  "@homeWidgetTodoView": {
+    "description": "待办小组件选项：显示哪些待办。"
+  },
+  "homeWidgetTodoViewList": "某个清单",
+  "@homeWidgetTodoViewList": {
+    "description": "待办小组件选项：显示某个清单。"
+  },
+  "homeWidgetTodoList": "清单",
+  "@homeWidgetTodoList": {
+    "description": "待办小组件选项：显示哪个清单。"
+  },
+  "homeWidgetTodoShowCompleted": "今天完成的",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "待办小组件选项：把今天完成的列在最后。"
+  },
+  "homeWidgetTodoShowCompletedHint": "划掉排在最后，点一下恢复为未完成。",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "待办小组件选项：今天完成的说明。"
+  },
+  "homeWidgetTodoShowDue": "截止日与时刻",
+  "@homeWidgetTodoShowDue": {
+    "description": "待办小组件选项：每行显示截止日与时刻。"
+  },
+  "homeWidgetTodoCheck": "标记为完成",
+  "@homeWidgetTodoCheck": {
+    "description": "待办小组件：勾选圆圈的说明。"
+  },
+  "homeWidgetTodoUncheck": "恢复为未完成",
+  "@homeWidgetTodoUncheck": {
+    "description": "待办小组件：已勾选圆圈的说明。"
   }
 }

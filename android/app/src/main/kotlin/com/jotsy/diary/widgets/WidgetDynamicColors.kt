@@ -36,6 +36,7 @@ object WidgetDynamicColors {
       "surfaceContainerHighest" to Triple(R.color.widget_dyn_surface_container_highest, R.color.widget_dyn_light_surface_container_highest, R.color.widget_dyn_dark_surface_container_highest),
       "outline" to Triple(R.color.widget_dyn_outline, R.color.widget_dyn_light_outline, R.color.widget_dyn_dark_outline),
       "outlineVariant" to Triple(R.color.widget_dyn_outline_variant, R.color.widget_dyn_light_outline_variant, R.color.widget_dyn_dark_outline_variant),
+      "error" to Triple(R.color.widget_dyn_error, R.color.widget_dyn_light_error, R.color.widget_dyn_dark_error),
       "errorContainer" to Triple(R.color.widget_dyn_error_container, R.color.widget_dyn_light_error_container, R.color.widget_dyn_dark_error_container),
       "onErrorContainer" to Triple(R.color.widget_dyn_on_error_container, R.color.widget_dyn_light_on_error_container, R.color.widget_dyn_dark_on_error_container),
     )

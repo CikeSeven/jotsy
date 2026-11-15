@@ -27,6 +27,9 @@ class _FakeData implements HomeWidgetDataSource {
     this.anniversaryRows = const <Anniversary>[],
     this.moods = const <String, DayMood>{},
     this.markers = const <DiaryCalendarMarker>[],
+    this.open = const <TodoRow>[],
+    this.completed = const <TodoRow>[],
+    this.lists = const <TodoListRow>[],
   });
 
   final int words;
@@ -35,6 +38,18 @@ class _FakeData implements HomeWidgetDataSource {
   final List<Anniversary> anniversaryRows;
   final Map<String, DayMood> moods;
   final List<DiaryCalendarMarker> markers;
+  final List<TodoRow> open;
+  final List<TodoRow> completed;
+  final List<TodoListRow> lists;
+
+  @override
+  Future<List<TodoRow>> openTodos() async => open;
+
+  @override
+  Future<List<TodoRow>> completedTodos() async => completed;
+
+  @override
+  Future<List<TodoListRow>> todoLists() async => lists;
 
   @override
   Future<List<Anniversary>> anniversaries() async => anniversaryRows;
@@ -272,6 +287,7 @@ void main() {
           InstalledHomeWidget(widgetId: 2, kind: HomeWidgetKind.quickCapture),
           InstalledHomeWidget(widgetId: 3, kind: HomeWidgetKind.anniversary),
           InstalledHomeWidget(widgetId: 4, kind: HomeWidgetKind.moodCalendar),
+          InstalledHomeWidget(widgetId: 5, kind: HomeWidgetKind.todos),
         ],
         features: const AppFeatures(todos: true, anniversaries: true),
       ),
@@ -329,4 +345,61 @@ _FakeData _fixtureData() => _FakeData(
         wordCount: 300,
       ),
   ],
+  open: <TodoRow>[
+    _todo('交房租', due: '2026-11-14', priority: 2),
+    _todo('给妈妈打电话', due: '2026-11-15', minute: 19 * 60 + 30),
+    _todo('跑步 5 公里', due: '2026-11-15', repeat: true, list: 'list-health'),
+    _todo('买菜', due: '2026-11-16'),
+    _todo('读完《额尔古纳河右岸》', list: 'list-reading'),
+    _todo('整理照片'),
+  ],
+  completed: <TodoRow>[
+    _todo('晨间日记', due: '2026-11-15', completedAt: DateTime(2026, 11, 15, 8)),
+    _todo('昨天的事', due: '2026-11-14', completedAt: DateTime(2026, 11, 14, 22)),
+  ],
+  lists: <TodoListRow>[_list('list-health', '健康'), _list('list-reading', '阅读')],
+);
+
+var _nextTodo = 0;
+
+TodoRow _todo(
+  String title, {
+  String? due,
+  int? minute,
+  int priority = 0,
+  bool repeat = false,
+  String? list,
+  DateTime? completedAt,
+}) {
+  final id = _nextTodo++;
+  return TodoRow(
+    id: id,
+    todoId: 'todo-$id',
+    listId: list,
+    title: title,
+    note: '',
+    priority: priority,
+    dueDate: due,
+    dueMinute: minute,
+    reminders: '[]',
+    repeat: repeat ? '{"freq":"daily"}' : null,
+    steps: '[]',
+    completedAt: completedAt,
+    sortOrder: 0,
+    metadata: '{}',
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  );
+}
+
+TodoListRow _list(String id, String name) => TodoListRow(
+  id: id.hashCode,
+  listId: id,
+  name: name,
+  colorKey: 'blue',
+  iconKey: 'list',
+  sortOrder: 0,
+  metadata: '{}',
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
 );

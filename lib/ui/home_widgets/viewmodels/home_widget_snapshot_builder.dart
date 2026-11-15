@@ -28,6 +28,7 @@ import 'home_widget_palette.dart';
 import 'home_widget_plurals.dart';
 import 'home_widget_snapshot_strings.dart';
 import 'home_widget_today_section.dart';
+import 'home_widget_todos_section.dart';
 
 /// 快照格式版本；原生遇到更高的版本时仍按认得的字段尽量绘制。
 const int kHomeWidgetSnapshotVersion = 1;
@@ -142,6 +143,14 @@ class HomeWidgetSnapshotBuilder {
           now: input.now,
           l10n: l10n,
           rows: await data.anniversaries(),
+        ),
+      if (kinds.contains(HomeWidgetKind.todos) && input.features.todos)
+        'todos': buildHomeWidgetTodosSection(
+          now: input.now,
+          l10n: l10n,
+          open: await data.openTodos(),
+          completed: await data.completedTodos(),
+          lists: await data.todoLists(),
         ),
       if (kinds.contains(HomeWidgetKind.moodCalendar) &&
           input.features.calendar)

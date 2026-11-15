@@ -40,6 +40,19 @@ Map<String, String> homeWidgetStringsOf(AppLocalizations l10n) =>
         'mood_${mood.name}': dayMoodLabel(l10n, mood),
       'monthPrevious': l10n.homeWidgetMonthPrevious,
       'monthNext': l10n.homeWidgetMonthNext,
+      'todoViewToday': l10n.todoViewToday,
+      'todoViewPlanned': l10n.todoViewPlanned,
+      'todoViewAll': l10n.todoViewAll,
+      'todoToday': l10n.todoDueToday,
+      'todoTomorrow': l10n.todoDueTomorrow,
+      'todoYesterday': l10n.todoDueYesterday,
+      'todoOverdue': l10n.todoGroupOverdue,
+      'todoEmptyToday': l10n.todoEmptyToday,
+      'todoEmpty': l10n.todoEmptyList,
+      'todoAllDone': l10n.todoHeroAllDone,
+      'todoAdd': l10n.homeWidgetQuickActionTodo,
+      'todoCheck': l10n.homeWidgetTodoCheck,
+      'todoUncheck': l10n.homeWidgetTodoUncheck,
     };
 
 /// 一个图标：字体族在 `FontManifest.json` 里的键与码位。
@@ -64,4 +77,8 @@ Map<String, Object?> homeWidgetIcons() => <String, Object?>{
   'pin': _icon(FontAwesomeIcons.thumbtack),
   'previous': _icon(FontAwesomeIcons.angleLeft),
   'next': _icon(FontAwesomeIcons.angleRight),
+  'unchecked': _icon(FontAwesomeIcons.circle),
+  'checked': _icon(FontAwesomeIcons.solidCircleCheck),
+  'plus': _icon(FontAwesomeIcons.plus),
+  'repeat': _icon(FontAwesomeIcons.arrowsRotate),
 };

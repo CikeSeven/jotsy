@@ -69,6 +69,9 @@
     <color name="widget_dyn_outline_variant">#C0C7CD</color>
     <color name="widget_dyn_light_outline_variant">#C0C7CD</color>
     <color name="widget_dyn_dark_outline_variant">#41484D</color>
+    <color name="widget_dyn_error">#B3261E</color>
+    <color name="widget_dyn_light_error">#B3261E</color>
+    <color name="widget_dyn_dark_error">#F2B8B5</color>
     <color name="widget_dyn_error_container">#F9DEDC</color>
     <color name="widget_dyn_light_error_container">#F9DEDC</color>
     <color name="widget_dyn_dark_error_container">#8C1D18</color>

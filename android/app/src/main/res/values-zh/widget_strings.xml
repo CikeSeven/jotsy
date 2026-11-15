@@ -10,4 +10,6 @@
     <string name="widget_anniversary_description">一个日子的大号倒数，或接下来几个日子的列表。</string>
     <string name="widget_mood_calendar_name">心情月历</string>
     <string name="widget_mood_calendar_description">一眼看完这个月：每天的心情，和写过日记的日子。</string>
+    <string name="widget_todos_name">待办清单</string>
+    <string name="widget_todos_description">今天的待办或某个清单，在桌面上直接勾选完成。</string>
 </resources>

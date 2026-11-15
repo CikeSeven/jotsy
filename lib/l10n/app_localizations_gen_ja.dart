@@ -15752,4 +15752,35 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetMonthNext => '次の月';
+
+  @override
+  String get homeWidgetKindTodos => 'ToDo リスト';
+
+  @override
+  String get homeWidgetKindTodosDescription =>
+      '今日の ToDo や任意のリスト。ホーム画面でそのままチェック。';
+
+  @override
+  String get homeWidgetTodoView => '表示';
+
+  @override
+  String get homeWidgetTodoViewList => 'リスト';
+
+  @override
+  String get homeWidgetTodoList => 'リスト';
+
+  @override
+  String get homeWidgetTodoShowCompleted => '今日完了したもの';
+
+  @override
+  String get homeWidgetTodoShowCompletedHint => '取り消し線を付けて最後に表示。タップで未完了に戻せます。';
+
+  @override
+  String get homeWidgetTodoShowDue => '期限と時刻';
+
+  @override
+  String get homeWidgetTodoCheck => '完了にする';
+
+  @override
+  String get homeWidgetTodoUncheck => '未完了に戻す';
 }

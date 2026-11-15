@@ -8,6 +8,8 @@ import com.jotsy.diary.widgets.kinds.QuickCaptureWidget
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidgetReceiver
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import com.jotsy.diary.widgets.kinds.TodayWidgetReceiver
+import com.jotsy.diary.widgets.kinds.TodosWidget
+import com.jotsy.diary.widgets.kinds.TodosWidgetReceiver
 
 /**
  * 小组件种类的登记表：种类 id（Dart `HomeWidgetKind.id`）↔ Glance 小组件 ↔ 接收器。
@@ -20,6 +22,7 @@ object WidgetKinds {
       TodayWidget.KIND to TodayWidgetReceiver::class.java.name,
       AnniversaryWidget.KIND to AnniversaryWidgetReceiver::class.java.name,
       MoodCalendarWidget.KIND to MoodCalendarWidgetReceiver::class.java.name,
+      TodosWidget.KIND to TodosWidgetReceiver::class.java.name,
     )
 
   /** 预览用：按种类 id 新建一个 Glance 小组件；认不出时为 null。 */
@@ -29,6 +32,7 @@ object WidgetKinds {
       TodayWidget.KIND -> TodayWidget()
       AnniversaryWidget.KIND -> AnniversaryWidget()
       MoodCalendarWidget.KIND -> MoodCalendarWidget()
+      TodosWidget.KIND -> TodosWidget()
       else -> null
     }
 

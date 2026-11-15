@@ -15494,4 +15494,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetMonthNext => '下个月';
+
+  @override
+  String get homeWidgetKindTodos => '待办清单';
+
+  @override
+  String get homeWidgetKindTodosDescription => '今天的待办或某个清单，在桌面上直接勾选完成。';
+
+  @override
+  String get homeWidgetTodoView => '显示';
+
+  @override
+  String get homeWidgetTodoViewList => '某个清单';
+
+  @override
+  String get homeWidgetTodoList => '清单';
+
+  @override
+  String get homeWidgetTodoShowCompleted => '今天完成的';
+
+  @override
+  String get homeWidgetTodoShowCompletedHint => '划掉排在最后，点一下恢复为未完成。';
+
+  @override
+  String get homeWidgetTodoShowDue => '截止日与时刻';
+
+  @override
+  String get homeWidgetTodoCheck => '标记为完成';
+
+  @override
+  String get homeWidgetTodoUncheck => '恢复为未完成';
 }

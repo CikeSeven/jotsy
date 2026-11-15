@@ -20173,5 +20173,45 @@
   "homeWidgetMonthNext": "Next month",
   "@homeWidgetMonthNext": {
     "description": "Mood calendar widget: button to the next month."
+  },
+  "homeWidgetKindTodos": "To-do list",
+  "@homeWidgetKindTodos": {
+    "description": "Widget kind name: to-do list."
+  },
+  "homeWidgetKindTodosDescription": "Today's to-dos or any list. Check them off right on the home screen.",
+  "@homeWidgetKindTodosDescription": {
+    "description": "Widget gallery: description of the to-do list widget."
+  },
+  "homeWidgetTodoView": "Show",
+  "@homeWidgetTodoView": {
+    "description": "To-do widget option: which to-dos to show."
+  },
+  "homeWidgetTodoViewList": "A list",
+  "@homeWidgetTodoViewList": {
+    "description": "To-do widget option: show one list."
+  },
+  "homeWidgetTodoList": "List",
+  "@homeWidgetTodoList": {
+    "description": "To-do widget option: which list to show."
+  },
+  "homeWidgetTodoShowCompleted": "Done today",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "To-do widget option: keep today's completed to-dos at the end."
+  },
+  "homeWidgetTodoShowCompletedHint": "Crossed out at the end. Tap one to bring it back.",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "To-do widget option: hint for the done-today option."
+  },
+  "homeWidgetTodoShowDue": "Due date and time",
+  "@homeWidgetTodoShowDue": {
+    "description": "To-do widget option: show due date and time on each row."
+  },
+  "homeWidgetTodoCheck": "Mark as done",
+  "@homeWidgetTodoCheck": {
+    "description": "To-do widget: description of the check circle."
+  },
+  "homeWidgetTodoUncheck": "Mark as not done",
+  "@homeWidgetTodoUncheck": {
+    "description": "To-do widget: description of a checked circle."
   }
 }

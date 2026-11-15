@@ -67,6 +67,12 @@ Map<String, Object?> homeWidgetNativeConfig(
         'id': ?content.anniversaryId,
         'date': content.showDate,
       },
+      final TodoListContent content => <String, Object?>{
+        'view': content.view.name,
+        'list': ?content.listId,
+        'completed': content.showCompleted,
+        'due': content.showDue,
+      },
       final MoodCalendarContent content => <String, Object?>{
         'moods': content.showMoods,
         'written': content.showWritten,

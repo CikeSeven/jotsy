@@ -30,7 +30,15 @@ sealed class HomeWidgetLaunch {
           notebookId: notebook == null || notebook.isEmpty ? null : notebook,
         );
       case 'todo-new':
-        return const HomeWidgetNewTodoLaunch();
+        final list = query['list'];
+        return HomeWidgetNewTodoLaunch(
+          listId: list == null || list.isEmpty ? null : list,
+        );
+      case 'todo':
+        final id = query['id'];
+        return id == null || id.isEmpty
+            ? const HomeWidgetOpenAppLaunch()
+            : HomeWidgetTodoLaunch(todoId: id);
       case 'calendar':
         return HomeWidgetCalendarLaunch(day: _parseDay(query['day']));
       case 'search':
@@ -81,9 +89,18 @@ class HomeWidgetWriteLaunch extends HomeWidgetLaunch {
   final String? notebookId;
 }
 
-/// 新建待办。
+/// 新建待办；[listId] 为预先选好的清单。
 class HomeWidgetNewTodoLaunch extends HomeWidgetLaunch {
-  const HomeWidgetNewTodoLaunch();
+  const HomeWidgetNewTodoLaunch({this.listId});
+
+  final String? listId;
+}
+
+/// 打开一条待办的详情。
+class HomeWidgetTodoLaunch extends HomeWidgetLaunch {
+  const HomeWidgetTodoLaunch({required this.todoId});
+
+  final String todoId;
 }
 
 /// 打开日历，选中 [day]（null 为今天）。

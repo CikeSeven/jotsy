@@ -141,7 +141,20 @@
     "mood_good": "不错",
     "mood_great": "超棒",
     "monthPrevious": "上个月",
-    "monthNext": "下个月"
+    "monthNext": "下个月",
+    "todoViewToday": "今天",
+    "todoViewPlanned": "计划",
+    "todoViewAll": "全部",
+    "todoToday": "今天",
+    "todoTomorrow": "明天",
+    "todoYesterday": "昨天",
+    "todoOverdue": "已逾期",
+    "todoEmptyToday": "今天没有要做的事",
+    "todoEmpty": "这里还没有待办",
+    "todoAllDone": "今天的事都做完了",
+    "todoAdd": "新待办",
+    "todoCheck": "标记为完成",
+    "todoUncheck": "恢复为未完成"
   },
   "plurals": {
     "daysToGo": {
@@ -205,6 +218,22 @@
     "next": {
       "f": "packages/font_awesome_flutter/FontAwesomeSolid",
       "c": 61701
+    },
+    "unchecked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61713
+    },
+    "checked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61528
+    },
+    "plus": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 43
+    },
+    "repeat": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61473
     }
   },
   "instances": {
@@ -290,6 +319,25 @@
         "written": true,
         "holiday": true
       }
+    },
+    "5": {
+      "kind": "todos",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "view": "today",
+        "completed": true,
+        "due": true
+      }
     }
   },
   "defaults": {
@@ -374,6 +422,25 @@
         "moods": true,
         "written": true,
         "holiday": true
+      }
+    },
+    "todos": {
+      "kind": "todos",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "view": "today",
+        "completed": true,
+        "due": true
       }
     }
   },
@@ -599,6 +666,58 @@
       "occurrences": []
     }
   ],
+  "todos": {
+    "lists": {
+      "list-health": "健康",
+      "list-reading": "阅读"
+    },
+    "open": [
+      {
+        "id": "todo-0",
+        "title": "交房租",
+        "due": "2026-11-14",
+        "dueLabel": "11月14日",
+        "priority": 2
+      },
+      {
+        "id": "todo-2",
+        "title": "跑步 5 公里",
+        "due": "2026-11-15",
+        "dueLabel": "11月15日",
+        "list": "list-health",
+        "repeat": true
+      },
+      {
+        "id": "todo-1",
+        "title": "给妈妈打电话",
+        "due": "2026-11-15",
+        "dueLabel": "11月15日",
+        "time": "19:30"
+      },
+      {
+        "id": "todo-3",
+        "title": "买菜",
+        "due": "2026-11-16",
+        "dueLabel": "11月16日"
+      },
+      {
+        "id": "todo-5",
+        "title": "整理照片"
+      },
+      {
+        "id": "todo-4",
+        "title": "读完《额尔古纳河右岸》",
+        "list": "list-reading"
+      }
+    ],
+    "done": [
+      {
+        "id": "todo-6",
+        "title": "晨间日记",
+        "due": "2026-11-15"
+      }
+    ]
+  },
   "calendar": {
     "firstWeekday": 1,
     "weekdays": [

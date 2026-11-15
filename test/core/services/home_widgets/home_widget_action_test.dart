@@ -71,6 +71,62 @@ void main() {
       expect(await moods(), isEmpty);
     });
 
+    Future<String> addTodo({String? due}) => database.createTodo(
+      TodoInput(
+        title: '交房租',
+        dueDate: due == null ? null : parseAnniversaryDate(due),
+      ),
+    );
+
+    test(
+      'completes the occurrence the widget showed, then reopens it',
+      () async {
+        final id = await addTodo(due: '2026-11-15');
+        expect(
+          await applyHomeWidgetAction(
+            database,
+            HomeWidgetCompleteTodoAction(todoId: id, occurrence: '2026-11-15'),
+          ),
+          isTrue,
+        );
+        expect((await database.getTodo(id))!.completedAt, isNotNull);
+        expect(
+          await applyHomeWidgetAction(
+            database,
+            HomeWidgetReopenTodoAction(todoId: id),
+          ),
+          isTrue,
+        );
+        expect((await database.getTodo(id))!.completedAt, isNull);
+      },
+    );
+
+    test('a stale occurrence is not completed again', () async {
+      final id = await addTodo(due: '2026-11-16');
+      expect(
+        await applyHomeWidgetAction(
+          database,
+          HomeWidgetCompleteTodoAction(todoId: id, occurrence: '2026-11-15'),
+        ),
+        isFalse,
+      );
+      expect((await database.getTodo(id))!.completedAt, isNull);
+    });
+
+    test('parses the to-do links', () {
+      final complete =
+          HomeWidgetAction.parse(
+                Uri.parse('jotsy://widget-action/todo-complete?id=t1&due='),
+              )!
+              as HomeWidgetCompleteTodoAction;
+      expect(complete.todoId, 't1');
+      expect(complete.occurrence, isNull);
+      expect(
+        HomeWidgetAction.parse(Uri.parse('jotsy://widget-action/todo-reopen')),
+        isNull,
+      );
+    });
+
     test('clearing a day without a mood writes nothing', () async {
       expect(
         await applyHomeWidgetAction(

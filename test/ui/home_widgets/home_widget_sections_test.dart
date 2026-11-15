@@ -9,6 +9,7 @@ import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_anniversary_section.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_month_section.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_plurals.dart';
+import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_todos_section.dart';
 
 import '../../support/anniversary_fixtures.dart';
 
@@ -89,6 +90,77 @@ void main() {
       final first = (items.single['occurrences']! as List).first as Map;
       expect(first['date'], '2026-11-15');
       expect(first['todayLabel'], '今天是第 58 周年');
+    });
+  });
+
+  group('todos', () {
+    TodoRow todo(
+      String id, {
+      String? due,
+      int? minute,
+      int priority = 0,
+      DateTime? completedAt,
+    }) => TodoRow(
+      id: id.hashCode,
+      todoId: id,
+      title: id,
+      note: '',
+      priority: priority,
+      dueDate: due,
+      dueMinute: minute,
+      reminders: '[]',
+      steps: '[]',
+      completedAt: completedAt,
+      sortOrder: 0,
+      metadata: '{}',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+
+    test('orders by due date, all-day first, then time and priority', () {
+      final section = buildHomeWidgetTodosSection(
+        now: now,
+        l10n: l10n('zh'),
+        open: <TodoRow>[
+          todo('no-date'),
+          todo('evening', due: '2026-11-15', minute: 19 * 60),
+          todo('all-day', due: '2026-11-15'),
+          todo('overdue', due: '2026-11-10'),
+          todo(
+            'urgent-evening',
+            due: '2026-11-15',
+            minute: 19 * 60,
+            priority: 3,
+          ),
+        ],
+        completed: const <TodoRow>[],
+        lists: const <TodoListRow>[],
+      );
+      expect(
+        (section['open']! as List).map((item) => (item as Map)['id']),
+        <String>['overdue', 'all-day', 'urgent-evening', 'evening', 'no-date'],
+      );
+      final evening = (section['open']! as List)[3] as Map;
+      expect(evening['time'], '19:00');
+      expect(evening['dueLabel'], '11月15日');
+    });
+
+    test('only today\'s completed to-dos, newest first', () {
+      final section = buildHomeWidgetTodosSection(
+        now: now,
+        l10n: l10n('zh'),
+        open: const <TodoRow>[],
+        completed: <TodoRow>[
+          todo('morning', completedAt: DateTime(2026, 11, 15, 8)),
+          todo('yesterday', completedAt: DateTime(2026, 11, 14, 23)),
+          todo('noon', completedAt: DateTime(2026, 11, 15, 12)),
+        ],
+        lists: const <TodoListRow>[],
+      );
+      expect(
+        (section['done']! as List).map((item) => (item as Map)['id']),
+        <String>['noon', 'morning'],
+      );
     });
   });
 

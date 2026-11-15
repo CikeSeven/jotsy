@@ -18469,4 +18469,36 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeWidgetMonthNext => 'Следующий месяц';
+
+  @override
+  String get homeWidgetKindTodos => 'Список задач';
+
+  @override
+  String get homeWidgetKindTodosDescription =>
+      'Задачи на сегодня или любой список. Отмечайте их прямо на главном экране.';
+
+  @override
+  String get homeWidgetTodoView => 'Показывать';
+
+  @override
+  String get homeWidgetTodoViewList => 'Список';
+
+  @override
+  String get homeWidgetTodoList => 'Список';
+
+  @override
+  String get homeWidgetTodoShowCompleted => 'Выполненные сегодня';
+
+  @override
+  String get homeWidgetTodoShowCompletedHint =>
+      'Зачёркнуты и стоят в конце. Нажмите, чтобы вернуть.';
+
+  @override
+  String get homeWidgetTodoShowDue => 'Срок и время';
+
+  @override
+  String get homeWidgetTodoCheck => 'Отметить выполненной';
+
+  @override
+  String get homeWidgetTodoUncheck => 'Вернуть в работу';
 }

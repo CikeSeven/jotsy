@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:pdf/widgets.dart' as pw;
 
+import 'diary_export_pdf_emoji.dart';
+
 /// PDF 正文里中日韩文字的断行：配合 pdf 库 [pw.RichText] 的 `lineSplitter`。
 ///
 /// 为什么需要：pdf 库按空白切词，只在词与词之间换行。整段没有空格的中文是
@@ -24,10 +26,43 @@ import 'package:pdf/widgets.dart' as pw;
 
 /// 一段文字的 PDF 片段：含中日韩文字时拆成子片段（见文件注释），否则就是
 /// 一个普通片段。[baseline] 不会被子片段继承，逐个写上。
+///
+/// 给了 [emoji] 时，其中的 emoji 先切出来画成图片（[DiaryPdfEmoji.span]），
+/// 其余文字照上面拆分；没有 emoji 的文字与不给时完全相同。
 pw.TextSpan diaryPdfTextSpan(
   String text, {
   required pw.TextStyle style,
   double baseline = 0,
+  pw.AnnotationBuilder? annotation,
+  DiaryPdfEmoji? emoji,
+}) {
+  final parts = emoji?.split(text);
+  if (parts == null) {
+    return _textSpan(
+      text,
+      style: style,
+      baseline: baseline,
+      annotation: annotation,
+    );
+  }
+  return pw.TextSpan(
+    style: style,
+    baseline: baseline,
+    annotation: annotation,
+    children: <pw.InlineSpan>[
+      for (final (part, isEmoji) in parts)
+        isEmoji
+            ? emoji!.span(part, style: style, baseline: baseline)
+            : _textSpan(part, style: style, baseline: baseline),
+    ],
+  );
+}
+
+/// 不含 emoji 的一段文字（见 [diaryPdfTextSpan]）。
+pw.TextSpan _textSpan(
+  String text, {
+  required pw.TextStyle style,
+  required double baseline,
   pw.AnnotationBuilder? annotation,
 }) {
   final segments = _segments(text);

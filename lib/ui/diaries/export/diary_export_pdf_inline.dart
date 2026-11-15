@@ -7,7 +7,8 @@ import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 行内样式：把共用块模型的文字、颜色、装饰和链接叠到当前段落字阶。
-/// 不改正文，不读取设置；字体回退与绘制补粗由 DiaryPdfTextEffects 负责。
+/// 不改正文，不读取设置；字体回退、绘制补粗与 emoji 图片由
+/// DiaryPdfTextEffects 负责。
 pw.TextSpan buildDiaryPdfInline(
   ExportInline run,
   pw.TextStyle base, {
@@ -70,11 +71,13 @@ pw.TextSpan buildDiaryPdfInline(
     isItalic: italic,
     isCodeBlock: isCodeBlock,
   );
-  // 含中日韩文字时拆成可逐字断行的子片段（见 diaryPdfLineSplitter）。
+  // 含中日韩文字时拆成可逐字断行的子片段（见 diaryPdfLineSplitter），
+  // emoji 画成图片（见 DiaryPdfEmoji）。
   return diaryPdfTextSpan(
     run.text,
     style: style,
     baseline: baseline,
     annotation: run.link == null ? null : pw.AnnotationUrl(run.link!),
+    emoji: effects.emoji,
   );
 }

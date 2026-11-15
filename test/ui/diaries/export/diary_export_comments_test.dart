@@ -90,7 +90,7 @@ void main() {
   });
 
   group('labels', () {
-    test('meta line shares one wording; mood can be left out', () {
+    test('meta line shares one wording; the text starts with the mood', () {
       final e = entry(withComments: comments);
       expect(
         testExportLabels.commentMetaLine(e, comments[0]),
@@ -101,10 +101,6 @@ void main() {
         '当天写下 · 4-3 22:00',
       );
       expect(testExportLabels.commentText(comments[0]), startsWith('😀 第一行'));
-      expect(
-        testExportLabels.commentText(comments[0], includeMood: false),
-        startsWith('第一行'),
-      );
     });
 
     test('app labels use the relative label and the full date', () async {

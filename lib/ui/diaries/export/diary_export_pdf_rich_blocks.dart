@@ -3,11 +3,16 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../core/database/diary_blocks/diary_blocks_schema.dart'
+    show kDiaryCalloutDefaultIcon;
 import '../models/diary_callout_tone.dart';
 import '../models/diary_thumbnail_rows.dart';
+import '../widgets/diary_editor/diary_callout_block.dart'
+    show kDiaryCalloutIconGap;
 import 'diary_export_blocks.dart';
 import 'diary_export_image_box.dart';
 import 'diary_export_media.dart';
+import 'diary_export_pdf_emoji.dart';
 import 'diary_export_pdf_inline.dart';
 import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
@@ -19,7 +24,8 @@ import 'diary_export_pdf_text_effects.dart';
 ///   排好的行内文字；
 /// - 输出：可交给 `MultiPage` 的组件，不做 IO、不读设置；
 /// - 只画矢量形状与文字，不依赖字体里的符号字形：内置的 HarmonyOS Sans SC
-///   没有 emoji，也没有 ▸ 这类几何符号，写成文字会印成方框。
+///   没有 ▸ 这类几何符号，写成文字会印成方框；emoji（标注的图标）经
+///   [DiaryPdfEmoji] 画成图片。
 
 /// 正文图片：尺寸、小图与对齐与应用一致（口径见 [ExportImageBox]，逻辑
 /// 像素按 96 DPI 折成磅）。原图比版心宽时按比例缩到版心宽，比一页的图片
@@ -134,10 +140,34 @@ pw.Widget _placePdfImage(
 /// 标注：圆角浅色底，左侧一条强调色竖条，颜色只取 [DiaryCalloutTone] 的
 /// 纸面配色（导出纸面恒为白底）。
 ///
-/// 不画标注的图标：图标是 emoji，内置字体没有 emoji 字形（会印成方框并
-/// 在排版时报缺字），底色与色条已经足以把它和正文区分开。
-pw.Widget buildDiaryPdfCallout(ExportBlock block, pw.Widget text) {
+/// 与应用一样，行首是标注的图标（缺省 [kDiaryCalloutDefaultIcon]），按正文
+/// 字号 [base] 画，隔 [kDiaryCalloutIconGap] 接文字；对齐只作用于文字，图标
+/// 始终在起始侧。图标是 emoji，经 [emoji] 画成图片；没给 [emoji] 时不画图标
+/// （写成文字只会印成方框）。
+pw.Widget buildDiaryPdfCallout(
+  ExportBlock block,
+  pw.Widget text, {
+  required pw.TextStyle base,
+  required pw.TextDirection textDirection,
+  DiaryPdfEmoji? emoji,
+}) {
   final tone = DiaryCalloutTone.fromId(block.calloutTone);
+  final icon = block.calloutIcon ?? kDiaryCalloutDefaultIcon;
+  final content = emoji == null || icon.trim().isEmpty
+      ? text
+      : pw.Directionality(
+          textDirection: textDirection,
+          child: pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: <pw.Widget>[
+              pw.RichText(
+                text: diaryPdfTextSpan(icon, style: base, emoji: emoji),
+              ),
+              pw.SizedBox(width: kDiaryCalloutIconGap * _pt),
+              pw.Expanded(child: text),
+            ],
+          ),
+        );
   // 竖条用 Positioned 贴住左缘、上下撑满，再整体按圆角裁切：pdf 库的
   // 圆角边框只支持四边相同，不能直接画“只有左边”的粗边。
   return pw.ClipRRect(
@@ -152,7 +182,7 @@ pw.Widget buildDiaryPdfCallout(ExportBlock block, pw.Widget text) {
             width: double.infinity,
             child: pw.Padding(
               padding: const pw.EdgeInsets.fromLTRB(13, 6, 10, 6),
-              child: text,
+              child: content,
             ),
           ),
           pw.Positioned(

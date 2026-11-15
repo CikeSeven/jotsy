@@ -17,7 +17,11 @@ import '../../app/theme/expressive_motion.dart';
 /// - 松手：越过阈值（视口高度的 15%）或沿拖动方向快速甩动即关闭，内容停在松手
 ///   处，交给路由淡出与 Hero 飞回；否则以 spatial 弹簧回位；
 /// - 纵向拖动识别器的触发阈值（18）小于 InteractiveViewer 的平移阈值（36），未放大
-///   时竖向拖动由这里接管，水平拖动仍属于外层 PageView 翻页。
+///   时竖向拖动由这里接管，水平拖动仍属于外层 PageView 翻页；
+/// - 双指只用于缩放：拖动还没开始时第二根手指落下，捏合识别器
+///   （PinchZoomGestureRecognizer）直接胜出，这里不会开始；已经在下拉时第二根
+///   手指落下（用户改主意要捏合），本次下拉作废、内容回位，松手也不关闭。
+///   手指数取自原始指针事件（[Listener]），不经手势竞技场。
 class SwipeDismissViewer extends StatefulWidget {
   const SwipeDismissViewer({
     super.key,
@@ -58,13 +62,25 @@ class _SwipeDismissViewerState extends State<SwipeDismissViewer>
   bool _armed = false;
   bool _dismissed = false;
 
+  /// 屏幕上按着的手指数。
+  int _pointers = 0;
+
+  /// 正在下拉（拖动开始到结束 / 取消之间）。
+  bool _dragging = false;
+
+  /// 本次下拉因第二根手指落下而作废：不再跟手，松手不关闭。
+  bool _abandoned = false;
+
   double get _threshold => _extent * _thresholdFraction;
 
   @override
   void didUpdateWidget(covariant SwipeDismissViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 拖动途中开始缩放（第二根手指落下）会关闭本手势，内容需要回位。
+    // 关闭（内容放大、进入长图）时识别器被撤下，不会再收到结束回调：
+    // 清掉拖动状态，内容回位。
     if (oldWidget.enabled && !widget.enabled && !_dismissed) {
+      _dragging = false;
+      _abandoned = false;
       _settleBack();
     }
   }
@@ -83,10 +99,26 @@ class _SwipeDismissViewerState extends State<SwipeDismissViewer>
 
   void _handleDragStart(DragStartDetails details) {
     _settle.stop();
+    _dragging = true;
+    _abandoned = _pointers > 1;
+  }
+
+  void _handlePointerDown(PointerDownEvent event) {
+    _pointers++;
+    if (_dragging && !_abandoned && !_dismissed && _pointers > 1) {
+      _abandoned = true;
+      _settleBack();
+    }
+  }
+
+  void _handlePointerUp(PointerEvent event) {
+    if (_pointers > 0) {
+      _pointers--;
+    }
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
-    if (_dismissed) {
+    if (_dismissed || _abandoned) {
       return;
     }
     _offset.value += details.delta.dy;
@@ -102,6 +134,12 @@ class _SwipeDismissViewerState extends State<SwipeDismissViewer>
   }
 
   void _handleDragEnd(DragEndDetails details) {
+    _dragging = false;
+    if (_abandoned) {
+      // 作废时已经开始回位，这里不再处理。
+      _abandoned = false;
+      return;
+    }
     if (_dismissed) {
       return;
     }
@@ -120,7 +158,10 @@ class _SwipeDismissViewerState extends State<SwipeDismissViewer>
   }
 
   void _handleDragCancel() {
-    if (!_dismissed) {
+    _dragging = false;
+    final abandoned = _abandoned;
+    _abandoned = false;
+    if (!_dismissed && !abandoned) {
       _settleBack();
     }
   }
@@ -150,31 +191,37 @@ class _SwipeDismissViewerState extends State<SwipeDismissViewer>
         _extent = constraints.maxHeight.isFinite && constraints.maxHeight > 0
             ? constraints.maxHeight
             : MediaQuery.sizeOf(context).height;
-        return GestureDetector(
-          onVerticalDragStart: enabled ? _handleDragStart : null,
-          onVerticalDragUpdate: enabled ? _handleDragUpdate : null,
-          onVerticalDragEnd: enabled ? _handleDragEnd : null,
-          onVerticalDragCancel: enabled ? _handleDragCancel : null,
-          child: ValueListenableBuilder<double>(
-            valueListenable: _offset,
-            child: widget.child,
-            builder: (BuildContext context, double offset, Widget? child) {
-              final distance = offset.abs();
-              final scale =
-                  1 -
-                  (1 - _minScale) *
-                      (distance / (_extent * 0.5)).clamp(0.0, 1.0);
-              final chromeOpacity =
-                  1 - (distance / (_extent * 0.35)).clamp(0.0, 1.0);
-              // 结构恒定：静止时是单位矩阵，RenderTransform 不会额外推图层。
-              final content = Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.translationValues(0, offset, 0)
-                  ..scaleByDouble(scale, scale, 1, 1),
-                child: child,
-              );
-              return widget.builder(context, chromeOpacity, content);
-            },
+        // 结构恒定：enabled 切换只改回调，Listener 一直数手指。
+        return Listener(
+          onPointerDown: _handlePointerDown,
+          onPointerUp: _handlePointerUp,
+          onPointerCancel: _handlePointerUp,
+          child: GestureDetector(
+            onVerticalDragStart: enabled ? _handleDragStart : null,
+            onVerticalDragUpdate: enabled ? _handleDragUpdate : null,
+            onVerticalDragEnd: enabled ? _handleDragEnd : null,
+            onVerticalDragCancel: enabled ? _handleDragCancel : null,
+            child: ValueListenableBuilder<double>(
+              valueListenable: _offset,
+              child: widget.child,
+              builder: (BuildContext context, double offset, Widget? child) {
+                final distance = offset.abs();
+                final scale =
+                    1 -
+                    (1 - _minScale) *
+                        (distance / (_extent * 0.5)).clamp(0.0, 1.0);
+                final chromeOpacity =
+                    1 - (distance / (_extent * 0.35)).clamp(0.0, 1.0);
+                // 结构恒定：静止时是单位矩阵，RenderTransform 不会额外推图层。
+                final content = Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.translationValues(0, offset, 0)
+                    ..scaleByDouble(scale, scale, 1, 1),
+                  child: child,
+                );
+                return widget.builder(context, chromeOpacity, content);
+              },
+            ),
           ),
         );
       },

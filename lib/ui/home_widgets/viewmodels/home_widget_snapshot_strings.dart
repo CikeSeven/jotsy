@@ -12,7 +12,9 @@
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../core/database/app_database.dart' show DayMood;
 import '../../../l10n/app_localizations.dart';
+import '../../calendar/widgets/day_mood_face.dart' show dayMoodLabel;
 
 /// 原生取用的文案（键名与 `WidgetStrings.kt` 一致）。
 Map<String, String> homeWidgetStringsOf(AppLocalizations l10n) =>
@@ -30,6 +32,14 @@ Map<String, String> homeWidgetStringsOf(AppLocalizations l10n) =>
       'yearProgress': l10n.homeWidgetYearProgress('%s'),
       'featureOff': l10n.homeWidgetFeatureOff,
       'openToUpdate': l10n.homeWidgetOpenToUpdate,
+      'isToday': l10n.anniversaryIsToday,
+      'anniversaryTitle': l10n.anniversaryListTitle,
+      'anniversaryEmpty': l10n.homeWidgetAnniversaryEmpty,
+      'moodPrompt': l10n.homeWidgetTodayMoodPrompt,
+      for (final mood in DayMood.values)
+        'mood_${mood.name}': dayMoodLabel(l10n, mood),
+      'monthPrevious': l10n.homeWidgetMonthPrevious,
+      'monthNext': l10n.homeWidgetMonthNext,
     };
 
 /// 一个图标：字体族在 `FontManifest.json` 里的键与码位。
@@ -49,4 +59,9 @@ Map<String, Object?> homeWidgetIcons() => <String, Object?>{
   'words': _icon(FontAwesomeIcons.featherPointed),
   'list': _icon(FontAwesomeIcons.listCheck),
   'leaf': _icon(FontAwesomeIcons.leaf),
+  'anniversary': _icon(FontAwesomeIcons.solidHeart),
+  'countdown': _icon(FontAwesomeIcons.solidFlag),
+  'pin': _icon(FontAwesomeIcons.thumbtack),
+  'previous': _icon(FontAwesomeIcons.angleLeft),
+  'next': _icon(FontAwesomeIcons.angleRight),
 };

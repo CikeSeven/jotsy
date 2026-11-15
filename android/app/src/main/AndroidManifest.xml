@@ -93,6 +93,37 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info_today" />
         </receiver>
+        <receiver
+            android:name=".widgets.kinds.AnniversaryWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_anniversary_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_anniversary" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.MoodCalendarWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_mood_calendar_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_mood_calendar" />
+        </receiver>
+        <!-- 桌面上的操作（点心情脸等）交给 Dart 的后台回调写库。只接受本应用发出的
+             显式广播（不导出），其他应用不能借它改数据。 -->
+        <receiver
+            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+            </intent-filter>
+        </receiver>
         <!-- 小组件的定时重画（之后几天的零点与问候时段）：闹钟到点由它广播刷新，开机 /
              更新后重新排上。 -->
         <receiver

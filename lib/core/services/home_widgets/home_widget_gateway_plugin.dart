@@ -8,6 +8,7 @@
 // 运行时平台判断留在原生通道旁（AppPlatform 的约定）：widget 测试的目标平台
 // 默认是 Android，但宿主上没有这个插件，各方法在那里是空操作。
 
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
@@ -87,6 +88,14 @@ class PluginHomeWidgetGateway implements HomeWidgetGateway {
   Future<Uri?> initialLaunch() async {
     if (!_available) return null;
     return HomeWidget.initiallyLaunchedFromHomeWidget();
+  }
+
+  @override
+  Future<void> registerBackgroundCallback(
+    FutureOr<void> Function(Uri? uri) callback,
+  ) async {
+    if (!_available) return;
+    await HomeWidget.registerInteractivityCallback(callback);
   }
 
   @override

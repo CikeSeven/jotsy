@@ -4,6 +4,8 @@
 // 插件实现见 `home_widget_gateway_plugin.dart`（home_widget，只在 Android
 // 上有意义，见 `AppPlatform.supportsHomeWidgets`）。
 
+import 'dart:async';
+
 import 'home_widget_kind.dart';
 
 /// 桌面上的一个实例。
@@ -49,4 +51,11 @@ abstract class HomeWidgetGateway {
 
   /// 应用已在运行时点小组件带来的链接。
   Stream<Uri> get launches;
+
+  /// 登记桌面上的操作（不打开应用就完成的点按）交给哪个 Dart 函数处理。
+  /// [callback] 必须是顶层函数并标 `vm:entry-point`：应用没在运行时由后台
+  /// 引擎调用。
+  Future<void> registerBackgroundCallback(
+    FutureOr<void> Function(Uri? uri) callback,
+  );
 }

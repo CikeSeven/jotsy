@@ -59,4 +59,12 @@ class FakeHomeWidgetGateway implements HomeWidgetGateway {
 
   @override
   Stream<Uri> get launches => _launches.stream;
+
+  /// 登记的后台回调；测试可直接调它模拟桌面上的点按。
+  FutureOr<void> Function(Uri? uri)? backgroundCallback;
+
+  @override
+  Future<void> registerBackgroundCallback(
+    FutureOr<void> Function(Uri? uri) callback,
+  ) async => backgroundCallback = callback;
 }

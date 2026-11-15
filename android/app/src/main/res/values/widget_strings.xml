@@ -8,4 +8,8 @@
     <string name="widget_today_name">Today</string>
     <string name="widget_today_description">The date, lunar calendar and holidays, plus how today is going.</string>
     <string name="widget_open_app">Open Jotsy to finish setting up</string>
+    <string name="widget_anniversary_name">Anniversaries</string>
+    <string name="widget_anniversary_description">A big countdown to one day, or the next few in a list.</string>
+    <string name="widget_mood_calendar_name">Mood calendar</string>
+    <string name="widget_mood_calendar_description">This month at a glance: how each day felt and the days you wrote.</string>
 </resources>

@@ -46,8 +46,9 @@ abstract class JotsyGlanceWidget(
         null
       }
     provideContent {
+      val state = LocalState.current
       val (snapshot, instance) =
-        when (val state = LocalState.current) {
+        when (state) {
           is WidgetPreviewState -> state.snapshot to state.instance
           is HomeWidgetGlanceState -> {
             val read = WidgetSnapshot.read(state.preferences)
@@ -55,7 +56,10 @@ abstract class JotsyGlanceWidget(
           }
           else -> WidgetSnapshot.EMPTY to WidgetInstance.fallback(kind)
         }
-      val scope = WidgetScope(context, snapshot, instance, appWidgetId, LocalSize.current)
+      // 乐观更新只在桌面上生效；预览只看快照与草稿。
+      val overlay = (state as? HomeWidgetGlanceState)?.let { WidgetOverlay.read(it.preferences) }
+      val scope =
+        WidgetScope(context, snapshot, instance, appWidgetId, LocalSize.current, overlay)
       when {
         snapshot.isEmpty ->
           WidgetMessage(scope, context.getString(com.jotsy.diary.R.string.widget_open_app))
@@ -79,6 +83,8 @@ class WidgetScope(
   val instance: WidgetInstance,
   val appWidgetId: Int?,
   val size: DpSize,
+  /** 桌面上操作的乐观更新（[WidgetOverlay]）；预览时为 null。 */
+  val overlay: JSONObject? = null,
 ) {
   val style: WidgetStyle = instance.style
   val content: JSONObject = instance.content

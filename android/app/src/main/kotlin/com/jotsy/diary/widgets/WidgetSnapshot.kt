@@ -15,6 +15,9 @@ class WidgetSnapshot private constructor(private val root: JSONObject, val isEmp
   val redacted: Boolean = root.optBoolean("redacted", false)
   val displayFont: String? = root.optString("displayFont").ifEmpty { null }
 
+  /** 写入时刻（毫秒）；比它新的乐观更新（[WidgetOverlay]）才覆盖快照里的值。 */
+  val builtAt: Long = root.optLong("builtAt", 0L)
+
   private val palettes: JSONObject? = root.optJSONObject("palettes")
   private val strings: JSONObject? = root.optJSONObject("strings")
   private val icons: JSONObject? = root.optJSONObject("icons")
@@ -24,6 +27,24 @@ class WidgetSnapshot private constructor(private val root: JSONObject, val isEmp
   /** 文案；快照里没有时用 [fallback]（通常是 Android 资源里的兜底文案）。 */
   fun string(key: String, fallback: String = ""): String =
     strings?.optString(key)?.ifEmpty { null } ?: fallback
+
+  /**
+   * 带数量的文案：按界面语言的复数规则给 [count] 挑类别（`android.icu.text.PluralRules`），
+   * 取 Dart 导出的那一种写法（home_widget_plurals.dart），`%d` 换成数量。找不到该类别时
+   * 退回 other。
+   */
+  fun plural(key: String, count: Long): String {
+    val forms = root.optJSONObject("plurals")?.optJSONObject(key) ?: return count.toString()
+    val category =
+      try {
+        android.icu.text.PluralRules.forLocale(java.util.Locale.forLanguageTag(locale))
+          .select(count.toDouble())
+      } catch (_: Exception) {
+        "other"
+      }
+    val form = forms.optString(category).ifEmpty { forms.optString("other") }
+    return form.replace("%d", count.toString())
+  }
 
   /** 图标（字体族 + 码位），没有时为 null。 */
   fun icon(key: String): WidgetIconRef? {
@@ -39,6 +60,9 @@ class WidgetSnapshot private constructor(private val root: JSONObject, val isEmp
 
   /** 一个数据节（如 `today`）；没有时为 null。 */
   fun section(name: String): JSONObject? = root.optJSONObject(name)
+
+  /** 一个列表形式的数据节（如 `anniversaries`）；没有时为 null。 */
+  fun array(name: String): org.json.JSONArray? = root.optJSONArray(name)
 
   /**
    * 某个实例的配置：快照里有这个实例就用它，否则用该种类的默认（刚放到桌面、应用还没

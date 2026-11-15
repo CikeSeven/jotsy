@@ -13,14 +13,19 @@
 import 'package:flutter/painting.dart' show Color;
 import 'package:intl/date_symbol_data_local.dart';
 
+import '../../../core/database/app_database.dart' show DayMood;
 import '../../../core/services/app_features.dart';
 import '../../../core/services/home_widgets/home_widget_gateway.dart';
 import '../../../core/services/home_widgets/home_widget_kind.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../calendar/models/calendar_display_options.dart';
+import 'home_widget_anniversary_section.dart';
 import 'home_widget_data_source.dart';
+import 'home_widget_month_section.dart';
 import 'home_widget_native_config.dart';
 import 'home_widget_palette.dart';
+import 'home_widget_plurals.dart';
 import 'home_widget_snapshot_strings.dart';
 import 'home_widget_today_section.dart';
 
@@ -40,6 +45,8 @@ class HomeWidgetSnapshotInput {
     required this.settings,
     required this.installed,
     required this.kinds,
+    this.moodOptions = const <String>[],
+    this.weekStart = CalendarWeekStart.locale,
   });
 
   final DateTime now;
@@ -56,6 +63,12 @@ class HomeWidgetSnapshotInput {
 
   /// 要计算数据节的种类。
   final Set<HomeWidgetKind> kinds;
+
+  /// 日记心情的十档符号（心情月历把当天日记的平均心情折成五段）。
+  final List<String> moodOptions;
+
+  /// 日历设置里一周从哪天开始（心情月历与日历页一致）。
+  final CalendarWeekStart weekStart;
 }
 
 class HomeWidgetSnapshotBuilder {
@@ -87,6 +100,13 @@ class HomeWidgetSnapshotBuilder {
         nativeContext,
       );
     }
+    final kinds = input.kinds;
+    final needsMoods =
+        kinds.contains(HomeWidgetKind.today) ||
+        kinds.contains(HomeWidgetKind.moodCalendar);
+    final dayMoods = needsMoods
+        ? await data.dayMoods()
+        : const <String, DayMood>{};
     return <String, Object?>{
       'v': kHomeWidgetSnapshotVersion,
       'locale': l10n.localeName,
@@ -94,6 +114,7 @@ class HomeWidgetSnapshotBuilder {
       'displayFont': kHomeWidgetDisplayFont,
       'palettes': homeWidgetPalettesFor(input.appSeed, styles),
       'strings': homeWidgetStringsOf(l10n),
+      'plurals': homeWidgetPluralsOf(l10n),
       'icons': homeWidgetIcons(),
       'instances': instances,
       'defaults': <String, Object?>{
@@ -104,8 +125,8 @@ class HomeWidgetSnapshotBuilder {
           ),
       },
       // 快速记录的眉标日期也取这一节（逐日预算的日期文字）。
-      if (input.kinds.contains(HomeWidgetKind.today) ||
-          input.kinds.contains(HomeWidgetKind.quickCapture))
+      if (kinds.contains(HomeWidgetKind.today) ||
+          kinds.contains(HomeWidgetKind.quickCapture))
         'today': buildHomeWidgetTodaySection(
           now: input.now,
           l10n: l10n,
@@ -113,6 +134,27 @@ class HomeWidgetSnapshotBuilder {
               ? await data.openTodoDueDates()
               : const <String?>[],
           todayWords: await data.wordsOn(input.now),
+          dayMoods: dayMoods,
+        ),
+      if (kinds.contains(HomeWidgetKind.anniversary) &&
+          input.features.anniversariesEnabled)
+        'anniversaries': buildHomeWidgetAnniversaries(
+          now: input.now,
+          l10n: l10n,
+          rows: await data.anniversaries(),
+        ),
+      if (kinds.contains(HomeWidgetKind.moodCalendar) &&
+          input.features.calendar)
+        'calendar': buildHomeWidgetMonthSection(
+          now: input.now,
+          l10n: l10n,
+          markers: await data.markersBetween(
+            homeWidgetMonthRange(input.now).$1,
+            homeWidgetMonthRange(input.now).$2,
+          ),
+          dayMoods: dayMoods,
+          moodOptions: input.moodOptions,
+          weekStart: input.weekStart,
         ),
     };
   }

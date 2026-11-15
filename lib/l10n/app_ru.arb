@@ -20655,5 +20655,90 @@
   "homeWidgetOpenToUpdate": "Откройте Jotsy, чтобы обновить",
   "@homeWidgetOpenToUpdate": {
     "description": "Widget placeholder when its data is out of date."
+  },
+  "homeWidgetKindAnniversary": "Памятные даты",
+  "@homeWidgetKindAnniversary": {
+    "description": "Widget kind name: anniversaries and countdowns."
+  },
+  "homeWidgetKindAnniversaryDescription": "Крупный обратный отсчёт до одного дня или список ближайших.",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "Widget gallery: description of the anniversary widget."
+  },
+  "homeWidgetKindMoodCalendar": "Календарь настроения",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "Widget kind name: the month colored by mood."
+  },
+  "homeWidgetKindMoodCalendarDescription": "Месяц одним взглядом: настроение каждого дня и дни с записями.",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "Widget gallery: description of the mood calendar widget."
+  },
+  "homeWidgetMonthWrittenDays": "{count, plural, =0{Записей пока нет} one{Записи в {count} день} few{Записи в {count} дня} many{Записи в {count} дней} other{Записи в {count} дня}}",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "Mood calendar widget: how many days of the month have entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "Памятных дат пока нет",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "Anniversary widget: shown when there are none."
+  },
+  "homeWidgetTodayMood": "Настроение дня",
+  "@homeWidgetTodayMood": {
+    "description": "Today widget option: show the mood faces."
+  },
+  "homeWidgetTodayMoodHint": "В размере 4×2 и выше. Нажмите на лицо, чтобы отметить настроение, ещё раз — чтобы снять.",
+  "@homeWidgetTodayMoodHint": {
+    "description": "Today widget option: hint for the mood faces."
+  },
+  "homeWidgetTodayMoodPrompt": "Как настроение?",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "Today widget: label above the mood faces."
+  },
+  "homeWidgetAnniversaryDisplay": "Показывать",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "Anniversary widget option: one or a list."
+  },
+  "homeWidgetAnniversarySingle": "Одну",
+  "@homeWidgetAnniversarySingle": {
+    "description": "Anniversary widget: show one anniversary."
+  },
+  "homeWidgetAnniversaryList": "Список",
+  "@homeWidgetAnniversaryList": {
+    "description": "Anniversary widget: show a list."
+  },
+  "homeWidgetAnniversaryWhich": "Какую дату",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "Anniversary widget option: which anniversary to show."
+  },
+  "homeWidgetAnniversaryNextUp": "Ближайшую",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "Anniversary widget: follow the next anniversary instead of a fixed one."
+  },
+  "homeWidgetAnniversaryShowDate": "Дата и годовщина",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "Anniversary widget option: show the date line."
+  },
+  "homeWidgetMoodCalendarMoods": "Цвет по настроению",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "Mood calendar option: color the days by mood."
+  },
+  "homeWidgetMoodCalendarMoodsHint": "Сначала настроение дня, иначе среднее по записям за день.",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "Mood calendar option: how a day's color is chosen."
+  },
+  "homeWidgetMoodCalendarWritten": "Точка в дни с записями",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "Mood calendar option: mark days that have entries."
+  },
+  "homeWidgetMonthPrevious": "Предыдущий месяц",
+  "@homeWidgetMonthPrevious": {
+    "description": "Mood calendar widget: button to the previous month."
+  },
+  "homeWidgetMonthNext": "Следующий месяц",
+  "@homeWidgetMonthNext": {
+    "description": "Mood calendar widget: button to the next month."
   }
 }

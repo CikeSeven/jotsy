@@ -62,6 +62,16 @@ Map<String, Object?> homeWidgetNativeConfig(
     'content': switch (instance.content) {
       final QuickCaptureContent content => _quickCapture(content, context),
       final TodayContent content => _today(content, context),
+      final AnniversaryContent content => <String, Object?>{
+        'display': content.display.name,
+        'id': ?content.anniversaryId,
+        'date': content.showDate,
+      },
+      final MoodCalendarContent content => <String, Object?>{
+        'moods': content.showMoods,
+        'written': content.showWritten,
+        'holiday': _almanac(content.holiday, context),
+      },
     },
   };
 }
@@ -92,11 +102,7 @@ Map<String, Object?> _today(
   TodayContent content,
   HomeWidgetNativeContext context,
 ) {
-  bool resolve(HomeWidgetAlmanacMode mode) => switch (mode) {
-    HomeWidgetAlmanacMode.locale => context.isZh,
-    HomeWidgetAlmanacMode.always => true,
-    HomeWidgetAlmanacMode.never => false,
-  };
+  bool resolve(HomeWidgetAlmanacMode mode) => _almanac(mode, context);
   final tap = switch (content.tapAction) {
     TodayTapAction.calendar when !context.features.calendar =>
       TodayTapAction.app,
@@ -108,6 +114,15 @@ Map<String, Object?> _today(
     'writing': content.showWriting,
     'todos': content.showTodos && context.features.todos,
     'yearProgress': content.showYearProgress,
+    'mood': content.showMood,
     'tap': tap.name,
   };
 }
+
+/// 农历 / 节假日的“跟随语言”按界面语言落成显示与否（与日历页同一规则）。
+bool _almanac(HomeWidgetAlmanacMode mode, HomeWidgetNativeContext context) =>
+    switch (mode) {
+      HomeWidgetAlmanacMode.locale => context.isZh,
+      HomeWidgetAlmanacMode.always => true,
+      HomeWidgetAlmanacMode.never => false,
+    };

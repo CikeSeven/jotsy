@@ -20088,5 +20088,90 @@
   "homeWidgetOpenToUpdate": "打开 Jotsy 以更新",
   "@homeWidgetOpenToUpdate": {
     "description": "小组件数据过期时的占位文字。"
+  },
+  "homeWidgetKindAnniversary": "纪念日",
+  "@homeWidgetKindAnniversary": {
+    "description": "小组件种类名：纪念日。"
+  },
+  "homeWidgetKindAnniversaryDescription": "一个日子的大号倒数，或接下来几个日子的列表。",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "组件库：纪念日小组件的说明。"
+  },
+  "homeWidgetKindMoodCalendar": "心情月历",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "小组件种类名：心情月历。"
+  },
+  "homeWidgetKindMoodCalendarDescription": "一眼看完这个月：每天的心情，和写过日记的日子。",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "组件库：心情月历的说明。"
+  },
+  "homeWidgetMonthWrittenDays": "写了 {count} 天",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "心情月历：这个月有几天写了日记。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "还没有纪念日",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "纪念日小组件：还没有纪念日时的文字。"
+  },
+  "homeWidgetTodayMood": "今天的心情",
+  "@homeWidgetTodayMood": {
+    "description": "今日小组件选项：显示心情脸。"
+  },
+  "homeWidgetTodayMoodHint": "横幅与更高的尺寸显示。点一张脸记下心情，再点一下取消。",
+  "@homeWidgetTodayMoodHint": {
+    "description": "今日小组件选项：心情脸的说明。"
+  },
+  "homeWidgetTodayMoodPrompt": "今天心情如何？",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "今日小组件：心情脸上方的提示。"
+  },
+  "homeWidgetAnniversaryDisplay": "显示",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "纪念日小组件选项：一个还是列表。"
+  },
+  "homeWidgetAnniversarySingle": "一个",
+  "@homeWidgetAnniversarySingle": {
+    "description": "纪念日小组件：显示一个。"
+  },
+  "homeWidgetAnniversaryList": "列表",
+  "@homeWidgetAnniversaryList": {
+    "description": "纪念日小组件：显示列表。"
+  },
+  "homeWidgetAnniversaryWhich": "显示哪一个",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "纪念日小组件选项：显示哪一个纪念日。"
+  },
+  "homeWidgetAnniversaryNextUp": "最近的一个",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "纪念日小组件：不固定，显示最近的一个。"
+  },
+  "homeWidgetAnniversaryShowDate": "日期与周年",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "纪念日小组件选项：显示日期与第几周年。"
+  },
+  "homeWidgetMoodCalendarMoods": "按心情着色",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "心情月历选项：按心情给日期着色。"
+  },
+  "homeWidgetMoodCalendarMoodsHint": "这天的心情优先，其次是当天日记心情的平均。",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "心情月历选项：颜色的取法。"
+  },
+  "homeWidgetMoodCalendarWritten": "写过的日子打点",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "心情月历选项：给写过日记的日子打点。"
+  },
+  "homeWidgetMonthPrevious": "上个月",
+  "@homeWidgetMonthPrevious": {
+    "description": "心情月历：上个月按钮。"
+  },
+  "homeWidgetMonthNext": "下个月",
+  "@homeWidgetMonthNext": {
+    "description": "心情月历：下个月按钮。"
   }
 }

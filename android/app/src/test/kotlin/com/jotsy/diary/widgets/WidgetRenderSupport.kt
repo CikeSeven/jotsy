@@ -55,10 +55,17 @@ object WidgetRenderSupport {
       .put("density", density)
       .put("accent", accent)
 
-  /** 快照里某种类的默认配置换上 [style]。 */
-  fun instance(snapshot: WidgetSnapshot, kind: String, style: JSONObject): WidgetInstance {
+  /** 快照里某种类的默认配置换上 [style]（[content] 给出时换掉其中这几项）。 */
+  fun instance(
+    snapshot: WidgetSnapshot,
+    kind: String,
+    style: JSONObject,
+    content: JSONObject? = null,
+  ): WidgetInstance {
     val base = snapshot.instanceFor(null, kind)
-    return WidgetInstance(base.kind, base.disabled, WidgetStyle.parse(style), base.content)
+    val merged = JSONObject(base.content.toString())
+    content?.keys()?.forEach { merged.put(it, content.get(it)) }
+    return WidgetInstance(base.kind, base.disabled, WidgetStyle.parse(style), merged)
   }
 
   fun themed(context: Context, dark: Boolean): Context {

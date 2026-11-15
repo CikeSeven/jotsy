@@ -15432,4 +15432,66 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetOpenToUpdate => '打开 Jotsy 以更新';
+
+  @override
+  String get homeWidgetKindAnniversary => '纪念日';
+
+  @override
+  String get homeWidgetKindAnniversaryDescription => '一个日子的大号倒数，或接下来几个日子的列表。';
+
+  @override
+  String get homeWidgetKindMoodCalendar => '心情月历';
+
+  @override
+  String get homeWidgetKindMoodCalendarDescription => '一眼看完这个月：每天的心情，和写过日记的日子。';
+
+  @override
+  String homeWidgetMonthWrittenDays(int count) {
+    return '写了 $count 天';
+  }
+
+  @override
+  String get homeWidgetAnniversaryEmpty => '还没有纪念日';
+
+  @override
+  String get homeWidgetTodayMood => '今天的心情';
+
+  @override
+  String get homeWidgetTodayMoodHint => '横幅与更高的尺寸显示。点一张脸记下心情，再点一下取消。';
+
+  @override
+  String get homeWidgetTodayMoodPrompt => '今天心情如何？';
+
+  @override
+  String get homeWidgetAnniversaryDisplay => '显示';
+
+  @override
+  String get homeWidgetAnniversarySingle => '一个';
+
+  @override
+  String get homeWidgetAnniversaryList => '列表';
+
+  @override
+  String get homeWidgetAnniversaryWhich => '显示哪一个';
+
+  @override
+  String get homeWidgetAnniversaryNextUp => '最近的一个';
+
+  @override
+  String get homeWidgetAnniversaryShowDate => '日期与周年';
+
+  @override
+  String get homeWidgetMoodCalendarMoods => '按心情着色';
+
+  @override
+  String get homeWidgetMoodCalendarMoodsHint => '这天的心情优先，其次是当天日记心情的平均。';
+
+  @override
+  String get homeWidgetMoodCalendarWritten => '写过的日子打点';
+
+  @override
+  String get homeWidgetMonthPrevious => '上个月';
+
+  @override
+  String get homeWidgetMonthNext => '下个月';
 }

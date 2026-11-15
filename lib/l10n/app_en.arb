@@ -20088,5 +20088,90 @@
   "homeWidgetOpenToUpdate": "Open Jotsy to update",
   "@homeWidgetOpenToUpdate": {
     "description": "Widget placeholder when its data is out of date."
+  },
+  "homeWidgetKindAnniversary": "Anniversaries",
+  "@homeWidgetKindAnniversary": {
+    "description": "Widget kind name: anniversaries and countdowns."
+  },
+  "homeWidgetKindAnniversaryDescription": "A big countdown to one day, or the next few in a list.",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "Widget gallery: description of the anniversary widget."
+  },
+  "homeWidgetKindMoodCalendar": "Mood calendar",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "Widget kind name: the month colored by mood."
+  },
+  "homeWidgetKindMoodCalendarDescription": "This month at a glance: how each day felt and the days you wrote.",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "Widget gallery: description of the mood calendar widget."
+  },
+  "homeWidgetMonthWrittenDays": "{count, plural, =0{Nothing written yet} =1{Wrote on 1 day} other{Wrote on {count} days}}",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "Mood calendar widget: how many days of the month have entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "No anniversaries yet",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "Anniversary widget: shown when there are none."
+  },
+  "homeWidgetTodayMood": "Today's mood",
+  "@homeWidgetTodayMood": {
+    "description": "Today widget option: show the mood faces."
+  },
+  "homeWidgetTodayMoodHint": "On 4×2 and taller sizes. Tap a face to set the mood, tap it again to clear.",
+  "@homeWidgetTodayMoodHint": {
+    "description": "Today widget option: hint for the mood faces."
+  },
+  "homeWidgetTodayMoodPrompt": "How's today?",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "Today widget: label above the mood faces."
+  },
+  "homeWidgetAnniversaryDisplay": "Show",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "Anniversary widget option: one or a list."
+  },
+  "homeWidgetAnniversarySingle": "One",
+  "@homeWidgetAnniversarySingle": {
+    "description": "Anniversary widget: show one anniversary."
+  },
+  "homeWidgetAnniversaryList": "List",
+  "@homeWidgetAnniversaryList": {
+    "description": "Anniversary widget: show a list."
+  },
+  "homeWidgetAnniversaryWhich": "Which one",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "Anniversary widget option: which anniversary to show."
+  },
+  "homeWidgetAnniversaryNextUp": "The next one",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "Anniversary widget: follow the next anniversary instead of a fixed one."
+  },
+  "homeWidgetAnniversaryShowDate": "Date and years",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "Anniversary widget option: show the date line."
+  },
+  "homeWidgetMoodCalendarMoods": "Color days by mood",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "Mood calendar option: color the days by mood."
+  },
+  "homeWidgetMoodCalendarMoodsHint": "The mood you set for the day comes first, then the average of that day's entries.",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "Mood calendar option: how a day's color is chosen."
+  },
+  "homeWidgetMoodCalendarWritten": "Dot the days with entries",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "Mood calendar option: mark days that have entries."
+  },
+  "homeWidgetMonthPrevious": "Previous month",
+  "@homeWidgetMonthPrevious": {
+    "description": "Mood calendar widget: button to the previous month."
+  },
+  "homeWidgetMonthNext": "Next month",
+  "@homeWidgetMonthNext": {
+    "description": "Mood calendar widget: button to the next month."
   }
 }

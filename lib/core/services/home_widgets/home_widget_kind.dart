@@ -21,12 +21,29 @@ enum HomeWidgetKind {
     requirement: HomeWidgetRequirement.none,
   ),
 
-  /// 今日：日期、农历、节气与法定节假日，今天写了多少、还有几项待办。
+  /// 今日：日期、农历、节气与法定节假日，今天写了多少、还有几项待办，点脸
+  /// 记下今天的心情。
   today(
     id: 'today',
     receiverName: 'TodayWidgetReceiver',
     group: HomeWidgetGroup.time,
     requirement: HomeWidgetRequirement.none,
+  ),
+
+  /// 纪念日：一个纪念日的大号倒数，或接下来几个纪念日的列表。
+  anniversary(
+    id: 'anniversary',
+    receiverName: 'AnniversaryWidgetReceiver',
+    group: HomeWidgetGroup.time,
+    requirement: HomeWidgetRequirement.anniversaries,
+  ),
+
+  /// 心情月历：这个月每天的心情与写过的日子。
+  moodCalendar(
+    id: 'mood_calendar',
+    receiverName: 'MoodCalendarWidgetReceiver',
+    group: HomeWidgetGroup.time,
+    requirement: HomeWidgetRequirement.calendar,
   );
 
   const HomeWidgetKind({

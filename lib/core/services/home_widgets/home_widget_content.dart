@@ -7,6 +7,9 @@
 
 import 'home_widget_kind.dart';
 
+part 'home_widget_content_today.dart';
+part 'home_widget_content_time.dart';
+
 /// 农历、节气与法定节假日的显示口径：与日历页的同名选项一致，`locale`
 /// 只在中文界面显示（只与中国相关的能力不随界面语言改变内容，只决定默认
 /// 是否显示）。
@@ -20,6 +23,8 @@ sealed class HomeWidgetContent {
   static HomeWidgetContent defaultsFor(HomeWidgetKind kind) => switch (kind) {
     HomeWidgetKind.quickCapture => QuickCaptureContent.defaults,
     HomeWidgetKind.today => TodayContent.defaults,
+    HomeWidgetKind.anniversary => AnniversaryContent.defaults,
+    HomeWidgetKind.moodCalendar => MoodCalendarContent.defaults,
   };
 
   static HomeWidgetContent fromJson(HomeWidgetKind kind, Object? json) {
@@ -27,6 +32,8 @@ sealed class HomeWidgetContent {
     return switch (kind) {
       HomeWidgetKind.quickCapture => QuickCaptureContent._fromJson(map),
       HomeWidgetKind.today => TodayContent._fromJson(map),
+      HomeWidgetKind.anniversary => AnniversaryContent._fromJson(map),
+      HomeWidgetKind.moodCalendar => MoodCalendarContent._fromJson(map),
     };
   }
 }
@@ -144,100 +151,6 @@ class QuickCaptureContent extends HomeWidgetContent {
     notebookId,
     showLabels,
     showGreeting,
-  );
-}
-
-/// 点今日小组件打开哪里。
-enum TodayTapAction { calendar, write, app }
-
-class TodayContent extends HomeWidgetContent {
-  const TodayContent({
-    this.lunar = HomeWidgetAlmanacMode.locale,
-    this.holiday = HomeWidgetAlmanacMode.locale,
-    this.showWriting = true,
-    this.showTodos = true,
-    this.showYearProgress = false,
-    this.tapAction = TodayTapAction.calendar,
-  });
-
-  static const TodayContent defaults = TodayContent();
-
-  /// 农历日期、节气与传统节日。
-  final HomeWidgetAlmanacMode lunar;
-
-  /// 法定节假日的“休 / 班”。
-  final HomeWidgetAlmanacMode holiday;
-
-  /// 今天写了多少字。
-  final bool showWriting;
-
-  /// 今天（含逾期）还有几项待办；待办功能关闭时不显示。
-  final bool showTodos;
-
-  /// 今年已经过去了多少。
-  final bool showYearProgress;
-
-  final TodayTapAction tapAction;
-
-  TodayContent copyWith({
-    HomeWidgetAlmanacMode? lunar,
-    HomeWidgetAlmanacMode? holiday,
-    bool? showWriting,
-    bool? showTodos,
-    bool? showYearProgress,
-    TodayTapAction? tapAction,
-  }) {
-    return TodayContent(
-      lunar: lunar ?? this.lunar,
-      holiday: holiday ?? this.holiday,
-      showWriting: showWriting ?? this.showWriting,
-      showTodos: showTodos ?? this.showTodos,
-      showYearProgress: showYearProgress ?? this.showYearProgress,
-      tapAction: tapAction ?? this.tapAction,
-    );
-  }
-
-  @override
-  Map<String, Object?> toJson() => <String, Object?>{
-    'lunar': lunar.name,
-    'holiday': holiday.name,
-    'writing': showWriting,
-    'todos': showTodos,
-    'yearProgress': showYearProgress,
-    'tap': tapAction.name,
-  };
-
-  static TodayContent _fromJson(Map<Object?, Object?> json) => TodayContent(
-    lunar: _pick(HomeWidgetAlmanacMode.values, json['lunar'], defaults.lunar),
-    holiday: _pick(
-      HomeWidgetAlmanacMode.values,
-      json['holiday'],
-      defaults.holiday,
-    ),
-    showWriting: _bool(json['writing'], defaults.showWriting),
-    showTodos: _bool(json['todos'], defaults.showTodos),
-    showYearProgress: _bool(json['yearProgress'], defaults.showYearProgress),
-    tapAction: _pick(TodayTapAction.values, json['tap'], defaults.tapAction),
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      other is TodayContent &&
-      other.lunar == lunar &&
-      other.holiday == holiday &&
-      other.showWriting == showWriting &&
-      other.showTodos == showTodos &&
-      other.showYearProgress == showYearProgress &&
-      other.tapAction == tapAction;
-
-  @override
-  int get hashCode => Object.hash(
-    lunar,
-    holiday,
-    showWriting,
-    showTodos,
-    showYearProgress,
-    tapAction,
   );
 }
 

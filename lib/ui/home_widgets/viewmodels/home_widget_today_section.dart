@@ -11,6 +11,7 @@
 
 import 'package:intl/intl.dart';
 
+import '../../../core/database/app_database.dart' show DayMood;
 import '../../../l10n/app_localizations.dart';
 import '../../calendar/viewmodels/calendar_holiday_day.dart';
 import '../../calendar/viewmodels/calendar_lunar_day.dart';
@@ -26,12 +27,14 @@ String homeWidgetDayKey(DateTime day) =>
     '${day.day.toString().padLeft(2, '0')}';
 
 /// 构建「今日」一节。[todoDueDates] 为未完成待办的截止日（null 为没有
-/// 截止日，不计入任何一天）；[todayWords] 为今天写下的字数。
+/// 截止日，不计入任何一天）；[todayWords] 为今天写下的字数；[dayMoods] 为
+/// 这天的心情（只取预算范围内的日子，今日小组件的心情脸据此高亮）。
 Map<String, Object?> buildHomeWidgetTodaySection({
   required DateTime now,
   required AppLocalizations l10n,
   required List<String?> todoDueDates,
   required int todayWords,
+  Map<String, DayMood> dayMoods = const <String, DayMood>{},
 }) {
   final today = DateTime(now.year, now.month, now.day);
   final dueKeys = <String>[
@@ -58,6 +61,10 @@ Map<String, Object?> buildHomeWidgetTodaySection({
     'wordsLabel': <String, Object?>{
       if (todayWords > 0)
         homeWidgetDayKey(today): l10n.homeWidgetTodayWords(todayWords),
+    },
+    'moods': <String, Object?>{
+      for (final key in days.keys)
+        if (dayMoods[key] case final DayMood mood) key: mood.name,
     },
   };
 }

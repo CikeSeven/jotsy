@@ -40,7 +40,7 @@ import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
  *
  * 问候按此刻的时段（早上 / 下午 / 晚上 / 深夜）；Dart 排好了每天各时段起点的重画。
  */
-class QuickCaptureWidget : JotsyGlanceWidget(KIND, setOf(TINY, ROW, ROW_WIDE, SQUARE, WIDE)) {
+class QuickCaptureWidget : JotsyGlanceWidget(KIND, setOf(TINY, ROW, ROW_WIDE, SQUARE, SQUARE_ROOMY, WIDE, WIDE_TALL)) {
   @Composable
   override fun Content(scope: WidgetScope) {
     val actions = QuickAction.listOf(scope)
@@ -61,6 +61,11 @@ class QuickCaptureWidget : JotsyGlanceWidget(KIND, setOf(TINY, ROW, ROW_WIDE, SQ
     val ROW_WIDE = DpSize(250.dp, 40.dp)
     val SQUARE = DpSize(110.dp, 110.dp)
     val WIDE = DpSize(250.dp, 110.dp)
+
+    // 常见手机上的实际格子档（docs/rules/home_widgets.md「版式」）：桌面按挑中的那一档排版，
+    // 只有最小档时 4×2 只放得下最小档的内容。
+    val SQUARE_ROOMY = DpSize(140.dp, 140.dp)
+    val WIDE_TALL = DpSize(250.dp, 150.dp)
   }
 }
 

@@ -164,6 +164,20 @@ class WidgetRenderTest {
     forEachRender { label, root -> assertTrue("$label is empty", countViews(root) > 2) }
   }
 
+  /** 启动器列表里的预览（生成预览与静态预览图）画的是示例快照：每种都画得出内容。 */
+  @Test
+  fun everyKindRendersTheSamplePreview() {
+    val context = RuntimeEnvironment.getApplication()
+    for (language in listOf("en", "zh", "ja", "ru")) {
+      val snapshot = WidgetRenderSupport.sample(context, language)
+      for (kind in WidgetKinds.receiverClasses.keys) {
+        val state = WidgetPreviewState(snapshot, snapshot.instanceFor(null, kind))
+        val root = WidgetRenderSupport.render(context, WidgetKinds.create(kind)!!, DpSize(152.dp, 160.dp), state)
+        assertTrue("$language $kind is empty", countViews(root) > 2)
+      }
+    }
+  }
+
   @Test
   fun aWidgetWithoutSnapshotAsksToOpenTheApp() {
     val context = RuntimeEnvironment.getApplication()

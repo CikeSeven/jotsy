@@ -1,5 +1,7 @@
 package com.jotsy.diary.widgets
 
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import kotlin.reflect.KClass
 import com.jotsy.diary.widgets.kinds.AnniversaryWidget
 import com.jotsy.diary.widgets.kinds.AnniversaryWidgetReceiver
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
@@ -24,18 +26,22 @@ import com.jotsy.diary.widgets.kinds.WritingStatsWidgetReceiver
  * 新增种类时在这里、`AndroidManifest.xml` 与 Dart 的 `HomeWidgetKind` 三处一起登记。
  */
 object WidgetKinds {
-  private val receivers: Map<String, String> =
-    mapOf(
-      QuickCaptureWidget.KIND to QuickCaptureWidgetReceiver::class.java.name,
-      TodayWidget.KIND to TodayWidgetReceiver::class.java.name,
-      AnniversaryWidget.KIND to AnniversaryWidgetReceiver::class.java.name,
-      MoodCalendarWidget.KIND to MoodCalendarWidgetReceiver::class.java.name,
-      TodosWidget.KIND to TodosWidgetReceiver::class.java.name,
-      OnThisDayWidget.KIND to OnThisDayWidgetReceiver::class.java.name,
-      RecentDiariesWidget.KIND to RecentDiariesWidgetReceiver::class.java.name,
-      WritingStatsWidget.KIND to WritingStatsWidgetReceiver::class.java.name,
-      PhotoMemoriesWidget.KIND to PhotoMemoriesWidgetReceiver::class.java.name,
+  /** 种类 id → 接收器（启动器里的一项），生成预览按它逐个发布。 */
+  val receiverClasses: Map<String, KClass<out GlanceAppWidgetReceiver>> =
+    linkedMapOf(
+      QuickCaptureWidget.KIND to QuickCaptureWidgetReceiver::class,
+      TodayWidget.KIND to TodayWidgetReceiver::class,
+      AnniversaryWidget.KIND to AnniversaryWidgetReceiver::class,
+      MoodCalendarWidget.KIND to MoodCalendarWidgetReceiver::class,
+      TodosWidget.KIND to TodosWidgetReceiver::class,
+      OnThisDayWidget.KIND to OnThisDayWidgetReceiver::class,
+      RecentDiariesWidget.KIND to RecentDiariesWidgetReceiver::class,
+      WritingStatsWidget.KIND to WritingStatsWidgetReceiver::class,
+      PhotoMemoriesWidget.KIND to PhotoMemoriesWidgetReceiver::class,
     )
+
+  private val receivers: Map<String, String> =
+    receiverClasses.mapValues { (_, receiver) -> receiver.java.name }
 
   /** 预览用：按种类 id 新建一个 Glance 小组件；认不出时为 null。 */
   fun create(kind: String): JotsyGlanceWidget? =

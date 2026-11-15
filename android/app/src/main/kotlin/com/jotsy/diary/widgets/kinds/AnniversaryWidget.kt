@@ -41,7 +41,7 @@ import kotlin.math.max
  * 点按：单个打开它的详情，列表的每一行打开各自的详情、眉标打开纪念日列表；还没有
  * 纪念日时打开纪念日列表。
  */
-class AnniversaryWidget : JotsyGlanceWidget(KIND, setOf(TINY, ROW, ROW_WIDE, SQUARE, WIDE, LARGE)) {
+class AnniversaryWidget : JotsyGlanceWidget(KIND, setOf(TINY, ROW, ROW_WIDE, SQUARE, SQUARE_ROOMY, WIDE, WIDE_TALL, LARGE, LARGE_TALL)) {
   @Composable
   override fun Content(scope: WidgetScope) {
     val items =
@@ -71,6 +71,12 @@ class AnniversaryWidget : JotsyGlanceWidget(KIND, setOf(TINY, ROW, ROW_WIDE, SQU
     val SQUARE = DpSize(110.dp, 110.dp)
     val WIDE = DpSize(250.dp, 110.dp)
     val LARGE = DpSize(250.dp, 250.dp)
+
+    // 常见手机上的实际格子档（docs/rules/home_widgets.md「版式」）：桌面按挑中的那一档排版，
+    // 只有最小档时 4×2 只放得下最小档的内容。
+    val SQUARE_ROOMY = DpSize(140.dp, 140.dp)
+    val WIDE_TALL = DpSize(250.dp, 150.dp)
+    val LARGE_TALL = DpSize(250.dp, 320.dp)
   }
 }
 

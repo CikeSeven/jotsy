@@ -20,7 +20,7 @@ import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
 import androidx.glance.text.TextAlign
 import com.jotsy.diary.widgets.WidgetActions
-import com.jotsy.diary.widgets.WidgetBitmaps
+import com.jotsy.diary.widgets.WidgetPhotos
 import com.jotsy.diary.widgets.WidgetFrame
 import com.jotsy.diary.widgets.WidgetIcon
 import com.jotsy.diary.widgets.WidgetLaunch
@@ -57,7 +57,7 @@ internal fun photoFor(scope: WidgetScope, entry: DiaryEntry, layout: MemoryLayou
     }
   if (width < 24f || height < 24f) return null
   val bitmap =
-    WidgetBitmaps.photo(scope.context, path, width, height, metrics.innerRadius.value) ?: return null
+    WidgetPhotos.load(scope.context, path, width, height, metrics.innerRadius.value) ?: return null
   return MemoryPhoto(width, height, bitmap)
 }
 

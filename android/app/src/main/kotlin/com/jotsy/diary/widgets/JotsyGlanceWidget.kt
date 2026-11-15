@@ -8,6 +8,7 @@ import androidx.glance.LocalSize
 import androidx.glance.LocalState
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.PreviewSizeMode
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import es.antonborri.home_widget.HomeWidgetGlanceState
@@ -35,6 +36,9 @@ abstract class JotsyGlanceWidget(
 ) : GlanceAppWidget() {
   override val sizeMode: SizeMode = SizeMode.Responsive(sizes)
 
+  /** 生成预览（Android 15+）同样按这几档出图，启动器挑合适的那一张。 */
+  override val previewSizeMode: PreviewSizeMode = SizeMode.Responsive(sizes)
+
   override val stateDefinition = HomeWidgetGlanceStateDefinition()
 
   override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -58,15 +62,33 @@ abstract class JotsyGlanceWidget(
         }
       // 乐观更新只在桌面上生效；预览只看快照与草稿。
       val overlay = (state as? HomeWidgetGlanceState)?.let { WidgetOverlay.read(it.preferences) }
-      val scope =
-        WidgetScope(context, snapshot, instance, appWidgetId, LocalSize.current, overlay)
-      when {
-        snapshot.isEmpty ->
-          WidgetMessage(scope, context.getString(com.jotsy.diary.R.string.widget_open_app))
-        instance.disabled ->
-          WidgetMessage(scope, snapshot.string("featureOff", context.getString(com.jotsy.diary.R.string.widget_open_app)))
-        else -> Content(scope)
-      }
+      Render(WidgetScope(context, snapshot, instance, appWidgetId, LocalSize.current, overlay))
+    }
+  }
+
+  /**
+   * 启动器小组件列表里的生成预览（Android 15+，[WidgetPreviews] 发布）：示例快照与这个种类
+   * 的默认配置，不读用户自己的数据。
+   */
+  override suspend fun providePreview(context: Context, widgetCategory: Int) {
+    val sample = WidgetSnapshot.readSample(WidgetState.homeWidgetPreferences(context))
+    provideContent {
+      Render(WidgetScope(context, sample, sample.instanceFor(null, kind), null, LocalSize.current))
+    }
+  }
+
+  @Composable
+  private fun Render(scope: WidgetScope) {
+    val context = scope.context
+    when {
+      scope.snapshot.isEmpty ->
+        WidgetMessage(scope, context.getString(com.jotsy.diary.R.string.widget_open_app))
+      scope.instance.disabled ->
+        WidgetMessage(
+          scope,
+          scope.snapshot.string("featureOff", context.getString(com.jotsy.diary.R.string.widget_open_app)),
+        )
+      else -> Content(scope)
     }
   }
 

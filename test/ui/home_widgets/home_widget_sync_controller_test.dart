@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/home_widgets/home_widget_style.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/home_widgets/controllers/home_widget_actions.dart';
 import 'package:node_diary/ui/home_widgets/controllers/home_widget_sync_controller.dart';
+import 'package:node_diary/ui/home_widgets/controllers/home_widget_refresh_plan.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_data_source.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_snapshot_builder.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_today_section.dart';
@@ -84,6 +85,44 @@ void main() {
     await sync.syncNow();
     expect(gateway.snapshots, hasLength(1));
     expect(gateway.refreshed, hasLength(1));
+  });
+
+  test('publishes the launcher previews once, even with no widget', () async {
+    final sync = controller();
+    await sync.syncNow();
+    await sync.syncNow();
+    expect(gateway.publishedPreviews, hasLength(1));
+    final (sample, key) = gateway.publishedPreviews.single;
+    // 预览只画示例数据，与用户的日记无关。
+    expect(sample, contains('sample-sea'));
+    expect(key, endsWith('|v$kHomeWidgetSnapshotVersion'));
+    expect(gateway.snapshots, isEmpty);
+  });
+
+  test('rate-limited previews wait before trying again', () async {
+    gateway.previewOutcome = HomeWidgetPreviewPublish.pending;
+    final sync = controller();
+    await sync.syncNow();
+    await sync.syncNow();
+    expect(gateway.publishedPreviews, hasLength(1));
+  });
+
+  test('only the kinds whose data changed are redrawn', () async {
+    gateway.installedWidgets = const <InstalledHomeWidget>[
+      InstalledHomeWidget(widgetId: 3, kind: HomeWidgetKind.today),
+      InstalledHomeWidget(widgetId: 4, kind: HomeWidgetKind.moodCalendar),
+    ];
+    final sync = controller();
+    await sync.syncNow();
+    expect(gateway.refreshed.toSet(), <HomeWidgetKind>{
+      HomeWidgetKind.today,
+      HomeWidgetKind.moodCalendar,
+    });
+    gateway.refreshed.clear();
+    // 三周前的心情只在心情月历里（今日只带最近两周），今日不必重画。
+    await database.setDayMood(DateTime(2026, 10, 25), DayMood.great);
+    await sync.syncNow();
+    expect(gateway.refreshed, <HomeWidgetKind>[HomeWidgetKind.moodCalendar]);
   });
 
   test('a widget placed from the studio takes the pending design', () async {

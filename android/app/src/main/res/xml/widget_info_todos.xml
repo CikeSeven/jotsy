@@ -6,6 +6,7 @@
     android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
     android:description="@string/widget_todos_description"
     android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_todos"
     android:minWidth="250dp"
     android:minHeight="110dp"
     android:minResizeWidth="110dp"

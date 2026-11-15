@@ -58,4 +58,21 @@ abstract class HomeWidgetGateway {
   Future<void> registerBackgroundCallback(
     FutureOr<void> Function(Uri? uri) callback,
   );
+
+  /// 把示例快照（[sample]，JSON）交给原生，发布启动器小组件列表里的生成预览
+  /// （Android 15+）。[key] 为这份示例的口径（语言、主题色、格式版本），原生据此跳过
+  /// 已按同一口径发布过的种类。
+  Future<HomeWidgetPreviewPublish> publishPreviews(String sample, String key);
+}
+
+/// 发布生成预览的结果。
+enum HomeWidgetPreviewPublish {
+  /// 全部种类都已按这个口径发布。
+  done,
+
+  /// 被系统限流，还有种类没发布：过一阵再试。
+  pending,
+
+  /// 系统不支持生成预览（Android 15 以下，用静态预览图）。
+  unsupported,
 }

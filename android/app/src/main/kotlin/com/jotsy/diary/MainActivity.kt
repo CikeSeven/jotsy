@@ -143,7 +143,7 @@ class MainActivity : FlutterFragmentActivity() {
     // 桌面小组件的应用内预览：用桌面上同一份 Glance 代码画出来（widgets/WidgetPreviewView.kt）。
     widgetPreviewFactory?.dispose()
     widgetPreviewFactory =
-      WidgetPreviewFactory(flutterEngine.dartExecutor.binaryMessenger).also {
+      WidgetPreviewFactory(applicationContext, flutterEngine.dartExecutor.binaryMessenger).also {
         flutterEngine.platformViewsController.registry
           .registerViewFactory(WidgetPreviewFactory.VIEW_TYPE, it)
       }

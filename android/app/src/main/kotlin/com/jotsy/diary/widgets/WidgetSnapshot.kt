@@ -107,6 +107,16 @@ class WidgetSnapshot private constructor(private val root: JSONObject, val isEmp
       cached = parsed
       return parsed
     }
+
+    /** 预览用的示例快照（[WidgetPreviews]，Dart `buildHomeWidgetSampleSnapshot`）；没有时为 [EMPTY]。 */
+    fun readSample(preferences: SharedPreferences): WidgetSnapshot {
+      val raw = preferences.getString(WidgetPreviews.SAMPLE_KEY, null) ?: return EMPTY
+      return try {
+        WidgetSnapshot(JSONObject(raw), false)
+      } catch (_: Exception) {
+        EMPTY
+      }
+    }
   }
 }
 

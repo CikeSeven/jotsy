@@ -49,7 +49,7 @@ import kotlin.math.max
  *
  * 尺寸：2×2 / 4×2 / 4×4 都是放得下几行就放几行（不滚动，理由见 Content 里的注释）。
  */
-class TodosWidget : JotsyGlanceWidget(KIND, setOf(SQUARE, WIDE, LARGE)) {
+class TodosWidget : JotsyGlanceWidget(KIND, setOf(SQUARE, SQUARE_ROOMY, WIDE, WIDE_TALL, LARGE, LARGE_TALL)) {
   @Composable
   override fun Content(scope: WidgetScope) {
     val section = scope.snapshot.section("todos")
@@ -108,6 +108,12 @@ class TodosWidget : JotsyGlanceWidget(KIND, setOf(SQUARE, WIDE, LARGE)) {
     val SQUARE = DpSize(110.dp, 110.dp)
     val WIDE = DpSize(250.dp, 110.dp)
     val LARGE = DpSize(250.dp, 250.dp)
+
+    // 常见手机上的实际格子档（docs/rules/home_widgets.md「版式」）：桌面按挑中的那一档排版，
+    // 只有最小档时 4×2 只放得下最小档的内容。
+    val SQUARE_ROOMY = DpSize(140.dp, 140.dp)
+    val WIDE_TALL = DpSize(250.dp, 150.dp)
+    val LARGE_TALL = DpSize(250.dp, 320.dp)
   }
 }
 

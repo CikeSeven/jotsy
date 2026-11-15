@@ -12,6 +12,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 
 import 'home_widget_gateway.dart';
@@ -19,6 +20,11 @@ import 'home_widget_kind.dart';
 
 /// 快照在 `HomeWidgetPreferences` 里的键（原生 `WidgetSnapshot.KEY`）。
 const String kHomeWidgetSnapshotKey = 'jotsy.widgets.snapshot';
+
+/// 应用内预览与生成预览的通道（原生 `WidgetPreviewFactory.CHANNEL`）。
+const MethodChannel _previewChannel = MethodChannel(
+  'com.jotsy.diary/home_widget_preview',
+);
 
 class PluginHomeWidgetGateway implements HomeWidgetGateway {
   /// 插件只在真机的 Android 工程里注册。
@@ -102,4 +108,21 @@ class PluginHomeWidgetGateway implements HomeWidgetGateway {
   Stream<Uri> get launches => _available
       ? HomeWidget.widgetClicked.where((Uri? uri) => uri != null).cast<Uri>()
       : const Stream<Uri>.empty();
+
+  @override
+  Future<HomeWidgetPreviewPublish> publishPreviews(
+    String sample,
+    String key,
+  ) async {
+    if (!_available) return HomeWidgetPreviewPublish.unsupported;
+    final outcome = await _previewChannel.invokeMethod<String>(
+      'publishPreviews',
+      <String, Object?>{'sample': sample, 'key': key},
+    );
+    return switch (outcome) {
+      'done' => HomeWidgetPreviewPublish.done,
+      'pending' => HomeWidgetPreviewPublish.pending,
+      _ => HomeWidgetPreviewPublish.unsupported,
+    };
+  }
 }

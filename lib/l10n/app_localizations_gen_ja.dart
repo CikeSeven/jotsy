@@ -15967,4 +15967,49 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetPresetNightDescription => '常にダーク、藍色のアクセントで目にやさしい';
+
+  @override
+  String get homeWidgetSampleDiaryTitle1 => '海辺の夕暮れ';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt1 => '風が雲をオレンジ色に染めた。暗くなるまで岩の上に座っていた。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle2 => '初めてのパン';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt2 => '少し歪んだけど、部屋中いい香り。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle3 => '雨の日の本屋';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt3 => '雨宿りの間に古い詩集を見つけて買った。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle4 => '朝のランニング';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt4 => '5キロ、先週より少し速く。';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt5 => '今日から日記を始めた。一日一行でいい。';
+
+  @override
+  String get homeWidgetSampleTodo1 => '母に電話する';
+
+  @override
+  String get homeWidgetSampleTodo2 => '家賃を払う';
+
+  @override
+  String get homeWidgetSampleTodo3 => '買い物';
+
+  @override
+  String get homeWidgetSampleTodo4 => '本を一冊読み終える';
+
+  @override
+  String get homeWidgetSampleAnniversary1 => '付き合った日';
+
+  @override
+  String get homeWidgetSampleAnniversary2 => '母の誕生日';
 }

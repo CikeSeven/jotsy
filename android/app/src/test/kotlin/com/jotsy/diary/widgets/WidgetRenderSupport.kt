@@ -40,6 +40,15 @@ object WidgetRenderSupport {
     return WidgetSnapshot.read(preferences)
   }
 
+  /** 某种界面语言的示例快照（`widget_sample_<语言>.json`，预览用，见 `WidgetPreviewImageTest`）。 */
+  fun sample(context: Context, language: String): WidgetSnapshot {
+    val raw =
+      javaClass.classLoader!!.getResource("widget_sample_$language.json")!!.readText()
+    val preferences = context.getSharedPreferences("widget-preview-test", Context.MODE_PRIVATE)
+    preferences.edit().putString(WidgetSnapshot.KEY, raw).commit()
+    return WidgetSnapshot.read(preferences)
+  }
+
   /** 夹具里引用的几张照片：色块拼成的风景，横竖各有，验证裁切与缩放。 */
   private fun fixturePhotos(context: Context): File {
     val dir = File(context.cacheDir, "fixture").apply { mkdirs() }

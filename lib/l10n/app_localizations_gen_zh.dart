@@ -15705,4 +15705,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetPresetNightDescription => '固定深色、靛蓝强调，夜里不刺眼';
+
+  @override
+  String get homeWidgetSampleDiaryTitle1 => '海边的黄昏';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt1 => '风把云吹成了橘色，我们在礁石上一直坐到天黑。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle2 => '第一次烤面包';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt2 => '烤出来有点歪，但整个屋子都是香的。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle3 => '雨天的书店';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt3 => '躲雨时翻到一本旧诗集，买了下来。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle4 => '晨跑';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt4 => '五公里，比上周快了一点。';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt5 => '今天开始写日记，每天一句也好。';
+
+  @override
+  String get homeWidgetSampleTodo1 => '给妈妈打电话';
+
+  @override
+  String get homeWidgetSampleTodo2 => '交房租';
+
+  @override
+  String get homeWidgetSampleTodo3 => '买菜';
+
+  @override
+  String get homeWidgetSampleTodo4 => '读完一本书';
+
+  @override
+  String get homeWidgetSampleAnniversary1 => '在一起';
+
+  @override
+  String get homeWidgetSampleAnniversary2 => '妈妈生日';
 }

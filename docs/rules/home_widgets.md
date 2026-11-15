@@ -29,6 +29,7 @@
 ## 同步与刷新
 
 - 必须：快照只由 `HomeWidgetSyncController`（`NodeDiaryApp` 常驻监听）写入：库表变化（`tableUpdates`）、功能开关、小组件设置、界面语言、主题色、应用锁与回到前台都会触发，防抖后串行执行。桌面上没有小组件且小组件页没开时什么都不做；快照与上一份相同就不写入、不刷新。
+- 必须：写入后只让用到变化那几节的种类重画（`homeWidgetKindsToRefresh`，各种类读哪几节登记在 `home_widget_refresh_plan.dart`，与原生读法一致）；公共部分（配色、文案、实例配置、语言、应用锁标记等）变了才全部重画。新增种类或数据节时同步登记。
 - 必须：每天第一次同步为桌面上的种类排好之后 14 天零点的重画（快速记录另加问候换时段的整点，`homeWidgetRedrawTimes`），经 home_widget 的 `HomeWidgetScheduledUpdateReceiver`（已在 Manifest 登记，开机 / 更新后重排）。
 - 必须：新增数据来源的表时，把它加进同步控制器的 `tableUpdates` 清单（最近日记按标签取，标签两表也在其中）。
 
@@ -74,11 +75,14 @@
 
 - 必须：每个种类声明 `SizeMode.Responsive` 的几档尺寸，版式按阈值分档（如高度不足方块即为一行），禁止比较 `LocalSize` 是否等于某一档：桌面上它是挑中的那一档，应用内预览按精确尺寸组合时则是实际尺寸。
 - 必须：Glance 的一个 `Column` / `Row` / `Box` 最多 10 个子项，多出来的被静默丢掉：行数随高度的列表（待办、纪念日列表、最近日记）把各行另放进一个 `Column`，行与分隔线、行间距包在同一个子项里，不与表头并排计数。
-- 必须：内容随格子放大的种类（那年今日、最近日记）在最小档之外再声明常见手机上的实际格子档（如 250×150），桌面上按挑中的那一档排版，不至于 4×2 只放得下最小档的一行。
+- 必须：各种类在最小档之外再声明常见手机上的实际格子档（140×140、250×150、250×320 等），桌面上按挑中的那一档排版，不至于 4×2 只放得下最小档的一行；新增档位只加更大的，版式仍按阈值分档。
 - 必须：可用尺寸三处一致：`res/xml/widget_info_*.xml` 的缩放范围、Kotlin 的分档、Dart `HomeWidgetCellSize.sizesOf`（预览与组件库的尺寸标签）。
 
 ## 预览
 
+- 必须：启动器小组件列表里的预览一律画示例数据，不画用户自己的日记、待办与纪念日（列表谁都能翻，开着应用锁也一样）。示例由 `HomeWidgetSampleData` 按界面语言提供（几篇日记、几项待办、两个纪念日、一年的写作记录；示例照片写成 `sample:<名字>`，原生 `WidgetPhotos` 现画），经同一个 `HomeWidgetSnapshotBuilder` 建成示例快照。
+- 必须：Android 15+ 用 Glance 的生成预览：同步控制器经 `HomeWidgetPreviewPublisher` 把示例快照交给原生（`HomeWidgetPreferences` 的 `jotsy.widgets.sample`），原生 `WidgetPreviews` 逐个种类 `setWidgetPreviews`，各小组件的 `providePreview` 读示例快照。口径（语言、主题色、一周从哪天开始、快照格式版本）不变不再发布；系统限流时停下，至少 30 分钟后再试；桌面上没有小组件也照常发布。
+- 必须：更早的系统用静态预览图（`widget_info_*.xml` 的 `previewImage`，`res/drawable[-zh|-ja|-ru]-nodpi/widget_preview_<种类>.webp`，英语兼作兜底）。预览图由 Kotlin 的 `WidgetPreviewImageTest` 从示例快照（`widget_sample_<语言>.json`，Dart 测试生成并比对）画出、提交进仓库；示例数据、默认外观或版式变了之后用 `UPDATE_WIDGET_FIXTURE=1` 重新生成示例快照，再设 `JOTSY_WIDGET_PREVIEW_RES=$PWD/app/src/main/res` 跑 `./gradlew :app:testDebugUnitTest --tests '*WidgetPreviewImage*'` 重画。
 - 必须：应用内预览经 PlatformView `com.jotsy.diary/home_widget_preview`（`WidgetPreviewView`）用桌面上同一份 Glance 代码画出来（`compose(state = WidgetPreviewState)`），禁止另写一套 Flutter 版的小组件外观。预览拦下全部触摸（RemoteViews 里的点按会真的打开页面）；快照写入后自动重画。
 
 ## 新增一个种类

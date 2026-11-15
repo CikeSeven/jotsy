@@ -23,7 +23,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.TextAlign
 import com.jotsy.diary.widgets.DisplayText
 import com.jotsy.diary.widgets.JotsyGlanceWidget
-import com.jotsy.diary.widgets.WidgetBitmaps
+import com.jotsy.diary.widgets.WidgetPhotos
 import com.jotsy.diary.widgets.WidgetFrame
 import com.jotsy.diary.widgets.WidgetIcon
 import com.jotsy.diary.widgets.WidgetLaunch
@@ -164,7 +164,7 @@ private fun EntryRow(scope: WidgetScope, entry: DiaryEntry, height: Float, top: 
     val photo =
       entry.photo
         ?.takeIf { scope.content.optBoolean("photos", true) }
-        ?.let { WidgetBitmaps.photo(scope.context, it, THUMB, THUMB, radius.value) }
+        ?.let { WidgetPhotos.load(scope.context, it, THUMB, THUMB, radius.value) }
     if (photo != null) {
       WidgetPhoto(photo, radius, GlanceModifier.size(THUMB.dp))
     } else {

@@ -20455,5 +20455,65 @@
   "homeWidgetPresetNightDescription": "Always dark with indigo accents, easy on the eyes",
   "@homeWidgetPresetNightDescription": {
     "description": "Widget look preset description."
+  },
+  "homeWidgetSampleDiaryTitle1": "Sunset by the sea",
+  "@homeWidgetSampleDiaryTitle1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt1": "The wind turned the clouds orange. We sat on the rocks until dark.",
+  "@homeWidgetSampleDiaryExcerpt1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle2": "My first loaf",
+  "@homeWidgetSampleDiaryTitle2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt2": "A bit lopsided, but the whole flat smelled amazing.",
+  "@homeWidgetSampleDiaryExcerpt2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle3": "Bookshop in the rain",
+  "@homeWidgetSampleDiaryTitle3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt3": "Found an old book of poems while waiting out the rain.",
+  "@homeWidgetSampleDiaryExcerpt3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle4": "Morning run",
+  "@homeWidgetSampleDiaryTitle4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt4": "Five kilometres, a little faster than last week.",
+  "@homeWidgetSampleDiaryExcerpt4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryExcerpt5": "Started keeping a diary today. One line a day is enough.",
+  "@homeWidgetSampleDiaryExcerpt5": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt of an entry without a title."
+  },
+  "homeWidgetSampleTodo1": "Call Mom",
+  "@homeWidgetSampleTodo1": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo2": "Pay the rent",
+  "@homeWidgetSampleTodo2": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo3": "Buy groceries",
+  "@homeWidgetSampleTodo3": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo4": "Finish a book",
+  "@homeWidgetSampleTodo4": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleAnniversary1": "Together",
+  "@homeWidgetSampleAnniversary1": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "homeWidgetSampleAnniversary2": "Mom's birthday",
+  "@homeWidgetSampleAnniversary2": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
   }
 }

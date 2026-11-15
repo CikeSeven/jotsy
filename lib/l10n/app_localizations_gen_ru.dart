@@ -18712,4 +18712,54 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get homeWidgetPresetNightDescription =>
       'Всегда тёмный, индиго, не режет глаза';
+
+  @override
+  String get homeWidgetSampleDiaryTitle1 => 'Закат у моря';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt1 =>
+      'Ветер окрасил облака в оранжевый. Мы сидели на камнях до темноты.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle2 => 'Мой первый хлеб';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt2 =>
+      'Немного кривой, но запах на всю квартиру.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle3 => 'Книжный в дождь';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt3 =>
+      'Пока пережидала дождь, нашла старый сборник стихов.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle4 => 'Утренняя пробежка';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt4 =>
+      'Пять километров, чуть быстрее, чем на прошлой неделе.';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt5 =>
+      'Сегодня начала вести дневник. Хватит и строчки в день.';
+
+  @override
+  String get homeWidgetSampleTodo1 => 'Позвонить маме';
+
+  @override
+  String get homeWidgetSampleTodo2 => 'Оплатить аренду';
+
+  @override
+  String get homeWidgetSampleTodo3 => 'Купить продукты';
+
+  @override
+  String get homeWidgetSampleTodo4 => 'Дочитать книгу';
+
+  @override
+  String get homeWidgetSampleAnniversary1 => 'Вместе';
+
+  @override
+  String get homeWidgetSampleAnniversary2 => 'День рождения мамы';
 }

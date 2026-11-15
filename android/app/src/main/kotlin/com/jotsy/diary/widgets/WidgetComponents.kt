@@ -188,7 +188,7 @@ fun WidgetPillButton(scope: WidgetScope, label: String, onClick: Action) {
 }
 
 /**
- * 日记照片（位图由 [WidgetBitmaps.photo] 按区域的比例裁好）铺满 [modifier] 给的区域：桌面
+ * 日记照片（位图由 [WidgetPhotos.load] 按区域的比例裁好）铺满 [modifier] 给的区域：桌面
  * 上实际格子可能比分档大，`Crop` 让照片照样铺满。Android 12+ 由 `cornerRadius` 裁出
  * [radius] 的圆角；更早的系统圆角已画在位图里，按原比例拉满（不裁，免得裁掉圆角）。
  */

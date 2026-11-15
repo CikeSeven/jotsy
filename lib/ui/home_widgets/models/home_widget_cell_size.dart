@@ -13,6 +13,7 @@ enum HomeWidgetCellSize {
   s2x1(2, 1),
   s4x1(4, 1),
   s2x2(2, 2),
+  s3x3(3, 3),
   s4x2(4, 2),
   s4x4(4, 4);
 
@@ -43,6 +44,19 @@ enum HomeWidgetCellSize {
           s2x1,
           s4x1,
           s4x2,
+        ],
+        HomeWidgetKind.anniversary => const <HomeWidgetCellSize>[
+          s2x2,
+          s1x1,
+          s2x1,
+          s4x2,
+          s4x4,
+        ],
+        HomeWidgetKind.moodCalendar => const <HomeWidgetCellSize>[
+          s3x3,
+          s2x2,
+          s4x2,
+          s4x4,
         ],
       };
 }

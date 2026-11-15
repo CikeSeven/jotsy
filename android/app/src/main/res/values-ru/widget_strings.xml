@@ -6,4 +6,8 @@
     <string name="widget_today_name">Сегодня</string>
     <string name="widget_today_description">Дата, лунный календарь, праздники и то, как проходит день.</string>
     <string name="widget_open_app">Откройте Jotsy, чтобы завершить настройку</string>
+    <string name="widget_anniversary_name">Памятные даты</string>
+    <string name="widget_anniversary_description">Крупный обратный отсчёт до одного дня или список ближайших.</string>
+    <string name="widget_mood_calendar_name">Календарь настроения</string>
+    <string name="widget_mood_calendar_description">Месяц одним взглядом: настроение каждого дня и дни с записями.</string>
 </resources>

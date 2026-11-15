@@ -6,4 +6,8 @@
     <string name="widget_today_name">今日</string>
     <string name="widget_today_description">日期、农历与节假日，还有今天的进度。</string>
     <string name="widget_open_app">打开 Jotsy 完成设置</string>
+    <string name="widget_anniversary_name">纪念日</string>
+    <string name="widget_anniversary_description">一个日子的大号倒数，或接下来几个日子的列表。</string>
+    <string name="widget_mood_calendar_name">心情月历</string>
+    <string name="widget_mood_calendar_description">一眼看完这个月：每天的心情，和写过日记的日子。</string>
 </resources>

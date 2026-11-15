@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/home_widgets/home_widget_kind.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_settings.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_style.dart';
 import 'package:node_diary/core/services/settings_service.dart';
+import 'package:node_diary/ui/home_widgets/controllers/home_widget_actions.dart';
 import 'package:node_diary/ui/home_widgets/controllers/home_widget_sync_controller.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_data_source.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_snapshot_builder.dart';
@@ -139,6 +140,20 @@ void main() {
             as Map)['2026-11-15'];
     expect(words, 8);
   });
+
+  test(
+    'a tap on the home screen reaches the database through the main isolate',
+    () async {
+      controller().start();
+      expect(gateway.backgroundCallback, equals(homeWidgetBackgroundCallback));
+      await homeWidgetBackgroundCallback(
+        Uri.parse('jotsy://widget-action/mood?day=2026-11-15&mood=good'),
+      );
+      final rows = await database.watchDayMoods().first;
+      expect(rows.single.day, '2026-11-15');
+      expect(rows.single.mood, 'good');
+    },
+  );
 
   test('quick capture also redraws when the greeting changes', () {
     final times = homeWidgetRedrawTimes(HomeWidgetKind.quickCapture, now);

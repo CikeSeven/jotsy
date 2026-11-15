@@ -18394,4 +18394,79 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeWidgetOpenToUpdate => 'Откройте Jotsy, чтобы обновить';
+
+  @override
+  String get homeWidgetKindAnniversary => 'Памятные даты';
+
+  @override
+  String get homeWidgetKindAnniversaryDescription =>
+      'Крупный обратный отсчёт до одного дня или список ближайших.';
+
+  @override
+  String get homeWidgetKindMoodCalendar => 'Календарь настроения';
+
+  @override
+  String get homeWidgetKindMoodCalendarDescription =>
+      'Месяц одним взглядом: настроение каждого дня и дни с записями.';
+
+  @override
+  String homeWidgetMonthWrittenDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Записи в $count дня',
+      many: 'Записи в $count дней',
+      few: 'Записи в $count дня',
+      one: 'Записи в $count день',
+      zero: 'Записей пока нет',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetAnniversaryEmpty => 'Памятных дат пока нет';
+
+  @override
+  String get homeWidgetTodayMood => 'Настроение дня';
+
+  @override
+  String get homeWidgetTodayMoodHint =>
+      'В размере 4×2 и выше. Нажмите на лицо, чтобы отметить настроение, ещё раз — чтобы снять.';
+
+  @override
+  String get homeWidgetTodayMoodPrompt => 'Как настроение?';
+
+  @override
+  String get homeWidgetAnniversaryDisplay => 'Показывать';
+
+  @override
+  String get homeWidgetAnniversarySingle => 'Одну';
+
+  @override
+  String get homeWidgetAnniversaryList => 'Список';
+
+  @override
+  String get homeWidgetAnniversaryWhich => 'Какую дату';
+
+  @override
+  String get homeWidgetAnniversaryNextUp => 'Ближайшую';
+
+  @override
+  String get homeWidgetAnniversaryShowDate => 'Дата и годовщина';
+
+  @override
+  String get homeWidgetMoodCalendarMoods => 'Цвет по настроению';
+
+  @override
+  String get homeWidgetMoodCalendarMoodsHint =>
+      'Сначала настроение дня, иначе среднее по записям за день.';
+
+  @override
+  String get homeWidgetMoodCalendarWritten => 'Точка в дни с записями';
+
+  @override
+  String get homeWidgetMonthPrevious => 'Предыдущий месяц';
+
+  @override
+  String get homeWidgetMonthNext => 'Следующий месяц';
 }

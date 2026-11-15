@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui' show Color, Locale;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_content.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_gateway.dart';
@@ -15,17 +16,41 @@ import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_palette.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_snapshot_builder.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_today_section.dart';
 
+import '../../support/anniversary_fixtures.dart';
+
 /// 假数据源：字数、待办截止日与能写的日记本由测试设定。
 class _FakeData implements HomeWidgetDataSource {
   _FakeData({
     this.words = 0,
     this.dueDates = const <String?>[],
     this.notebooks = const <String, String>{},
+    this.anniversaryRows = const <Anniversary>[],
+    this.moods = const <String, DayMood>{},
+    this.markers = const <DiaryCalendarMarker>[],
   });
 
   final int words;
   final List<String?> dueDates;
   final Map<String, String> notebooks;
+  final List<Anniversary> anniversaryRows;
+  final Map<String, DayMood> moods;
+  final List<DiaryCalendarMarker> markers;
+
+  @override
+  Future<List<Anniversary>> anniversaries() async => anniversaryRows;
+
+  @override
+  Future<Map<String, DayMood>> dayMoods() async => moods;
+
+  @override
+  Future<List<DiaryCalendarMarker>> markersBetween(
+    DateTime start,
+    DateTime end,
+  ) async => <DiaryCalendarMarker>[
+    for (final marker in markers)
+      if (!marker.createdAt.isBefore(start) && marker.createdAt.isBefore(end))
+        marker,
+  ];
 
   @override
   Future<int> wordsOn(DateTime day) async => words;
@@ -239,25 +264,18 @@ void main() {
       ),
       _now,
     );
-    final snapshot =
-        await HomeWidgetSnapshotBuilder(
-          _FakeData(
-            words: 1284,
-            dueDates: <String?>['2026-11-14', '2026-11-15', '2026-11-15'],
-            notebooks: <String, String>{'nb-travel': '旅行'},
-          ),
-        ).build(
-          _input(
-            settings: settings,
-            installed: const <InstalledHomeWidget>[
-              InstalledHomeWidget(widgetId: 1, kind: HomeWidgetKind.today),
-              InstalledHomeWidget(
-                widgetId: 2,
-                kind: HomeWidgetKind.quickCapture,
-              ),
-            ],
-          ),
-        );
+    final snapshot = await HomeWidgetSnapshotBuilder(_fixtureData()).build(
+      _input(
+        settings: settings,
+        installed: const <InstalledHomeWidget>[
+          InstalledHomeWidget(widgetId: 1, kind: HomeWidgetKind.today),
+          InstalledHomeWidget(widgetId: 2, kind: HomeWidgetKind.quickCapture),
+          InstalledHomeWidget(widgetId: 3, kind: HomeWidgetKind.anniversary),
+          InstalledHomeWidget(widgetId: 4, kind: HomeWidgetKind.moodCalendar),
+        ],
+        features: const AppFeatures(todos: true, anniversaries: true),
+      ),
+    );
     final encoded = '${const JsonEncoder.withIndent('  ').convert(snapshot)}\n';
     final file = File(_fixturePath);
     if (Platform.environment['UPDATE_WIDGET_FIXTURE'] == '1') {
@@ -267,3 +285,48 @@ void main() {
     expect(file.readAsStringSync(), encoded);
   });
 }
+
+/// 渲染夹具的数据：几个纪念日（置顶、每年、不重复的将来与过去）、这个月的
+/// 心情与日记。
+_FakeData _fixtureData() => _FakeData(
+  words: 1284,
+  dueDates: <String?>['2026-11-14', '2026-11-15', '2026-11-15'],
+  notebooks: <String, String>{'nb-travel': '旅行'},
+  anniversaryRows: <Anniversary>[
+    testAnniversary(id: 1, title: '在一起', baseDate: '2021-12-03'),
+    testAnniversary(
+      id: 2,
+      title: '妈妈生日',
+      baseDate: '1968-11-15',
+      isPinned: true,
+    ),
+    testAnniversary(
+      id: 3,
+      title: '考研',
+      baseDate: '2026-12-20',
+      recurrence: AnniversaryRecurrence.once,
+    ),
+    testAnniversary(
+      id: 4,
+      title: '搬进新家',
+      baseDate: '2025-03-01',
+      recurrence: AnniversaryRecurrence.once,
+    ),
+  ],
+  moods: <String, DayMood>{
+    '2026-11-02': DayMood.great,
+    '2026-11-05': DayMood.bad,
+    '2026-11-09': DayMood.good,
+    '2026-11-12': DayMood.awful,
+    '2026-11-13': DayMood.meh,
+    '2026-11-15': DayMood.good,
+  },
+  markers: <DiaryCalendarMarker>[
+    for (final day in <int>[1, 2, 3, 6, 9, 10, 14, 15])
+      DiaryCalendarMarker(
+        diaryId: 'd$day',
+        createdAt: DateTime(2026, 11, day, 21),
+        wordCount: 300,
+      ),
+  ],
+);

@@ -89,6 +89,11 @@ class WidgetColors(
   val onRestTag: ColorProvider,
   val workTag: ColorProvider,
   val onWorkTag: ColorProvider,
+  /**
+   * 五档心情的整格底色与其上的前景色（由低到高），与应用日历的 `DayMoodColors` 同一套
+   * 色槽：error / tertiary 容器、最高层容器、secondary / primary 容器。
+   */
+  val moodTiles: List<Pair<ColorProvider, ColorProvider>>,
 ) {
   companion object {
     fun resolve(context: Context, snapshot: WidgetSnapshot, style: WidgetStyle): WidgetColors {
@@ -99,6 +104,14 @@ class WidgetColors(
       val containerRole = accent + "Container"
       val onContainerRole = "on" + accent.replaceFirstChar { it.uppercase() } + "Container"
       val opacity = style.opacity
+      val moods =
+        listOf(
+          "errorContainer" to "onErrorContainer",
+          "tertiaryContainer" to "onTertiaryContainer",
+          "surfaceContainerHighest" to "onSurfaceVariant",
+          "secondaryContainer" to "onSecondaryContainer",
+          "primaryContainer" to "onPrimaryContainer",
+        ).map { (tile, on) -> source.color(tile) to source.color(on) }
       return when (style.background) {
         "tonal" ->
           WidgetColors(
@@ -114,6 +127,7 @@ class WidgetColors(
             onRestTag = source.color(onAccentRole),
             workTag = source.color("surfaceContainerLowest", alpha = 0.72f),
             onWorkTag = source.color(onContainerRole),
+            moodTiles = moods,
           )
         "vivid" ->
           WidgetColors(
@@ -129,6 +143,7 @@ class WidgetColors(
             onRestTag = source.color(accentRole),
             workTag = source.color(onAccentRole, alpha = 0.22f),
             onWorkTag = source.color(onAccentRole),
+            moodTiles = moods,
           )
         "clear" ->
           WidgetColors(
@@ -144,6 +159,7 @@ class WidgetColors(
             onRestTag = source.color(onContainerRole),
             workTag = source.color("surfaceContainerHighest", alpha = 0.8f),
             onWorkTag = source.color("onSurfaceVariant"),
+            moodTiles = moods,
           )
         else ->
           WidgetColors(
@@ -160,6 +176,7 @@ class WidgetColors(
             onRestTag = source.color(onContainerRole),
             workTag = source.color("surfaceContainerHighest"),
             onWorkTag = source.color("onSurfaceVariant"),
+            moodTiles = moods,
           )
       }
     }

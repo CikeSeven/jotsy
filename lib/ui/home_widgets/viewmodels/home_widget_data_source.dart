@@ -15,6 +15,18 @@ abstract class HomeWidgetDataSource {
   /// 能写进去的日记本：普通（非智能）、非私密（含继承）、未合上的本子，
   /// id → 名字。快速记录的“写进日记本”只认这里面的。
   Future<Map<String, String>> writableNotebooks();
+
+  /// 全部纪念日（置顶在前）。
+  Future<List<Anniversary>> anniversaries();
+
+  /// 这天的心情（日期键 `YYYY-MM-DD` → 心情）；认不出的值不在其中。
+  Future<Map<String, DayMood>> dayMoods();
+
+  /// `[start, end)` 内的日历打点（不含私密日记，与日历同一查询）。
+  Future<List<DiaryCalendarMarker>> markersBetween(
+    DateTime start,
+    DateTime end,
+  );
 }
 
 class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
@@ -25,9 +37,10 @@ class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
   @override
   Future<int> wordsOn(DateTime day) async {
     final start = DateTime(day.year, day.month, day.day);
-    final markers = await _db
-        .watchDiaryMarkersInRange(start, start.add(const Duration(days: 1)))
-        .first;
+    final markers = await markersBetween(
+      start,
+      DateTime(start.year, start.month, start.day + 1),
+    );
     var words = 0;
     for (final marker in markers) {
       words += marker.wordCount;
@@ -40,6 +53,24 @@ class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
     final rows = await _db.getOpenTodos();
     return <String?>[for (final row in rows) row.dueDate];
   }
+
+  @override
+  Future<List<Anniversary>> anniversaries() => _db.watchAnniversaries().first;
+
+  @override
+  Future<Map<String, DayMood>> dayMoods() async {
+    final rows = await _db.watchDayMoods().first;
+    return <String, DayMood>{
+      for (final row in rows)
+        if (DayMood.parse(row.mood) case final DayMood mood) row.day: mood,
+    };
+  }
+
+  @override
+  Future<List<DiaryCalendarMarker>> markersBetween(
+    DateTime start,
+    DateTime end,
+  ) => _db.watchDiaryMarkersInRange(start, end).first;
 
   @override
   Future<Map<String, String>> writableNotebooks() async {

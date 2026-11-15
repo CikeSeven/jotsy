@@ -27573,6 +27573,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Jotsy to update'**
   String get homeWidgetOpenToUpdate;
+
+  /// Widget kind name: anniversaries and countdowns.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get homeWidgetKindAnniversary;
+
+  /// Widget gallery: description of the anniversary widget.
+  ///
+  /// In en, this message translates to:
+  /// **'A big countdown to one day, or the next few in a list.'**
+  String get homeWidgetKindAnniversaryDescription;
+
+  /// Widget kind name: the month colored by mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood calendar'**
+  String get homeWidgetKindMoodCalendar;
+
+  /// Widget gallery: description of the mood calendar widget.
+  ///
+  /// In en, this message translates to:
+  /// **'This month at a glance: how each day felt and the days you wrote.'**
+  String get homeWidgetKindMoodCalendarDescription;
+
+  /// Mood calendar widget: how many days of the month have entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing written yet} =1{Wrote on 1 day} other{Wrote on {count} days}}'**
+  String homeWidgetMonthWrittenDays(int count);
+
+  /// Anniversary widget: shown when there are none.
+  ///
+  /// In en, this message translates to:
+  /// **'No anniversaries yet'**
+  String get homeWidgetAnniversaryEmpty;
+
+  /// Today widget option: show the mood faces.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s mood'**
+  String get homeWidgetTodayMood;
+
+  /// Today widget option: hint for the mood faces.
+  ///
+  /// In en, this message translates to:
+  /// **'On 4×2 and taller sizes. Tap a face to set the mood, tap it again to clear.'**
+  String get homeWidgetTodayMoodHint;
+
+  /// Today widget: label above the mood faces.
+  ///
+  /// In en, this message translates to:
+  /// **'How\'s today?'**
+  String get homeWidgetTodayMoodPrompt;
+
+  /// Anniversary widget option: one or a list.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get homeWidgetAnniversaryDisplay;
+
+  /// Anniversary widget: show one anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'One'**
+  String get homeWidgetAnniversarySingle;
+
+  /// Anniversary widget: show a list.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get homeWidgetAnniversaryList;
+
+  /// Anniversary widget option: which anniversary to show.
+  ///
+  /// In en, this message translates to:
+  /// **'Which one'**
+  String get homeWidgetAnniversaryWhich;
+
+  /// Anniversary widget: follow the next anniversary instead of a fixed one.
+  ///
+  /// In en, this message translates to:
+  /// **'The next one'**
+  String get homeWidgetAnniversaryNextUp;
+
+  /// Anniversary widget option: show the date line.
+  ///
+  /// In en, this message translates to:
+  /// **'Date and years'**
+  String get homeWidgetAnniversaryShowDate;
+
+  /// Mood calendar option: color the days by mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Color days by mood'**
+  String get homeWidgetMoodCalendarMoods;
+
+  /// Mood calendar option: how a day's color is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'The mood you set for the day comes first, then the average of that day\'s entries.'**
+  String get homeWidgetMoodCalendarMoodsHint;
+
+  /// Mood calendar option: mark days that have entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot the days with entries'**
+  String get homeWidgetMoodCalendarWritten;
+
+  /// Mood calendar widget: button to the previous month.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get homeWidgetMonthPrevious;
+
+  /// Mood calendar widget: button to the next month.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get homeWidgetMonthNext;
 }
 
 class _AppLocalizationsDelegate

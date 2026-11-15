@@ -1,6 +1,7 @@
 package com.jotsy.diary.widgets.kinds
 
 import com.jotsy.diary.widgets.WidgetDates
+import com.jotsy.diary.widgets.WidgetOverlay
 import com.jotsy.diary.widgets.WidgetScope
 import java.time.format.TextStyle
 import java.util.Locale
@@ -33,6 +34,12 @@ class TodayDay private constructor(
   val showYearProgress: Boolean,
   val yearProgress: Float,
   val yearProgressLabel: String,
+  /** 今天的日期键（心情脸记在这一天）。 */
+  val key: String,
+  /** 显示心情脸（内容选项，放得下时才画）。 */
+  val showMood: Boolean,
+  /** 今天的心情（含桌面上刚点的乐观值）；没有为 null。 */
+  val mood: String?,
 ) {
   class Holiday(val mark: String, val name: String, val work: Boolean)
 
@@ -106,6 +113,9 @@ class TodayDay private constructor(
         showYearProgress = options.optBoolean("yearProgress", false),
         yearProgress = progress,
         yearProgressLabel = snapshot.string("yearProgress", "%s").replace("%s", percent),
+        key = key,
+        showMood = options.optBoolean("mood", true),
+        mood = WidgetOverlay.mood(scope.overlay, snapshot, key),
       )
     }
   }

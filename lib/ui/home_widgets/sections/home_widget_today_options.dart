@@ -7,10 +7,11 @@ import '../../settings/providers/app_features_provider.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_option_tiles.dart';
 import '../../widgets/expressive_button_group.dart';
+import 'home_widget_almanac_mode_group.dart';
 
 /// 今日小组件的内容选项：农历与节气、法定节假日（三档与日历页一致）、今天
-/// 写了多少、到期待办（待办功能开启时）、今年进度，以及点按打开哪里（日历
-/// 关闭时没有“日历”这一项）。
+/// 写了多少、到期待办（待办功能开启时）、今年进度、心情脸，以及点按打开哪里
+/// （日历关闭时没有“日历”这一项）。
 class HomeWidgetTodayOptions extends ConsumerWidget {
   const HomeWidgetTodayOptions({
     super.key,
@@ -40,7 +41,7 @@ class HomeWidgetTodayOptions extends ConsumerWidget {
           children: <Widget>[
             SettingsChoiceTile(
               title: l10n.homeWidgetTodayLunar,
-              child: _AlmanacModeGroup(
+              child: HomeWidgetAlmanacModeGroup(
                 value: content.lunar,
                 onChanged: (HomeWidgetAlmanacMode mode) =>
                     onChanged(content.copyWith(lunar: mode)),
@@ -48,7 +49,7 @@ class HomeWidgetTodayOptions extends ConsumerWidget {
             ),
             SettingsChoiceTile(
               title: l10n.homeWidgetTodayHoliday,
-              child: _AlmanacModeGroup(
+              child: HomeWidgetAlmanacModeGroup(
                 value: content.holiday,
                 onChanged: (HomeWidgetAlmanacMode mode) =>
                     onChanged(content.copyWith(holiday: mode)),
@@ -78,6 +79,13 @@ class HomeWidgetTodayOptions extends ConsumerWidget {
               onChanged: (bool value) =>
                   onChanged(content.copyWith(showYearProgress: value)),
             ),
+            SettingsSwitchTile(
+              title: l10n.homeWidgetTodayMood,
+              subtitle: l10n.homeWidgetTodayMoodHint,
+              value: content.showMood,
+              onChanged: (bool value) =>
+                  onChanged(content.copyWith(showMood: value)),
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -106,39 +114,6 @@ class HomeWidgetTodayOptions extends ConsumerWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-/// 农历 / 节假日的三档：跟随语言、显示、隐藏（文案与日历页的显示选项共用）。
-class _AlmanacModeGroup extends StatelessWidget {
-  const _AlmanacModeGroup({required this.value, required this.onChanged});
-
-  final HomeWidgetAlmanacMode value;
-  final ValueChanged<HomeWidgetAlmanacMode> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return ExpressiveButtonGroup<HomeWidgetAlmanacMode>(
-      minSegmentWidth: 88,
-      segments: <ButtonSegment<HomeWidgetAlmanacMode>>[
-        ButtonSegment(
-          value: HomeWidgetAlmanacMode.locale,
-          label: Text(l10n.calendarLunarLocale),
-        ),
-        ButtonSegment(
-          value: HomeWidgetAlmanacMode.always,
-          label: Text(l10n.calendarLunarAlways),
-        ),
-        ButtonSegment(
-          value: HomeWidgetAlmanacMode.never,
-          label: Text(l10n.calendarLunarNever),
-        ),
-      ],
-      selected: <HomeWidgetAlmanacMode>{value},
-      onSelectionChanged: (Set<HomeWidgetAlmanacMode> selected) =>
-          onChanged(selected.first),
     );
   }
 }

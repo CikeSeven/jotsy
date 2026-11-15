@@ -28,16 +28,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_features.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/home_widgets/home_widget_action.dart';
 import '../../../core/services/home_widgets/home_widget_gateway.dart';
 import '../../../core/services/home_widgets/home_widget_kind.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations_gen.dart';
+import '../../calendar/models/calendar_display_options.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../providers/home_widget_providers.dart';
 import '../viewmodels/home_widget_data_source.dart';
 import '../viewmodels/home_widget_snapshot_builder.dart';
 import '../viewmodels/home_widget_today_section.dart';
+import 'home_widget_actions.dart';
 
 /// 防抖（非动画计时）：一次编辑常连着写好几张表。
 const Duration _syncDelay = Duration(milliseconds: 800);
@@ -101,6 +104,7 @@ class HomeWidgetSyncController {
   Timer? _debounce;
   StreamSubscription<Set<TableUpdate>>? _tables;
   AppLifecycleListener? _lifecycle;
+  HomeWidgetActionPort? _actions;
   bool _disposed = false;
   bool _dirty = false;
   Future<void> _running = Future<void>.value();
@@ -128,16 +132,34 @@ class HomeWidgetSyncController {
           ]),
         )
         .listen((_) => schedule());
-    for (final notifier in <Listenable>[
-      settingsService.localeNotifier,
-      settingsService.themeSeedColorNotifier,
-      settingsService.appLockEnabledNotifier,
-    ]) {
+    for (final notifier in _inputs) {
       notifier.addListener(schedule);
     }
     _lifecycle = AppLifecycleListener(onResume: syncNow);
+    // 桌面上的操作（点心情脸等）：应用在运行时由后台引擎转回这里，用这条连接
+    // 写库；回调本身每次启动都登记一遍（home_widget 只记下句柄，开销很小）。
+    _actions = HomeWidgetActionPort(
+      (HomeWidgetAction action) => applyHomeWidgetAction(database, action),
+    )..open();
+    unawaited(
+      gateway
+          .registerBackgroundCallback(homeWidgetBackgroundCallback)
+          .catchError((Object error) {
+            debugPrint('home widgets: callback registration failed: $error');
+          }),
+    );
     schedule();
   }
+
+  /// 会改变快照内容的设置：界面语言、主题色、应用锁、心情符号（月历的平均
+  /// 心情）、日历显示选项（一周从哪天开始）。
+  List<Listenable> get _inputs => <Listenable>[
+    settingsService.localeNotifier,
+    settingsService.themeSeedColorNotifier,
+    settingsService.appLockEnabledNotifier,
+    settingsService.moodOptionsRawNotifier,
+    settingsService.calendarDisplayOptionsRawNotifier,
+  ];
 
   /// 防抖后同步。
   void schedule() {
@@ -196,6 +218,10 @@ class HomeWidgetSyncController {
         settings: settings,
         installed: installed,
         kinds: kinds,
+        moodOptions: settingsService.moodOptions,
+        weekStart: CalendarDisplayOptions.decode(
+          settingsService.calendarDisplayOptionsRaw,
+        ).weekStart,
       ),
     );
     if (_disposed) return;
@@ -235,17 +261,16 @@ class HomeWidgetSyncController {
   }
 
   void dispose() {
+    // 可以重复调用（后台刷新与 provider 销毁各自收尾时都会调）。
+    if (_disposed) return;
     _disposed = true;
     _debounce?.cancel();
     unawaited(_tables?.cancel());
-    for (final notifier in <Listenable>[
-      settingsService.localeNotifier,
-      settingsService.themeSeedColorNotifier,
-      settingsService.appLockEnabledNotifier,
-    ]) {
+    for (final notifier in _inputs) {
       notifier.removeListener(schedule);
     }
     _lifecycle?.dispose();
+    _actions?.close();
   }
 }
 

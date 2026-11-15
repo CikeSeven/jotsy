@@ -10,17 +10,23 @@ String homeWidgetKindName(AppLocalizations l10n, HomeWidgetKind kind) =>
     switch (kind) {
       HomeWidgetKind.quickCapture => l10n.homeWidgetKindQuickCapture,
       HomeWidgetKind.today => l10n.homeWidgetKindToday,
+      HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversary,
+      HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendar,
     };
 
 String homeWidgetKindDescription(AppLocalizations l10n, HomeWidgetKind kind) =>
     switch (kind) {
       HomeWidgetKind.quickCapture => l10n.homeWidgetKindQuickCaptureDescription,
       HomeWidgetKind.today => l10n.homeWidgetKindTodayDescription,
+      HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversaryDescription,
+      HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendarDescription,
     };
 
 FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
   HomeWidgetKind.quickCapture => FontAwesomeIcons.penNib,
   HomeWidgetKind.today => FontAwesomeIcons.solidCalendar,
+  HomeWidgetKind.anniversary => FontAwesomeIcons.heart,
+  HomeWidgetKind.moodCalendar => FontAwesomeIcons.faceSmile,
 };
 
 String homeWidgetGroupName(AppLocalizations l10n, HomeWidgetGroup group) =>

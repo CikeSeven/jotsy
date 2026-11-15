@@ -15688,4 +15688,68 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetOpenToUpdate => 'Jotsy を開いて更新';
+
+  @override
+  String get homeWidgetKindAnniversary => '記念日';
+
+  @override
+  String get homeWidgetKindAnniversaryDescription =>
+      '1 つの日までの大きなカウントダウン、または次のいくつかを一覧で。';
+
+  @override
+  String get homeWidgetKindMoodCalendar => '気分カレンダー';
+
+  @override
+  String get homeWidgetKindMoodCalendarDescription => '今月をひと目で。毎日の気分と日記を書いた日。';
+
+  @override
+  String homeWidgetMonthWrittenDays(int count) {
+    return '$count 日書いた';
+  }
+
+  @override
+  String get homeWidgetAnniversaryEmpty => '記念日はまだありません';
+
+  @override
+  String get homeWidgetTodayMood => '今日の気分';
+
+  @override
+  String get homeWidgetTodayMoodHint =>
+      '4×2 以上の大きさで表示。顔をタップして気分を記録、もう一度タップで取り消し。';
+
+  @override
+  String get homeWidgetTodayMoodPrompt => '今日の気分は？';
+
+  @override
+  String get homeWidgetAnniversaryDisplay => '表示';
+
+  @override
+  String get homeWidgetAnniversarySingle => '1 つ';
+
+  @override
+  String get homeWidgetAnniversaryList => 'リスト';
+
+  @override
+  String get homeWidgetAnniversaryWhich => '表示する記念日';
+
+  @override
+  String get homeWidgetAnniversaryNextUp => '次に来るもの';
+
+  @override
+  String get homeWidgetAnniversaryShowDate => '日付と周年';
+
+  @override
+  String get homeWidgetMoodCalendarMoods => '気分で色分け';
+
+  @override
+  String get homeWidgetMoodCalendarMoodsHint => 'その日の気分を優先し、なければその日の日記の気分の平均。';
+
+  @override
+  String get homeWidgetMoodCalendarWritten => '日記を書いた日に点';
+
+  @override
+  String get homeWidgetMonthPrevious => '前の月';
+
+  @override
+  String get homeWidgetMonthNext => '次の月';
 }

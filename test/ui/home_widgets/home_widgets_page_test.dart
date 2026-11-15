@@ -69,6 +69,35 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('the gallery only offers kinds whose feature is on', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    // 足够高，整个组件库一次建好，不必滚动去找。
+    tester.view.physicalSize = const Size(400, 4000);
+    await h.pump(
+      HomeWidgetsPage(settingsService: h.settings),
+      overrides: [
+        homeWidgetGatewayProvider.overrideWithValue(FakeHomeWidgetGateway()),
+      ],
+    );
+    final l10n = h.l10n;
+    // 纪念日默认关闭：组件库里没有纪念日小组件；心情月历跟着日历（默认开）。
+    expect(find.text(l10n.homeWidgetKindMoodCalendar), findsWidgets);
+    expect(find.text(l10n.homeWidgetKindAnniversary), findsNothing);
+
+    await h.settings.setAppFeaturesRaw(
+      '{"calendar":true,"anniversaries":true}',
+    );
+    await h.settle();
+    expect(find.text(l10n.homeWidgetKindAnniversary), findsWidgets);
+
+    await h.settings.setAppFeaturesRaw('{"calendar":false}');
+    await h.settle();
+    expect(find.text(l10n.homeWidgetKindMoodCalendar), findsNothing);
+    await h.unmount();
+  });
+
   testWidgets('designing a new widget pins it and keeps the design pending', (
     tester,
   ) async {

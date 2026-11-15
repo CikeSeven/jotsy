@@ -4,9 +4,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.jotsy.diary.widgets.kinds.AnniversaryWidget
+import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import java.io.File
+import org.json.JSONObject
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
@@ -16,32 +19,75 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** 种类 → 小组件与要测的尺寸（各档的代表尺寸，比分档界线略大，像真实的格子）。 */
-private val cases: Map<String, Pair<() -> JotsyGlanceWidget, List<DpSize>>> =
-  linkedMapOf(
-    TodayWidget.KIND to
-      Pair(
-        { TodayWidget() },
-        listOf(
-          DpSize(152.dp, 76.dp),
-          DpSize(312.dp, 76.dp),
-          DpSize(152.dp, 160.dp),
-          DpSize(152.dp, 244.dp),
-          DpSize(312.dp, 160.dp),
-        ),
-      ),
-    QuickCaptureWidget.KIND to
-      Pair(
-        { QuickCaptureWidget() },
-        listOf(
-          DpSize(72.dp, 76.dp),
-          DpSize(152.dp, 76.dp),
-          DpSize(312.dp, 76.dp),
-          DpSize(152.dp, 160.dp),
-          DpSize(312.dp, 160.dp),
-        ),
-      ),
+/** 一组渲染用例：名字（出图文件名的前缀）、种类、小组件、尺寸与内容覆盖。 */
+private class RenderCase(
+  val name: String,
+  val kind: String,
+  val widget: () -> JotsyGlanceWidget,
+  val sizes: List<DpSize>,
+  val content: JSONObject? = null,
+)
+
+/** 各档的代表尺寸（比分档界线略大，像真实的格子）。 */
+private val S1 = DpSize(72.dp, 76.dp)
+private val ROW2 = DpSize(152.dp, 76.dp)
+private val ROW4 = DpSize(312.dp, 76.dp)
+private val SQ2 = DpSize(152.dp, 160.dp)
+private val TALL2 = DpSize(152.dp, 244.dp)
+private val SQ3 = DpSize(232.dp, 244.dp)
+private val WIDE4 = DpSize(312.dp, 160.dp)
+private val LARGE4 = DpSize(312.dp, 328.dp)
+
+private val cases: List<RenderCase> =
+  listOf(
+    RenderCase(TodayWidget.KIND, TodayWidget.KIND, { TodayWidget() }, listOf(ROW2, ROW4, SQ2, TALL2, WIDE4)),
+    RenderCase(
+      QuickCaptureWidget.KIND,
+      QuickCaptureWidget.KIND,
+      { QuickCaptureWidget() },
+      listOf(S1, ROW2, ROW4, SQ2, WIDE4),
+    ),
+    RenderCase(
+      AnniversaryWidget.KIND,
+      AnniversaryWidget.KIND,
+      { AnniversaryWidget() },
+      listOf(S1, ROW2, ROW4, SQ2, WIDE4),
+    ),
+    RenderCase(
+      "anniversary_list",
+      AnniversaryWidget.KIND,
+      { AnniversaryWidget() },
+      listOf(SQ2, WIDE4, LARGE4),
+      JSONObject().put("display", "list"),
+    ),
+    RenderCase(
+      MoodCalendarWidget.KIND,
+      MoodCalendarWidget.KIND,
+      { MoodCalendarWidget() },
+      listOf(SQ2, SQ3, WIDE4, LARGE4),
+      JSONObject().put("holiday", true),
+    ),
   )
+
+/** 按用例逐个组合：每种小组件 × 每档尺寸 × 每种外观 × 明暗。 */
+private fun forEachRender(dark: List<Boolean> = listOf(false, true), block: (String, View) -> Unit) {
+  val context = RuntimeEnvironment.getApplication()
+  val snapshot = WidgetRenderSupport.fixture(context)
+  for (case in cases) {
+    for (size in case.sizes) {
+      for ((name, style) in WidgetRenderSupport.styles) {
+        for (isDark in dark) {
+          val themed = WidgetRenderSupport.themed(context, isDark)
+          val instance = WidgetRenderSupport.instance(snapshot, case.kind, style, case.content)
+          val root = WidgetRenderSupport.render(themed, case.widget(), size, WidgetPreviewState(snapshot, instance))
+          val label =
+            "${case.name}_${size.width.value.toInt()}x${size.height.value.toInt()}_${name}_${if (isDark) "dark" else "light"}"
+          block(label, root)
+        }
+      }
+    }
+  }
+}
 
 /**
  * 每种小组件在每档尺寸、每种外观与明暗下都能组合、展开并排出内容（不抛异常、不是空的）。
@@ -52,20 +98,7 @@ private val cases: Map<String, Pair<() -> JotsyGlanceWidget, List<DpSize>>> =
 class WidgetRenderTest {
   @Test
   fun everyKindRendersAtEverySizeAndStyle() {
-    val context = RuntimeEnvironment.getApplication()
-    val snapshot = WidgetRenderSupport.fixture(context)
-    for ((kind, case) in cases) {
-      for (size in case.second) {
-        for ((name, style) in WidgetRenderSupport.styles) {
-          for (dark in listOf(false, true)) {
-            val themed = WidgetRenderSupport.themed(context, dark)
-            val state = WidgetPreviewState(snapshot, WidgetRenderSupport.instance(snapshot, kind, style))
-            val root = WidgetRenderSupport.render(themed, case.first(), size, state)
-            assertTrue("$kind $size $name dark=$dark is empty", countViews(root) > 2)
-          }
-        }
-      }
-    }
+    forEachRender { label, root -> assertTrue("$label is empty", countViews(root) > 2) }
   }
 
   @Test
@@ -97,24 +130,10 @@ class WidgetRenderPreviewTest {
     val dir = System.getenv("JOTSY_WIDGET_RENDER_DIR")
     assumeTrue(dir != null)
     val out = File(dir!!).apply { mkdirs() }
-    val context = RuntimeEnvironment.getApplication()
-    val snapshot = WidgetRenderSupport.fixture(context)
-    for ((kind, case) in cases) {
-      for (size in case.second) {
-        for ((name, style) in WidgetRenderSupport.styles) {
-          for (dark in listOf(false, true)) {
-            val themed = WidgetRenderSupport.themed(context, dark)
-            val state = WidgetPreviewState(snapshot, WidgetRenderSupport.instance(snapshot, kind, style))
-            val root = WidgetRenderSupport.render(themed, case.first(), size, state)
-            val bitmap = WidgetRenderSupport.draw(root)
-            val file =
-              File(
-                out,
-                "${kind}_${size.width.value.toInt()}x${size.height.value.toInt()}_${name}_${if (dark) "dark" else "light"}.png",
-              )
-            file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
-          }
-        }
+    forEachRender { label, root ->
+      val bitmap = WidgetRenderSupport.draw(root)
+      File(out, "$label.png").outputStream().use {
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
       }
     }
   }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../controllers/home_widget_studio_controller.dart';
+import 'home_widget_anniversary_options.dart';
+import 'home_widget_mood_calendar_options.dart';
 import 'home_widget_quick_capture_options.dart';
 import 'home_widget_today_options.dart';
 
@@ -20,6 +22,14 @@ class HomeWidgetContentTab extends StatelessWidget {
         onChanged: controller.updateContent,
       ),
       final TodayContent content => HomeWidgetTodayOptions(
+        content: content,
+        onChanged: controller.updateContent,
+      ),
+      final AnniversaryContent content => HomeWidgetAnniversaryOptions(
+        content: content,
+        onChanged: controller.updateContent,
+      ),
+      final MoodCalendarContent content => HomeWidgetMoodCalendarOptions(
         content: content,
         onChanged: controller.updateContent,
       ),

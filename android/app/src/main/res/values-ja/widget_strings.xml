@@ -6,4 +6,8 @@
     <string name="widget_today_name">今日</string>
     <string name="widget_today_description">日付、旧暦、祝日と今日の進み具合。</string>
     <string name="widget_open_app">Jotsy を開いて設定を完了</string>
+    <string name="widget_anniversary_name">記念日</string>
+    <string name="widget_anniversary_description">1 つの日までの大きなカウントダウン、または次のいくつかを一覧で。</string>
+    <string name="widget_mood_calendar_name">気分カレンダー</string>
+    <string name="widget_mood_calendar_description">今月をひと目で。毎日の気分と日記を書いた日。</string>
 </resources>

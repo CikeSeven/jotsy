@@ -71,6 +71,8 @@ class DayMoodColors {
   int get hashCode => Object.hash(tile, onTile);
 }
 
+/// 桌面小组件的心情脸逐笔移植了这里的画法（android/…/widgets/WidgetMoodFace.kt），改动须同步。
+///
 /// 心情的脸：只画五官（眼睛、嘴，最低一档加眉毛和泪滴），没有脸的外圈——
 /// 所在的格子就是脸。除了最低一档张嘴大哭，五官都是同一粗细的线条。按给定方框里最大的正方形等比缩放，
 /// 小到日期格里的二十来 dp 也认得出表情。

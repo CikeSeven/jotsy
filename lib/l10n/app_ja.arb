@@ -20655,5 +20655,90 @@
   "homeWidgetOpenToUpdate": "Jotsy を開いて更新",
   "@homeWidgetOpenToUpdate": {
     "description": "Widget placeholder when its data is out of date."
+  },
+  "homeWidgetKindAnniversary": "記念日",
+  "@homeWidgetKindAnniversary": {
+    "description": "Widget kind name: anniversaries and countdowns."
+  },
+  "homeWidgetKindAnniversaryDescription": "1 つの日までの大きなカウントダウン、または次のいくつかを一覧で。",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "Widget gallery: description of the anniversary widget."
+  },
+  "homeWidgetKindMoodCalendar": "気分カレンダー",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "Widget kind name: the month colored by mood."
+  },
+  "homeWidgetKindMoodCalendarDescription": "今月をひと目で。毎日の気分と日記を書いた日。",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "Widget gallery: description of the mood calendar widget."
+  },
+  "homeWidgetMonthWrittenDays": "{count} 日書いた",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "Mood calendar widget: how many days of the month have entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "記念日はまだありません",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "Anniversary widget: shown when there are none."
+  },
+  "homeWidgetTodayMood": "今日の気分",
+  "@homeWidgetTodayMood": {
+    "description": "Today widget option: show the mood faces."
+  },
+  "homeWidgetTodayMoodHint": "4×2 以上の大きさで表示。顔をタップして気分を記録、もう一度タップで取り消し。",
+  "@homeWidgetTodayMoodHint": {
+    "description": "Today widget option: hint for the mood faces."
+  },
+  "homeWidgetTodayMoodPrompt": "今日の気分は？",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "Today widget: label above the mood faces."
+  },
+  "homeWidgetAnniversaryDisplay": "表示",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "Anniversary widget option: one or a list."
+  },
+  "homeWidgetAnniversarySingle": "1 つ",
+  "@homeWidgetAnniversarySingle": {
+    "description": "Anniversary widget: show one anniversary."
+  },
+  "homeWidgetAnniversaryList": "リスト",
+  "@homeWidgetAnniversaryList": {
+    "description": "Anniversary widget: show a list."
+  },
+  "homeWidgetAnniversaryWhich": "表示する記念日",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "Anniversary widget option: which anniversary to show."
+  },
+  "homeWidgetAnniversaryNextUp": "次に来るもの",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "Anniversary widget: follow the next anniversary instead of a fixed one."
+  },
+  "homeWidgetAnniversaryShowDate": "日付と周年",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "Anniversary widget option: show the date line."
+  },
+  "homeWidgetMoodCalendarMoods": "気分で色分け",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "Mood calendar option: color the days by mood."
+  },
+  "homeWidgetMoodCalendarMoodsHint": "その日の気分を優先し、なければその日の日記の気分の平均。",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "Mood calendar option: how a day's color is chosen."
+  },
+  "homeWidgetMoodCalendarWritten": "日記を書いた日に点",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "Mood calendar option: mark days that have entries."
+  },
+  "homeWidgetMonthPrevious": "前の月",
+  "@homeWidgetMonthPrevious": {
+    "description": "Mood calendar widget: button to the previous month."
+  },
+  "homeWidgetMonthNext": "次の月",
+  "@homeWidgetMonthNext": {
+    "description": "Mood calendar widget: button to the next month."
   }
 }

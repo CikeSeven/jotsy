@@ -17705,4 +17705,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetOpenToUpdate => 'Open Jotsy to update';
+
+  @override
+  String get homeWidgetKindAnniversary => 'Anniversaries';
+
+  @override
+  String get homeWidgetKindAnniversaryDescription =>
+      'A big countdown to one day, or the next few in a list.';
+
+  @override
+  String get homeWidgetKindMoodCalendar => 'Mood calendar';
+
+  @override
+  String get homeWidgetKindMoodCalendarDescription =>
+      'This month at a glance: how each day felt and the days you wrote.';
+
+  @override
+  String homeWidgetMonthWrittenDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wrote on $count days',
+      one: 'Wrote on 1 day',
+      zero: 'Nothing written yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetAnniversaryEmpty => 'No anniversaries yet';
+
+  @override
+  String get homeWidgetTodayMood => 'Today\'s mood';
+
+  @override
+  String get homeWidgetTodayMoodHint =>
+      'On 4×2 and taller sizes. Tap a face to set the mood, tap it again to clear.';
+
+  @override
+  String get homeWidgetTodayMoodPrompt => 'How\'s today?';
+
+  @override
+  String get homeWidgetAnniversaryDisplay => 'Show';
+
+  @override
+  String get homeWidgetAnniversarySingle => 'One';
+
+  @override
+  String get homeWidgetAnniversaryList => 'List';
+
+  @override
+  String get homeWidgetAnniversaryWhich => 'Which one';
+
+  @override
+  String get homeWidgetAnniversaryNextUp => 'The next one';
+
+  @override
+  String get homeWidgetAnniversaryShowDate => 'Date and years';
+
+  @override
+  String get homeWidgetMoodCalendarMoods => 'Color days by mood';
+
+  @override
+  String get homeWidgetMoodCalendarMoodsHint =>
+      'The mood you set for the day comes first, then the average of that day\'s entries.';
+
+  @override
+  String get homeWidgetMoodCalendarWritten => 'Dot the days with entries';
+
+  @override
+  String get homeWidgetMonthPrevious => 'Previous month';
+
+  @override
+  String get homeWidgetMonthNext => 'Next month';
 }

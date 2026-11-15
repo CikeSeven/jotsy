@@ -3,7 +3,8 @@
 //
 // 每个目标只走应用里的统一入口（AGENTS.md §6）：写日记 `runDiaryCreateEntryFlow`、
 // 新待办 `showTodoQuickAddSheet`、日历切 Tab 后经 `calendarFocusRequestProvider`
-// 选中那天、搜索 `DiarySearchPage.buildRoute`、重新配置打开小组件工作室。
+// 选中那天、搜索 `DiarySearchPage.buildRoute`、纪念日 `openAnniversaryList` /
+// `openAnniversaryDetail`、重新配置打开小组件工作室。
 //
 // 链接来自桌面，可能早于功能开关或日记本的变化：每一步都按当前状态再判断
 // 一次——功能已关闭、日记本已不能写时降级为只打开首页或不指定日记本，绝不
@@ -15,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/home_widgets/home_widget_launch.dart';
+import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../calendar/providers/calendar_focus_request_provider.dart';
 import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../diaries/pages/diary_search_page.dart';
@@ -59,6 +61,14 @@ Future<void> openHomeWidgetLaunch(
           .request(day ?? DateTime.now());
     case HomeWidgetSearchLaunch():
       await Navigator.of(context).push(DiarySearchPage.buildRoute());
+    case HomeWidgetAnniversaryLaunch(:final anniversaryId):
+      if (!features.anniversariesEnabled) return;
+      // 纪念日已被删除时详情页自己显示“已删除”，不必在这里先查。
+      if (anniversaryId == null) {
+        await openAnniversaryList(context);
+      } else {
+        await openAnniversaryDetail(context, anniversaryId: anniversaryId);
+      }
     case HomeWidgetConfigureLaunch(:final widgetId, :final kind):
       final settings = await ref.read(settingsServiceProvider.future);
       if (!context.mounted) return;

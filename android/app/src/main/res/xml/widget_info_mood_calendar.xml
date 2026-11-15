@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 心情月历（widgets/kinds/MoodCalendarWidget.kt）：默认 3×3，可缩到 2×2、拉到 4×4。
+     可用尺寸须与 Dart HomeWidgetCellSize.sizesOf 一致。
+     reconfigurable|configuration_optional：放置时不弹配置，长按“重新配置”进工作室。 -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
+    android:description="@string/widget_mood_calendar_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="180dp"
+    android:minHeight="180dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="3"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

@@ -35,9 +35,11 @@ import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
  *
  * 四档版式：
  * - 一行（2×1 / 4×1）：数字 + 星期日期与农历，右侧节假日标签；4×1 再加写作状态；
- * - 方块（2×2）：眉标、大数字、农历，底部一行状态；更高的方块（[TALL]）放下两行状态
- *   与进度条；
- * - 横幅（4×2）：左边日期块，细分隔，右边农历、节假日与状态。
+ * - 方块（2×2）：眉标、大数字、农历，底部一行状态；更高的方块（[TALL]）放下两行状态、
+ *   进度条与一排心情脸；
+ * - 横幅（4×2）：左边日期块，细分隔，右边农历、节假日、状态与一排心情脸。
+ *
+ * 心情脸点一下就记下今天的心情（[MoodFaces]，不打开应用）。
  *
  * 跨零点：原生按本机日期取快照里这一天的预算内容（[TodayDay]），Dart 排好了之后几天
  * 零点的重画；超出预算的日子只显示公历日期与星期。
@@ -130,7 +132,7 @@ private fun SquareLayout(scope: WidgetScope, day: TodayDay) {
     DisplayText(scope, day.dayOfMonth, if (tall) 56f else 46f, colors.content, maxWidth = scope.size.width)
     day.almanacLine?.let { WidgetText(scope, it, 12f, colors.contentVariant) }
     Spacer(GlanceModifier.defaultWeight())
-    // 普通方块只放一行状态（写作优先）；更高的方块两行都放。
+    // 普通方块只放一行状态（写作优先）；更高的方块两行都放，再放心情脸。
     val lines = day.statusLines()
     for (line in if (tall) lines else lines.take(1)) {
       StatusLine(scope, line.first, line.second, colors.content)
@@ -139,6 +141,10 @@ private fun SquareLayout(scope: WidgetScope, day: TodayDay) {
     if (day.showYearProgress) {
       Spacer(GlanceModifier.height(4.dp))
       YearProgress(scope, day, showLabel = tall)
+    }
+    if (tall && day.showMood) {
+      Spacer(GlanceModifier.height(8.dp))
+      MoodFaces(scope, day.key, day.mood, 24.dp)
     }
   }
 }
@@ -168,13 +174,19 @@ private fun WideLayout(scope: WidgetScope, day: TodayDay) {
       }
       day.almanacDetail?.let { WidgetText(scope, it, 12f, colors.contentVariant) }
       Spacer(GlanceModifier.defaultWeight())
-      for (line in day.statusLines()) {
+      // 放心情脸时状态只留一行（写作优先），横幅的高度放不下更多。
+      val lines = day.statusLines()
+      for (line in if (day.showMood) lines.take(1) else lines) {
         StatusLine(scope, line.first, line.second, colors.content)
         Spacer(GlanceModifier.height(3.dp))
       }
       if (day.showYearProgress) {
         Spacer(GlanceModifier.height(3.dp))
         YearProgress(scope, day, showLabel = true)
+      }
+      if (day.showMood) {
+        Spacer(GlanceModifier.height(6.dp))
+        MoodFaces(scope, day.key, day.mood, 26.dp)
       }
     }
   }

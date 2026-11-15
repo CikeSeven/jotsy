@@ -35,6 +35,11 @@ sealed class HomeWidgetLaunch {
         return HomeWidgetCalendarLaunch(day: _parseDay(query['day']));
       case 'search':
         return const HomeWidgetSearchLaunch();
+      case 'anniversary':
+        final id = query['id'];
+        return HomeWidgetAnniversaryLaunch(
+          anniversaryId: id == null || id.isEmpty ? null : id,
+        );
       case 'configure':
         final id = int.tryParse(query['id'] ?? '');
         return id == null
@@ -91,6 +96,13 @@ class HomeWidgetCalendarLaunch extends HomeWidgetLaunch {
 /// 打开搜索。
 class HomeWidgetSearchLaunch extends HomeWidgetLaunch {
   const HomeWidgetSearchLaunch();
+}
+
+/// 打开纪念日：给了 [anniversaryId] 打开它的详情，否则打开纪念日列表。
+class HomeWidgetAnniversaryLaunch extends HomeWidgetLaunch {
+  const HomeWidgetAnniversaryLaunch({this.anniversaryId});
+
+  final String? anniversaryId;
 }
 
 /// 长按小组件“重新配置”：打开这个实例的小组件工作室。

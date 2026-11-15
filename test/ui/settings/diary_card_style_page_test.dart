@@ -147,6 +147,24 @@ void main() {
     expect(find.text(l10n.diaryCardStyleSampleBody1), findsNothing);
   });
 
+  testWidgets('the first-photo cover switch sits in the cover tab and saves', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    expect(_stored(settings).current.content.firstImageCover, isTrue);
+    await _openTab(tester, l10n.diaryCardStyleTabCover);
+    final tile = find.widgetWithText(
+      SwitchListTile,
+      l10n.diaryCardStyleFirstImageCover,
+    );
+    await _tapVisible(tester, tile);
+    expect(_stored(settings).current.content.firstImageCover, isFalse);
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    await _tapVisible(tester, tile);
+    expect(_stored(settings).current.content.firstImageCover, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the untitled switch updates the preview and follows the title', (
     tester,
   ) async {

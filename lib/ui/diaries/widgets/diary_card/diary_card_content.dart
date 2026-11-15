@@ -25,6 +25,7 @@ class DiaryCardContent extends StatelessWidget {
     super.key,
     required this.diary,
     required this.viewData,
+    required this.cover,
     required this.resolved,
     required this.appearance,
     required this.blocks,
@@ -34,6 +35,10 @@ class DiaryCardContent extends StatelessWidget {
 
   final DiaryWithTags diary;
   final DiaryCardViewData viewData;
+
+  /// 这张卡的封面（`DiaryCardViewData.cardCover` 按样式解析）；null 时显示
+  /// 无封面占位或只有正文。
+  final String? cover;
   final DiaryCardResolvedStyle resolved;
   final DiaryCardAppearance appearance;
   final Widget blocks;
@@ -56,7 +61,7 @@ class DiaryCardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cover = viewData.previewCover;
+    final cover = this.cover;
     return switch (_m.coverPosition) {
       DiaryCardCoverPosition.start ||
       DiaryCardCoverPosition.end => _side(context, cover),

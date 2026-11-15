@@ -150,6 +150,8 @@ class DiaryCard extends StatefulWidget {
     final coverAnchor = enableCoverHero ? ImageViewerHeroAnchor() : null;
     final style = resolved.style;
     final radius = resolved.cornerRadius;
+    // 卡片封面：样式关闭“用正文第一张图当封面”时只认手动设置的封面。
+    final cover = viewData.cardCover(firstImage: style.content.firstImageCover);
 
     Widget content;
     var markOverlay = false;
@@ -159,14 +161,14 @@ class DiaryCard extends StatefulWidget {
         // 未解封胶囊不套用内容类选项：没写标题时始终显示“无标题”，也不取
         // 正文第一行（封存期间不露出正文）。
         title: entry.title.trim().isEmpty ? l10n.autoT0033 : entry.title,
-        previewCover: viewData.previewCover,
+        previewCover: cover,
         capsuleState: capsuleState,
         resolved: resolved,
         appearance: appearance,
       );
     } else {
       final hasCover =
-          viewData.previewCover != null &&
+          cover != null &&
           resolved.modeStyle.coverPosition != DiaryCardCoverPosition.hidden;
       final metaPosition = resolved.metaPositionFor(hasCover: hasCover);
       final titleLine = DiaryCardBlocks.titleLine(
@@ -193,6 +195,7 @@ class DiaryCard extends StatefulWidget {
       content = DiaryCardContent(
         diary: diary,
         viewData: viewData,
+        cover: cover,
         resolved: resolved,
         appearance: appearance,
         blocks: blocks,

@@ -4652,6 +4652,14 @@
   "@diaryCardStyleScrim": {
     "description": "日记卡片样式设置页：背景封面上文字底板的不透明度。"
   },
+  "diaryCardStyleFirstImageCover": "用正文第一张图当封面",
+  "@diaryCardStyleFirstImageCover": {
+    "description": "日记卡片样式设置页：没设封面的日记是否取正文第一张图当封面。"
+  },
+  "diaryCardStyleFirstImageCoverSubtitle": "没设封面的日记取正文里的第一张图；关闭后只显示手动设置的封面",
+  "@diaryCardStyleFirstImageCoverSubtitle": {
+    "description": "日记卡片样式设置页：用正文第一张图当封面的说明。"
+  },
   "diaryCardStyleCollage": "多图拼贴",
   "@diaryCardStyleCollage": {
     "description": "日记卡片样式设置页：顶部封面拼贴多张图片。"

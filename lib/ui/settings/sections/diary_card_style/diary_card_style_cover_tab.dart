@@ -12,7 +12,8 @@ import 'diary_card_style_labels.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “封面”标签页：封面位置与该位置下的尺寸、形状、圆角等（当前布局专属），
-/// 以及多图拼贴与无封面占位（共用）。只列出当前位置用得上的选项。
+/// 以及没设封面时是否取正文第一张图、多图拼贴与无封面占位（共用）。只列出
+/// 当前位置用得上的选项。
 class DiaryCardStyleCoverTab extends StatelessWidget {
   const DiaryCardStyleCoverTab({super.key, required this.controller});
 
@@ -153,6 +154,16 @@ class DiaryCardStyleCoverTab extends StatelessWidget {
         SettingsCardGroup(
           title: l10n.diaryCardStyleSharedGroup,
           children: <Widget>[
+            SettingsSwitchTile(
+              title: l10n.diaryCardStyleFirstImageCover,
+              subtitle: l10n.diaryCardStyleFirstImageCoverSubtitle,
+              value: style.content.firstImageCover,
+              onChanged: (bool value) => controller.commit(
+                style.copyWith(
+                  content: style.content.copyWith(firstImageCover: value),
+                ),
+              ),
+            ),
             SettingsSwitchTile(
               title: l10n.diaryCardStyleCollage,
               subtitle: l10n.diaryCardStyleCollageSubtitle,

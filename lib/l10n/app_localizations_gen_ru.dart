@@ -3775,6 +3775,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryCardStyleScrim => 'Плотность подложки текста';
 
   @override
+  String get diaryCardStyleFirstImageCover => 'Первое фото как обложка';
+
+  @override
+  String get diaryCardStyleFirstImageCoverSubtitle =>
+      'Записи без обложки показывают первое фото из текста; если выключено, видны только заданные вами обложки';
+
+  @override
   String get diaryCardStyleCollage => 'Коллаж из фото';
 
   @override

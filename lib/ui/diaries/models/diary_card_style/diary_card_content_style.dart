@@ -1,7 +1,7 @@
 part of 'diary_card_style.dart';
 
 /// 卡片正文的组成：区块顺序、标题/摘要显隐、没写标题时取正文第一行、标签样式、
-/// 置顶徽章、无封面占位与多图拼贴。两种布局共用。
+/// 置顶徽章、没设封面时取正文第一张图、无封面占位与多图拼贴。两种布局共用。
 ///
 /// 标签显示数量沿用独立的旧设置 `diaryCardTagLimit`（随备份单独导出），
 /// 这里不重复保存。
@@ -14,6 +14,7 @@ class DiaryCardContentStyle {
     this.showPreview = true,
     this.tagStyle = DiaryCardTagStyle.chip,
     this.pinnedBadge = DiaryCardPinnedBadge.standard,
+    this.firstImageCover = true,
     this.coverFallback = DiaryCardCoverFallback.none,
     this.collage = false,
   });
@@ -30,6 +31,11 @@ class DiaryCardContentStyle {
   final bool showPreview;
   final DiaryCardTagStyle tagStyle;
   final DiaryCardPinnedBadge pinnedBadge;
+
+  /// 没设封面的日记是否取正文第一张图当卡片封面（默认开启，即改版前的行为）。
+  /// 关闭后只显示日记里手动设置的封面，没设的按 [coverFallback] 处理；多图拼贴
+  /// 也只在有手动封面时出现（拼贴以封面打头，见 `DiaryCardViewData.cardCover`）。
+  final bool firstImageCover;
   final DiaryCardCoverFallback coverFallback;
 
   /// 顶部封面改为最多三张正文图片的拼贴（只有一张图时仍是单图）。
@@ -42,6 +48,7 @@ class DiaryCardContentStyle {
     bool? showPreview,
     DiaryCardTagStyle? tagStyle,
     DiaryCardPinnedBadge? pinnedBadge,
+    bool? firstImageCover,
     DiaryCardCoverFallback? coverFallback,
     bool? collage,
   }) {
@@ -57,6 +64,7 @@ class DiaryCardContentStyle {
       showPreview: showPreview ?? this.showPreview,
       tagStyle: tagStyle ?? this.tagStyle,
       pinnedBadge: pinnedBadge ?? this.pinnedBadge,
+      firstImageCover: firstImageCover ?? this.firstImageCover,
       coverFallback: coverFallback ?? this.coverFallback,
       collage: collage ?? this.collage,
     );
@@ -83,6 +91,7 @@ class DiaryCardContentStyle {
         json['pinnedBadge'],
         d.pinnedBadge,
       ),
+      firstImageCover: _bool(json['firstImageCover'], d.firstImageCover),
       coverFallback: _enumByName(
         DiaryCardCoverFallback.values,
         json['coverFallback'],
@@ -103,6 +112,7 @@ class DiaryCardContentStyle {
     _put(json, 'showPreview', showPreview, d.showPreview);
     _putEnum(json, 'tagStyle', tagStyle, d.tagStyle);
     _putEnum(json, 'pinnedBadge', pinnedBadge, d.pinnedBadge);
+    _put(json, 'firstImageCover', firstImageCover, d.firstImageCover);
     _putEnum(json, 'coverFallback', coverFallback, d.coverFallback);
     _put(json, 'collage', collage, d.collage);
     return json;
@@ -117,6 +127,7 @@ class DiaryCardContentStyle {
         other.showPreview == showPreview &&
         other.tagStyle == tagStyle &&
         other.pinnedBadge == pinnedBadge &&
+        other.firstImageCover == firstImageCover &&
         other.coverFallback == coverFallback &&
         other.collage == collage;
   }
@@ -129,6 +140,7 @@ class DiaryCardContentStyle {
     showPreview,
     tagStyle,
     pinnedBadge,
+    firstImageCover,
     coverFallback,
     collage,
   );

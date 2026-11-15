@@ -67,6 +67,7 @@ const _everyField = DiaryCardStyle(
     showPreview: false,
     tagStyle: DiaryCardTagStyle.dot,
     pinnedBadge: DiaryCardPinnedBadge.hidden,
+    firstImageCover: false,
     coverFallback: DiaryCardCoverFallback.moodTile,
     collage: true,
   ),
@@ -147,6 +148,7 @@ void main() {
       expect(style.content.showPreview, isTrue);
       expect(style.content.tagStyle, DiaryCardTagStyle.chip);
       expect(style.content.pinnedBadge, DiaryCardPinnedBadge.standard);
+      expect(style.content.firstImageCover, isTrue);
       expect(style.content.coverFallback, DiaryCardCoverFallback.none);
       expect(style.content.collage, isFalse);
       expect(style.meta.showDate, isTrue);

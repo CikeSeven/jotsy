@@ -209,6 +209,52 @@ void main() {
       expect(find.byType(ImageHero), findsOneWidget);
     });
 
+    testWidgets('first body photo stops being the cover when turned off', (
+      tester,
+    ) async {
+      final style = DiaryCardStyle.defaults.copyWith(
+        content: const DiaryCardContentStyle(firstImageCover: false),
+      );
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[
+          _diary(images: const <String>['/a.png']),
+        ],
+        style: style,
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byType(Image), findsNothing);
+      expect(find.byType(ImageHero), findsNothing);
+
+      // 手动设置的封面照常显示。
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[
+          _diary(cover: '/cover.png', images: const <String>['/a.png']),
+        ],
+        style: style,
+      );
+      expect(find.byType(ImageHero), findsOneWidget);
+
+      // 没设封面的日记改由“没有封面时”的占位顶上，也不拼贴正文图片。
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[
+          _diary(images: const <String>['/a.png', '/b.png', '/c.png']),
+        ],
+        style: style.copyWith(
+          content: style.content.copyWith(
+            coverFallback: DiaryCardCoverFallback.dateBlock,
+            collage: true,
+          ),
+          list: style.list.copyWith(coverPosition: DiaryCardCoverPosition.top),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byType(Image), findsNothing);
+      expect(find.text('2'), findsOneWidget);
+    });
+
     testWidgets('placeholders fill the cover spot without a photo', (
       tester,
     ) async {

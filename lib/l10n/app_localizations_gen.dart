@@ -5922,6 +5922,18 @@ abstract class AppLocalizations {
   /// **'Text panel strength'**
   String get diaryCardStyleScrim;
 
+  /// Diary card style settings: whether entries without a cover use their first photo as the cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Use first photo as cover'**
+  String get diaryCardStyleFirstImageCover;
+
+  /// Diary card style settings: description of Use first photo as cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries without a cover show their first photo; when off, only covers you set are shown'**
+  String get diaryCardStyleFirstImageCoverSubtitle;
+
   /// Diary card style settings: combines several photos in a top cover.
   ///
   /// In en, this message translates to:

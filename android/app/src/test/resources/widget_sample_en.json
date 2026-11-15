@@ -1,0 +1,1111 @@
+{
+  "v": 1,
+  "locale": "en",
+  "redacted": false,
+  "displayFont": "HarmonyOSSansSC",
+  "palettes": {
+    "app": {
+      "light": {
+        "primary": 4280116614,
+        "onPrimary": 4294967295,
+        "primaryContainer": 4291094527,
+        "onPrimaryContainer": 4278209641,
+        "secondary": 4283326829,
+        "onSecondary": 4294967295,
+        "secondaryContainer": 4291945972,
+        "onSecondaryContainer": 4281813333,
+        "tertiary": 4284570237,
+        "onTertiary": 4294967295,
+        "tertiaryContainer": 4293385983,
+        "onTertiaryContainer": 4282991204,
+        "error": 4290386458,
+        "errorContainer": 4294957782,
+        "onErrorContainer": 4287823882,
+        "surface": 4294376190,
+        "onSurface": 4279770143,
+        "onSurfaceVariant": 4282468429,
+        "surfaceContainerLowest": 4294967295,
+        "surfaceContainerLow": 4293981432,
+        "surfaceContainer": 4293652211,
+        "surfaceContainerHigh": 4293257453,
+        "surfaceContainerHighest": 4292862951,
+        "outline": 4285626494,
+        "outlineVariant": 4290824141
+      },
+      "dark": {
+        "primary": 4287680244,
+        "onPrimary": 4278203466,
+        "primaryContainer": 4278209641,
+        "onPrimaryContainer": 4291094527,
+        "secondary": 4290169303,
+        "onSecondary": 4280300350,
+        "secondaryContainer": 4281813333,
+        "onSecondaryContainer": 4291945972,
+        "tertiary": 4291477993,
+        "onTertiary": 4281478220,
+        "tertiaryContainer": 4282991204,
+        "onTertiaryContainer": 4293385983,
+        "error": 4294948011,
+        "errorContainer": 4287823882,
+        "onErrorContainer": 4294957782,
+        "surface": 4279178263,
+        "onSurface": 4292862951,
+        "onSurfaceVariant": 4290824141,
+        "surfaceContainerLowest": 4278849298,
+        "surfaceContainerLow": 4279770143,
+        "surfaceContainer": 4280033315,
+        "surfaceContainerHigh": 4280691502,
+        "surfaceContainerHighest": 4281414969,
+        "outline": 4287337111,
+        "outlineVariant": 4282468429
+      }
+    }
+  },
+  "strings": {
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "greetingNight": "Still up?",
+    "quickPrompt": "What's on your mind?",
+    "actionWrite": "Write",
+    "actionCamera": "Photo",
+    "actionVoice": "Voice",
+    "actionTodo": "To-do",
+    "actionCalendar": "Calendar",
+    "actionSearch": "Search",
+    "todayNotWritten": "Nothing written yet today",
+    "yearProgress": "%s of the year",
+    "featureOff": "Turned off in Feature management",
+    "openToUpdate": "Open Jotsy to update",
+    "isToday": "It's today",
+    "anniversaryTitle": "Anniversaries",
+    "anniversaryEmpty": "No anniversaries yet",
+    "moodPrompt": "How's today?",
+    "mood_awful": "Awful",
+    "mood_bad": "Bad",
+    "mood_meh": "Meh",
+    "mood_good": "Good",
+    "mood_great": "Great",
+    "monthPrevious": "Previous month",
+    "monthNext": "Next month",
+    "todoViewToday": "Today",
+    "todoViewPlanned": "Planned",
+    "todoViewAll": "All",
+    "todoToday": "Today",
+    "todoTomorrow": "Tomorrow",
+    "todoYesterday": "Yesterday",
+    "todoOverdue": "Overdue",
+    "todoEmptyToday": "Nothing to do today",
+    "todoEmpty": "No to-dos here yet",
+    "todoAllDone": "All done for today",
+    "todoAdd": "To-do",
+    "todoCheck": "Mark as done",
+    "todoUncheck": "Mark as not done",
+    "locked": "Locked",
+    "lockedHint": "Tap to unlock",
+    "onThisDayTitle": "On this day",
+    "onThisDayEmpty": "Nothing from this day in past years yet",
+    "entryPrevious": "Previous entry",
+    "entryNext": "Next entry",
+    "writeOne": "Write one",
+    "recentTitle": "Recent entries",
+    "recentPinned": "Pinned entries",
+    "recentEmpty": "No entries here yet",
+    "untitled": "Recorded an entry",
+    "statsTitle": "Writing stats",
+    "statsMonthEntries": "This month",
+    "statsMonthWords": "Words this month",
+    "statsYearEntries": "This year",
+    "statsWroteToday": "Written today",
+    "statsNotYetToday": "Nothing yet today",
+    "photoShuffle": "Another photo",
+    "photoEmpty": "No entries with photos yet"
+  },
+  "plurals": {
+    "daysToGo": {
+      "one": "day to go",
+      "other": "days to go"
+    },
+    "daysAgo": {
+      "one": "day ago",
+      "other": "days ago"
+    },
+    "daysLeft": {
+      "one": "%d day left",
+      "other": "%d days left"
+    },
+    "daysSince": {
+      "one": "%d day since",
+      "other": "%d days since"
+    },
+    "streakUnit": {
+      "one": "day in a row",
+      "other": "days in a row"
+    },
+    "recentWeeks": {
+      "one": "Last week",
+      "other": "Last %d weeks"
+    }
+  },
+  "icons": {
+    "write": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62893
+    },
+    "todo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61770
+    },
+    "calendar": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61747
+    },
+    "search": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61442
+    },
+    "words": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62827
+    },
+    "list": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61614
+    },
+    "leaf": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61548
+    },
+    "anniversary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61444
+    },
+    "countdown": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61476
+    },
+    "pin": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61581
+    },
+    "previous": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61700
+    },
+    "next": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61701
+    },
+    "unchecked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61713
+    },
+    "checked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61528
+    },
+    "plus": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 43
+    },
+    "repeat": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61473
+    },
+    "camera": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61488
+    },
+    "voice": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61744
+    },
+    "lock": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61475
+    },
+    "memory": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61914
+    },
+    "diary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62744
+    },
+    "tag": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 35
+    },
+    "stats": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 58483
+    },
+    "streak": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61549
+    },
+    "shuffle": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61556
+    },
+    "photo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62210
+    }
+  },
+  "instances": {},
+  "defaults": {
+    "quick_capture": {
+      "kind": "quick_capture",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "actions": [
+          "write",
+          "todo",
+          "calendar"
+        ],
+        "labels": true,
+        "greeting": true
+      }
+    },
+    "on_this_day": {
+      "kind": "on_this_day",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "match": "sameDay",
+        "photo": true,
+        "excerpt": true
+      }
+    },
+    "recent_diaries": {
+      "kind": "recent_diaries",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "photos": true,
+        "excerpt": true
+      }
+    },
+    "today": {
+      "kind": "today",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "lunar": false,
+        "holiday": false,
+        "writing": true,
+        "todos": true,
+        "yearProgress": false,
+        "mood": true,
+        "tap": "calendar"
+      }
+    },
+    "anniversary": {
+      "kind": "anniversary",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "display": "single",
+        "date": true
+      }
+    },
+    "mood_calendar": {
+      "kind": "mood_calendar",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "moods": true,
+        "written": true,
+        "holiday": false
+      }
+    },
+    "todos": {
+      "kind": "todos",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "view": "today",
+        "completed": true,
+        "due": true
+      }
+    },
+    "writing_stats": {
+      "kind": "writing_stats",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "basis": "entries",
+        "heatmap": true
+      }
+    },
+    "photo_memories": {
+      "kind": "photo_memories",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "date": true
+      }
+    }
+  },
+  "today": {
+    "days": {
+      "2026-11-15": {
+        "weekday": "Sunday",
+        "weekdayShort": "Sun",
+        "monthDay": "Nov 15",
+        "month": "November",
+        "lunar": "十月初七",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-16": {
+        "weekday": "Monday",
+        "weekdayShort": "Mon",
+        "monthDay": "Nov 16",
+        "month": "November",
+        "lunar": "十月初八",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-17": {
+        "weekday": "Tuesday",
+        "weekdayShort": "Tue",
+        "monthDay": "Nov 17",
+        "month": "November",
+        "lunar": "十月初九",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-18": {
+        "weekday": "Wednesday",
+        "weekdayShort": "Wed",
+        "monthDay": "Nov 18",
+        "month": "November",
+        "lunar": "十月初十",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-19": {
+        "weekday": "Thursday",
+        "weekdayShort": "Thu",
+        "monthDay": "Nov 19",
+        "month": "November",
+        "lunar": "十月十一",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-20": {
+        "weekday": "Friday",
+        "weekdayShort": "Fri",
+        "monthDay": "Nov 20",
+        "month": "November",
+        "lunar": "十月十二",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-21": {
+        "weekday": "Saturday",
+        "weekdayShort": "Sat",
+        "monthDay": "Nov 21",
+        "month": "November",
+        "lunar": "十月十三",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-22": {
+        "weekday": "Sunday",
+        "weekdayShort": "Sun",
+        "monthDay": "Nov 22",
+        "month": "November",
+        "lunar": "十月十四",
+        "almanac": "小雪",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-23": {
+        "weekday": "Monday",
+        "weekdayShort": "Mon",
+        "monthDay": "Nov 23",
+        "month": "November",
+        "lunar": "十月十五",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-24": {
+        "weekday": "Tuesday",
+        "weekdayShort": "Tue",
+        "monthDay": "Nov 24",
+        "month": "November",
+        "lunar": "十月十六",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-25": {
+        "weekday": "Wednesday",
+        "weekdayShort": "Wed",
+        "monthDay": "Nov 25",
+        "month": "November",
+        "lunar": "十月十七",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-26": {
+        "weekday": "Thursday",
+        "weekdayShort": "Thu",
+        "monthDay": "Nov 26",
+        "month": "November",
+        "lunar": "十月十八",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-27": {
+        "weekday": "Friday",
+        "weekdayShort": "Fri",
+        "monthDay": "Nov 27",
+        "month": "November",
+        "lunar": "十月十九",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      },
+      "2026-11-28": {
+        "weekday": "Saturday",
+        "weekdayShort": "Sat",
+        "monthDay": "Nov 28",
+        "month": "November",
+        "lunar": "十月二十",
+        "todos": 3,
+        "todosLabel": "3 to-dos"
+      }
+    },
+    "words": {
+      "2026-11-15": 860
+    },
+    "wordsLabel": {
+      "2026-11-15": "860 words today"
+    },
+    "moods": {
+      "2026-11-15": "good"
+    }
+  },
+  "anniversaries": [
+    {
+      "id": "sample-anniversary-1",
+      "title": "Mom's birthday",
+      "pinned": true,
+      "repeats": true,
+      "base": "1968-11-24",
+      "baseLabel": "Nov 24, 1968",
+      "occurrences": [
+        {
+          "date": "2026-11-24",
+          "dateLabel": "Nov 24 · Tue",
+          "ordinalLabel": "58-year anniversary",
+          "todayLabel": "58-year anniversary today"
+        },
+        {
+          "date": "2027-11-24",
+          "dateLabel": "Nov 24, 2027 · Wed",
+          "ordinalLabel": "59-year anniversary",
+          "todayLabel": "59-year anniversary today"
+        },
+        {
+          "date": "2028-11-24",
+          "dateLabel": "Nov 24, 2028 · Fri",
+          "ordinalLabel": "60-year anniversary",
+          "todayLabel": "60-year anniversary today"
+        }
+      ]
+    },
+    {
+      "id": "sample-anniversary-2",
+      "title": "Together",
+      "pinned": false,
+      "repeats": true,
+      "base": "2021-07-18",
+      "baseLabel": "Jul 18, 2021",
+      "occurrences": [
+        {
+          "date": "2027-07-18",
+          "dateLabel": "Jul 18, 2027 · Sun",
+          "ordinalLabel": "6-year anniversary",
+          "todayLabel": "6-year anniversary today"
+        },
+        {
+          "date": "2028-07-18",
+          "dateLabel": "Jul 18, 2028 · Tue",
+          "ordinalLabel": "7-year anniversary",
+          "todayLabel": "7-year anniversary today"
+        },
+        {
+          "date": "2029-07-18",
+          "dateLabel": "Jul 18, 2029 · Wed",
+          "ordinalLabel": "8-year anniversary",
+          "todayLabel": "8-year anniversary today"
+        }
+      ]
+    }
+  ],
+  "todos": {
+    "lists": {},
+    "open": [
+      {
+        "id": "sample-todo-1",
+        "title": "Pay the rent",
+        "due": "2026-11-14",
+        "dueLabel": "Nov 14"
+      },
+      {
+        "id": "sample-todo-3",
+        "title": "Buy groceries",
+        "due": "2026-11-15",
+        "dueLabel": "Nov 15"
+      },
+      {
+        "id": "sample-todo-2",
+        "title": "Call Mom",
+        "due": "2026-11-15",
+        "dueLabel": "Nov 15",
+        "time": "19:30"
+      },
+      {
+        "id": "sample-todo-4",
+        "title": "Finish a book"
+      }
+    ],
+    "done": []
+  },
+  "calendar": {
+    "firstWeekday": 7,
+    "weekdays": [
+      "M",
+      "T",
+      "W",
+      "T",
+      "F",
+      "S",
+      "S"
+    ],
+    "months": {
+      "2026-09": {
+        "title": "September 2026",
+        "writtenLabel": "Wrote on 18 days",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": -1,
+            "w": 1
+          },
+          "8": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": -1,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "19": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1,
+            "h": "Work",
+            "hw": true
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "26": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "27": {
+            "h": "Off",
+            "hw": false
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-10": {
+        "title": "October 2026",
+        "writtenLabel": "Wrote on 19 days",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "2": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "3": {
+            "h": "Off",
+            "hw": false
+          },
+          "4": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "5": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "6": {
+            "h": "Off",
+            "hw": false
+          },
+          "7": {
+            "b": -1,
+            "w": 1,
+            "h": "Off",
+            "hw": false
+          },
+          "10": {
+            "b": -1,
+            "w": 1,
+            "h": "Work",
+            "hw": true
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "16": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1
+          },
+          "26": {
+            "b": -1,
+            "w": 1
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          },
+          "31": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-11": {
+        "title": "November 2026",
+        "writtenLabel": "Wrote on 12 days",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": 4
+          },
+          "3": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": 1,
+            "w": 1
+          },
+          "6": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": 3,
+            "w": 1
+          },
+          "9": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": 2,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "12": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": 4,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "15": {
+            "b": 3,
+            "w": 1
+          }
+        }
+      }
+    }
+  },
+  "stats": {
+    "streak": 7,
+    "streakEnd": "2026-11-15",
+    "month": "2026-11",
+    "monthEntries": "12",
+    "monthWords": "8,815",
+    "year": 2026,
+    "yearEntries": "197",
+    "heat": {
+      "start": "2025-11-16",
+      "entries": "01101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101111111",
+      "words": "03303300403303201303302203303002103303200303302203303302203303002303302200303302203303302303303004303302200303302103303201303302003303302100303202303302203303302003303302300303203303302203303302003303201300302203303302103303201003302203300302203303202303303203003302203300302403303201303302203003302103300201303302203303302203003202303300203303302203303302403333221"
+    }
+  },
+  "onThisDay": {
+    "days": {
+      "2026-11-15": {
+        "sameDay": [
+          {
+            "id": "sample-sea",
+            "label": "3 years ago today"
+          },
+          {
+            "id": "sample-start",
+            "label": "5 years ago today"
+          }
+        ],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "3 years ago today"
+          },
+          {
+            "id": "sample-start",
+            "label": "5 years ago today"
+          }
+        ]
+      },
+      "2026-11-16": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "Nov 15, 2023"
+          },
+          {
+            "id": "sample-start",
+            "label": "Nov 15, 2021"
+          }
+        ]
+      },
+      "2026-11-17": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "Nov 15, 2023"
+          },
+          {
+            "id": "sample-start",
+            "label": "Nov 15, 2021"
+          }
+        ]
+      },
+      "2026-11-18": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "Nov 15, 2023"
+          },
+          {
+            "id": "sample-start",
+            "label": "Nov 15, 2021"
+          }
+        ]
+      },
+      "2026-11-19": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-20": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-21": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-22": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-23": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-24": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-25": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-26": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-27": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-28": {
+        "sameDay": [],
+        "nearby": []
+      }
+    }
+  },
+  "recent": {
+    "all": [
+      "sample-run",
+      "sample-bread",
+      "sample-books",
+      "sample-sea",
+      "sample-start"
+    ]
+  },
+  "photos": {
+    "all": [
+      "sample-run",
+      "sample-books",
+      "sample-sea"
+    ]
+  },
+  "diaries": {
+    "sample-sea": {
+      "title": "Sunset by the sea",
+      "excerpt": "The wind turned the clouds orange. We sat on the rocks until dark.",
+      "created": "2023-11-15",
+      "day": 15,
+      "month": "Nov",
+      "monthDay": "Nov 15",
+      "date": "Nov 15, 2023",
+      "mood": "😊",
+      "photo": "sample:sunset"
+    },
+    "sample-start": {
+      "title": "",
+      "excerpt": "Started keeping a diary today. One line a day is enough.",
+      "created": "2021-11-15",
+      "day": 15,
+      "month": "Nov",
+      "monthDay": "Nov 15",
+      "date": "Nov 15, 2021"
+    },
+    "sample-run": {
+      "title": "Morning run",
+      "excerpt": "Five kilometres, a little faster than last week.",
+      "created": "2026-11-15",
+      "day": 15,
+      "month": "Nov",
+      "monthDay": "Nov 15",
+      "date": "Nov 15, 2026",
+      "mood": "💪",
+      "photo": "sample:run"
+    },
+    "sample-bread": {
+      "title": "My first loaf",
+      "excerpt": "A bit lopsided, but the whole flat smelled amazing.",
+      "created": "2026-11-14",
+      "day": 14,
+      "month": "Nov",
+      "monthDay": "Nov 14",
+      "date": "Nov 14, 2026",
+      "mood": "😋"
+    },
+    "sample-books": {
+      "title": "Bookshop in the rain",
+      "excerpt": "Found an old book of poems while waiting out the rain.",
+      "created": "2026-11-11",
+      "day": 11,
+      "month": "Nov",
+      "monthDay": "Nov 11",
+      "date": "Nov 11, 2026",
+      "photo": "sample:books"
+    }
+  }
+}

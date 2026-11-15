@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 那年今日（widgets/kinds/OnThisDayWidget.kt）：默认 2×2，可拉到 4×2、4×4。
+     可用尺寸须与 Dart HomeWidgetCellSize.sizesOf 一致。
+     reconfigurable|configuration_optional：放置时不弹配置，长按“重新配置”进工作室。 -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
+    android:description="@string/widget_on_this_day_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_on_this_day"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

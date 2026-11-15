@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 桌面小组件“跟随壁纸”配色的色槽（docs/rules/home_widgets.md「配色」）。
+     widget_dyn_* 随系统明暗切换，_light / _dark 为固定明暗；改动须同步其他 API
+     版本 / 明暗目录的同名文件与 WidgetDynamicColors.kt。 -->
+<resources>
+    <color name="widget_dyn_primary">@android:color/system_primary_dark</color>
+    <color name="widget_dyn_on_primary">@android:color/system_on_primary_dark</color>
+    <color name="widget_dyn_primary_container">@android:color/system_primary_container_dark</color>
+    <color name="widget_dyn_on_primary_container">@android:color/system_on_primary_container_dark</color>
+    <color name="widget_dyn_secondary">@android:color/system_secondary_dark</color>
+    <color name="widget_dyn_on_secondary">@android:color/system_on_secondary_dark</color>
+    <color name="widget_dyn_secondary_container">@android:color/system_secondary_container_dark</color>
+    <color name="widget_dyn_on_secondary_container">@android:color/system_on_secondary_container_dark</color>
+    <color name="widget_dyn_tertiary">@android:color/system_tertiary_dark</color>
+    <color name="widget_dyn_on_tertiary">@android:color/system_on_tertiary_dark</color>
+    <color name="widget_dyn_tertiary_container">@android:color/system_tertiary_container_dark</color>
+    <color name="widget_dyn_on_tertiary_container">@android:color/system_on_tertiary_container_dark</color>
+    <color name="widget_dyn_surface">@android:color/system_surface_dark</color>
+    <color name="widget_dyn_on_surface">@android:color/system_on_surface_dark</color>
+    <color name="widget_dyn_on_surface_variant">@android:color/system_on_surface_variant_dark</color>
+    <color name="widget_dyn_surface_container_lowest">@android:color/system_surface_container_lowest_dark</color>
+    <color name="widget_dyn_surface_container_low">@android:color/system_surface_container_low_dark</color>
+    <color name="widget_dyn_surface_container">@android:color/system_surface_container_dark</color>
+    <color name="widget_dyn_surface_container_high">@android:color/system_surface_container_high_dark</color>
+    <color name="widget_dyn_surface_container_highest">@android:color/system_surface_container_highest_dark</color>
+    <color name="widget_dyn_outline">@android:color/system_outline_dark</color>
+    <color name="widget_dyn_outline_variant">@android:color/system_outline_variant_dark</color>
+    <color name="widget_dyn_error">@android:color/system_error_dark</color>
+    <color name="widget_dyn_error_container">@android:color/system_error_container_dark</color>
+    <color name="widget_dyn_on_error_container">@android:color/system_on_error_container_dark</color>
+</resources>

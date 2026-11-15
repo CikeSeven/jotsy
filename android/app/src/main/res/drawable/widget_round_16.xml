@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 桌面小组件在 Android 12 以下的圆角底（WidgetDesign.kt roundedBackground）：白色，按颜色着色。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <solid android:color="#FFFFFFFF" />
+</shape>

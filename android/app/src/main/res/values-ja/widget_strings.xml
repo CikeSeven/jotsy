@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- values/widget_strings.xml を参照。 -->
+<resources>
+    <string name="widget_quick_capture_name">クイック記録</string>
+    <string name="widget_quick_capture_description">ワンタップで日記や ToDo、今日のカレンダーへ。</string>
+    <string name="widget_today_name">今日</string>
+    <string name="widget_today_description">日付、旧暦、祝日と今日の進み具合。</string>
+    <string name="widget_open_app">Jotsy を開いて設定を完了</string>
+    <string name="widget_anniversary_name">記念日</string>
+    <string name="widget_anniversary_description">1 つの日までの大きなカウントダウン、または次のいくつかを一覧で。</string>
+    <string name="widget_mood_calendar_name">気分カレンダー</string>
+    <string name="widget_mood_calendar_description">今月をひと目で。毎日の気分と日記を書いた日。</string>
+    <string name="widget_todos_name">ToDo リスト</string>
+    <string name="widget_todos_description">今日の ToDo や任意のリスト。ホーム画面でそのままチェック。</string>
+    <string name="widget_on_this_day_name">あの日の今日</string>
+    <string name="widget_on_this_day_description">過去の今日に書いた日記。写真を優先して表示。</string>
+    <string name="widget_recent_diaries_name">最近の日記</string>
+    <string name="widget_recent_diaries_description">すべて・日記帳・タグ・ピン留めから最近の数件。</string>
+    <string name="widget_writing_stats_name">執筆の記録</string>
+    <string name="widget_writing_stats_description">連続記録の日数、今月と今年の記録、最近数週間のヒートマップ。</string>
+    <string name="widget_photo_memories_name">写真の思い出</string>
+    <string name="widget_photo_memories_description">日記の写真を毎日1枚。</string>
+</resources>

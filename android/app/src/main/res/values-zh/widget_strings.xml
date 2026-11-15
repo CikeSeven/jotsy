@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 见 values/widget_strings.xml。 -->
+<resources>
+    <string name="widget_quick_capture_name">快速记录</string>
+    <string name="widget_quick_capture_description">一点就开始写日记、记待办或看今天的日历。</string>
+    <string name="widget_today_name">今日</string>
+    <string name="widget_today_description">日期、农历与节假日，还有今天的进度。</string>
+    <string name="widget_open_app">打开 Jotsy 完成设置</string>
+    <string name="widget_anniversary_name">纪念日</string>
+    <string name="widget_anniversary_description">一个日子的大号倒数，或接下来几个日子的列表。</string>
+    <string name="widget_mood_calendar_name">心情月历</string>
+    <string name="widget_mood_calendar_description">一眼看完这个月：每天的心情，和写过日记的日子。</string>
+    <string name="widget_todos_name">待办清单</string>
+    <string name="widget_todos_description">今天的待办或某个清单，在桌面上直接勾选完成。</string>
+    <string name="widget_on_this_day_name">那年今日</string>
+    <string name="widget_on_this_day_description">往年今天写下的日记，照片优先。</string>
+    <string name="widget_recent_diaries_name">最近日记</string>
+    <string name="widget_recent_diaries_description">全部、某个日记本、某个标签或置顶的最近几篇。</string>
+    <string name="widget_writing_stats_name">写作统计</string>
+    <string name="widget_writing_stats_description">连续记录的天数、本月与今年写了多少，以及最近几周的热力图。</string>
+    <string name="widget_photo_memories_name">照片回忆</string>
+    <string name="widget_photo_memories_description">日记里的照片，每天换一张。</string>
+</resources>

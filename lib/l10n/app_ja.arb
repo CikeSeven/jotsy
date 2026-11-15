@@ -20319,5 +20319,776 @@
   "aiChatExportJson": "JSON",
   "@aiChatExportJson": {
     "description": "Export format: JSON (structured, for programs)."
+  },
+  "homeWidgetsTitle": "ホーム画面ウィジェット",
+  "@homeWidgetsTitle": {
+    "description": "Settings: the home screen widgets page title and its row."
+  },
+  "homeWidgetsSubtitle": "日記・日付・ショートカットをホーム画面に",
+  "@homeWidgetsSubtitle": {
+    "description": "Settings: subtitle of the home screen widgets row."
+  },
+  "homeWidgetsInstalledGroup": "ホーム画面のウィジェット",
+  "@homeWidgetsInstalledGroup": {
+    "description": "Widgets page: group of the widgets currently on the home screen."
+  },
+  "homeWidgetsInstalledEmpty": "ホーム画面にはまだウィジェットがありません。下のギャラリーから選んでください。",
+  "@homeWidgetsInstalledEmpty": {
+    "description": "Widgets page: shown when no widget is on the home screen."
+  },
+  "homeWidgetsInstalledHint": "変更はすぐにホーム画面に反映されます。",
+  "@homeWidgetsInstalledHint": {
+    "description": "Widget studio: note under the preview when editing a widget already on the home screen."
+  },
+  "homeWidgetsGalleryGroup": "ウィジェットギャラリー",
+  "@homeWidgetsGalleryGroup": {
+    "description": "Widgets page: group of all widget kinds."
+  },
+  "homeWidgetGroupCapture": "記録と思い出",
+  "@homeWidgetGroupCapture": {
+    "description": "Widget gallery section: capture and memories."
+  },
+  "homeWidgetGroupTime": "日付とカレンダー",
+  "@homeWidgetGroupTime": {
+    "description": "Widget gallery section: dates and calendar."
+  },
+  "homeWidgetGroupTodos": "ToDo",
+  "@homeWidgetGroupTodos": {
+    "description": "Widget gallery section: to-dos."
+  },
+  "homeWidgetGroupStats": "統計と写真",
+  "@homeWidgetGroupStats": {
+    "description": "Widget gallery section: stats and photos."
+  },
+  "homeWidgetKindQuickCapture": "クイック記録",
+  "@homeWidgetKindQuickCapture": {
+    "description": "Widget kind name: quick capture shortcuts."
+  },
+  "homeWidgetKindQuickCaptureDescription": "ワンタップで日記や ToDo、今日のカレンダーへ。",
+  "@homeWidgetKindQuickCaptureDescription": {
+    "description": "Widget gallery: description of the quick capture widget."
+  },
+  "homeWidgetKindToday": "今日",
+  "@homeWidgetKindToday": {
+    "description": "Widget kind name: today card."
+  },
+  "homeWidgetKindTodayDescription": "日付、旧暦、祝日と今日の進み具合。",
+  "@homeWidgetKindTodayDescription": {
+    "description": "Widget gallery: description of the today widget."
+  },
+  "homeWidgetAddToHome": "ホーム画面に追加",
+  "@homeWidgetAddToHome": {
+    "description": "Widget studio: button that asks the launcher to add the widget."
+  },
+  "homeWidgetPinRequested": "表示されたダイアログで確認すると追加されます",
+  "@homeWidgetPinRequested": {
+    "description": "Snackbar after asking the launcher to add a widget."
+  },
+  "homeWidgetPinUnsupportedTitle": "ホーム画面から追加",
+  "@homeWidgetPinUnsupportedTitle": {
+    "description": "Dialog title when the launcher cannot add widgets from apps."
+  },
+  "homeWidgetPinUnsupportedBody": "ホーム画面の空いている所を長押しし、「ウィジェット」から Jotsy を探してください。15 分以内に追加した次の「{name}」に、ここでのデザインが適用されます。",
+  "@homeWidgetPinUnsupportedBody": {
+    "description": "Dialog body when the launcher cannot add widgets from apps.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetTabContent": "内容",
+  "@homeWidgetTabContent": {
+    "description": "Widget studio tab: content options."
+  },
+  "homeWidgetTabStyle": "スタイル",
+  "@homeWidgetTabStyle": {
+    "description": "Widget studio tab: style options."
+  },
+  "homeWidgetPreviewSize": "プレビューのサイズ",
+  "@homeWidgetPreviewSize": {
+    "description": "Widget studio: label of the preview size buttons."
+  },
+  "homeWidgetStylePalette": "配色",
+  "@homeWidgetStylePalette": {
+    "description": "Widget style: color source."
+  },
+  "homeWidgetPaletteApp": "アプリのテーマ",
+  "@homeWidgetPaletteApp": {
+    "description": "Widget colors follow the app theme color."
+  },
+  "homeWidgetPaletteWallpaper": "壁紙",
+  "@homeWidgetPaletteWallpaper": {
+    "description": "Widget colors follow the wallpaper (Android dynamic color)."
+  },
+  "homeWidgetPaletteWallpaperHint": "Android 12 以降は壁紙から色を取ります。",
+  "@homeWidgetPaletteWallpaperHint": {
+    "description": "Widget style: hint for the wallpaper colors option."
+  },
+  "homeWidgetPaletteCustom": "カスタムカラー",
+  "@homeWidgetPaletteCustom": {
+    "description": "Widget colors from a picked seed color."
+  },
+  "homeWidgetStyleBrightness": "ライト / ダーク",
+  "@homeWidgetStyleBrightness": {
+    "description": "Widget style: light or dark."
+  },
+  "homeWidgetBrightnessSystem": "システム",
+  "@homeWidgetBrightnessSystem": {
+    "description": "Widget brightness follows the system."
+  },
+  "homeWidgetBrightnessLight": "ライト",
+  "@homeWidgetBrightnessLight": {
+    "description": "Widget brightness: always light."
+  },
+  "homeWidgetBrightnessDark": "ダーク",
+  "@homeWidgetBrightnessDark": {
+    "description": "Widget brightness: always dark."
+  },
+  "homeWidgetStyleBackground": "背景",
+  "@homeWidgetStyleBackground": {
+    "description": "Widget style: background."
+  },
+  "homeWidgetBackgroundSurface": "ソリッド",
+  "@homeWidgetBackgroundSurface": {
+    "description": "Widget background: the card surface color."
+  },
+  "homeWidgetBackgroundTonal": "トーン",
+  "@homeWidgetBackgroundTonal": {
+    "description": "Widget background: the tonal container color."
+  },
+  "homeWidgetBackgroundVivid": "ビビッド",
+  "@homeWidgetBackgroundVivid": {
+    "description": "Widget background: the primary color."
+  },
+  "homeWidgetBackgroundClear": "透明",
+  "@homeWidgetBackgroundClear": {
+    "description": "Widget background: none, straight on the wallpaper."
+  },
+  "homeWidgetStyleOpacity": "不透明度",
+  "@homeWidgetStyleOpacity": {
+    "description": "Widget style: background opacity."
+  },
+  "homeWidgetStyleCorners": "角の丸み",
+  "@homeWidgetStyleCorners": {
+    "description": "Widget style: corner radius."
+  },
+  "homeWidgetCornersSystem": "システムに合わせる",
+  "@homeWidgetCornersSystem": {
+    "description": "Widget corners follow the system widget radius."
+  },
+  "homeWidgetStyleTextSize": "文字サイズ",
+  "@homeWidgetStyleTextSize": {
+    "description": "Widget style: text scale."
+  },
+  "homeWidgetStyleDensity": "余白",
+  "@homeWidgetStyleDensity": {
+    "description": "Widget style: padding density."
+  },
+  "homeWidgetDensityCompact": "狭め",
+  "@homeWidgetDensityCompact": {
+    "description": "Widget spacing: compact."
+  },
+  "homeWidgetDensityStandard": "標準",
+  "@homeWidgetDensityStandard": {
+    "description": "Widget spacing: standard."
+  },
+  "homeWidgetDensityRoomy": "広め",
+  "@homeWidgetDensityRoomy": {
+    "description": "Widget spacing: roomy."
+  },
+  "homeWidgetStyleAccent": "アクセント",
+  "@homeWidgetStyleAccent": {
+    "description": "Widget style: which color slot is the accent."
+  },
+  "homeWidgetAccentPrimary": "プライマリ",
+  "@homeWidgetAccentPrimary": {
+    "description": "Widget accent: primary."
+  },
+  "homeWidgetAccentSecondary": "セカンダリ",
+  "@homeWidgetAccentSecondary": {
+    "description": "Widget accent: secondary."
+  },
+  "homeWidgetAccentTertiary": "ターシャリ",
+  "@homeWidgetAccentTertiary": {
+    "description": "Widget accent: tertiary."
+  },
+  "homeWidgetQuickActions": "アクション",
+  "@homeWidgetQuickActions": {
+    "description": "Quick capture: the list of actions."
+  },
+  "homeWidgetQuickActionsHint": "最大 4 つ。最初のものが目立ちます。",
+  "@homeWidgetQuickActionsHint": {
+    "description": "Quick capture: hint under the actions."
+  },
+  "homeWidgetQuickActionWrite": "日記を書く",
+  "@homeWidgetQuickActionWrite": {
+    "description": "Quick capture action: new entry."
+  },
+  "homeWidgetQuickActionTodo": "ToDo",
+  "@homeWidgetQuickActionTodo": {
+    "description": "Quick capture action: new to-do."
+  },
+  "homeWidgetQuickActionCalendar": "カレンダー",
+  "@homeWidgetQuickActionCalendar": {
+    "description": "Quick capture action: open today in the calendar."
+  },
+  "homeWidgetQuickActionSearch": "検索",
+  "@homeWidgetQuickActionSearch": {
+    "description": "Quick capture action: search entries."
+  },
+  "homeWidgetQuickAddAction": "アクションを追加",
+  "@homeWidgetQuickAddAction": {
+    "description": "Quick capture: button to add an action."
+  },
+  "homeWidgetQuickRemoveAction": "削除",
+  "@homeWidgetQuickRemoveAction": {
+    "description": "Quick capture: tooltip to remove an action."
+  },
+  "homeWidgetQuickNotebook": "書き込む日記帳",
+  "@homeWidgetQuickNotebook": {
+    "description": "Quick capture: which notebook new entries go into."
+  },
+  "homeWidgetQuickNotebookNone": "指定しない",
+  "@homeWidgetQuickNotebookNone": {
+    "description": "Quick capture: no notebook chosen."
+  },
+  "homeWidgetQuickShowLabels": "ラベルを表示",
+  "@homeWidgetQuickShowLabels": {
+    "description": "Quick capture: show text under the icons."
+  },
+  "homeWidgetQuickShowGreeting": "日付とあいさつ",
+  "@homeWidgetQuickShowGreeting": {
+    "description": "Quick capture: show the date and a greeting."
+  },
+  "homeWidgetQuickShowGreetingHint": "2×2 以上で表示",
+  "@homeWidgetQuickShowGreetingHint": {
+    "description": "Quick capture: hint for the greeting option."
+  },
+  "homeWidgetTodayLunar": "旧暦と二十四節気",
+  "@homeWidgetTodayLunar": {
+    "description": "Today widget: show the lunar date, solar terms and festivals."
+  },
+  "homeWidgetTodayHoliday": "祝日（中国）",
+  "@homeWidgetTodayHoliday": {
+    "description": "Today widget: show public holidays and make-up workdays."
+  },
+  "homeWidgetTodayWriting": "今日書いた量",
+  "@homeWidgetTodayWriting": {
+    "description": "Today widget: show how much was written today."
+  },
+  "homeWidgetTodayShowTodos": "期限の ToDo",
+  "@homeWidgetTodayShowTodos": {
+    "description": "Today widget: show how many to-dos are due."
+  },
+  "homeWidgetTodayYearProgress": "今年の進み具合",
+  "@homeWidgetTodayYearProgress": {
+    "description": "Today widget: show how much of the year has passed."
+  },
+  "homeWidgetTapAction": "タップで開く",
+  "@homeWidgetTapAction": {
+    "description": "Widget option: what opens when tapped."
+  },
+  "homeWidgetTapCalendar": "カレンダー",
+  "@homeWidgetTapCalendar": {
+    "description": "Tap action: open the calendar."
+  },
+  "homeWidgetTapWrite": "日記を書く",
+  "@homeWidgetTapWrite": {
+    "description": "Tap action: start a new entry."
+  },
+  "homeWidgetTapApp": "アプリ",
+  "@homeWidgetTapApp": {
+    "description": "Tap action: just open the app."
+  },
+  "homeWidgetGreetingMorning": "おはようございます",
+  "@homeWidgetGreetingMorning": {
+    "description": "Widget greeting before noon."
+  },
+  "homeWidgetGreetingAfternoon": "こんにちは",
+  "@homeWidgetGreetingAfternoon": {
+    "description": "Widget greeting in the afternoon."
+  },
+  "homeWidgetGreetingEvening": "こんばんは",
+  "@homeWidgetGreetingEvening": {
+    "description": "Widget greeting in the evening."
+  },
+  "homeWidgetGreetingNight": "夜更かしですね",
+  "@homeWidgetGreetingNight": {
+    "description": "Widget greeting late at night."
+  },
+  "homeWidgetQuickPrompt": "今、何を考えていますか？",
+  "@homeWidgetQuickPrompt": {
+    "description": "Quick capture widget: prompt above the write button."
+  },
+  "homeWidgetTodayWords": "今日は {count} 字",
+  "@homeWidgetTodayWords": {
+    "description": "Today widget: how much was written today (count from TextStats).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNotWritten": "今日はまだ書いていません",
+  "@homeWidgetTodayNotWritten": {
+    "description": "Today widget: nothing written yet."
+  },
+  "homeWidgetTodayTodos": "ToDo {count} 件",
+  "@homeWidgetTodayTodos": {
+    "description": "Today widget: to-dos due by that day.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNoTodos": "ToDo はありません",
+  "@homeWidgetTodayNoTodos": {
+    "description": "Today widget: no to-dos due."
+  },
+  "homeWidgetYearProgress": "今年の {percent} が経過",
+  "@homeWidgetYearProgress": {
+    "description": "Today widget: how much of the year has passed, e.g. “87%”.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetFeatureOff": "機能管理でオフになっています",
+  "@homeWidgetFeatureOff": {
+    "description": "Widget placeholder when its feature is turned off."
+  },
+  "homeWidgetOpenToUpdate": "Jotsy を開いて更新",
+  "@homeWidgetOpenToUpdate": {
+    "description": "Widget placeholder when its data is out of date."
+  },
+  "homeWidgetKindAnniversary": "記念日",
+  "@homeWidgetKindAnniversary": {
+    "description": "Widget kind name: anniversaries and countdowns."
+  },
+  "homeWidgetKindAnniversaryDescription": "1 つの日までの大きなカウントダウン、または次のいくつかを一覧で。",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "Widget gallery: description of the anniversary widget."
+  },
+  "homeWidgetKindMoodCalendar": "気分カレンダー",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "Widget kind name: the month colored by mood."
+  },
+  "homeWidgetKindMoodCalendarDescription": "今月をひと目で。毎日の気分と日記を書いた日。",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "Widget gallery: description of the mood calendar widget."
+  },
+  "homeWidgetMonthWrittenDays": "{count} 日書いた",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "Mood calendar widget: how many days of the month have entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "記念日はまだありません",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "Anniversary widget: shown when there are none."
+  },
+  "homeWidgetTodayMood": "今日の気分",
+  "@homeWidgetTodayMood": {
+    "description": "Today widget option: show the mood faces."
+  },
+  "homeWidgetTodayMoodHint": "4×2 以上の大きさで表示。顔をタップして気分を記録、もう一度タップで取り消し。",
+  "@homeWidgetTodayMoodHint": {
+    "description": "Today widget option: hint for the mood faces."
+  },
+  "homeWidgetTodayMoodPrompt": "今日の気分は？",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "Today widget: label above the mood faces."
+  },
+  "homeWidgetAnniversaryDisplay": "表示",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "Anniversary widget option: one or a list."
+  },
+  "homeWidgetAnniversarySingle": "1 つ",
+  "@homeWidgetAnniversarySingle": {
+    "description": "Anniversary widget: show one anniversary."
+  },
+  "homeWidgetAnniversaryList": "リスト",
+  "@homeWidgetAnniversaryList": {
+    "description": "Anniversary widget: show a list."
+  },
+  "homeWidgetAnniversaryWhich": "表示する記念日",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "Anniversary widget option: which anniversary to show."
+  },
+  "homeWidgetAnniversaryNextUp": "次に来るもの",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "Anniversary widget: follow the next anniversary instead of a fixed one."
+  },
+  "homeWidgetAnniversaryShowDate": "日付と周年",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "Anniversary widget option: show the date line."
+  },
+  "homeWidgetMoodCalendarMoods": "気分で色分け",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "Mood calendar option: color the days by mood."
+  },
+  "homeWidgetMoodCalendarMoodsHint": "その日の気分を優先し、なければその日の日記の気分の平均。",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "Mood calendar option: how a day's color is chosen."
+  },
+  "homeWidgetMoodCalendarWritten": "日記を書いた日に点",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "Mood calendar option: mark days that have entries."
+  },
+  "homeWidgetMonthPrevious": "前の月",
+  "@homeWidgetMonthPrevious": {
+    "description": "Mood calendar widget: button to the previous month."
+  },
+  "homeWidgetMonthNext": "次の月",
+  "@homeWidgetMonthNext": {
+    "description": "Mood calendar widget: button to the next month."
+  },
+  "homeWidgetKindTodos": "ToDo リスト",
+  "@homeWidgetKindTodos": {
+    "description": "Widget kind name: to-do list."
+  },
+  "homeWidgetKindTodosDescription": "今日の ToDo や任意のリスト。ホーム画面でそのままチェック。",
+  "@homeWidgetKindTodosDescription": {
+    "description": "Widget gallery: description of the to-do list widget."
+  },
+  "homeWidgetTodoView": "表示",
+  "@homeWidgetTodoView": {
+    "description": "To-do widget option: which to-dos to show."
+  },
+  "homeWidgetTodoViewList": "リスト",
+  "@homeWidgetTodoViewList": {
+    "description": "To-do widget option: show one list."
+  },
+  "homeWidgetTodoList": "リスト",
+  "@homeWidgetTodoList": {
+    "description": "To-do widget option: which list to show."
+  },
+  "homeWidgetTodoShowCompleted": "今日完了したもの",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "To-do widget option: keep today's completed to-dos at the end."
+  },
+  "homeWidgetTodoShowCompletedHint": "取り消し線を付けて最後に表示。タップで未完了に戻せます。",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "To-do widget option: hint for the done-today option."
+  },
+  "homeWidgetTodoShowDue": "期限と時刻",
+  "@homeWidgetTodoShowDue": {
+    "description": "To-do widget option: show due date and time on each row."
+  },
+  "homeWidgetTodoCheck": "完了にする",
+  "@homeWidgetTodoCheck": {
+    "description": "To-do widget: description of the check circle."
+  },
+  "homeWidgetTodoUncheck": "未完了に戻す",
+  "@homeWidgetTodoUncheck": {
+    "description": "To-do widget: description of a checked circle."
+  },
+  "homeWidgetKindOnThisDay": "あの日の今日",
+  "@homeWidgetKindOnThisDay": {
+    "description": "Widget kind name: entries written on this day in past years."
+  },
+  "homeWidgetKindOnThisDayDescription": "過去の今日に書いた日記。写真を優先し、ホーム画面でめくれます。",
+  "@homeWidgetKindOnThisDayDescription": {
+    "description": "Widget gallery: description of the on-this-day widget."
+  },
+  "homeWidgetKindRecentDiaries": "最近の日記",
+  "@homeWidgetKindRecentDiaries": {
+    "description": "Widget kind name: the latest diary entries."
+  },
+  "homeWidgetKindRecentDiariesDescription": "すべて・日記帳・タグ・ピン留めから最近の数件。",
+  "@homeWidgetKindRecentDiariesDescription": {
+    "description": "Widget gallery: description of the recent entries widget."
+  },
+  "homeWidgetQuickActionCamera": "写真",
+  "@homeWidgetQuickActionCamera": {
+    "description": "Quick capture action: start an entry by taking a photo."
+  },
+  "homeWidgetQuickActionVoice": "録音",
+  "@homeWidgetQuickActionVoice": {
+    "description": "Quick capture action: start an entry by recording audio."
+  },
+  "homeWidgetLocked": "ロック中",
+  "@homeWidgetLocked": {
+    "description": "Widget placeholder when the app lock is on and diary content is hidden."
+  },
+  "homeWidgetLockedHint": "タップしてロック解除",
+  "@homeWidgetLockedHint": {
+    "description": "Widget placeholder hint under \"Locked\"."
+  },
+  "homeWidgetOnThisDayEmpty": "過去の今日の日記はまだありません",
+  "@homeWidgetOnThisDayEmpty": {
+    "description": "On-this-day widget: empty state."
+  },
+  "homeWidgetWriteOne": "書く",
+  "@homeWidgetWriteOne": {
+    "description": "Widget empty state button: write a new entry."
+  },
+  "homeWidgetRecentEmpty": "ここにはまだ日記がありません",
+  "@homeWidgetRecentEmpty": {
+    "description": "Recent entries widget: empty state."
+  },
+  "homeWidgetRecentPinned": "ピン留めの日記",
+  "@homeWidgetRecentPinned": {
+    "description": "Recent entries widget header when showing pinned entries."
+  },
+  "homeWidgetEntryPrevious": "前の日記",
+  "@homeWidgetEntryPrevious": {
+    "description": "On-this-day widget: description of the previous button."
+  },
+  "homeWidgetEntryNext": "次の日記",
+  "@homeWidgetEntryNext": {
+    "description": "On-this-day widget: description of the next button."
+  },
+  "homeWidgetShowPhoto": "写真を優先",
+  "@homeWidgetShowPhoto": {
+    "description": "On-this-day widget option: show the entry photo when it has one."
+  },
+  "homeWidgetShowPhotoHint": "カバーを優先し、次に本文の最初の写真。",
+  "@homeWidgetShowPhotoHint": {
+    "description": "On-this-day widget option: hint for photos first."
+  },
+  "homeWidgetShowExcerpt": "本文の抜粋",
+  "@homeWidgetShowExcerpt": {
+    "description": "Diary widget option: show a few lines of the entry text."
+  },
+  "homeWidgetRecentShowPhotos": "サムネイル",
+  "@homeWidgetRecentShowPhotos": {
+    "description": "Recent entries widget option: show photo thumbnails."
+  },
+  "homeWidgetRecentShowPhotosHint": "写真のある日記は行の先頭に写真を、ほかは日付を表示。",
+  "@homeWidgetRecentShowPhotosHint": {
+    "description": "Recent entries widget option: hint for thumbnails."
+  },
+  "homeWidgetRecentSource": "表示",
+  "@homeWidgetRecentSource": {
+    "description": "Recent entries widget option: where the entries come from."
+  },
+  "homeWidgetRecentNotebook": "日記帳",
+  "@homeWidgetRecentNotebook": {
+    "description": "Recent entries widget option: which notebook."
+  },
+  "homeWidgetRecentTag": "タグ",
+  "@homeWidgetRecentTag": {
+    "description": "Recent entries widget option: which tag."
+  },
+  "homeWidgetPrivacyHint": "非公開の日記帳の日記はホーム画面に表示されません。アプリロック中はロック表示になります。",
+  "@homeWidgetPrivacyHint": {
+    "description": "Diary widget options: privacy note."
+  },
+  "homeWidgetKindWritingStats": "執筆の記録",
+  "@homeWidgetKindWritingStats": {
+    "description": "Widget kind name: writing statistics."
+  },
+  "homeWidgetKindWritingStatsDescription": "連続記録の日数、今月と今年の記録、最近数週間のヒートマップ。",
+  "@homeWidgetKindWritingStatsDescription": {
+    "description": "Widget gallery: description of the writing stats widget."
+  },
+  "homeWidgetKindPhotoMemories": "写真の思い出",
+  "@homeWidgetKindPhotoMemories": {
+    "description": "Widget kind name: photos from diary entries."
+  },
+  "homeWidgetKindPhotoMemoriesDescription": "日記の写真を毎日1枚。ホーム画面でも切り替えられます。",
+  "@homeWidgetKindPhotoMemoriesDescription": {
+    "description": "Widget gallery: description of the photo memories widget."
+  },
+  "homeWidgetStreakUnit": "日連続",
+  "@homeWidgetStreakUnit": {
+    "description": "Writing stats widget: caption under the big streak number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsRecentWeeks": "最近 {count} 週間",
+  "@homeWidgetStatsRecentWeeks": {
+    "description": "Writing stats widget: heatmap caption.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsMonthEntries": "今月の日記",
+  "@homeWidgetStatsMonthEntries": {
+    "description": "Writing stats widget: number of entries this month."
+  },
+  "homeWidgetStatsMonthWords": "今月の文字数",
+  "@homeWidgetStatsMonthWords": {
+    "description": "Writing stats widget: words written this month."
+  },
+  "homeWidgetStatsYearEntries": "今年の日記",
+  "@homeWidgetStatsYearEntries": {
+    "description": "Writing stats widget: number of entries this year."
+  },
+  "homeWidgetStatsWroteToday": "今日は書きました",
+  "@homeWidgetStatsWroteToday": {
+    "description": "Writing stats widget: today already has an entry."
+  },
+  "homeWidgetStatsNotYetToday": "今日はまだです",
+  "@homeWidgetStatsNotYetToday": {
+    "description": "Writing stats widget: no entry yet today."
+  },
+  "homeWidgetStatsShowHeatmap": "ヒートマップ",
+  "@homeWidgetStatsShowHeatmap": {
+    "description": "Writing stats widget option: show the heatmap."
+  },
+  "homeWidgetStatsShowHeatmapHint": "4×2 と 4×4 で最近数週間の毎日の記録を表示。",
+  "@homeWidgetStatsShowHeatmapHint": {
+    "description": "Writing stats widget option: hint for the heatmap."
+  },
+  "homeWidgetPhotoSource": "写真の出どころ",
+  "@homeWidgetPhotoSource": {
+    "description": "Photo memories widget option: where photos come from."
+  },
+  "homeWidgetPhotoSourceOnThisDayHint": "過去の今日の前後の日記。写真がないときは最近の写真を表示します。",
+  "@homeWidgetPhotoSourceOnThisDayHint": {
+    "description": "Photo memories widget option: hint for the on-this-day source."
+  },
+  "homeWidgetPhotoShowDate": "日付",
+  "@homeWidgetPhotoShowDate": {
+    "description": "Photo memories widget option: show the date on the photo."
+  },
+  "homeWidgetPhotoShuffle": "別の写真",
+  "@homeWidgetPhotoShuffle": {
+    "description": "Photo memories widget: description of the swap button."
+  },
+  "homeWidgetPhotoEmpty": "写真付きの日記はまだありません",
+  "@homeWidgetPhotoEmpty": {
+    "description": "Photo memories widget: empty state."
+  },
+  "homeWidgetTabPresets": "プリセット",
+  "@homeWidgetTabPresets": {
+    "description": "Widget studio tab: built-in looks, my styles and style codes."
+  },
+  "homeWidgetPresetClassic": "クラシック",
+  "@homeWidgetPresetClassic": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClassicDescription": "テーマカラーの無地カード。アプリと同じ見た目",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetWallpaper": "壁紙に合わせる",
+  "@homeWidgetPresetWallpaper": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetWallpaperDescription": "壁紙から取った色のトーン",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetVivid": "ビビッド",
+  "@homeWidgetPresetVivid": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetVividDescription": "テーマカラーで塗りつぶし、文字は白抜き",
+  "@homeWidgetPresetVividDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetGlass": "ガラス",
+  "@homeWidgetPresetGlass": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetGlassDescription": "半透明の背景、大きめの角丸とゆとりある余白",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetClear": "ミニマル",
+  "@homeWidgetPresetClear": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClearDescription": "背景なし、内容だけ",
+  "@homeWidgetPresetClearDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetSunrise": "朝日",
+  "@homeWidgetPresetSunrise": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetSunriseDescription": "やわらかく明るいオレンジ",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetForest": "森",
+  "@homeWidgetPresetForest": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetForestDescription": "落ち着いた深い緑",
+  "@homeWidgetPresetForestDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetNight": "ナイト",
+  "@homeWidgetPresetNight": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetNightDescription": "常にダーク、藍色のアクセントで目にやさしい",
+  "@homeWidgetPresetNightDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetSampleDiaryTitle1": "海辺の夕暮れ",
+  "@homeWidgetSampleDiaryTitle1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt1": "風が雲をオレンジ色に染めた。暗くなるまで岩の上に座っていた。",
+  "@homeWidgetSampleDiaryExcerpt1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle2": "初めてのパン",
+  "@homeWidgetSampleDiaryTitle2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt2": "少し歪んだけど、部屋中いい香り。",
+  "@homeWidgetSampleDiaryExcerpt2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle3": "雨の日の本屋",
+  "@homeWidgetSampleDiaryTitle3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt3": "雨宿りの間に古い詩集を見つけて買った。",
+  "@homeWidgetSampleDiaryExcerpt3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle4": "朝のランニング",
+  "@homeWidgetSampleDiaryTitle4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt4": "5キロ、先週より少し速く。",
+  "@homeWidgetSampleDiaryExcerpt4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryExcerpt5": "今日から日記を始めた。一日一行でいい。",
+  "@homeWidgetSampleDiaryExcerpt5": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt of an entry without a title."
+  },
+  "homeWidgetSampleTodo1": "母に電話する",
+  "@homeWidgetSampleTodo1": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo2": "家賃を払う",
+  "@homeWidgetSampleTodo2": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo3": "買い物",
+  "@homeWidgetSampleTodo3": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo4": "本を一冊読み終える",
+  "@homeWidgetSampleTodo4": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleAnniversary1": "付き合った日",
+  "@homeWidgetSampleAnniversary1": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "homeWidgetSampleAnniversary2": "母の誕生日",
+  "@homeWidgetSampleAnniversary2": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
   }
 }

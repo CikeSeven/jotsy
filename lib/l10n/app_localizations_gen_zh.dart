@@ -15187,4 +15187,574 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiChatExportJson => 'JSON';
+
+  @override
+  String get homeWidgetsTitle => '桌面小组件';
+
+  @override
+  String get homeWidgetsSubtitle => '把日记、日期与快捷入口放到桌面';
+
+  @override
+  String get homeWidgetsInstalledGroup => '桌面上的小组件';
+
+  @override
+  String get homeWidgetsInstalledEmpty => '桌面上还没有小组件，从下面的组件库挑一个吧。';
+
+  @override
+  String get homeWidgetsInstalledHint => '修改会立即同步到桌面。';
+
+  @override
+  String get homeWidgetsGalleryGroup => '组件库';
+
+  @override
+  String get homeWidgetGroupCapture => '记录与回忆';
+
+  @override
+  String get homeWidgetGroupTime => '时间与日历';
+
+  @override
+  String get homeWidgetGroupTodos => '待办';
+
+  @override
+  String get homeWidgetGroupStats => '统计与照片';
+
+  @override
+  String get homeWidgetKindQuickCapture => '快速记录';
+
+  @override
+  String get homeWidgetKindQuickCaptureDescription => '一点就开始写日记、记待办或看今天的日历。';
+
+  @override
+  String get homeWidgetKindToday => '今日';
+
+  @override
+  String get homeWidgetKindTodayDescription => '日期、农历与节假日，还有今天的进度。';
+
+  @override
+  String get homeWidgetAddToHome => '添加到桌面';
+
+  @override
+  String get homeWidgetPinRequested => '在弹出的确认框里确认即可添加';
+
+  @override
+  String get homeWidgetPinUnsupportedTitle => '从桌面添加';
+
+  @override
+  String homeWidgetPinUnsupportedBody(String name) {
+    return '长按桌面空白处，打开“小组件”，找到 Jotsy。15 分钟内添加的下一个“$name”会套用你在这里的设计。';
+  }
+
+  @override
+  String get homeWidgetTabContent => '内容';
+
+  @override
+  String get homeWidgetTabStyle => '样式';
+
+  @override
+  String get homeWidgetPreviewSize => '预览尺寸';
+
+  @override
+  String get homeWidgetStylePalette => '配色';
+
+  @override
+  String get homeWidgetPaletteApp => '跟随主题色';
+
+  @override
+  String get homeWidgetPaletteWallpaper => '跟随壁纸';
+
+  @override
+  String get homeWidgetPaletteWallpaperHint =>
+      'Android 12 及以上按壁纸取色，更早的系统跟随主题色。';
+
+  @override
+  String get homeWidgetPaletteCustom => '自选颜色';
+
+  @override
+  String get homeWidgetStyleBrightness => '明暗';
+
+  @override
+  String get homeWidgetBrightnessSystem => '跟随系统';
+
+  @override
+  String get homeWidgetBrightnessLight => '浅色';
+
+  @override
+  String get homeWidgetBrightnessDark => '深色';
+
+  @override
+  String get homeWidgetStyleBackground => '底色';
+
+  @override
+  String get homeWidgetBackgroundSurface => '实色';
+
+  @override
+  String get homeWidgetBackgroundTonal => '色调';
+
+  @override
+  String get homeWidgetBackgroundVivid => '浓郁';
+
+  @override
+  String get homeWidgetBackgroundClear => '透明';
+
+  @override
+  String get homeWidgetStyleOpacity => '不透明度';
+
+  @override
+  String get homeWidgetStyleCorners => '圆角';
+
+  @override
+  String get homeWidgetCornersSystem => '跟随系统';
+
+  @override
+  String get homeWidgetStyleTextSize => '文字大小';
+
+  @override
+  String get homeWidgetStyleDensity => '间距';
+
+  @override
+  String get homeWidgetDensityCompact => '紧凑';
+
+  @override
+  String get homeWidgetDensityStandard => '标准';
+
+  @override
+  String get homeWidgetDensityRoomy => '宽松';
+
+  @override
+  String get homeWidgetStyleAccent => '强调色';
+
+  @override
+  String get homeWidgetAccentPrimary => '主色';
+
+  @override
+  String get homeWidgetAccentSecondary => '辅助色';
+
+  @override
+  String get homeWidgetAccentTertiary => '第三色';
+
+  @override
+  String get homeWidgetQuickActions => '动作';
+
+  @override
+  String get homeWidgetQuickActionsHint => '最多 4 个，第一个最醒目。';
+
+  @override
+  String get homeWidgetQuickActionWrite => '写日记';
+
+  @override
+  String get homeWidgetQuickActionTodo => '新待办';
+
+  @override
+  String get homeWidgetQuickActionCalendar => '日历';
+
+  @override
+  String get homeWidgetQuickActionSearch => '搜索';
+
+  @override
+  String get homeWidgetQuickAddAction => '添加动作';
+
+  @override
+  String get homeWidgetQuickRemoveAction => '移除';
+
+  @override
+  String get homeWidgetQuickNotebook => '写进日记本';
+
+  @override
+  String get homeWidgetQuickNotebookNone => '不指定';
+
+  @override
+  String get homeWidgetQuickShowLabels => '显示文字';
+
+  @override
+  String get homeWidgetQuickShowGreeting => '日期与问候';
+
+  @override
+  String get homeWidgetQuickShowGreetingHint => '2×2 及以上的尺寸显示';
+
+  @override
+  String get homeWidgetTodayLunar => '农历与节气';
+
+  @override
+  String get homeWidgetTodayHoliday => '法定节假日';
+
+  @override
+  String get homeWidgetTodayWriting => '今天写了多少';
+
+  @override
+  String get homeWidgetTodayShowTodos => '到期待办';
+
+  @override
+  String get homeWidgetTodayYearProgress => '今年进度';
+
+  @override
+  String get homeWidgetTapAction => '点按打开';
+
+  @override
+  String get homeWidgetTapCalendar => '日历';
+
+  @override
+  String get homeWidgetTapWrite => '写日记';
+
+  @override
+  String get homeWidgetTapApp => '应用首页';
+
+  @override
+  String get homeWidgetGreetingMorning => '早上好';
+
+  @override
+  String get homeWidgetGreetingAfternoon => '下午好';
+
+  @override
+  String get homeWidgetGreetingEvening => '晚上好';
+
+  @override
+  String get homeWidgetGreetingNight => '夜深了';
+
+  @override
+  String get homeWidgetQuickPrompt => '此刻在想什么？';
+
+  @override
+  String homeWidgetTodayWords(int count) {
+    return '今天写了 $count 字';
+  }
+
+  @override
+  String get homeWidgetTodayNotWritten => '今天还没写';
+
+  @override
+  String homeWidgetTodayTodos(int count) {
+    return '$count 项待办';
+  }
+
+  @override
+  String get homeWidgetTodayNoTodos => '没有待办';
+
+  @override
+  String homeWidgetYearProgress(String percent) {
+    return '今年已过 $percent';
+  }
+
+  @override
+  String get homeWidgetFeatureOff => '已在功能管理中关闭';
+
+  @override
+  String get homeWidgetOpenToUpdate => '打开 Jotsy 以更新';
+
+  @override
+  String get homeWidgetKindAnniversary => '纪念日';
+
+  @override
+  String get homeWidgetKindAnniversaryDescription => '一个日子的大号倒数，或接下来几个日子的列表。';
+
+  @override
+  String get homeWidgetKindMoodCalendar => '心情月历';
+
+  @override
+  String get homeWidgetKindMoodCalendarDescription => '一眼看完这个月：每天的心情，和写过日记的日子。';
+
+  @override
+  String homeWidgetMonthWrittenDays(int count) {
+    return '写了 $count 天';
+  }
+
+  @override
+  String get homeWidgetAnniversaryEmpty => '还没有纪念日';
+
+  @override
+  String get homeWidgetTodayMood => '今天的心情';
+
+  @override
+  String get homeWidgetTodayMoodHint => '横幅与更高的尺寸显示。点一张脸记下心情，再点一下取消。';
+
+  @override
+  String get homeWidgetTodayMoodPrompt => '今天心情如何？';
+
+  @override
+  String get homeWidgetAnniversaryDisplay => '显示';
+
+  @override
+  String get homeWidgetAnniversarySingle => '一个';
+
+  @override
+  String get homeWidgetAnniversaryList => '列表';
+
+  @override
+  String get homeWidgetAnniversaryWhich => '显示哪一个';
+
+  @override
+  String get homeWidgetAnniversaryNextUp => '最近的一个';
+
+  @override
+  String get homeWidgetAnniversaryShowDate => '日期与周年';
+
+  @override
+  String get homeWidgetMoodCalendarMoods => '按心情着色';
+
+  @override
+  String get homeWidgetMoodCalendarMoodsHint => '这天的心情优先，其次是当天日记心情的平均。';
+
+  @override
+  String get homeWidgetMoodCalendarWritten => '写过的日子打点';
+
+  @override
+  String get homeWidgetMonthPrevious => '上个月';
+
+  @override
+  String get homeWidgetMonthNext => '下个月';
+
+  @override
+  String get homeWidgetKindTodos => '待办清单';
+
+  @override
+  String get homeWidgetKindTodosDescription => '今天的待办或某个清单，在桌面上直接勾选完成。';
+
+  @override
+  String get homeWidgetTodoView => '显示';
+
+  @override
+  String get homeWidgetTodoViewList => '某个清单';
+
+  @override
+  String get homeWidgetTodoList => '清单';
+
+  @override
+  String get homeWidgetTodoShowCompleted => '今天完成的';
+
+  @override
+  String get homeWidgetTodoShowCompletedHint => '划掉排在最后，点一下恢复为未完成。';
+
+  @override
+  String get homeWidgetTodoShowDue => '截止日与时刻';
+
+  @override
+  String get homeWidgetTodoCheck => '标记为完成';
+
+  @override
+  String get homeWidgetTodoUncheck => '恢复为未完成';
+
+  @override
+  String get homeWidgetKindOnThisDay => '那年今日';
+
+  @override
+  String get homeWidgetKindOnThisDayDescription => '往年今天写下的日记，照片优先，多篇时在桌面上翻看。';
+
+  @override
+  String get homeWidgetKindRecentDiaries => '最近日记';
+
+  @override
+  String get homeWidgetKindRecentDiariesDescription => '全部、某个日记本、某个标签或置顶的最近几篇。';
+
+  @override
+  String get homeWidgetQuickActionCamera => '拍照记';
+
+  @override
+  String get homeWidgetQuickActionVoice => '录音记';
+
+  @override
+  String get homeWidgetLocked => '已锁定';
+
+  @override
+  String get homeWidgetLockedHint => '点按解锁';
+
+  @override
+  String get homeWidgetOnThisDayEmpty => '往年的今天还没有日记';
+
+  @override
+  String get homeWidgetWriteOne => '写一篇';
+
+  @override
+  String get homeWidgetRecentEmpty => '这里还没有日记';
+
+  @override
+  String get homeWidgetRecentPinned => '置顶日记';
+
+  @override
+  String get homeWidgetEntryPrevious => '上一篇';
+
+  @override
+  String get homeWidgetEntryNext => '下一篇';
+
+  @override
+  String get homeWidgetShowPhoto => '照片优先';
+
+  @override
+  String get homeWidgetShowPhotoHint => '封面优先，其次是正文里的第一张。';
+
+  @override
+  String get homeWidgetShowExcerpt => '正文摘要';
+
+  @override
+  String get homeWidgetRecentShowPhotos => '缩略图';
+
+  @override
+  String get homeWidgetRecentShowPhotosHint => '有照片的日记在行首显示照片，其余显示日期。';
+
+  @override
+  String get homeWidgetRecentSource => '显示';
+
+  @override
+  String get homeWidgetRecentNotebook => '日记本';
+
+  @override
+  String get homeWidgetRecentTag => '标签';
+
+  @override
+  String get homeWidgetPrivacyHint => '私密日记本里的日记不会出现在桌面上；开了应用锁时，这类小组件只显示锁定。';
+
+  @override
+  String get homeWidgetKindWritingStats => '写作统计';
+
+  @override
+  String get homeWidgetKindWritingStatsDescription =>
+      '连续记录的天数、本月与今年写了多少，以及最近几周的热力图。';
+
+  @override
+  String get homeWidgetKindPhotoMemories => '照片回忆';
+
+  @override
+  String get homeWidgetKindPhotoMemoriesDescription =>
+      '日记里的照片，每天换一张，也能在桌面上随手换。';
+
+  @override
+  String homeWidgetStreakUnit(int count) {
+    return '天连续记录';
+  }
+
+  @override
+  String homeWidgetStatsRecentWeeks(int count) {
+    return '最近 $count 周';
+  }
+
+  @override
+  String get homeWidgetStatsMonthEntries => '本月篇数';
+
+  @override
+  String get homeWidgetStatsMonthWords => '本月字数';
+
+  @override
+  String get homeWidgetStatsYearEntries => '今年篇数';
+
+  @override
+  String get homeWidgetStatsWroteToday => '今天已写';
+
+  @override
+  String get homeWidgetStatsNotYetToday => '今天还没写';
+
+  @override
+  String get homeWidgetStatsShowHeatmap => '热力图';
+
+  @override
+  String get homeWidgetStatsShowHeatmapHint => '4×2 与 4×4 显示最近几周每天写了多少。';
+
+  @override
+  String get homeWidgetPhotoSource => '照片来自';
+
+  @override
+  String get homeWidgetPhotoSourceOnThisDayHint =>
+      '往年今天前后的日记；这几天没有带照片的日记时，显示最近的照片。';
+
+  @override
+  String get homeWidgetPhotoShowDate => '日期';
+
+  @override
+  String get homeWidgetPhotoShuffle => '换一张';
+
+  @override
+  String get homeWidgetPhotoEmpty => '还没有带照片的日记';
+
+  @override
+  String get homeWidgetTabPresets => '预设';
+
+  @override
+  String get homeWidgetPresetClassic => '经典';
+
+  @override
+  String get homeWidgetPresetClassicDescription => '跟随主题色的实色卡片，与应用一致';
+
+  @override
+  String get homeWidgetPresetWallpaper => '随壁纸';
+
+  @override
+  String get homeWidgetPresetWallpaperDescription => '跟随壁纸取色的色调底';
+
+  @override
+  String get homeWidgetPresetVivid => '浓郁';
+
+  @override
+  String get homeWidgetPresetVividDescription => '主题色铺底，内容反白，醒目';
+
+  @override
+  String get homeWidgetPresetGlass => '通透';
+
+  @override
+  String get homeWidgetPresetGlassDescription => '半透明底、更大的圆角与宽松的间距';
+
+  @override
+  String get homeWidgetPresetClear => '极简';
+
+  @override
+  String get homeWidgetPresetClearDescription => '没有底色，只有内容';
+
+  @override
+  String get homeWidgetPresetSunrise => '暖阳';
+
+  @override
+  String get homeWidgetPresetSunriseDescription => '暖橙色调，柔和明亮';
+
+  @override
+  String get homeWidgetPresetForest => '森林';
+
+  @override
+  String get homeWidgetPresetForestDescription => '沉静的绿色铺底';
+
+  @override
+  String get homeWidgetPresetNight => '夜读';
+
+  @override
+  String get homeWidgetPresetNightDescription => '固定深色、靛蓝强调，夜里不刺眼';
+
+  @override
+  String get homeWidgetSampleDiaryTitle1 => '海边的黄昏';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt1 => '风把云吹成了橘色，我们在礁石上一直坐到天黑。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle2 => '第一次烤面包';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt2 => '烤出来有点歪，但整个屋子都是香的。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle3 => '雨天的书店';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt3 => '躲雨时翻到一本旧诗集，买了下来。';
+
+  @override
+  String get homeWidgetSampleDiaryTitle4 => '晨跑';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt4 => '五公里，比上周快了一点。';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt5 => '今天开始写日记，每天一句也好。';
+
+  @override
+  String get homeWidgetSampleTodo1 => '给妈妈打电话';
+
+  @override
+  String get homeWidgetSampleTodo2 => '交房租';
+
+  @override
+  String get homeWidgetSampleTodo3 => '买菜';
+
+  @override
+  String get homeWidgetSampleTodo4 => '读完一本书';
+
+  @override
+  String get homeWidgetSampleAnniversary1 => '在一起';
+
+  @override
+  String get homeWidgetSampleAnniversary2 => '妈妈生日';
 }

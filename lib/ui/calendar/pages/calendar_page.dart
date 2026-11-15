@@ -55,6 +55,7 @@ import '../models/calendar_marker_filter.dart';
 import '../models/calendar_range_selection.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../providers/calendar_display_options_provider.dart';
+import '../providers/calendar_focus_request_provider.dart';
 import '../providers/day_mood_providers.dart';
 import '../viewmodels/calendar_day_summary.dart';
 import '../viewmodels/calendar_holiday_day.dart';
@@ -176,6 +177,20 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     if (settings == null) {
       _applyInitialFormatWhenOptionsLoad();
     }
+    // 点桌面小组件上的日期：切到日历后选中那天（日历页可能刚建好，
+    // fireImmediately 接住已经发出的请求）。
+    ref.listenManual<CalendarFocusRequest?>(calendarFocusRequestProvider, (
+      _,
+      CalendarFocusRequest? request,
+    ) {
+      if (request == null) return;
+      // 初始化期间不能改 provider、也不能 setState：挪到这一帧之后。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(calendarFocusRequestProvider.notifier).consume();
+        _controller.jumpToDay(request.day);
+      });
+    }, fireImmediately: true);
   }
 
   /// 设置服务尚未就绪（冷启动直接落在日历页等极端时序）时，等显示选项

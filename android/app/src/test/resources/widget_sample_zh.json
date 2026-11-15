@@ -1,0 +1,1105 @@
+{
+  "v": 1,
+  "locale": "zh",
+  "redacted": false,
+  "displayFont": "HarmonyOSSansSC",
+  "palettes": {
+    "app": {
+      "light": {
+        "primary": 4280116614,
+        "onPrimary": 4294967295,
+        "primaryContainer": 4291094527,
+        "onPrimaryContainer": 4278209641,
+        "secondary": 4283326829,
+        "onSecondary": 4294967295,
+        "secondaryContainer": 4291945972,
+        "onSecondaryContainer": 4281813333,
+        "tertiary": 4284570237,
+        "onTertiary": 4294967295,
+        "tertiaryContainer": 4293385983,
+        "onTertiaryContainer": 4282991204,
+        "error": 4290386458,
+        "errorContainer": 4294957782,
+        "onErrorContainer": 4287823882,
+        "surface": 4294376190,
+        "onSurface": 4279770143,
+        "onSurfaceVariant": 4282468429,
+        "surfaceContainerLowest": 4294967295,
+        "surfaceContainerLow": 4293981432,
+        "surfaceContainer": 4293652211,
+        "surfaceContainerHigh": 4293257453,
+        "surfaceContainerHighest": 4292862951,
+        "outline": 4285626494,
+        "outlineVariant": 4290824141
+      },
+      "dark": {
+        "primary": 4287680244,
+        "onPrimary": 4278203466,
+        "primaryContainer": 4278209641,
+        "onPrimaryContainer": 4291094527,
+        "secondary": 4290169303,
+        "onSecondary": 4280300350,
+        "secondaryContainer": 4281813333,
+        "onSecondaryContainer": 4291945972,
+        "tertiary": 4291477993,
+        "onTertiary": 4281478220,
+        "tertiaryContainer": 4282991204,
+        "onTertiaryContainer": 4293385983,
+        "error": 4294948011,
+        "errorContainer": 4287823882,
+        "onErrorContainer": 4294957782,
+        "surface": 4279178263,
+        "onSurface": 4292862951,
+        "onSurfaceVariant": 4290824141,
+        "surfaceContainerLowest": 4278849298,
+        "surfaceContainerLow": 4279770143,
+        "surfaceContainer": 4280033315,
+        "surfaceContainerHigh": 4280691502,
+        "surfaceContainerHighest": 4281414969,
+        "outline": 4287337111,
+        "outlineVariant": 4282468429
+      }
+    }
+  },
+  "strings": {
+    "greetingMorning": "早上好",
+    "greetingAfternoon": "下午好",
+    "greetingEvening": "晚上好",
+    "greetingNight": "夜深了",
+    "quickPrompt": "此刻在想什么？",
+    "actionWrite": "写日记",
+    "actionCamera": "拍照记",
+    "actionVoice": "录音记",
+    "actionTodo": "新待办",
+    "actionCalendar": "日历",
+    "actionSearch": "搜索",
+    "todayNotWritten": "今天还没写",
+    "yearProgress": "今年已过 %s",
+    "featureOff": "已在功能管理中关闭",
+    "openToUpdate": "打开 Jotsy 以更新",
+    "isToday": "就是今天",
+    "anniversaryTitle": "纪念日",
+    "anniversaryEmpty": "还没有纪念日",
+    "moodPrompt": "今天心情如何？",
+    "mood_awful": "很糟",
+    "mood_bad": "不太好",
+    "mood_meh": "一般",
+    "mood_good": "不错",
+    "mood_great": "超棒",
+    "monthPrevious": "上个月",
+    "monthNext": "下个月",
+    "todoViewToday": "今天",
+    "todoViewPlanned": "计划",
+    "todoViewAll": "全部",
+    "todoToday": "今天",
+    "todoTomorrow": "明天",
+    "todoYesterday": "昨天",
+    "todoOverdue": "已逾期",
+    "todoEmptyToday": "今天没有要做的事",
+    "todoEmpty": "这里还没有待办",
+    "todoAllDone": "今天的事都做完了",
+    "todoAdd": "新待办",
+    "todoCheck": "标记为完成",
+    "todoUncheck": "恢复为未完成",
+    "locked": "已锁定",
+    "lockedHint": "点按解锁",
+    "onThisDayTitle": "那年今日",
+    "onThisDayEmpty": "往年的今天还没有日记",
+    "entryPrevious": "上一篇",
+    "entryNext": "下一篇",
+    "writeOne": "写一篇",
+    "recentTitle": "最近日记",
+    "recentPinned": "置顶日记",
+    "recentEmpty": "这里还没有日记",
+    "untitled": "记录了一则内容",
+    "statsTitle": "写作统计",
+    "statsMonthEntries": "本月篇数",
+    "statsMonthWords": "本月字数",
+    "statsYearEntries": "今年篇数",
+    "statsWroteToday": "今天已写",
+    "statsNotYetToday": "今天还没写",
+    "photoShuffle": "换一张",
+    "photoEmpty": "还没有带照片的日记"
+  },
+  "plurals": {
+    "daysToGo": {
+      "other": "天后"
+    },
+    "daysAgo": {
+      "other": "天前"
+    },
+    "daysLeft": {
+      "other": "还有 %d 天"
+    },
+    "daysSince": {
+      "other": "已经 %d 天"
+    },
+    "streakUnit": {
+      "other": "天连续记录"
+    },
+    "recentWeeks": {
+      "other": "最近 %d 周"
+    }
+  },
+  "icons": {
+    "write": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62893
+    },
+    "todo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61770
+    },
+    "calendar": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61747
+    },
+    "search": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61442
+    },
+    "words": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62827
+    },
+    "list": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61614
+    },
+    "leaf": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61548
+    },
+    "anniversary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61444
+    },
+    "countdown": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61476
+    },
+    "pin": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61581
+    },
+    "previous": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61700
+    },
+    "next": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61701
+    },
+    "unchecked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61713
+    },
+    "checked": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61528
+    },
+    "plus": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 43
+    },
+    "repeat": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61473
+    },
+    "camera": {
+      "f": "packages/font_awesome_flutter/FontAwesomeRegular",
+      "c": 61488
+    },
+    "voice": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61744
+    },
+    "lock": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61475
+    },
+    "memory": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61914
+    },
+    "diary": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62744
+    },
+    "tag": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 35
+    },
+    "stats": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 58483
+    },
+    "streak": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61549
+    },
+    "shuffle": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 61556
+    },
+    "photo": {
+      "f": "packages/font_awesome_flutter/FontAwesomeSolid",
+      "c": 62210
+    }
+  },
+  "instances": {},
+  "defaults": {
+    "quick_capture": {
+      "kind": "quick_capture",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "actions": [
+          "write",
+          "todo",
+          "calendar"
+        ],
+        "labels": true,
+        "greeting": true
+      }
+    },
+    "on_this_day": {
+      "kind": "on_this_day",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "match": "sameDay",
+        "photo": true,
+        "excerpt": true
+      }
+    },
+    "recent_diaries": {
+      "kind": "recent_diaries",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "photos": true,
+        "excerpt": true
+      }
+    },
+    "today": {
+      "kind": "today",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "lunar": true,
+        "holiday": true,
+        "writing": true,
+        "todos": true,
+        "yearProgress": false,
+        "mood": true,
+        "tap": "calendar"
+      }
+    },
+    "anniversary": {
+      "kind": "anniversary",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "display": "single",
+        "date": true
+      }
+    },
+    "mood_calendar": {
+      "kind": "mood_calendar",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "moods": true,
+        "written": true,
+        "holiday": true
+      }
+    },
+    "todos": {
+      "kind": "todos",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "view": "today",
+        "completed": true,
+        "due": true
+      }
+    },
+    "writing_stats": {
+      "kind": "writing_stats",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "basis": "entries",
+        "heatmap": true
+      }
+    },
+    "photo_memories": {
+      "kind": "photo_memories",
+      "disabled": false,
+      "style": {
+        "palette": "app",
+        "brightness": "system",
+        "background": "surface",
+        "opacity": 1.0,
+        "radius": -1,
+        "textScale": 1.0,
+        "density": "standard",
+        "accent": "primary"
+      },
+      "content": {
+        "source": "all",
+        "date": true
+      }
+    }
+  },
+  "today": {
+    "days": {
+      "2026-11-15": {
+        "weekday": "星期日",
+        "weekdayShort": "周日",
+        "monthDay": "11月15日",
+        "month": "11月",
+        "lunar": "十月初七",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-16": {
+        "weekday": "星期一",
+        "weekdayShort": "周一",
+        "monthDay": "11月16日",
+        "month": "11月",
+        "lunar": "十月初八",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-17": {
+        "weekday": "星期二",
+        "weekdayShort": "周二",
+        "monthDay": "11月17日",
+        "month": "11月",
+        "lunar": "十月初九",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-18": {
+        "weekday": "星期三",
+        "weekdayShort": "周三",
+        "monthDay": "11月18日",
+        "month": "11月",
+        "lunar": "十月初十",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-19": {
+        "weekday": "星期四",
+        "weekdayShort": "周四",
+        "monthDay": "11月19日",
+        "month": "11月",
+        "lunar": "十月十一",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-20": {
+        "weekday": "星期五",
+        "weekdayShort": "周五",
+        "monthDay": "11月20日",
+        "month": "11月",
+        "lunar": "十月十二",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-21": {
+        "weekday": "星期六",
+        "weekdayShort": "周六",
+        "monthDay": "11月21日",
+        "month": "11月",
+        "lunar": "十月十三",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-22": {
+        "weekday": "星期日",
+        "weekdayShort": "周日",
+        "monthDay": "11月22日",
+        "month": "11月",
+        "lunar": "十月十四",
+        "almanac": "小雪",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-23": {
+        "weekday": "星期一",
+        "weekdayShort": "周一",
+        "monthDay": "11月23日",
+        "month": "11月",
+        "lunar": "十月十五",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-24": {
+        "weekday": "星期二",
+        "weekdayShort": "周二",
+        "monthDay": "11月24日",
+        "month": "11月",
+        "lunar": "十月十六",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-25": {
+        "weekday": "星期三",
+        "weekdayShort": "周三",
+        "monthDay": "11月25日",
+        "month": "11月",
+        "lunar": "十月十七",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-26": {
+        "weekday": "星期四",
+        "weekdayShort": "周四",
+        "monthDay": "11月26日",
+        "month": "11月",
+        "lunar": "十月十八",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-27": {
+        "weekday": "星期五",
+        "weekdayShort": "周五",
+        "monthDay": "11月27日",
+        "month": "11月",
+        "lunar": "十月十九",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      },
+      "2026-11-28": {
+        "weekday": "星期六",
+        "weekdayShort": "周六",
+        "monthDay": "11月28日",
+        "month": "11月",
+        "lunar": "十月二十",
+        "todos": 3,
+        "todosLabel": "3 项待办"
+      }
+    },
+    "words": {
+      "2026-11-15": 860
+    },
+    "wordsLabel": {
+      "2026-11-15": "今天写了 860 字"
+    },
+    "moods": {
+      "2026-11-15": "good"
+    }
+  },
+  "anniversaries": [
+    {
+      "id": "sample-anniversary-1",
+      "title": "妈妈生日",
+      "pinned": true,
+      "repeats": true,
+      "base": "1968-11-24",
+      "baseLabel": "1968年11月24日",
+      "occurrences": [
+        {
+          "date": "2026-11-24",
+          "dateLabel": "11月24日 · 周二",
+          "ordinalLabel": "第 58 周年",
+          "todayLabel": "今天是第 58 周年"
+        },
+        {
+          "date": "2027-11-24",
+          "dateLabel": "2027年11月24日 · 周三",
+          "ordinalLabel": "第 59 周年",
+          "todayLabel": "今天是第 59 周年"
+        },
+        {
+          "date": "2028-11-24",
+          "dateLabel": "2028年11月24日 · 周五",
+          "ordinalLabel": "第 60 周年",
+          "todayLabel": "今天是第 60 周年"
+        }
+      ]
+    },
+    {
+      "id": "sample-anniversary-2",
+      "title": "在一起",
+      "pinned": false,
+      "repeats": true,
+      "base": "2021-07-18",
+      "baseLabel": "2021年7月18日",
+      "occurrences": [
+        {
+          "date": "2027-07-18",
+          "dateLabel": "2027年7月18日 · 周日",
+          "ordinalLabel": "第 6 周年",
+          "todayLabel": "今天是第 6 周年"
+        },
+        {
+          "date": "2028-07-18",
+          "dateLabel": "2028年7月18日 · 周二",
+          "ordinalLabel": "第 7 周年",
+          "todayLabel": "今天是第 7 周年"
+        },
+        {
+          "date": "2029-07-18",
+          "dateLabel": "2029年7月18日 · 周三",
+          "ordinalLabel": "第 8 周年",
+          "todayLabel": "今天是第 8 周年"
+        }
+      ]
+    }
+  ],
+  "todos": {
+    "lists": {},
+    "open": [
+      {
+        "id": "sample-todo-1",
+        "title": "交房租",
+        "due": "2026-11-14",
+        "dueLabel": "11月14日"
+      },
+      {
+        "id": "sample-todo-3",
+        "title": "买菜",
+        "due": "2026-11-15",
+        "dueLabel": "11月15日"
+      },
+      {
+        "id": "sample-todo-2",
+        "title": "给妈妈打电话",
+        "due": "2026-11-15",
+        "dueLabel": "11月15日",
+        "time": "19:30"
+      },
+      {
+        "id": "sample-todo-4",
+        "title": "读完一本书"
+      }
+    ],
+    "done": []
+  },
+  "calendar": {
+    "firstWeekday": 1,
+    "weekdays": [
+      "一",
+      "二",
+      "三",
+      "四",
+      "五",
+      "六",
+      "日"
+    ],
+    "months": {
+      "2026-09": {
+        "title": "2026年9月",
+        "writtenLabel": "写了 18 天",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": -1,
+            "w": 1
+          },
+          "8": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": -1,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "19": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1,
+            "h": "班",
+            "hw": true
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "26": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "27": {
+            "h": "休",
+            "hw": false
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-10": {
+        "title": "2026年10月",
+        "writtenLabel": "写了 19 天",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "2": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "3": {
+            "h": "休",
+            "hw": false
+          },
+          "4": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "5": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "6": {
+            "h": "休",
+            "hw": false
+          },
+          "7": {
+            "b": -1,
+            "w": 1,
+            "h": "休",
+            "hw": false
+          },
+          "10": {
+            "b": -1,
+            "w": 1,
+            "h": "班",
+            "hw": true
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": -1,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "16": {
+            "b": -1,
+            "w": 1
+          },
+          "17": {
+            "b": -1,
+            "w": 1
+          },
+          "20": {
+            "b": -1,
+            "w": 1
+          },
+          "22": {
+            "b": -1,
+            "w": 1
+          },
+          "23": {
+            "b": -1,
+            "w": 1
+          },
+          "25": {
+            "b": -1,
+            "w": 1
+          },
+          "26": {
+            "b": -1,
+            "w": 1
+          },
+          "28": {
+            "b": -1,
+            "w": 1
+          },
+          "29": {
+            "b": -1,
+            "w": 1
+          },
+          "31": {
+            "b": -1,
+            "w": 1
+          }
+        }
+      },
+      "2026-11": {
+        "title": "2026年11月",
+        "writtenLabel": "写了 12 天",
+        "days": {
+          "1": {
+            "b": -1,
+            "w": 1
+          },
+          "2": {
+            "b": 4
+          },
+          "3": {
+            "b": -1,
+            "w": 1
+          },
+          "4": {
+            "b": 1,
+            "w": 1
+          },
+          "6": {
+            "b": -1,
+            "w": 1
+          },
+          "7": {
+            "b": 3,
+            "w": 1
+          },
+          "9": {
+            "b": -1,
+            "w": 1
+          },
+          "10": {
+            "b": 2,
+            "w": 1
+          },
+          "11": {
+            "b": -1,
+            "w": 1
+          },
+          "12": {
+            "b": -1,
+            "w": 1
+          },
+          "13": {
+            "b": 4,
+            "w": 1
+          },
+          "14": {
+            "b": -1,
+            "w": 1
+          },
+          "15": {
+            "b": 3,
+            "w": 1
+          }
+        }
+      }
+    }
+  },
+  "stats": {
+    "streak": 7,
+    "streakEnd": "2026-11-15",
+    "month": "2026-11",
+    "monthEntries": "12",
+    "monthWords": "8,815",
+    "year": 2026,
+    "yearEntries": "197",
+    "heat": {
+      "start": "2025-11-10",
+      "entries": "01001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101001101101100101101101101101101101111111",
+      "words": "03002203303300403303201303302203303002103303200303302203303302203303002303302200303302203303302303303004303302200303302103303201303302003303302100303202303302203303302003303302300303203303302203303302003303201300302203303302103303201003302203300302203303202303303203003302203300302403303201303302203003302103300201303302203303302203003202303300203303302203303302403333221"
+    }
+  },
+  "onThisDay": {
+    "days": {
+      "2026-11-15": {
+        "sameDay": [
+          {
+            "id": "sample-sea",
+            "label": "3年前的今天"
+          },
+          {
+            "id": "sample-start",
+            "label": "5年前的今天"
+          }
+        ],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "3年前的今天"
+          },
+          {
+            "id": "sample-start",
+            "label": "5年前的今天"
+          }
+        ]
+      },
+      "2026-11-16": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "sample-start",
+            "label": "2021年11月15日"
+          }
+        ]
+      },
+      "2026-11-17": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "sample-start",
+            "label": "2021年11月15日"
+          }
+        ]
+      },
+      "2026-11-18": {
+        "sameDay": [],
+        "nearby": [
+          {
+            "id": "sample-sea",
+            "label": "2023年11月15日"
+          },
+          {
+            "id": "sample-start",
+            "label": "2021年11月15日"
+          }
+        ]
+      },
+      "2026-11-19": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-20": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-21": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-22": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-23": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-24": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-25": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-26": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-27": {
+        "sameDay": [],
+        "nearby": []
+      },
+      "2026-11-28": {
+        "sameDay": [],
+        "nearby": []
+      }
+    }
+  },
+  "recent": {
+    "all": [
+      "sample-run",
+      "sample-bread",
+      "sample-books",
+      "sample-sea",
+      "sample-start"
+    ]
+  },
+  "photos": {
+    "all": [
+      "sample-run",
+      "sample-books",
+      "sample-sea"
+    ]
+  },
+  "diaries": {
+    "sample-sea": {
+      "title": "海边的黄昏",
+      "excerpt": "风把云吹成了橘色，我们在礁石上一直坐到天黑。",
+      "created": "2023-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2023年11月15日",
+      "mood": "😊",
+      "photo": "sample:sunset"
+    },
+    "sample-start": {
+      "title": "",
+      "excerpt": "今天开始写日记，每天一句也好。",
+      "created": "2021-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2021年11月15日"
+    },
+    "sample-run": {
+      "title": "晨跑",
+      "excerpt": "五公里，比上周快了一点。",
+      "created": "2026-11-15",
+      "day": 15,
+      "month": "11月",
+      "monthDay": "11月15日",
+      "date": "2026年11月15日",
+      "mood": "💪",
+      "photo": "sample:run"
+    },
+    "sample-bread": {
+      "title": "第一次烤面包",
+      "excerpt": "烤出来有点歪，但整个屋子都是香的。",
+      "created": "2026-11-14",
+      "day": 14,
+      "month": "11月",
+      "monthDay": "11月14日",
+      "date": "2026年11月14日",
+      "mood": "😋"
+    },
+    "sample-books": {
+      "title": "雨天的书店",
+      "excerpt": "躲雨时翻到一本旧诗集，买了下来。",
+      "created": "2026-11-11",
+      "day": 11,
+      "month": "11月",
+      "monthDay": "11月11日",
+      "date": "2026年11月11日",
+      "photo": "sample:books"
+    }
+  }
+}

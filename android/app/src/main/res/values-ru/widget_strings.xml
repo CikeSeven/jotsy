@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- См. values/widget_strings.xml. -->
+<resources>
+    <string name="widget_quick_capture_name">Быстрая запись</string>
+    <string name="widget_quick_capture_description">Одно касание — и вы пишете запись, добавляете задачу или открываете календарь.</string>
+    <string name="widget_today_name">Сегодня</string>
+    <string name="widget_today_description">Дата, лунный календарь, праздники и то, как проходит день.</string>
+    <string name="widget_open_app">Откройте Jotsy, чтобы завершить настройку</string>
+    <string name="widget_anniversary_name">Памятные даты</string>
+    <string name="widget_anniversary_description">Крупный обратный отсчёт до одного дня или список ближайших.</string>
+    <string name="widget_mood_calendar_name">Календарь настроения</string>
+    <string name="widget_mood_calendar_description">Месяц одним взглядом: настроение каждого дня и дни с записями.</string>
+    <string name="widget_todos_name">Список задач</string>
+    <string name="widget_todos_description">Задачи на сегодня или любой список. Отмечайте их прямо на главном экране.</string>
+    <string name="widget_on_this_day_name">В этот день</string>
+    <string name="widget_on_this_day_description">Что вы писали в этот день в прошлые годы — сначала фото.</string>
+    <string name="widget_recent_diaries_name">Последние записи</string>
+    <string name="widget_recent_diaries_description">Последние записи: все, из блокнота, с тегом или закреплённые.</string>
+    <string name="widget_writing_stats_name">Статистика записей</string>
+    <string name="widget_writing_stats_description">Серия дней подряд, итоги месяца и года и тепловая карта последних недель.</string>
+    <string name="widget_photo_memories_name">Фотовоспоминания</string>
+    <string name="widget_photo_memories_description">Фото из ваших записей — каждый день новое.</string>
+</resources>

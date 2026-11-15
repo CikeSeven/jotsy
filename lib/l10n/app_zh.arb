@@ -19752,5 +19752,776 @@
   "aiChatExportJson": "JSON",
   "@aiChatExportJson": {
     "description": "导出格式：JSON（结构化，给程序读）。"
+  },
+  "homeWidgetsTitle": "桌面小组件",
+  "@homeWidgetsTitle": {
+    "description": "设置：桌面小组件页的标题与入口行。"
+  },
+  "homeWidgetsSubtitle": "把日记、日期与快捷入口放到桌面",
+  "@homeWidgetsSubtitle": {
+    "description": "设置：桌面小组件入口行的副标题。"
+  },
+  "homeWidgetsInstalledGroup": "桌面上的小组件",
+  "@homeWidgetsInstalledGroup": {
+    "description": "小组件页：桌面上现有小组件的分组标题。"
+  },
+  "homeWidgetsInstalledEmpty": "桌面上还没有小组件，从下面的组件库挑一个吧。",
+  "@homeWidgetsInstalledEmpty": {
+    "description": "小组件页：桌面上没有小组件时的提示。"
+  },
+  "homeWidgetsInstalledHint": "修改会立即同步到桌面。",
+  "@homeWidgetsInstalledHint": {
+    "description": "小组件工作室：编辑桌面上已有的小组件时预览下方的说明。"
+  },
+  "homeWidgetsGalleryGroup": "组件库",
+  "@homeWidgetsGalleryGroup": {
+    "description": "小组件页：全部小组件种类的分组标题。"
+  },
+  "homeWidgetGroupCapture": "记录与回忆",
+  "@homeWidgetGroupCapture": {
+    "description": "组件库分区：记录与回忆。"
+  },
+  "homeWidgetGroupTime": "时间与日历",
+  "@homeWidgetGroupTime": {
+    "description": "组件库分区：时间与日历。"
+  },
+  "homeWidgetGroupTodos": "待办",
+  "@homeWidgetGroupTodos": {
+    "description": "组件库分区：待办。"
+  },
+  "homeWidgetGroupStats": "统计与照片",
+  "@homeWidgetGroupStats": {
+    "description": "组件库分区：统计与照片。"
+  },
+  "homeWidgetKindQuickCapture": "快速记录",
+  "@homeWidgetKindQuickCapture": {
+    "description": "小组件种类名：快速记录。"
+  },
+  "homeWidgetKindQuickCaptureDescription": "一点就开始写日记、记待办或看今天的日历。",
+  "@homeWidgetKindQuickCaptureDescription": {
+    "description": "组件库：快速记录的说明。"
+  },
+  "homeWidgetKindToday": "今日",
+  "@homeWidgetKindToday": {
+    "description": "小组件种类名：今日。"
+  },
+  "homeWidgetKindTodayDescription": "日期、农历与节假日，还有今天的进度。",
+  "@homeWidgetKindTodayDescription": {
+    "description": "组件库：今日小组件的说明。"
+  },
+  "homeWidgetAddToHome": "添加到桌面",
+  "@homeWidgetAddToHome": {
+    "description": "小组件工作室：请求把小组件添加到桌面的按钮。"
+  },
+  "homeWidgetPinRequested": "在弹出的确认框里确认即可添加",
+  "@homeWidgetPinRequested": {
+    "description": "请求添加到桌面之后的提示。"
+  },
+  "homeWidgetPinUnsupportedTitle": "从桌面添加",
+  "@homeWidgetPinUnsupportedTitle": {
+    "description": "桌面不支持从应用添加时的对话框标题。"
+  },
+  "homeWidgetPinUnsupportedBody": "长按桌面空白处，打开“小组件”，找到 Jotsy。15 分钟内添加的下一个“{name}”会套用你在这里的设计。",
+  "@homeWidgetPinUnsupportedBody": {
+    "description": "桌面不支持从应用添加时的说明。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetTabContent": "内容",
+  "@homeWidgetTabContent": {
+    "description": "小组件工作室标签页：内容。"
+  },
+  "homeWidgetTabStyle": "样式",
+  "@homeWidgetTabStyle": {
+    "description": "小组件工作室标签页：样式。"
+  },
+  "homeWidgetPreviewSize": "预览尺寸",
+  "@homeWidgetPreviewSize": {
+    "description": "小组件工作室：预览尺寸按钮组的说明。"
+  },
+  "homeWidgetStylePalette": "配色",
+  "@homeWidgetStylePalette": {
+    "description": "小组件样式：配色来源。"
+  },
+  "homeWidgetPaletteApp": "跟随主题色",
+  "@homeWidgetPaletteApp": {
+    "description": "小组件配色跟随应用主题色。"
+  },
+  "homeWidgetPaletteWallpaper": "跟随壁纸",
+  "@homeWidgetPaletteWallpaper": {
+    "description": "小组件配色跟随壁纸取色。"
+  },
+  "homeWidgetPaletteWallpaperHint": "Android 12 及以上按壁纸取色，更早的系统跟随主题色。",
+  "@homeWidgetPaletteWallpaperHint": {
+    "description": "小组件样式：跟随壁纸的说明。"
+  },
+  "homeWidgetPaletteCustom": "自选颜色",
+  "@homeWidgetPaletteCustom": {
+    "description": "小组件配色取自选的颜色。"
+  },
+  "homeWidgetStyleBrightness": "明暗",
+  "@homeWidgetStyleBrightness": {
+    "description": "小组件样式：明暗。"
+  },
+  "homeWidgetBrightnessSystem": "跟随系统",
+  "@homeWidgetBrightnessSystem": {
+    "description": "小组件明暗跟随系统。"
+  },
+  "homeWidgetBrightnessLight": "浅色",
+  "@homeWidgetBrightnessLight": {
+    "description": "小组件明暗：浅色。"
+  },
+  "homeWidgetBrightnessDark": "深色",
+  "@homeWidgetBrightnessDark": {
+    "description": "小组件明暗：深色。"
+  },
+  "homeWidgetStyleBackground": "底色",
+  "@homeWidgetStyleBackground": {
+    "description": "小组件样式：底色。"
+  },
+  "homeWidgetBackgroundSurface": "实色",
+  "@homeWidgetBackgroundSurface": {
+    "description": "小组件底色：实色。"
+  },
+  "homeWidgetBackgroundTonal": "色调",
+  "@homeWidgetBackgroundTonal": {
+    "description": "小组件底色：色调。"
+  },
+  "homeWidgetBackgroundVivid": "浓郁",
+  "@homeWidgetBackgroundVivid": {
+    "description": "小组件底色：浓郁。"
+  },
+  "homeWidgetBackgroundClear": "透明",
+  "@homeWidgetBackgroundClear": {
+    "description": "小组件底色：透明。"
+  },
+  "homeWidgetStyleOpacity": "不透明度",
+  "@homeWidgetStyleOpacity": {
+    "description": "小组件样式：底色不透明度。"
+  },
+  "homeWidgetStyleCorners": "圆角",
+  "@homeWidgetStyleCorners": {
+    "description": "小组件样式：圆角。"
+  },
+  "homeWidgetCornersSystem": "跟随系统",
+  "@homeWidgetCornersSystem": {
+    "description": "小组件圆角跟随系统。"
+  },
+  "homeWidgetStyleTextSize": "文字大小",
+  "@homeWidgetStyleTextSize": {
+    "description": "小组件样式：文字大小。"
+  },
+  "homeWidgetStyleDensity": "间距",
+  "@homeWidgetStyleDensity": {
+    "description": "小组件样式：间距。"
+  },
+  "homeWidgetDensityCompact": "紧凑",
+  "@homeWidgetDensityCompact": {
+    "description": "小组件间距：紧凑。"
+  },
+  "homeWidgetDensityStandard": "标准",
+  "@homeWidgetDensityStandard": {
+    "description": "小组件间距：标准。"
+  },
+  "homeWidgetDensityRoomy": "宽松",
+  "@homeWidgetDensityRoomy": {
+    "description": "小组件间距：宽松。"
+  },
+  "homeWidgetStyleAccent": "强调色",
+  "@homeWidgetStyleAccent": {
+    "description": "小组件样式：强调色。"
+  },
+  "homeWidgetAccentPrimary": "主色",
+  "@homeWidgetAccentPrimary": {
+    "description": "小组件强调色：主色。"
+  },
+  "homeWidgetAccentSecondary": "辅助色",
+  "@homeWidgetAccentSecondary": {
+    "description": "小组件强调色：辅助色。"
+  },
+  "homeWidgetAccentTertiary": "第三色",
+  "@homeWidgetAccentTertiary": {
+    "description": "小组件强调色：第三色。"
+  },
+  "homeWidgetQuickActions": "动作",
+  "@homeWidgetQuickActions": {
+    "description": "快速记录：动作列表。"
+  },
+  "homeWidgetQuickActionsHint": "最多 4 个，第一个最醒目。",
+  "@homeWidgetQuickActionsHint": {
+    "description": "快速记录：动作列表的说明。"
+  },
+  "homeWidgetQuickActionWrite": "写日记",
+  "@homeWidgetQuickActionWrite": {
+    "description": "快速记录动作：写日记。"
+  },
+  "homeWidgetQuickActionTodo": "新待办",
+  "@homeWidgetQuickActionTodo": {
+    "description": "快速记录动作：新待办。"
+  },
+  "homeWidgetQuickActionCalendar": "日历",
+  "@homeWidgetQuickActionCalendar": {
+    "description": "快速记录动作：打开日历的今天。"
+  },
+  "homeWidgetQuickActionSearch": "搜索",
+  "@homeWidgetQuickActionSearch": {
+    "description": "快速记录动作：搜索日记。"
+  },
+  "homeWidgetQuickAddAction": "添加动作",
+  "@homeWidgetQuickAddAction": {
+    "description": "快速记录：添加动作的按钮。"
+  },
+  "homeWidgetQuickRemoveAction": "移除",
+  "@homeWidgetQuickRemoveAction": {
+    "description": "快速记录：移除动作的提示。"
+  },
+  "homeWidgetQuickNotebook": "写进日记本",
+  "@homeWidgetQuickNotebook": {
+    "description": "快速记录：新日记写进哪个日记本。"
+  },
+  "homeWidgetQuickNotebookNone": "不指定",
+  "@homeWidgetQuickNotebookNone": {
+    "description": "快速记录：不指定日记本。"
+  },
+  "homeWidgetQuickShowLabels": "显示文字",
+  "@homeWidgetQuickShowLabels": {
+    "description": "快速记录：显示文字。"
+  },
+  "homeWidgetQuickShowGreeting": "日期与问候",
+  "@homeWidgetQuickShowGreeting": {
+    "description": "快速记录：显示日期与问候。"
+  },
+  "homeWidgetQuickShowGreetingHint": "2×2 及以上的尺寸显示",
+  "@homeWidgetQuickShowGreetingHint": {
+    "description": "快速记录：日期与问候的说明。"
+  },
+  "homeWidgetTodayLunar": "农历与节气",
+  "@homeWidgetTodayLunar": {
+    "description": "今日小组件：农历、节气与节日。"
+  },
+  "homeWidgetTodayHoliday": "法定节假日",
+  "@homeWidgetTodayHoliday": {
+    "description": "今日小组件：法定节假日。"
+  },
+  "homeWidgetTodayWriting": "今天写了多少",
+  "@homeWidgetTodayWriting": {
+    "description": "今日小组件：今天写了多少。"
+  },
+  "homeWidgetTodayShowTodos": "到期待办",
+  "@homeWidgetTodayShowTodos": {
+    "description": "今日小组件：到期待办数。"
+  },
+  "homeWidgetTodayYearProgress": "今年进度",
+  "@homeWidgetTodayYearProgress": {
+    "description": "今日小组件：今年进度。"
+  },
+  "homeWidgetTapAction": "点按打开",
+  "@homeWidgetTapAction": {
+    "description": "小组件选项：点按打开哪里。"
+  },
+  "homeWidgetTapCalendar": "日历",
+  "@homeWidgetTapCalendar": {
+    "description": "点按打开：日历。"
+  },
+  "homeWidgetTapWrite": "写日记",
+  "@homeWidgetTapWrite": {
+    "description": "点按打开：写日记。"
+  },
+  "homeWidgetTapApp": "应用首页",
+  "@homeWidgetTapApp": {
+    "description": "点按打开：应用首页。"
+  },
+  "homeWidgetGreetingMorning": "早上好",
+  "@homeWidgetGreetingMorning": {
+    "description": "小组件问候：上午。"
+  },
+  "homeWidgetGreetingAfternoon": "下午好",
+  "@homeWidgetGreetingAfternoon": {
+    "description": "小组件问候：下午。"
+  },
+  "homeWidgetGreetingEvening": "晚上好",
+  "@homeWidgetGreetingEvening": {
+    "description": "小组件问候：晚上。"
+  },
+  "homeWidgetGreetingNight": "夜深了",
+  "@homeWidgetGreetingNight": {
+    "description": "小组件问候：深夜。"
+  },
+  "homeWidgetQuickPrompt": "此刻在想什么？",
+  "@homeWidgetQuickPrompt": {
+    "description": "快速记录小组件：写日记按钮上方的提示语。"
+  },
+  "homeWidgetTodayWords": "今天写了 {count} 字",
+  "@homeWidgetTodayWords": {
+    "description": "今日小组件：今天写了多少字。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNotWritten": "今天还没写",
+  "@homeWidgetTodayNotWritten": {
+    "description": "今日小组件：今天还没写。"
+  },
+  "homeWidgetTodayTodos": "{count} 项待办",
+  "@homeWidgetTodayTodos": {
+    "description": "今日小组件：到这天为止的待办数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNoTodos": "没有待办",
+  "@homeWidgetTodayNoTodos": {
+    "description": "今日小组件：没有到期待办。"
+  },
+  "homeWidgetYearProgress": "今年已过 {percent}",
+  "@homeWidgetYearProgress": {
+    "description": "今日小组件：今年已过多少，如“87%”。",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetFeatureOff": "已在功能管理中关闭",
+  "@homeWidgetFeatureOff": {
+    "description": "所需功能关闭时小组件上的占位文字。"
+  },
+  "homeWidgetOpenToUpdate": "打开 Jotsy 以更新",
+  "@homeWidgetOpenToUpdate": {
+    "description": "小组件数据过期时的占位文字。"
+  },
+  "homeWidgetKindAnniversary": "纪念日",
+  "@homeWidgetKindAnniversary": {
+    "description": "小组件种类名：纪念日。"
+  },
+  "homeWidgetKindAnniversaryDescription": "一个日子的大号倒数，或接下来几个日子的列表。",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "组件库：纪念日小组件的说明。"
+  },
+  "homeWidgetKindMoodCalendar": "心情月历",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "小组件种类名：心情月历。"
+  },
+  "homeWidgetKindMoodCalendarDescription": "一眼看完这个月：每天的心情，和写过日记的日子。",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "组件库：心情月历的说明。"
+  },
+  "homeWidgetMonthWrittenDays": "写了 {count} 天",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "心情月历：这个月有几天写了日记。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "还没有纪念日",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "纪念日小组件：还没有纪念日时的文字。"
+  },
+  "homeWidgetTodayMood": "今天的心情",
+  "@homeWidgetTodayMood": {
+    "description": "今日小组件选项：显示心情脸。"
+  },
+  "homeWidgetTodayMoodHint": "横幅与更高的尺寸显示。点一张脸记下心情，再点一下取消。",
+  "@homeWidgetTodayMoodHint": {
+    "description": "今日小组件选项：心情脸的说明。"
+  },
+  "homeWidgetTodayMoodPrompt": "今天心情如何？",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "今日小组件：心情脸上方的提示。"
+  },
+  "homeWidgetAnniversaryDisplay": "显示",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "纪念日小组件选项：一个还是列表。"
+  },
+  "homeWidgetAnniversarySingle": "一个",
+  "@homeWidgetAnniversarySingle": {
+    "description": "纪念日小组件：显示一个。"
+  },
+  "homeWidgetAnniversaryList": "列表",
+  "@homeWidgetAnniversaryList": {
+    "description": "纪念日小组件：显示列表。"
+  },
+  "homeWidgetAnniversaryWhich": "显示哪一个",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "纪念日小组件选项：显示哪一个纪念日。"
+  },
+  "homeWidgetAnniversaryNextUp": "最近的一个",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "纪念日小组件：不固定，显示最近的一个。"
+  },
+  "homeWidgetAnniversaryShowDate": "日期与周年",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "纪念日小组件选项：显示日期与第几周年。"
+  },
+  "homeWidgetMoodCalendarMoods": "按心情着色",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "心情月历选项：按心情给日期着色。"
+  },
+  "homeWidgetMoodCalendarMoodsHint": "这天的心情优先，其次是当天日记心情的平均。",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "心情月历选项：颜色的取法。"
+  },
+  "homeWidgetMoodCalendarWritten": "写过的日子打点",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "心情月历选项：给写过日记的日子打点。"
+  },
+  "homeWidgetMonthPrevious": "上个月",
+  "@homeWidgetMonthPrevious": {
+    "description": "心情月历：上个月按钮。"
+  },
+  "homeWidgetMonthNext": "下个月",
+  "@homeWidgetMonthNext": {
+    "description": "心情月历：下个月按钮。"
+  },
+  "homeWidgetKindTodos": "待办清单",
+  "@homeWidgetKindTodos": {
+    "description": "小组件种类名：待办清单。"
+  },
+  "homeWidgetKindTodosDescription": "今天的待办或某个清单，在桌面上直接勾选完成。",
+  "@homeWidgetKindTodosDescription": {
+    "description": "组件库：待办清单的说明。"
+  },
+  "homeWidgetTodoView": "显示",
+  "@homeWidgetTodoView": {
+    "description": "待办小组件选项：显示哪些待办。"
+  },
+  "homeWidgetTodoViewList": "某个清单",
+  "@homeWidgetTodoViewList": {
+    "description": "待办小组件选项：显示某个清单。"
+  },
+  "homeWidgetTodoList": "清单",
+  "@homeWidgetTodoList": {
+    "description": "待办小组件选项：显示哪个清单。"
+  },
+  "homeWidgetTodoShowCompleted": "今天完成的",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "待办小组件选项：把今天完成的列在最后。"
+  },
+  "homeWidgetTodoShowCompletedHint": "划掉排在最后，点一下恢复为未完成。",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "待办小组件选项：今天完成的说明。"
+  },
+  "homeWidgetTodoShowDue": "截止日与时刻",
+  "@homeWidgetTodoShowDue": {
+    "description": "待办小组件选项：每行显示截止日与时刻。"
+  },
+  "homeWidgetTodoCheck": "标记为完成",
+  "@homeWidgetTodoCheck": {
+    "description": "待办小组件：勾选圆圈的说明。"
+  },
+  "homeWidgetTodoUncheck": "恢复为未完成",
+  "@homeWidgetTodoUncheck": {
+    "description": "待办小组件：已勾选圆圈的说明。"
+  },
+  "homeWidgetKindOnThisDay": "那年今日",
+  "@homeWidgetKindOnThisDay": {
+    "description": "小组件种类名：那年今日。"
+  },
+  "homeWidgetKindOnThisDayDescription": "往年今天写下的日记，照片优先，多篇时在桌面上翻看。",
+  "@homeWidgetKindOnThisDayDescription": {
+    "description": "组件库：那年今日的说明。"
+  },
+  "homeWidgetKindRecentDiaries": "最近日记",
+  "@homeWidgetKindRecentDiaries": {
+    "description": "小组件种类名：最近日记。"
+  },
+  "homeWidgetKindRecentDiariesDescription": "全部、某个日记本、某个标签或置顶的最近几篇。",
+  "@homeWidgetKindRecentDiariesDescription": {
+    "description": "组件库：最近日记的说明。"
+  },
+  "homeWidgetQuickActionCamera": "拍照记",
+  "@homeWidgetQuickActionCamera": {
+    "description": "快速记录动作：新建日记并直接拍照。"
+  },
+  "homeWidgetQuickActionVoice": "录音记",
+  "@homeWidgetQuickActionVoice": {
+    "description": "快速记录动作：新建日记并直接录音。"
+  },
+  "homeWidgetLocked": "已锁定",
+  "@homeWidgetLocked": {
+    "description": "小组件占位：开了应用锁、日记内容不显示。"
+  },
+  "homeWidgetLockedHint": "点按解锁",
+  "@homeWidgetLockedHint": {
+    "description": "小组件占位：“已锁定”下面的提示。"
+  },
+  "homeWidgetOnThisDayEmpty": "往年的今天还没有日记",
+  "@homeWidgetOnThisDayEmpty": {
+    "description": "那年今日小组件：空状态。"
+  },
+  "homeWidgetWriteOne": "写一篇",
+  "@homeWidgetWriteOne": {
+    "description": "小组件空状态按钮：写一篇。"
+  },
+  "homeWidgetRecentEmpty": "这里还没有日记",
+  "@homeWidgetRecentEmpty": {
+    "description": "最近日记小组件：空状态。"
+  },
+  "homeWidgetRecentPinned": "置顶日记",
+  "@homeWidgetRecentPinned": {
+    "description": "最近日记小组件：显示置顶时的表头。"
+  },
+  "homeWidgetEntryPrevious": "上一篇",
+  "@homeWidgetEntryPrevious": {
+    "description": "那年今日小组件：上一篇按钮的说明。"
+  },
+  "homeWidgetEntryNext": "下一篇",
+  "@homeWidgetEntryNext": {
+    "description": "那年今日小组件：下一篇按钮的说明。"
+  },
+  "homeWidgetShowPhoto": "照片优先",
+  "@homeWidgetShowPhoto": {
+    "description": "那年今日小组件选项：有照片时以照片为主。"
+  },
+  "homeWidgetShowPhotoHint": "封面优先，其次是正文里的第一张。",
+  "@homeWidgetShowPhotoHint": {
+    "description": "那年今日小组件选项：照片优先的说明。"
+  },
+  "homeWidgetShowExcerpt": "正文摘要",
+  "@homeWidgetShowExcerpt": {
+    "description": "日记类小组件选项：显示正文摘要。"
+  },
+  "homeWidgetRecentShowPhotos": "缩略图",
+  "@homeWidgetRecentShowPhotos": {
+    "description": "最近日记小组件选项：显示缩略图。"
+  },
+  "homeWidgetRecentShowPhotosHint": "有照片的日记在行首显示照片，其余显示日期。",
+  "@homeWidgetRecentShowPhotosHint": {
+    "description": "最近日记小组件选项：缩略图的说明。"
+  },
+  "homeWidgetRecentSource": "显示",
+  "@homeWidgetRecentSource": {
+    "description": "最近日记小组件选项：从哪里取日记。"
+  },
+  "homeWidgetRecentNotebook": "日记本",
+  "@homeWidgetRecentNotebook": {
+    "description": "最近日记小组件选项：哪个日记本。"
+  },
+  "homeWidgetRecentTag": "标签",
+  "@homeWidgetRecentTag": {
+    "description": "最近日记小组件选项：哪个标签。"
+  },
+  "homeWidgetPrivacyHint": "私密日记本里的日记不会出现在桌面上；开了应用锁时，这类小组件只显示锁定。",
+  "@homeWidgetPrivacyHint": {
+    "description": "日记类小组件选项：隐私说明。"
+  },
+  "homeWidgetKindWritingStats": "写作统计",
+  "@homeWidgetKindWritingStats": {
+    "description": "小组件种类名：写作统计。"
+  },
+  "homeWidgetKindWritingStatsDescription": "连续记录的天数、本月与今年写了多少，以及最近几周的热力图。",
+  "@homeWidgetKindWritingStatsDescription": {
+    "description": "组件库：写作统计的说明。"
+  },
+  "homeWidgetKindPhotoMemories": "照片回忆",
+  "@homeWidgetKindPhotoMemories": {
+    "description": "小组件种类名：照片回忆。"
+  },
+  "homeWidgetKindPhotoMemoriesDescription": "日记里的照片，每天换一张，也能在桌面上随手换。",
+  "@homeWidgetKindPhotoMemoriesDescription": {
+    "description": "组件库：照片回忆的说明。"
+  },
+  "homeWidgetStreakUnit": "天连续记录",
+  "@homeWidgetStreakUnit": {
+    "description": "写作统计小组件：连续天数大数字下方的单位。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsRecentWeeks": "最近 {count} 周",
+  "@homeWidgetStatsRecentWeeks": {
+    "description": "写作统计小组件：热力图的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsMonthEntries": "本月篇数",
+  "@homeWidgetStatsMonthEntries": {
+    "description": "写作统计小组件：本月篇数。"
+  },
+  "homeWidgetStatsMonthWords": "本月字数",
+  "@homeWidgetStatsMonthWords": {
+    "description": "写作统计小组件：本月字数。"
+  },
+  "homeWidgetStatsYearEntries": "今年篇数",
+  "@homeWidgetStatsYearEntries": {
+    "description": "写作统计小组件：今年篇数。"
+  },
+  "homeWidgetStatsWroteToday": "今天已写",
+  "@homeWidgetStatsWroteToday": {
+    "description": "写作统计小组件：今天已经写过。"
+  },
+  "homeWidgetStatsNotYetToday": "今天还没写",
+  "@homeWidgetStatsNotYetToday": {
+    "description": "写作统计小组件：今天还没写。"
+  },
+  "homeWidgetStatsShowHeatmap": "热力图",
+  "@homeWidgetStatsShowHeatmap": {
+    "description": "写作统计小组件选项：显示热力图。"
+  },
+  "homeWidgetStatsShowHeatmapHint": "4×2 与 4×4 显示最近几周每天写了多少。",
+  "@homeWidgetStatsShowHeatmapHint": {
+    "description": "写作统计小组件选项：热力图的说明。"
+  },
+  "homeWidgetPhotoSource": "照片来自",
+  "@homeWidgetPhotoSource": {
+    "description": "照片回忆小组件选项：照片从哪里来。"
+  },
+  "homeWidgetPhotoSourceOnThisDayHint": "往年今天前后的日记；这几天没有带照片的日记时，显示最近的照片。",
+  "@homeWidgetPhotoSourceOnThisDayHint": {
+    "description": "照片回忆小组件选项：那年今日来源的说明。"
+  },
+  "homeWidgetPhotoShowDate": "日期",
+  "@homeWidgetPhotoShowDate": {
+    "description": "照片回忆小组件选项：在照片上显示日期。"
+  },
+  "homeWidgetPhotoShuffle": "换一张",
+  "@homeWidgetPhotoShuffle": {
+    "description": "照片回忆小组件：换一张按钮的说明。"
+  },
+  "homeWidgetPhotoEmpty": "还没有带照片的日记",
+  "@homeWidgetPhotoEmpty": {
+    "description": "照片回忆小组件：空状态。"
+  },
+  "homeWidgetTabPresets": "预设",
+  "@homeWidgetTabPresets": {
+    "description": "小组件工作室标签页：内置外观、我的样式与样式码。"
+  },
+  "homeWidgetPresetClassic": "经典",
+  "@homeWidgetPresetClassic": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetClassicDescription": "跟随主题色的实色卡片，与应用一致",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetWallpaper": "随壁纸",
+  "@homeWidgetPresetWallpaper": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetWallpaperDescription": "跟随壁纸取色的色调底",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetVivid": "浓郁",
+  "@homeWidgetPresetVivid": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetVividDescription": "主题色铺底，内容反白，醒目",
+  "@homeWidgetPresetVividDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetGlass": "通透",
+  "@homeWidgetPresetGlass": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetGlassDescription": "半透明底、更大的圆角与宽松的间距",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetClear": "极简",
+  "@homeWidgetPresetClear": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetClearDescription": "没有底色，只有内容",
+  "@homeWidgetPresetClearDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetSunrise": "暖阳",
+  "@homeWidgetPresetSunrise": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetSunriseDescription": "暖橙色调，柔和明亮",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetForest": "森林",
+  "@homeWidgetPresetForest": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetForestDescription": "沉静的绿色铺底",
+  "@homeWidgetPresetForestDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetPresetNight": "夜读",
+  "@homeWidgetPresetNight": {
+    "description": "小组件外观预设名。"
+  },
+  "homeWidgetPresetNightDescription": "固定深色、靛蓝强调，夜里不刺眼",
+  "@homeWidgetPresetNightDescription": {
+    "description": "小组件外观预设说明。"
+  },
+  "homeWidgetSampleDiaryTitle1": "海边的黄昏",
+  "@homeWidgetSampleDiaryTitle1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt1": "风把云吹成了橘色，我们在礁石上一直坐到天黑。",
+  "@homeWidgetSampleDiaryExcerpt1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryTitle2": "第一次烤面包",
+  "@homeWidgetSampleDiaryTitle2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt2": "烤出来有点歪，但整个屋子都是香的。",
+  "@homeWidgetSampleDiaryExcerpt2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryTitle3": "雨天的书店",
+  "@homeWidgetSampleDiaryTitle3": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt3": "躲雨时翻到一本旧诗集，买了下来。",
+  "@homeWidgetSampleDiaryExcerpt3": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryTitle4": "晨跑",
+  "@homeWidgetSampleDiaryTitle4": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记标题。"
+  },
+  "homeWidgetSampleDiaryExcerpt4": "五公里，比上周快了一点。",
+  "@homeWidgetSampleDiaryExcerpt4": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：日记摘要。"
+  },
+  "homeWidgetSampleDiaryExcerpt5": "今天开始写日记，每天一句也好。",
+  "@homeWidgetSampleDiaryExcerpt5": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：没有标题的日记的摘要。"
+  },
+  "homeWidgetSampleTodo1": "给妈妈打电话",
+  "@homeWidgetSampleTodo1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleTodo2": "交房租",
+  "@homeWidgetSampleTodo2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleTodo3": "买菜",
+  "@homeWidgetSampleTodo3": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleTodo4": "读完一本书",
+  "@homeWidgetSampleTodo4": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：待办标题。"
+  },
+  "homeWidgetSampleAnniversary1": "在一起",
+  "@homeWidgetSampleAnniversary1": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：纪念日名称。"
+  },
+  "homeWidgetSampleAnniversary2": "妈妈生日",
+  "@homeWidgetSampleAnniversary2": {
+    "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：纪念日名称。"
   }
 }

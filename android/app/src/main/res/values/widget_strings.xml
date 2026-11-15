@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 桌面小组件在启动器列表里的名称与描述，以及快照到达之前的兜底文字。这是界面文案走
+     ARB 的必要例外（启动器按系统语言读 Android 资源），只放这几条；小组件上的其他文字
+     一律来自快照（docs/rules/home_widgets.md「文案」）。四种语言须同步。 -->
+<resources>
+    <string name="widget_quick_capture_name">Quick capture</string>
+    <string name="widget_quick_capture_description">Start an entry, a to-do or today\'s calendar in one tap.</string>
+    <string name="widget_today_name">Today</string>
+    <string name="widget_today_description">The date, lunar calendar and holidays, plus how today is going.</string>
+    <string name="widget_open_app">Open Jotsy to finish setting up</string>
+    <string name="widget_anniversary_name">Anniversaries</string>
+    <string name="widget_anniversary_description">A big countdown to one day, or the next few in a list.</string>
+    <string name="widget_mood_calendar_name">Mood calendar</string>
+    <string name="widget_mood_calendar_description">This month at a glance: how each day felt and the days you wrote.</string>
+    <string name="widget_todos_name">To-do list</string>
+    <string name="widget_todos_description">Today\'s to-dos or any list. Check them off right on the home screen.</string>
+    <string name="widget_on_this_day_name">On this day</string>
+    <string name="widget_on_this_day_description">What you wrote on this day in past years, photos first.</string>
+    <string name="widget_recent_diaries_name">Recent entries</string>
+    <string name="widget_recent_diaries_description">The latest entries from all of them, a notebook, a tag or the pinned ones.</string>
+    <string name="widget_writing_stats_name">Writing stats</string>
+    <string name="widget_writing_stats_description">Your writing streak, this month and this year, with a heatmap of recent weeks.</string>
+    <string name="widget_photo_memories_name">Photo memories</string>
+    <string name="widget_photo_memories_description">A photo from your entries, a new one every day.</string>
+</resources>

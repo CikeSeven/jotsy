@@ -20319,5 +20319,776 @@
   "aiChatExportJson": "JSON",
   "@aiChatExportJson": {
     "description": "Export format: JSON (structured, for programs)."
+  },
+  "homeWidgetsTitle": "Виджеты",
+  "@homeWidgetsTitle": {
+    "description": "Settings: the home screen widgets page title and its row."
+  },
+  "homeWidgetsSubtitle": "Дневник, даты и ярлыки на главном экране",
+  "@homeWidgetsSubtitle": {
+    "description": "Settings: subtitle of the home screen widgets row."
+  },
+  "homeWidgetsInstalledGroup": "На главном экране",
+  "@homeWidgetsInstalledGroup": {
+    "description": "Widgets page: group of the widgets currently on the home screen."
+  },
+  "homeWidgetsInstalledEmpty": "На главном экране пока нет виджетов. Выберите виджет в галерее ниже.",
+  "@homeWidgetsInstalledEmpty": {
+    "description": "Widgets page: shown when no widget is on the home screen."
+  },
+  "homeWidgetsInstalledHint": "Изменения сразу появятся на главном экране.",
+  "@homeWidgetsInstalledHint": {
+    "description": "Widget studio: note under the preview when editing a widget already on the home screen."
+  },
+  "homeWidgetsGalleryGroup": "Галерея виджетов",
+  "@homeWidgetsGalleryGroup": {
+    "description": "Widgets page: group of all widget kinds."
+  },
+  "homeWidgetGroupCapture": "Записи и воспоминания",
+  "@homeWidgetGroupCapture": {
+    "description": "Widget gallery section: capture and memories."
+  },
+  "homeWidgetGroupTime": "Дни и календарь",
+  "@homeWidgetGroupTime": {
+    "description": "Widget gallery section: dates and calendar."
+  },
+  "homeWidgetGroupTodos": "Задачи",
+  "@homeWidgetGroupTodos": {
+    "description": "Widget gallery section: to-dos."
+  },
+  "homeWidgetGroupStats": "Статистика и фото",
+  "@homeWidgetGroupStats": {
+    "description": "Widget gallery section: stats and photos."
+  },
+  "homeWidgetKindQuickCapture": "Быстрая запись",
+  "@homeWidgetKindQuickCapture": {
+    "description": "Widget kind name: quick capture shortcuts."
+  },
+  "homeWidgetKindQuickCaptureDescription": "Одно касание — и вы пишете запись, добавляете задачу или открываете календарь.",
+  "@homeWidgetKindQuickCaptureDescription": {
+    "description": "Widget gallery: description of the quick capture widget."
+  },
+  "homeWidgetKindToday": "Сегодня",
+  "@homeWidgetKindToday": {
+    "description": "Widget kind name: today card."
+  },
+  "homeWidgetKindTodayDescription": "Дата, лунный календарь, праздники и то, как проходит день.",
+  "@homeWidgetKindTodayDescription": {
+    "description": "Widget gallery: description of the today widget."
+  },
+  "homeWidgetAddToHome": "Добавить на главный экран",
+  "@homeWidgetAddToHome": {
+    "description": "Widget studio: button that asks the launcher to add the widget."
+  },
+  "homeWidgetPinRequested": "Подтвердите добавление в появившемся окне",
+  "@homeWidgetPinRequested": {
+    "description": "Snackbar after asking the launcher to add a widget."
+  },
+  "homeWidgetPinUnsupportedTitle": "Добавьте с главного экрана",
+  "@homeWidgetPinUnsupportedTitle": {
+    "description": "Dialog title when the launcher cannot add widgets from apps."
+  },
+  "homeWidgetPinUnsupportedBody": "Нажмите и удерживайте пустое место на главном экране, откройте «Виджеты» и найдите Jotsy. Следующий виджет «{name}», добавленный в течение 15 минут, получит этот дизайн.",
+  "@homeWidgetPinUnsupportedBody": {
+    "description": "Dialog body when the launcher cannot add widgets from apps.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetTabContent": "Содержимое",
+  "@homeWidgetTabContent": {
+    "description": "Widget studio tab: content options."
+  },
+  "homeWidgetTabStyle": "Стиль",
+  "@homeWidgetTabStyle": {
+    "description": "Widget studio tab: style options."
+  },
+  "homeWidgetPreviewSize": "Размер предпросмотра",
+  "@homeWidgetPreviewSize": {
+    "description": "Widget studio: label of the preview size buttons."
+  },
+  "homeWidgetStylePalette": "Цвета",
+  "@homeWidgetStylePalette": {
+    "description": "Widget style: color source."
+  },
+  "homeWidgetPaletteApp": "Тема приложения",
+  "@homeWidgetPaletteApp": {
+    "description": "Widget colors follow the app theme color."
+  },
+  "homeWidgetPaletteWallpaper": "Обои",
+  "@homeWidgetPaletteWallpaper": {
+    "description": "Widget colors follow the wallpaper (Android dynamic color)."
+  },
+  "homeWidgetPaletteWallpaperHint": "На Android 12 и новее цвета берутся из обоев.",
+  "@homeWidgetPaletteWallpaperHint": {
+    "description": "Widget style: hint for the wallpaper colors option."
+  },
+  "homeWidgetPaletteCustom": "Свой цвет",
+  "@homeWidgetPaletteCustom": {
+    "description": "Widget colors from a picked seed color."
+  },
+  "homeWidgetStyleBrightness": "Светлая и тёмная",
+  "@homeWidgetStyleBrightness": {
+    "description": "Widget style: light or dark."
+  },
+  "homeWidgetBrightnessSystem": "Как в системе",
+  "@homeWidgetBrightnessSystem": {
+    "description": "Widget brightness follows the system."
+  },
+  "homeWidgetBrightnessLight": "Светлая",
+  "@homeWidgetBrightnessLight": {
+    "description": "Widget brightness: always light."
+  },
+  "homeWidgetBrightnessDark": "Тёмная",
+  "@homeWidgetBrightnessDark": {
+    "description": "Widget brightness: always dark."
+  },
+  "homeWidgetStyleBackground": "Фон",
+  "@homeWidgetStyleBackground": {
+    "description": "Widget style: background."
+  },
+  "homeWidgetBackgroundSurface": "Сплошной",
+  "@homeWidgetBackgroundSurface": {
+    "description": "Widget background: the card surface color."
+  },
+  "homeWidgetBackgroundTonal": "Тональный",
+  "@homeWidgetBackgroundTonal": {
+    "description": "Widget background: the tonal container color."
+  },
+  "homeWidgetBackgroundVivid": "Яркий",
+  "@homeWidgetBackgroundVivid": {
+    "description": "Widget background: the primary color."
+  },
+  "homeWidgetBackgroundClear": "Прозрачный",
+  "@homeWidgetBackgroundClear": {
+    "description": "Widget background: none, straight on the wallpaper."
+  },
+  "homeWidgetStyleOpacity": "Непрозрачность",
+  "@homeWidgetStyleOpacity": {
+    "description": "Widget style: background opacity."
+  },
+  "homeWidgetStyleCorners": "Скругление",
+  "@homeWidgetStyleCorners": {
+    "description": "Widget style: corner radius."
+  },
+  "homeWidgetCornersSystem": "Как в системе",
+  "@homeWidgetCornersSystem": {
+    "description": "Widget corners follow the system widget radius."
+  },
+  "homeWidgetStyleTextSize": "Размер текста",
+  "@homeWidgetStyleTextSize": {
+    "description": "Widget style: text scale."
+  },
+  "homeWidgetStyleDensity": "Отступы",
+  "@homeWidgetStyleDensity": {
+    "description": "Widget style: padding density."
+  },
+  "homeWidgetDensityCompact": "Плотно",
+  "@homeWidgetDensityCompact": {
+    "description": "Widget spacing: compact."
+  },
+  "homeWidgetDensityStandard": "Стандарт",
+  "@homeWidgetDensityStandard": {
+    "description": "Widget spacing: standard."
+  },
+  "homeWidgetDensityRoomy": "Свободно",
+  "@homeWidgetDensityRoomy": {
+    "description": "Widget spacing: roomy."
+  },
+  "homeWidgetStyleAccent": "Акцент",
+  "@homeWidgetStyleAccent": {
+    "description": "Widget style: which color slot is the accent."
+  },
+  "homeWidgetAccentPrimary": "Основной",
+  "@homeWidgetAccentPrimary": {
+    "description": "Widget accent: primary."
+  },
+  "homeWidgetAccentSecondary": "Дополнительный",
+  "@homeWidgetAccentSecondary": {
+    "description": "Widget accent: secondary."
+  },
+  "homeWidgetAccentTertiary": "Третичный",
+  "@homeWidgetAccentTertiary": {
+    "description": "Widget accent: tertiary."
+  },
+  "homeWidgetQuickActions": "Действия",
+  "@homeWidgetQuickActions": {
+    "description": "Quick capture: the list of actions."
+  },
+  "homeWidgetQuickActionsHint": "До 4. Первое выделяется.",
+  "@homeWidgetQuickActionsHint": {
+    "description": "Quick capture: hint under the actions."
+  },
+  "homeWidgetQuickActionWrite": "Запись",
+  "@homeWidgetQuickActionWrite": {
+    "description": "Quick capture action: new entry."
+  },
+  "homeWidgetQuickActionTodo": "Задача",
+  "@homeWidgetQuickActionTodo": {
+    "description": "Quick capture action: new to-do."
+  },
+  "homeWidgetQuickActionCalendar": "Календарь",
+  "@homeWidgetQuickActionCalendar": {
+    "description": "Quick capture action: open today in the calendar."
+  },
+  "homeWidgetQuickActionSearch": "Поиск",
+  "@homeWidgetQuickActionSearch": {
+    "description": "Quick capture action: search entries."
+  },
+  "homeWidgetQuickAddAction": "Добавить действие",
+  "@homeWidgetQuickAddAction": {
+    "description": "Quick capture: button to add an action."
+  },
+  "homeWidgetQuickRemoveAction": "Убрать",
+  "@homeWidgetQuickRemoveAction": {
+    "description": "Quick capture: tooltip to remove an action."
+  },
+  "homeWidgetQuickNotebook": "Записывать в",
+  "@homeWidgetQuickNotebook": {
+    "description": "Quick capture: which notebook new entries go into."
+  },
+  "homeWidgetQuickNotebookNone": "Не выбрано",
+  "@homeWidgetQuickNotebookNone": {
+    "description": "Quick capture: no notebook chosen."
+  },
+  "homeWidgetQuickShowLabels": "Показывать подписи",
+  "@homeWidgetQuickShowLabels": {
+    "description": "Quick capture: show text under the icons."
+  },
+  "homeWidgetQuickShowGreeting": "Дата и приветствие",
+  "@homeWidgetQuickShowGreeting": {
+    "description": "Quick capture: show the date and a greeting."
+  },
+  "homeWidgetQuickShowGreetingHint": "В размере 2×2 и больше",
+  "@homeWidgetQuickShowGreetingHint": {
+    "description": "Quick capture: hint for the greeting option."
+  },
+  "homeWidgetTodayLunar": "Лунный календарь и сезоны",
+  "@homeWidgetTodayLunar": {
+    "description": "Today widget: show the lunar date, solar terms and festivals."
+  },
+  "homeWidgetTodayHoliday": "Праздники (Китай)",
+  "@homeWidgetTodayHoliday": {
+    "description": "Today widget: show public holidays and make-up workdays."
+  },
+  "homeWidgetTodayWriting": "Написано сегодня",
+  "@homeWidgetTodayWriting": {
+    "description": "Today widget: show how much was written today."
+  },
+  "homeWidgetTodayShowTodos": "Задачи на сегодня",
+  "@homeWidgetTodayShowTodos": {
+    "description": "Today widget: show how many to-dos are due."
+  },
+  "homeWidgetTodayYearProgress": "Прогресс года",
+  "@homeWidgetTodayYearProgress": {
+    "description": "Today widget: show how much of the year has passed."
+  },
+  "homeWidgetTapAction": "По нажатию",
+  "@homeWidgetTapAction": {
+    "description": "Widget option: what opens when tapped."
+  },
+  "homeWidgetTapCalendar": "Календарь",
+  "@homeWidgetTapCalendar": {
+    "description": "Tap action: open the calendar."
+  },
+  "homeWidgetTapWrite": "Новая запись",
+  "@homeWidgetTapWrite": {
+    "description": "Tap action: start a new entry."
+  },
+  "homeWidgetTapApp": "Приложение",
+  "@homeWidgetTapApp": {
+    "description": "Tap action: just open the app."
+  },
+  "homeWidgetGreetingMorning": "Доброе утро",
+  "@homeWidgetGreetingMorning": {
+    "description": "Widget greeting before noon."
+  },
+  "homeWidgetGreetingAfternoon": "Добрый день",
+  "@homeWidgetGreetingAfternoon": {
+    "description": "Widget greeting in the afternoon."
+  },
+  "homeWidgetGreetingEvening": "Добрый вечер",
+  "@homeWidgetGreetingEvening": {
+    "description": "Widget greeting in the evening."
+  },
+  "homeWidgetGreetingNight": "Не спится?",
+  "@homeWidgetGreetingNight": {
+    "description": "Widget greeting late at night."
+  },
+  "homeWidgetQuickPrompt": "О чём думаете?",
+  "@homeWidgetQuickPrompt": {
+    "description": "Quick capture widget: prompt above the write button."
+  },
+  "homeWidgetTodayWords": "{count, plural, one{Сегодня {count} слово} few{Сегодня {count} слова} many{Сегодня {count} слов} other{Сегодня {count} слова}}",
+  "@homeWidgetTodayWords": {
+    "description": "Today widget: how much was written today (count from TextStats).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNotWritten": "Сегодня ещё ничего не написано",
+  "@homeWidgetTodayNotWritten": {
+    "description": "Today widget: nothing written yet."
+  },
+  "homeWidgetTodayTodos": "{count, plural, one{{count} задача} few{{count} задачи} many{{count} задач} other{{count} задачи}}",
+  "@homeWidgetTodayTodos": {
+    "description": "Today widget: to-dos due by that day.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNoTodos": "Задач нет",
+  "@homeWidgetTodayNoTodos": {
+    "description": "Today widget: no to-dos due."
+  },
+  "homeWidgetYearProgress": "Прошло {percent} года",
+  "@homeWidgetYearProgress": {
+    "description": "Today widget: how much of the year has passed, e.g. “87%”.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetFeatureOff": "Отключено в управлении функциями",
+  "@homeWidgetFeatureOff": {
+    "description": "Widget placeholder when its feature is turned off."
+  },
+  "homeWidgetOpenToUpdate": "Откройте Jotsy, чтобы обновить",
+  "@homeWidgetOpenToUpdate": {
+    "description": "Widget placeholder when its data is out of date."
+  },
+  "homeWidgetKindAnniversary": "Памятные даты",
+  "@homeWidgetKindAnniversary": {
+    "description": "Widget kind name: anniversaries and countdowns."
+  },
+  "homeWidgetKindAnniversaryDescription": "Крупный обратный отсчёт до одного дня или список ближайших.",
+  "@homeWidgetKindAnniversaryDescription": {
+    "description": "Widget gallery: description of the anniversary widget."
+  },
+  "homeWidgetKindMoodCalendar": "Календарь настроения",
+  "@homeWidgetKindMoodCalendar": {
+    "description": "Widget kind name: the month colored by mood."
+  },
+  "homeWidgetKindMoodCalendarDescription": "Месяц одним взглядом: настроение каждого дня и дни с записями.",
+  "@homeWidgetKindMoodCalendarDescription": {
+    "description": "Widget gallery: description of the mood calendar widget."
+  },
+  "homeWidgetMonthWrittenDays": "{count, plural, =0{Записей пока нет} one{Записи в {count} день} few{Записи в {count} дня} many{Записи в {count} дней} other{Записи в {count} дня}}",
+  "@homeWidgetMonthWrittenDays": {
+    "description": "Mood calendar widget: how many days of the month have entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetAnniversaryEmpty": "Памятных дат пока нет",
+  "@homeWidgetAnniversaryEmpty": {
+    "description": "Anniversary widget: shown when there are none."
+  },
+  "homeWidgetTodayMood": "Настроение дня",
+  "@homeWidgetTodayMood": {
+    "description": "Today widget option: show the mood faces."
+  },
+  "homeWidgetTodayMoodHint": "В размере 4×2 и выше. Нажмите на лицо, чтобы отметить настроение, ещё раз — чтобы снять.",
+  "@homeWidgetTodayMoodHint": {
+    "description": "Today widget option: hint for the mood faces."
+  },
+  "homeWidgetTodayMoodPrompt": "Как настроение?",
+  "@homeWidgetTodayMoodPrompt": {
+    "description": "Today widget: label above the mood faces."
+  },
+  "homeWidgetAnniversaryDisplay": "Показывать",
+  "@homeWidgetAnniversaryDisplay": {
+    "description": "Anniversary widget option: one or a list."
+  },
+  "homeWidgetAnniversarySingle": "Одну",
+  "@homeWidgetAnniversarySingle": {
+    "description": "Anniversary widget: show one anniversary."
+  },
+  "homeWidgetAnniversaryList": "Список",
+  "@homeWidgetAnniversaryList": {
+    "description": "Anniversary widget: show a list."
+  },
+  "homeWidgetAnniversaryWhich": "Какую дату",
+  "@homeWidgetAnniversaryWhich": {
+    "description": "Anniversary widget option: which anniversary to show."
+  },
+  "homeWidgetAnniversaryNextUp": "Ближайшую",
+  "@homeWidgetAnniversaryNextUp": {
+    "description": "Anniversary widget: follow the next anniversary instead of a fixed one."
+  },
+  "homeWidgetAnniversaryShowDate": "Дата и годовщина",
+  "@homeWidgetAnniversaryShowDate": {
+    "description": "Anniversary widget option: show the date line."
+  },
+  "homeWidgetMoodCalendarMoods": "Цвет по настроению",
+  "@homeWidgetMoodCalendarMoods": {
+    "description": "Mood calendar option: color the days by mood."
+  },
+  "homeWidgetMoodCalendarMoodsHint": "Сначала настроение дня, иначе среднее по записям за день.",
+  "@homeWidgetMoodCalendarMoodsHint": {
+    "description": "Mood calendar option: how a day's color is chosen."
+  },
+  "homeWidgetMoodCalendarWritten": "Точка в дни с записями",
+  "@homeWidgetMoodCalendarWritten": {
+    "description": "Mood calendar option: mark days that have entries."
+  },
+  "homeWidgetMonthPrevious": "Предыдущий месяц",
+  "@homeWidgetMonthPrevious": {
+    "description": "Mood calendar widget: button to the previous month."
+  },
+  "homeWidgetMonthNext": "Следующий месяц",
+  "@homeWidgetMonthNext": {
+    "description": "Mood calendar widget: button to the next month."
+  },
+  "homeWidgetKindTodos": "Список задач",
+  "@homeWidgetKindTodos": {
+    "description": "Widget kind name: to-do list."
+  },
+  "homeWidgetKindTodosDescription": "Задачи на сегодня или любой список. Отмечайте их прямо на главном экране.",
+  "@homeWidgetKindTodosDescription": {
+    "description": "Widget gallery: description of the to-do list widget."
+  },
+  "homeWidgetTodoView": "Показывать",
+  "@homeWidgetTodoView": {
+    "description": "To-do widget option: which to-dos to show."
+  },
+  "homeWidgetTodoViewList": "Список",
+  "@homeWidgetTodoViewList": {
+    "description": "To-do widget option: show one list."
+  },
+  "homeWidgetTodoList": "Список",
+  "@homeWidgetTodoList": {
+    "description": "To-do widget option: which list to show."
+  },
+  "homeWidgetTodoShowCompleted": "Выполненные сегодня",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "To-do widget option: keep today's completed to-dos at the end."
+  },
+  "homeWidgetTodoShowCompletedHint": "Зачёркнуты и стоят в конце. Нажмите, чтобы вернуть.",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "To-do widget option: hint for the done-today option."
+  },
+  "homeWidgetTodoShowDue": "Срок и время",
+  "@homeWidgetTodoShowDue": {
+    "description": "To-do widget option: show due date and time on each row."
+  },
+  "homeWidgetTodoCheck": "Отметить выполненной",
+  "@homeWidgetTodoCheck": {
+    "description": "To-do widget: description of the check circle."
+  },
+  "homeWidgetTodoUncheck": "Вернуть в работу",
+  "@homeWidgetTodoUncheck": {
+    "description": "To-do widget: description of a checked circle."
+  },
+  "homeWidgetKindOnThisDay": "В этот день",
+  "@homeWidgetKindOnThisDay": {
+    "description": "Widget kind name: entries written on this day in past years."
+  },
+  "homeWidgetKindOnThisDayDescription": "Что вы писали в этот день в прошлые годы — сначала фото. Листайте прямо на главном экране.",
+  "@homeWidgetKindOnThisDayDescription": {
+    "description": "Widget gallery: description of the on-this-day widget."
+  },
+  "homeWidgetKindRecentDiaries": "Последние записи",
+  "@homeWidgetKindRecentDiaries": {
+    "description": "Widget kind name: the latest diary entries."
+  },
+  "homeWidgetKindRecentDiariesDescription": "Последние записи: все, из блокнота, с тегом или закреплённые.",
+  "@homeWidgetKindRecentDiariesDescription": {
+    "description": "Widget gallery: description of the recent entries widget."
+  },
+  "homeWidgetQuickActionCamera": "Фото",
+  "@homeWidgetQuickActionCamera": {
+    "description": "Quick capture action: start an entry by taking a photo."
+  },
+  "homeWidgetQuickActionVoice": "Голос",
+  "@homeWidgetQuickActionVoice": {
+    "description": "Quick capture action: start an entry by recording audio."
+  },
+  "homeWidgetLocked": "Заблокировано",
+  "@homeWidgetLocked": {
+    "description": "Widget placeholder when the app lock is on and diary content is hidden."
+  },
+  "homeWidgetLockedHint": "Нажмите, чтобы разблокировать",
+  "@homeWidgetLockedHint": {
+    "description": "Widget placeholder hint under \"Locked\"."
+  },
+  "homeWidgetOnThisDayEmpty": "В этот день в прошлые годы записей пока нет",
+  "@homeWidgetOnThisDayEmpty": {
+    "description": "On-this-day widget: empty state."
+  },
+  "homeWidgetWriteOne": "Написать",
+  "@homeWidgetWriteOne": {
+    "description": "Widget empty state button: write a new entry."
+  },
+  "homeWidgetRecentEmpty": "Здесь пока нет записей",
+  "@homeWidgetRecentEmpty": {
+    "description": "Recent entries widget: empty state."
+  },
+  "homeWidgetRecentPinned": "Закреплённые записи",
+  "@homeWidgetRecentPinned": {
+    "description": "Recent entries widget header when showing pinned entries."
+  },
+  "homeWidgetEntryPrevious": "Предыдущая запись",
+  "@homeWidgetEntryPrevious": {
+    "description": "On-this-day widget: description of the previous button."
+  },
+  "homeWidgetEntryNext": "Следующая запись",
+  "@homeWidgetEntryNext": {
+    "description": "On-this-day widget: description of the next button."
+  },
+  "homeWidgetShowPhoto": "Сначала фото",
+  "@homeWidgetShowPhoto": {
+    "description": "On-this-day widget option: show the entry photo when it has one."
+  },
+  "homeWidgetShowPhotoHint": "Сначала обложка, затем первое фото в записи.",
+  "@homeWidgetShowPhotoHint": {
+    "description": "On-this-day widget option: hint for photos first."
+  },
+  "homeWidgetShowExcerpt": "Отрывок",
+  "@homeWidgetShowExcerpt": {
+    "description": "Diary widget option: show a few lines of the entry text."
+  },
+  "homeWidgetRecentShowPhotos": "Миниатюры",
+  "@homeWidgetRecentShowPhotos": {
+    "description": "Recent entries widget option: show photo thumbnails."
+  },
+  "homeWidgetRecentShowPhotosHint": "У записей с фото в начале строки — фото, у остальных — дата.",
+  "@homeWidgetRecentShowPhotosHint": {
+    "description": "Recent entries widget option: hint for thumbnails."
+  },
+  "homeWidgetRecentSource": "Показывать",
+  "@homeWidgetRecentSource": {
+    "description": "Recent entries widget option: where the entries come from."
+  },
+  "homeWidgetRecentNotebook": "Блокнот",
+  "@homeWidgetRecentNotebook": {
+    "description": "Recent entries widget option: which notebook."
+  },
+  "homeWidgetRecentTag": "Тег",
+  "@homeWidgetRecentTag": {
+    "description": "Recent entries widget option: which tag."
+  },
+  "homeWidgetPrivacyHint": "Записи из личных блокнотов не появляются на главном экране. При включённой блокировке такие виджеты показывают замок.",
+  "@homeWidgetPrivacyHint": {
+    "description": "Diary widget options: privacy note."
+  },
+  "homeWidgetKindWritingStats": "Статистика записей",
+  "@homeWidgetKindWritingStats": {
+    "description": "Widget kind name: writing statistics."
+  },
+  "homeWidgetKindWritingStatsDescription": "Серия дней подряд, итоги месяца и года и тепловая карта последних недель.",
+  "@homeWidgetKindWritingStatsDescription": {
+    "description": "Widget gallery: description of the writing stats widget."
+  },
+  "homeWidgetKindPhotoMemories": "Фотовоспоминания",
+  "@homeWidgetKindPhotoMemories": {
+    "description": "Widget kind name: photos from diary entries."
+  },
+  "homeWidgetKindPhotoMemoriesDescription": "Фото из ваших записей — каждый день новое. Можно сменить прямо на главном экране.",
+  "@homeWidgetKindPhotoMemoriesDescription": {
+    "description": "Widget gallery: description of the photo memories widget."
+  },
+  "homeWidgetStreakUnit": "{count, plural, one{день подряд} few{дня подряд} many{дней подряд} other{дня подряд}}",
+  "@homeWidgetStreakUnit": {
+    "description": "Writing stats widget: caption under the big streak number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsRecentWeeks": "{count, plural, one{Последняя {count} неделя} few{Последние {count} недели} many{Последние {count} недель} other{Последние {count} недели}}",
+  "@homeWidgetStatsRecentWeeks": {
+    "description": "Writing stats widget: heatmap caption.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsMonthEntries": "В этом месяце",
+  "@homeWidgetStatsMonthEntries": {
+    "description": "Writing stats widget: number of entries this month."
+  },
+  "homeWidgetStatsMonthWords": "Слов за месяц",
+  "@homeWidgetStatsMonthWords": {
+    "description": "Writing stats widget: words written this month."
+  },
+  "homeWidgetStatsYearEntries": "В этом году",
+  "@homeWidgetStatsYearEntries": {
+    "description": "Writing stats widget: number of entries this year."
+  },
+  "homeWidgetStatsWroteToday": "Сегодня есть запись",
+  "@homeWidgetStatsWroteToday": {
+    "description": "Writing stats widget: today already has an entry."
+  },
+  "homeWidgetStatsNotYetToday": "Сегодня ещё нет записи",
+  "@homeWidgetStatsNotYetToday": {
+    "description": "Writing stats widget: no entry yet today."
+  },
+  "homeWidgetStatsShowHeatmap": "Тепловая карта",
+  "@homeWidgetStatsShowHeatmap": {
+    "description": "Writing stats widget option: show the heatmap."
+  },
+  "homeWidgetStatsShowHeatmapHint": "В размерах 4×2 и 4×4 — сколько вы писали каждый день последних недель.",
+  "@homeWidgetStatsShowHeatmapHint": {
+    "description": "Writing stats widget option: hint for the heatmap."
+  },
+  "homeWidgetPhotoSource": "Фото из",
+  "@homeWidgetPhotoSource": {
+    "description": "Photo memories widget option: where photos come from."
+  },
+  "homeWidgetPhotoSourceOnThisDayHint": "Записи около этого дня в прошлые годы. Если фото нет, показываются недавние.",
+  "@homeWidgetPhotoSourceOnThisDayHint": {
+    "description": "Photo memories widget option: hint for the on-this-day source."
+  },
+  "homeWidgetPhotoShowDate": "Дата",
+  "@homeWidgetPhotoShowDate": {
+    "description": "Photo memories widget option: show the date on the photo."
+  },
+  "homeWidgetPhotoShuffle": "Другое фото",
+  "@homeWidgetPhotoShuffle": {
+    "description": "Photo memories widget: description of the swap button."
+  },
+  "homeWidgetPhotoEmpty": "Пока нет записей с фото",
+  "@homeWidgetPhotoEmpty": {
+    "description": "Photo memories widget: empty state."
+  },
+  "homeWidgetTabPresets": "Шаблоны",
+  "@homeWidgetTabPresets": {
+    "description": "Widget studio tab: built-in looks, my styles and style codes."
+  },
+  "homeWidgetPresetClassic": "Классика",
+  "@homeWidgetPresetClassic": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClassicDescription": "Сплошная карточка в цвете темы, как в приложении",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetWallpaper": "Под обои",
+  "@homeWidgetPresetWallpaper": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetWallpaperDescription": "Тональные цвета из ваших обоев",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetVivid": "Яркий",
+  "@homeWidgetPresetVivid": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetVividDescription": "Заливка цветом темы, светлый текст",
+  "@homeWidgetPresetVividDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetGlass": "Стекло",
+  "@homeWidgetPresetGlass": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetGlassDescription": "Полупрозрачная карточка, более круглые углы и простор",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetClear": "Минимализм",
+  "@homeWidgetPresetClear": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClearDescription": "Без фона, только содержимое",
+  "@homeWidgetPresetClearDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetSunrise": "Рассвет",
+  "@homeWidgetPresetSunrise": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetSunriseDescription": "Мягкие тёплые оранжевые тона",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetForest": "Лес",
+  "@homeWidgetPresetForest": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetForestDescription": "Спокойная глубокая зелёная заливка",
+  "@homeWidgetPresetForestDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetNight": "Ночь",
+  "@homeWidgetPresetNight": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetNightDescription": "Всегда тёмный, индиго, не режет глаза",
+  "@homeWidgetPresetNightDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetSampleDiaryTitle1": "Закат у моря",
+  "@homeWidgetSampleDiaryTitle1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt1": "Ветер окрасил облака в оранжевый. Мы сидели на камнях до темноты.",
+  "@homeWidgetSampleDiaryExcerpt1": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle2": "Мой первый хлеб",
+  "@homeWidgetSampleDiaryTitle2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt2": "Немного кривой, но запах на всю квартиру.",
+  "@homeWidgetSampleDiaryExcerpt2": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle3": "Книжный в дождь",
+  "@homeWidgetSampleDiaryTitle3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt3": "Пока пережидала дождь, нашла старый сборник стихов.",
+  "@homeWidgetSampleDiaryExcerpt3": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryTitle4": "Утренняя пробежка",
+  "@homeWidgetSampleDiaryTitle4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary title."
+  },
+  "homeWidgetSampleDiaryExcerpt4": "Пять километров, чуть быстрее, чем на прошлой неделе.",
+  "@homeWidgetSampleDiaryExcerpt4": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt."
+  },
+  "homeWidgetSampleDiaryExcerpt5": "Сегодня начала вести дневник. Хватит и строчки в день.",
+  "@homeWidgetSampleDiaryExcerpt5": {
+    "description": "Sample content in widget previews (launcher widget picker): diary excerpt of an entry without a title."
+  },
+  "homeWidgetSampleTodo1": "Позвонить маме",
+  "@homeWidgetSampleTodo1": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo2": "Оплатить аренду",
+  "@homeWidgetSampleTodo2": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo3": "Купить продукты",
+  "@homeWidgetSampleTodo3": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleTodo4": "Дочитать книгу",
+  "@homeWidgetSampleTodo4": {
+    "description": "Sample content in widget previews (launcher widget picker): to-do title."
+  },
+  "homeWidgetSampleAnniversary1": "Вместе",
+  "@homeWidgetSampleAnniversary1": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "homeWidgetSampleAnniversary2": "День рождения мамы",
+  "@homeWidgetSampleAnniversary2": {
+    "description": "Sample content in widget previews (launcher widget picker): anniversary name."
   }
 }

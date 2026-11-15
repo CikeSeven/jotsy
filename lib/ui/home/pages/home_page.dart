@@ -56,6 +56,9 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../widgets/launch_reveal.dart';
 import '../../ai/controllers/ai_chat_return_flow.dart';
+import '../../../core/services/home_widgets/home_widget_launch.dart';
+import '../../home_widgets/controllers/home_widget_launch_router.dart';
+import '../../home_widgets/providers/home_widget_providers.dart';
 import '../../ai/providers/ai_chat_return_provider.dart';
 part '../controllers/home_page_controller.dart';
 part 'home_page_chrome.dart';
@@ -317,6 +320,32 @@ class _HomePageState extends ConsumerState<HomePage> {
       (_, String? todoId) => _openTodoFromNotification(todoId),
       fireImmediately: true,
     );
+    // 点桌面小组件打开应用：同样在首页接住（冷启动时请求先到，
+    // fireImmediately 接住），再按目标打开页面。
+    ref.listenManual<HomeWidgetLaunch?>(
+      homeWidgetLaunchRequestProvider,
+      (_, HomeWidgetLaunch? launch) => _openFromHomeWidget(launch),
+      fireImmediately: true,
+    );
+  }
+
+  void _openFromHomeWidget(HomeWidgetLaunch? launch) {
+    if (launch == null) return;
+    ref.read(homeWidgetLaunchRequestProvider.notifier).consume();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await openHomeWidgetLaunch(
+        context,
+        ref,
+        launch,
+        switchToTab: (HomeTab tab) async {
+          final index = _tabs.indexOf(tab);
+          if (index < 0 || !mounted) return false;
+          await _controller.switchToIndex(index);
+          return mounted;
+        },
+      );
+    });
   }
 
   void _openTodoFromNotification(String? todoId) {

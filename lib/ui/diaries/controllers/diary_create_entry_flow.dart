@@ -9,6 +9,8 @@ import '../../diary_templates/models/diary_template_selection.dart';
 import '../../diary_templates/sections/diary_template_picker_sheet.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../pages/diary_drafts_page.dart';
+import '../models/diary_create_initial_action.dart';
+export '../models/diary_create_initial_action.dart';
 import '../pages/edit_diary_page.dart';
 import '../sections/diary_draft_picker_sheet.dart';
 import '../viewmodels/diary_draft_list_item.dart';
@@ -37,6 +39,10 @@ typedef DiaryCreateEntryResult = ({bool opened, String? createdDiaryId});
 /// 草稿面板里选了“从模板新建”时以用户所选为准）。续写已有草稿时原样打开，
 /// 草稿自带它的日记本。
 ///
+/// [initialAction]（桌面小组件的拍照记 / 录音记）：不弹草稿面板，直接新建空白
+/// （新建空白不删除任何草稿），编辑页入场后立即开始拍照或录音。用户点它就是要
+/// 马上拍，先选草稿只会耽误。
+///
 /// 功能管理（[appFeaturesProvider]）关闭的功能隐藏入口，数据保留：
 /// - 日记模板关闭：草稿面板没有“从模板新建”，新建空白不套用日记本的默认
 ///   模板（`templateId` 原样留在日记本里，重新开启即恢复）；
@@ -49,6 +55,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   DateTime? capsuleUnlockAt,
   String? notebookId,
   String? chapterId,
+  DiaryCreateInitialAction? initialAction,
 }) async {
   const dismissed = (opened: false, createdDiaryId: null);
   final database = ref.read(appDatabaseProvider);
@@ -72,6 +79,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
     template: template,
     notebookId: draftId == null ? notebookId : null,
     chapterId: draftId == null ? chapterId : null,
+    initialAction: draftId == null ? initialAction : null,
   );
 
   /// 新建空白：在日记本里时带上这本的默认模板（读不到、或模板功能关闭时
@@ -91,7 +99,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
     return openEditor(null, template: template);
   }
 
-  if (recent.isEmpty) return openBlank();
+  if (recent.isEmpty || initialAction != null) return openBlank();
 
   final pick = await showDiaryDraftPickerSheet(
     context,
@@ -153,6 +161,7 @@ Future<DiaryCreateEntryResult> _openEditor(
   DiaryTemplateSelection? template,
   String? notebookId,
   String? chapterId,
+  DiaryCreateInitialAction? initialAction,
 }) async {
   final result = await Navigator.of(context).push<Object?>(
     MaterialPageRoute<Object?>(
@@ -164,6 +173,7 @@ Future<DiaryCreateEntryResult> _openEditor(
         createTemplate: template,
         createNotebookId: notebookId,
         createNotebookChapterId: chapterId,
+        createInitialAction: initialAction,
       ),
     ),
   );

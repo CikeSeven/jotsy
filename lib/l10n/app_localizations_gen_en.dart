@@ -17443,4 +17443,634 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiChatExportJson => 'JSON';
+
+  @override
+  String get homeWidgetsTitle => 'Home screen widgets';
+
+  @override
+  String get homeWidgetsSubtitle =>
+      'Your diary, dates and shortcuts on the home screen';
+
+  @override
+  String get homeWidgetsInstalledGroup => 'On your home screen';
+
+  @override
+  String get homeWidgetsInstalledEmpty =>
+      'No widgets on your home screen yet. Pick one from the gallery below.';
+
+  @override
+  String get homeWidgetsInstalledHint =>
+      'Changes appear on the home screen right away.';
+
+  @override
+  String get homeWidgetsGalleryGroup => 'Widget gallery';
+
+  @override
+  String get homeWidgetGroupCapture => 'Write & remember';
+
+  @override
+  String get homeWidgetGroupTime => 'Days & calendar';
+
+  @override
+  String get homeWidgetGroupTodos => 'To-dos';
+
+  @override
+  String get homeWidgetGroupStats => 'Stats & photos';
+
+  @override
+  String get homeWidgetKindQuickCapture => 'Quick capture';
+
+  @override
+  String get homeWidgetKindQuickCaptureDescription =>
+      'Start an entry, a to-do or today\'s calendar in one tap.';
+
+  @override
+  String get homeWidgetKindToday => 'Today';
+
+  @override
+  String get homeWidgetKindTodayDescription =>
+      'The date, lunar calendar and holidays, plus how today is going.';
+
+  @override
+  String get homeWidgetAddToHome => 'Add to home screen';
+
+  @override
+  String get homeWidgetPinRequested => 'Confirm in the dialog to add it';
+
+  @override
+  String get homeWidgetPinUnsupportedTitle => 'Add it from the home screen';
+
+  @override
+  String homeWidgetPinUnsupportedBody(String name) {
+    return 'Long-press an empty spot on your home screen, open Widgets and find Jotsy. The next “$name” you add within 15 minutes uses the design you made here.';
+  }
+
+  @override
+  String get homeWidgetTabContent => 'Content';
+
+  @override
+  String get homeWidgetTabStyle => 'Style';
+
+  @override
+  String get homeWidgetPreviewSize => 'Preview size';
+
+  @override
+  String get homeWidgetStylePalette => 'Colors';
+
+  @override
+  String get homeWidgetPaletteApp => 'App theme';
+
+  @override
+  String get homeWidgetPaletteWallpaper => 'Wallpaper';
+
+  @override
+  String get homeWidgetPaletteWallpaperHint =>
+      'Takes colors from your wallpaper on Android 12 and later.';
+
+  @override
+  String get homeWidgetPaletteCustom => 'Custom color';
+
+  @override
+  String get homeWidgetStyleBrightness => 'Light & dark';
+
+  @override
+  String get homeWidgetBrightnessSystem => 'System';
+
+  @override
+  String get homeWidgetBrightnessLight => 'Light';
+
+  @override
+  String get homeWidgetBrightnessDark => 'Dark';
+
+  @override
+  String get homeWidgetStyleBackground => 'Background';
+
+  @override
+  String get homeWidgetBackgroundSurface => 'Solid';
+
+  @override
+  String get homeWidgetBackgroundTonal => 'Tonal';
+
+  @override
+  String get homeWidgetBackgroundVivid => 'Vivid';
+
+  @override
+  String get homeWidgetBackgroundClear => 'Clear';
+
+  @override
+  String get homeWidgetStyleOpacity => 'Opacity';
+
+  @override
+  String get homeWidgetStyleCorners => 'Corners';
+
+  @override
+  String get homeWidgetCornersSystem => 'Match system';
+
+  @override
+  String get homeWidgetStyleTextSize => 'Text size';
+
+  @override
+  String get homeWidgetStyleDensity => 'Spacing';
+
+  @override
+  String get homeWidgetDensityCompact => 'Compact';
+
+  @override
+  String get homeWidgetDensityStandard => 'Standard';
+
+  @override
+  String get homeWidgetDensityRoomy => 'Roomy';
+
+  @override
+  String get homeWidgetStyleAccent => 'Accent';
+
+  @override
+  String get homeWidgetAccentPrimary => 'Primary';
+
+  @override
+  String get homeWidgetAccentSecondary => 'Secondary';
+
+  @override
+  String get homeWidgetAccentTertiary => 'Tertiary';
+
+  @override
+  String get homeWidgetQuickActions => 'Actions';
+
+  @override
+  String get homeWidgetQuickActionsHint => 'Up to 4. The first one stands out.';
+
+  @override
+  String get homeWidgetQuickActionWrite => 'Write';
+
+  @override
+  String get homeWidgetQuickActionTodo => 'To-do';
+
+  @override
+  String get homeWidgetQuickActionCalendar => 'Calendar';
+
+  @override
+  String get homeWidgetQuickActionSearch => 'Search';
+
+  @override
+  String get homeWidgetQuickAddAction => 'Add action';
+
+  @override
+  String get homeWidgetQuickRemoveAction => 'Remove';
+
+  @override
+  String get homeWidgetQuickNotebook => 'Write into';
+
+  @override
+  String get homeWidgetQuickNotebookNone => 'Not set';
+
+  @override
+  String get homeWidgetQuickShowLabels => 'Show labels';
+
+  @override
+  String get homeWidgetQuickShowGreeting => 'Date and greeting';
+
+  @override
+  String get homeWidgetQuickShowGreetingHint => 'On 2×2 and larger';
+
+  @override
+  String get homeWidgetTodayLunar => 'Lunar calendar & solar terms';
+
+  @override
+  String get homeWidgetTodayHoliday => 'Public holidays (China)';
+
+  @override
+  String get homeWidgetTodayWriting => 'Today\'s writing';
+
+  @override
+  String get homeWidgetTodayShowTodos => 'To-dos due';
+
+  @override
+  String get homeWidgetTodayYearProgress => 'Year progress';
+
+  @override
+  String get homeWidgetTapAction => 'When tapped';
+
+  @override
+  String get homeWidgetTapCalendar => 'Calendar';
+
+  @override
+  String get homeWidgetTapWrite => 'New entry';
+
+  @override
+  String get homeWidgetTapApp => 'App';
+
+  @override
+  String get homeWidgetGreetingMorning => 'Good morning';
+
+  @override
+  String get homeWidgetGreetingAfternoon => 'Good afternoon';
+
+  @override
+  String get homeWidgetGreetingEvening => 'Good evening';
+
+  @override
+  String get homeWidgetGreetingNight => 'Still up?';
+
+  @override
+  String get homeWidgetQuickPrompt => 'What\'s on your mind?';
+
+  @override
+  String homeWidgetTodayWords(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words today',
+      one: '1 word today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetTodayNotWritten => 'Nothing written yet today';
+
+  @override
+  String homeWidgetTodayTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos',
+      one: '1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetTodayNoTodos => 'No to-dos';
+
+  @override
+  String homeWidgetYearProgress(String percent) {
+    return '$percent of the year';
+  }
+
+  @override
+  String get homeWidgetFeatureOff => 'Turned off in Feature management';
+
+  @override
+  String get homeWidgetOpenToUpdate => 'Open Jotsy to update';
+
+  @override
+  String get homeWidgetKindAnniversary => 'Anniversaries';
+
+  @override
+  String get homeWidgetKindAnniversaryDescription =>
+      'A big countdown to one day, or the next few in a list.';
+
+  @override
+  String get homeWidgetKindMoodCalendar => 'Mood calendar';
+
+  @override
+  String get homeWidgetKindMoodCalendarDescription =>
+      'This month at a glance: how each day felt and the days you wrote.';
+
+  @override
+  String homeWidgetMonthWrittenDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wrote on $count days',
+      one: 'Wrote on 1 day',
+      zero: 'Nothing written yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetAnniversaryEmpty => 'No anniversaries yet';
+
+  @override
+  String get homeWidgetTodayMood => 'Today\'s mood';
+
+  @override
+  String get homeWidgetTodayMoodHint =>
+      'On 4×2 and taller sizes. Tap a face to set the mood, tap it again to clear.';
+
+  @override
+  String get homeWidgetTodayMoodPrompt => 'How\'s today?';
+
+  @override
+  String get homeWidgetAnniversaryDisplay => 'Show';
+
+  @override
+  String get homeWidgetAnniversarySingle => 'One';
+
+  @override
+  String get homeWidgetAnniversaryList => 'List';
+
+  @override
+  String get homeWidgetAnniversaryWhich => 'Which one';
+
+  @override
+  String get homeWidgetAnniversaryNextUp => 'The next one';
+
+  @override
+  String get homeWidgetAnniversaryShowDate => 'Date and years';
+
+  @override
+  String get homeWidgetMoodCalendarMoods => 'Color days by mood';
+
+  @override
+  String get homeWidgetMoodCalendarMoodsHint =>
+      'The mood you set for the day comes first, then the average of that day\'s entries.';
+
+  @override
+  String get homeWidgetMoodCalendarWritten => 'Dot the days with entries';
+
+  @override
+  String get homeWidgetMonthPrevious => 'Previous month';
+
+  @override
+  String get homeWidgetMonthNext => 'Next month';
+
+  @override
+  String get homeWidgetKindTodos => 'To-do list';
+
+  @override
+  String get homeWidgetKindTodosDescription =>
+      'Today\'s to-dos or any list. Check them off right on the home screen.';
+
+  @override
+  String get homeWidgetTodoView => 'Show';
+
+  @override
+  String get homeWidgetTodoViewList => 'A list';
+
+  @override
+  String get homeWidgetTodoList => 'List';
+
+  @override
+  String get homeWidgetTodoShowCompleted => 'Done today';
+
+  @override
+  String get homeWidgetTodoShowCompletedHint =>
+      'Crossed out at the end. Tap one to bring it back.';
+
+  @override
+  String get homeWidgetTodoShowDue => 'Due date and time';
+
+  @override
+  String get homeWidgetTodoCheck => 'Mark as done';
+
+  @override
+  String get homeWidgetTodoUncheck => 'Mark as not done';
+
+  @override
+  String get homeWidgetKindOnThisDay => 'On this day';
+
+  @override
+  String get homeWidgetKindOnThisDayDescription =>
+      'What you wrote on this day in past years, photos first. Flip through them on the home screen.';
+
+  @override
+  String get homeWidgetKindRecentDiaries => 'Recent entries';
+
+  @override
+  String get homeWidgetKindRecentDiariesDescription =>
+      'The latest entries from all of them, a notebook, a tag or the pinned ones.';
+
+  @override
+  String get homeWidgetQuickActionCamera => 'Photo';
+
+  @override
+  String get homeWidgetQuickActionVoice => 'Voice';
+
+  @override
+  String get homeWidgetLocked => 'Locked';
+
+  @override
+  String get homeWidgetLockedHint => 'Tap to unlock';
+
+  @override
+  String get homeWidgetOnThisDayEmpty =>
+      'Nothing from this day in past years yet';
+
+  @override
+  String get homeWidgetWriteOne => 'Write one';
+
+  @override
+  String get homeWidgetRecentEmpty => 'No entries here yet';
+
+  @override
+  String get homeWidgetRecentPinned => 'Pinned entries';
+
+  @override
+  String get homeWidgetEntryPrevious => 'Previous entry';
+
+  @override
+  String get homeWidgetEntryNext => 'Next entry';
+
+  @override
+  String get homeWidgetShowPhoto => 'Photos first';
+
+  @override
+  String get homeWidgetShowPhotoHint =>
+      'Cover first, then the first photo in the entry.';
+
+  @override
+  String get homeWidgetShowExcerpt => 'Excerpt';
+
+  @override
+  String get homeWidgetRecentShowPhotos => 'Thumbnails';
+
+  @override
+  String get homeWidgetRecentShowPhotosHint =>
+      'Entries with photos show one at the start of the row.';
+
+  @override
+  String get homeWidgetRecentSource => 'Show';
+
+  @override
+  String get homeWidgetRecentNotebook => 'Notebook';
+
+  @override
+  String get homeWidgetRecentTag => 'Tag';
+
+  @override
+  String get homeWidgetPrivacyHint =>
+      'Entries in private notebooks never appear on the home screen. With the app lock on, these widgets show a lock instead.';
+
+  @override
+  String get homeWidgetKindWritingStats => 'Writing stats';
+
+  @override
+  String get homeWidgetKindWritingStatsDescription =>
+      'Your writing streak, this month and this year at a glance, with a heatmap of recent weeks.';
+
+  @override
+  String get homeWidgetKindPhotoMemories => 'Photo memories';
+
+  @override
+  String get homeWidgetKindPhotoMemoriesDescription =>
+      'A photo from your entries, a new one every day. Swap it right on the home screen.';
+
+  @override
+  String homeWidgetStreakUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days in a row',
+      one: 'day in a row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeWidgetStatsRecentWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Last $count weeks',
+      one: 'Last week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetStatsMonthEntries => 'This month';
+
+  @override
+  String get homeWidgetStatsMonthWords => 'Words this month';
+
+  @override
+  String get homeWidgetStatsYearEntries => 'This year';
+
+  @override
+  String get homeWidgetStatsWroteToday => 'Written today';
+
+  @override
+  String get homeWidgetStatsNotYetToday => 'Nothing yet today';
+
+  @override
+  String get homeWidgetStatsShowHeatmap => 'Heatmap';
+
+  @override
+  String get homeWidgetStatsShowHeatmapHint =>
+      'On 4×2 and 4×4, how much you wrote each day in recent weeks.';
+
+  @override
+  String get homeWidgetPhotoSource => 'Photos from';
+
+  @override
+  String get homeWidgetPhotoSourceOnThisDayHint =>
+      'Entries from around this day in past years. When there are none with photos, recent photos show instead.';
+
+  @override
+  String get homeWidgetPhotoShowDate => 'Date';
+
+  @override
+  String get homeWidgetPhotoShuffle => 'Another photo';
+
+  @override
+  String get homeWidgetPhotoEmpty => 'No entries with photos yet';
+
+  @override
+  String get homeWidgetTabPresets => 'Presets';
+
+  @override
+  String get homeWidgetPresetClassic => 'Classic';
+
+  @override
+  String get homeWidgetPresetClassicDescription =>
+      'Solid card in your theme color, like the app';
+
+  @override
+  String get homeWidgetPresetWallpaper => 'Wallpaper';
+
+  @override
+  String get homeWidgetPresetWallpaperDescription =>
+      'Tonal colors picked from your wallpaper';
+
+  @override
+  String get homeWidgetPresetVivid => 'Vivid';
+
+  @override
+  String get homeWidgetPresetVividDescription =>
+      'Filled with your theme color, content in reverse';
+
+  @override
+  String get homeWidgetPresetGlass => 'Glass';
+
+  @override
+  String get homeWidgetPresetGlassDescription =>
+      'See-through card with rounder corners and more room';
+
+  @override
+  String get homeWidgetPresetClear => 'Minimal';
+
+  @override
+  String get homeWidgetPresetClearDescription =>
+      'No background, just the content';
+
+  @override
+  String get homeWidgetPresetSunrise => 'Sunrise';
+
+  @override
+  String get homeWidgetPresetSunriseDescription => 'Soft, warm orange tones';
+
+  @override
+  String get homeWidgetPresetForest => 'Forest';
+
+  @override
+  String get homeWidgetPresetForestDescription => 'Calm deep green fill';
+
+  @override
+  String get homeWidgetPresetNight => 'Night';
+
+  @override
+  String get homeWidgetPresetNightDescription =>
+      'Always dark with indigo accents, easy on the eyes';
+
+  @override
+  String get homeWidgetSampleDiaryTitle1 => 'Sunset by the sea';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt1 =>
+      'The wind turned the clouds orange. We sat on the rocks until dark.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle2 => 'My first loaf';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt2 =>
+      'A bit lopsided, but the whole flat smelled amazing.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle3 => 'Bookshop in the rain';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt3 =>
+      'Found an old book of poems while waiting out the rain.';
+
+  @override
+  String get homeWidgetSampleDiaryTitle4 => 'Morning run';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt4 =>
+      'Five kilometres, a little faster than last week.';
+
+  @override
+  String get homeWidgetSampleDiaryExcerpt5 =>
+      'Started keeping a diary today. One line a day is enough.';
+
+  @override
+  String get homeWidgetSampleTodo1 => 'Call Mom';
+
+  @override
+  String get homeWidgetSampleTodo2 => 'Pay the rent';
+
+  @override
+  String get homeWidgetSampleTodo3 => 'Buy groceries';
+
+  @override
+  String get homeWidgetSampleTodo4 => 'Finish a book';
+
+  @override
+  String get homeWidgetSampleAnniversary1 => 'Together';
+
+  @override
+  String get homeWidgetSampleAnniversary2 => 'Mom\'s birthday';
 }

@@ -68,6 +68,140 @@
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        <!-- 桌面小组件（docs/rules/home_widgets.md）：每个种类一个接收器，exported 是
+             启动器能放置它的前提；新增种类同时登记 widgets/WidgetKinds.kt 与 Dart 的
+             HomeWidgetKind。 -->
+        <receiver
+            android:name=".widgets.kinds.QuickCaptureWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_quick_capture_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_quick_capture" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.TodayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_today_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_today" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.AnniversaryWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_anniversary_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_anniversary" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.MoodCalendarWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_mood_calendar_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_mood_calendar" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.TodosWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_todos_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_todos" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.OnThisDayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_on_this_day_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_on_this_day" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.RecentDiariesWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_recent_diaries_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_recent_diaries" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.WritingStatsWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_writing_stats_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_writing_stats" />
+        </receiver>
+        <receiver
+            android:name=".widgets.kinds.PhotoMemoriesWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_photo_memories_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_photo_memories" />
+        </receiver>
+        <!-- 桌面上的操作（点心情脸等）交给 Dart 的后台回调写库。只接受本应用发出的
+             显式广播（不导出），其他应用不能借它改数据。 -->
+        <receiver
+            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+            </intent-filter>
+        </receiver>
+        <!-- 小组件的定时重画（之后几天的零点与问候时段）：闹钟到点由它广播刷新，开机 /
+             更新后重新排上。 -->
+        <receiver
+            android:name="es.antonborri.home_widget.HomeWidgetScheduledUpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <!-- 长按小组件“重新配置”的中转（无界面），见 WidgetConfigureActivity。 -->
+        <activity
+            android:name=".widgets.WidgetConfigureActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <!-- enableOnBackInvokedCallback="false": no predictive back preview. Back (gesture or
              key) only navigates once released, with no peek at the previous page or the home
              screen; Android 16 turns the system preview on by default for targetSdk 36, so the

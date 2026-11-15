@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 待办清单（widgets/kinds/TodosWidget.kt）：默认 4×2，可缩到 2×2、拉到 4×4（可滚动）。
+     可用尺寸须与 Dart HomeWidgetCellSize.sizesOf 一致。
+     reconfigurable|configuration_optional：放置时不弹配置，长按“重新配置”进工作室。 -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.jotsy.diary.widgets.WidgetConfigureActivity"
+    android:description="@string/widget_todos_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview_todos"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

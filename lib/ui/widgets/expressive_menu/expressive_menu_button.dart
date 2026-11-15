@@ -25,6 +25,7 @@ class ExpressiveMenuButton extends StatefulWidget {
     required this.items,
     this.placement = ExpressiveMenuPlacement.end,
     this.enabled = true,
+    this.takesFocus = true,
   });
 
   final String tooltip;
@@ -34,6 +35,11 @@ class ExpressiveMenuButton extends StatefulWidget {
   final List<Widget> items;
   final ExpressiveMenuPlacement placement;
   final bool enabled;
+
+  /// 打开菜单时焦点是否移到按钮上（关闭时也回到按钮）。放在正文编辑器里的
+  /// 按钮（视频卡片的 ⋮）传 false：按钮在编辑器的焦点子树里，焦点一移过去
+  /// 编辑器就当自己有焦点，连上输入法、弹出键盘。
+  final bool takesFocus;
 
   @override
   State<ExpressiveMenuButton> createState() => _ExpressiveMenuButtonState();
@@ -66,7 +72,7 @@ class _ExpressiveMenuButtonState extends State<ExpressiveMenuButton> {
   @override
   Widget build(BuildContext context) {
     return ExpressiveMenuAnchor(
-      childFocusNode: _focus,
+      childFocusNode: widget.takesFocus ? _focus : null,
       placement: widget.placement,
       iconTrigger: true,
       menuChildren: widget.items,

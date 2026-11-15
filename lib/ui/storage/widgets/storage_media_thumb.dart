@@ -6,6 +6,7 @@ import '../../../core/services/storage/storage_usage_models.dart';
 import '../../diaries/widgets/diary_image_source.dart';
 import '../../widgets/long_image/long_image_cover_alignment.dart';
 import '../../widgets/long_image/long_image_policy.dart';
+import '../../widgets/video_play_badge.dart';
 import '../providers/storage_providers.dart';
 
 /// 一个媒体的方形缩略图：图片按显示尺寸保持比例缩小解码、cover 裁切（长图
@@ -74,7 +75,7 @@ class _StorageMediaThumbState extends ConsumerState<StorageMediaThumb> {
               fit: StackFit.expand,
               children: <Widget>[
                 _Picture(source: frame, extent: widget.extent),
-                const Center(child: _PlayBadge()),
+                const Center(child: VideoPlayBadge()),
               ],
             );
           },
@@ -137,25 +138,6 @@ class _IconTile extends StatelessWidget {
       color: scheme.surfaceContainerHighest,
       child: Center(
         child: FaIcon(icon, size: 18, color: scheme.onSurfaceVariant),
-      ),
-    );
-  }
-}
-
-class _PlayBadge extends StatelessWidget {
-  const _PlayBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surface.withValues(alpha: 0.82),
-        shape: BoxShape.circle,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: FaIcon(FontAwesomeIcons.play, size: 10, color: scheme.onSurface),
       ),
     );
   }

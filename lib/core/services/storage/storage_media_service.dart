@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -16,6 +14,7 @@ import '../diary_media_cleanup_service.dart';
 import '../editing_session_registry.dart';
 import '../managed_file_paths.dart';
 import '../settings_service.dart';
+import '../video_poster_cache.dart';
 import 'media_compressor.dart';
 import 'storage_cache_catalog.dart';
 import 'storage_compress_plan.dart';
@@ -67,7 +66,13 @@ class StorageMediaService {
 
   /// 视频元数据缓存，键为“定位键|字节数|修改时间”：文件不变就不再读。
   final Map<String, StorageVideoInfo> _videoInfo = {};
-  final Map<String, Future<String?>> _thumbnails = {};
+
+  /// 视频缩略图：与正文视频小图同一份生成与缓存，用本服务的压缩器与临时
+  /// 目录（测试注入假的）。
+  late final VideoPosterCache _posters = VideoPosterCache(
+    compressor: compressor,
+    temporaryDirectory: _temporaryDirectory,
+  );
 
   /// 等撤销窗口关闭的上限；超时视为忙，提示用户稍后再试。
   static const Duration undoWindowTimeout = Duration(seconds: 8);
@@ -147,30 +152,13 @@ class StorageMediaService {
     };
   }
 
-  /// 视频的缩略图路径（缓存在临时目录的 [StorageCacheCatalog.videoThumbnailDirectoryName]）；
-  /// 不能生成时为 null。同一文件并发请求只生成一次。
-  Future<String?> videoThumbnail(StorageMediaEntry entry) {
-    if (!compressor.supportsVideoInfo) return Future.value();
-    final name = sha1
-        .convert(
-          utf8.encode(
-            '${entry.key}|${entry.bytes}|'
-            '${entry.modifiedAt.millisecondsSinceEpoch}',
-          ),
-        )
-        .toString();
-    return _thumbnails[name] ??= () async {
-      final target = p.join(
-        (await _temporaryDirectory()).path,
-        StorageCacheCatalog.videoThumbnailDirectoryName,
-        '$name.jpg',
-      );
-      if (await File(target).exists()) return target;
-      final ok = await compressor.videoThumbnail(entry.path, target: target);
-      if (!ok) _thumbnails.remove(name);
-      return ok ? target : null;
-    }();
-  }
+  /// 视频的缩略图路径（[VideoPosterCache]，缓存在临时目录）；不能生成时为
+  /// null。同一文件并发请求只生成一次。
+  Future<String?> videoThumbnail(StorageMediaEntry entry) => _posters.posterOf(
+    entry.path,
+    bytes: entry.bytes,
+    modifiedAt: entry.modifiedAt,
+  );
 
   /// 删除 [keys] 指向的文件：先从全部引用里移除，再删已无引用的文件。
   Future<StorageDeleteResult> deleteMedia(Set<String> keys) async {

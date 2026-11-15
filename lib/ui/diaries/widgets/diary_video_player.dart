@@ -11,23 +11,32 @@ import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.
 import 'package:node_diary/ui/diaries/pages/diary_video_fullscreen_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_attachment_tile.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_controls.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_video_embed_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_playback_interaction_guard.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_surface.dart';
 import 'package:video_player/video_player.dart';
 
 /// 内嵌播放器持有播放/导出控制器，全屏页借用同一控制器和原生纹理。
 /// 只有当前视图挂载 VideoPlayer，避免两处同时挂载同一原生播放器的画面。
+///
+/// 卡片是画面 + 一行控件（[DiaryVideoControls]）；[maxWidth] 为“调整大小”
+/// 写入的宽度上限（拖动滑条时是预览值），正文列更窄时以列宽为准，高度随
+/// 视频比例。[menu] 只在编辑页给出：控件行的导出按钮换成 ⋮ 菜单。
 class DiaryVideoPlayer extends StatefulWidget {
   const DiaryVideoPlayer({
     super.key,
     required this.video,
     this.player,
     this.exportService = const VideoExportService(),
+    this.maxWidth,
+    this.menu,
   });
 
   final DiaryFileAttachment video;
   final VideoPlayerController? player;
   final VideoExportService exportService;
+  final double? maxWidth;
+  final DiaryVideoEmbedMenu? menu;
 
   @override
   State<DiaryVideoPlayer> createState() => _DiaryVideoPlayerState();
@@ -77,28 +86,12 @@ class _DiaryVideoPlayerState extends State<DiaryVideoPlayer> {
   Future<void> _openFullscreen() async {
     final controller = _controller;
     if (!controller.enterFullscreen()) return;
-    FocusManager.instance.primaryFocus?.unfocus();
     try {
-      await Navigator.of(context).push<void>(
-        PageRouteBuilder<void>(
-          requestFocus: false,
-          transitionDuration: ExpressiveMotion.duration(context),
-          reverseTransitionDuration: ExpressiveMotion.duration(
-            context,
-            ExpressiveMotion.fast,
-          ),
-          pageBuilder: (context, _, _) => DiaryVideoFullscreenPage(
-            video: widget.video,
-            controller: controller,
-            exportController: _exportController,
-          ),
-          transitionsBuilder: (context, animation, _, child) => FadeTransition(
-            opacity: animation.drive(
-              CurveTween(curve: ExpressiveMotion.effects),
-            ),
-            child: child,
-          ),
-        ),
+      await openDiaryVideoFullscreen(
+        context,
+        video: widget.video,
+        controller: controller,
+        exportController: _exportController,
       );
     } finally {
       controller.leaveFullscreen();
@@ -129,47 +122,53 @@ class _DiaryVideoPlayerState extends State<DiaryVideoPlayer> {
             : 16 / 9;
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Material(
-            color: colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(16),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_controller.hasFailed)
-                  DiaryAttachmentTile(
-                    attachment: widget.video,
-                    icon: FontAwesomeIcons.fileVideo,
-                    subtitle: context.l10n.videoPlaybackFailed,
-                  )
-                else
-                  // 16:9 占位到真实比例（如竖屏视频）的高度变化平滑过渡。
-                  AnimatedSize(
-                    duration: ExpressiveMotion.durationNonZero(
-                      context,
-                      ExpressiveMotion.medium,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: widget.maxWidth ?? double.infinity,
+            ),
+            child: Material(
+              color: colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(16),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_controller.hasFailed)
+                    DiaryAttachmentTile(
+                      attachment: widget.video,
+                      icon: FontAwesomeIcons.fileVideo,
+                      subtitle: context.l10n.videoPlaybackFailed,
+                    )
+                  else
+                    // 16:9 占位到真实比例（如竖屏视频）的高度变化平滑过渡。
+                    AnimatedSize(
+                      duration: ExpressiveMotion.durationNonZero(
+                        context,
+                        ExpressiveMotion.medium,
+                      ),
+                      curve: ExpressiveMotion.effects,
+                      alignment: Alignment.topCenter,
+                      child: AspectRatio(
+                        aspectRatio: ratio.clamp(0.6, 3).toDouble(),
+                        child: _controller.isFullscreen
+                            ? const SizedBox.expand()
+                            : DiaryVideoSurface(controller: _controller),
+                      ),
                     ),
-                    curve: ExpressiveMotion.effects,
-                    alignment: Alignment.topCenter,
-                    child: AspectRatio(
-                      aspectRatio: ratio.clamp(0.6, 3).toDouble(),
-                      child: _controller.isFullscreen
-                          ? const SizedBox.expand()
-                          : DiaryVideoSurface(controller: _controller),
-                    ),
+                  DiaryVideoControls(
+                    video: widget.video,
+                    controller: _controller,
+                    exportController: _exportController,
+                    menu: widget.menu,
+                    onFullscreen:
+                        _controller.isLoading ||
+                            _controller.hasFailed ||
+                            _controller.isFullscreen
+                        ? null
+                        : () => unawaited(_openFullscreen()),
                   ),
-                DiaryVideoControls(
-                  video: widget.video,
-                  controller: _controller,
-                  exportController: _exportController,
-                  onFullscreen:
-                      _controller.isLoading ||
-                          _controller.hasFailed ||
-                          _controller.isFullscreen
-                      ? null
-                      : () => unawaited(_openFullscreen()),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

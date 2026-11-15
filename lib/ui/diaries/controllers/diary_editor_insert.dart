@@ -29,9 +29,9 @@ af.Selection diaryEditorInsertionSelection(
 /// 光标落到后面的空段落。
 ///
 /// [followThumbnails]：紧挨在前面的同级块是小图、或插入点就停在小图上时，
-/// 插入的图片也设为小图，接着排进那一排（diary_thumbnail_rows.dart）。点
-/// 小图右侧的空白后插图，图片就出现在它右边；想要大图时在图片菜单里恢复
-/// 正常显示。
+/// 插入的图片与视频也设为小图，接着排进那一排（diary_thumbnail_rows.dart）。
+/// 点小图右侧的空白后插图 / 插视频，它就出现在右边；想要大图时在图片菜单
+/// 或视频菜单里恢复正常显示。附件等其他块照常一行一块。
 void insertDiaryEditorNodes({
   required DiaryEditorController controller,
   required List<af.Node> nodes,
@@ -91,11 +91,11 @@ void insertDiaryEditorNodes({
   // 插入点停在小图上（左侧或右侧）时同样跟着设为小图，插进那一排。
   final thumbnails =
       followThumbnails &&
-      ((previous != null && isDiaryThumbnailImage(previous)) ||
-          (delta == null && table == null && isDiaryThumbnailImage(current)));
+      ((previous != null && isDiaryThumbnailMedia(previous)) ||
+          (delta == null && table == null && isDiaryThumbnailMedia(current)));
   transaction.insertNodes(insertPath, [
     for (final node in nodes)
-      thumbnails && node.type == kDiaryBlockImage
+      thumbnails && kDiaryThumbnailBlockTypes.contains(node.type)
           ? node.copyWith(
               attributes: {...node.attributes, kDiaryImageThumbnailKey: true},
             )

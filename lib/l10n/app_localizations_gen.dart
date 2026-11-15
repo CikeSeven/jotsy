@@ -3288,11 +3288,17 @@ abstract class AppLocalizations {
   /// **'Fullscreen playback'**
   String get videoFullscreen;
 
-  /// Tooltip for returning to the diary from fullscreen video playback.
+  /// Tooltip for the ⋮ menu on a diary video (show as thumbnail, resize, save, delete).
   ///
   /// In en, this message translates to:
-  /// **'Exit fullscreen'**
-  String get videoExitFullscreen;
+  /// **'More actions'**
+  String get videoMoreActions;
+
+  /// Slider label in the diary video resize sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Video width'**
+  String get diaryEditorVideoWidth;
 
   /// Label for expanding the diary location address detail options.
   ///

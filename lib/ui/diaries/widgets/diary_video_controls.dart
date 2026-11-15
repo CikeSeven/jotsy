@@ -8,10 +8,16 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_export_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_video_embed_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_export_button.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
+import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 
-/// 内嵌/全屏共享控件，窄屏把命令和进度分为两行，避免挤占播放进度。
+/// 正文视频卡片画面下方的一行控件（#252 精简）：播放 / 暂停、进度条与时间、
+/// 导出（只读正文）或 ⋮ 菜单（编辑页，[menu]）、全屏。不再显示文件名。
+///
+/// 卡片调窄后（“调整大小”，最窄 `kDiaryVideoMinWidth`）时间文字放不下，
+/// 宽度不足 [timeMinWidth] 时只留进度条；按钮始终在。
 class DiaryVideoControls extends StatelessWidget {
   const DiaryVideoControls({
     super.key,
@@ -19,88 +25,74 @@ class DiaryVideoControls extends StatelessWidget {
     required this.controller,
     required this.exportController,
     required this.onFullscreen,
-    this.fullscreen = false,
+    this.menu,
   });
 
   final DiaryFileAttachment video;
   final DiaryVideoPlayerController controller;
   final DiaryVideoExportController exportController;
   final VoidCallback? onFullscreen;
-  final bool fullscreen;
+  final DiaryVideoEmbedMenu? menu;
+
+  /// 控件行宽于此才显示时间文字。
+  static const double timeMinWidth = 300;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final value = controller.player.value;
+    final ready = !controller.isLoading && !controller.hasFailed;
+    final menu = this.menu;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  video.displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelLarge?.copyWith(color: colors.onSurface),
-                ),
-              ),
-              DiaryVideoExportButton(
-                video: video,
-                controller: exportController,
-              ),
-              SizedBox.square(
-                dimension: 44,
-                child: IconButton(
-                  tooltip: fullscreen
-                      ? context.l10n.videoExitFullscreen
-                      : context.l10n.videoFullscreen,
-                  onPressed: onFullscreen,
-                  icon: FaIcon(
-                    fullscreen
-                        ? FontAwesomeIcons.compress
-                        : FontAwesomeIcons.expand,
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 2),
+      child: WidthLayoutBuilder(
+        builder: (context, width) => Row(
+          children: [
+            SizedBox.square(
+              dimension: 44,
+              child: IconButton(
+                tooltip: value.isPlaying
+                    ? context.l10n.videoPause
+                    : context.l10n.videoPlay,
+                onPressed: ready ? () => unawaited(controller.toggle()) : null,
+                icon: ExpressiveIconSwap(
+                  switchKey: value.isPlaying,
+                  child: FaIcon(
+                    value.isPlaying
+                        ? FontAwesomeIcons.pause
+                        : FontAwesomeIcons.play,
                     size: 16,
                   ),
                 ),
               ),
-            ],
-          ),
-          Row(
-            children: [
-              SizedBox.square(
-                dimension: 44,
-                child: IconButton(
-                  tooltip: value.isPlaying
-                      ? context.l10n.videoPause
-                      : context.l10n.videoPlay,
-                  onPressed: controller.isLoading || controller.hasFailed
-                      ? null
-                      : () => unawaited(controller.toggle()),
-                  icon: ExpressiveIconSwap(
-                    switchKey: value.isPlaying,
-                    child: FaIcon(
-                      value.isPlaying
-                          ? FontAwesomeIcons.pause
-                          : FontAwesomeIcons.play,
-                      size: 16,
-                    ),
-                  ),
-                ),
+            ),
+            Expanded(
+              child: DiaryVideoProgressBar(
+                controller: controller,
+                enabled: ready,
+                showTime: width >= timeMinWidth,
               ),
-              Expanded(
-                child: DiaryVideoProgressBar(
-                  controller: controller,
-                  enabled: !controller.isLoading && !controller.hasFailed,
-                ),
+            ),
+            if (menu != null)
+              DiaryVideoMenuButton(
+                video: video,
+                menu: menu,
+                exportController: exportController,
+              )
+            else
+              DiaryVideoExportButton(
+                video: video,
+                controller: exportController,
               ),
-            ],
-          ),
-        ],
+            SizedBox.square(
+              dimension: 44,
+              child: IconButton(
+                tooltip: context.l10n.videoFullscreen,
+                onPressed: onFullscreen,
+                icon: const FaIcon(FontAwesomeIcons.expand, size: 16),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -116,10 +108,14 @@ class DiaryVideoProgressBar extends StatefulWidget {
     super.key,
     required this.controller,
     required this.enabled,
+    this.showTime = true,
   });
 
   final DiaryVideoPlayerController controller;
   final bool enabled;
+
+  /// 显示“已播 / 总长”文字；窄卡片放不下时只留进度条。
+  final bool showTime;
 
   @override
   State<DiaryVideoProgressBar> createState() => _DiaryVideoProgressBarState();
@@ -165,19 +161,20 @@ class _DiaryVideoProgressBarState extends State<DiaryVideoProgressBar> {
             ),
           ),
         ),
-        Text(
-          '${formatRecordingDuration(displayedPosition)} / ${formatRecordingDuration(value.duration)}',
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: colors.onSurfaceVariant),
-        ),
+        if (widget.showTime)
+          Text(
+            '${formatRecordingDuration(displayedPosition)} / ${formatRecordingDuration(value.duration)}',
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: colors.onSurfaceVariant),
+          ),
       ],
     );
   }
 }
 
-/// 视频下方的播放 / 暂停按钮与进度条（“这天的照片”预览页与存储管理的视频
-/// 预览页共用）；播放器未就绪或失败时整行停用，还没有播放器（读取地址中、
+/// 视频下方的播放 / 暂停按钮与进度条（全屏播放页、“这天的照片”预览页与
+/// 存储管理的视频预览页共用）；播放器未就绪或失败时整行停用，还没有播放器（读取地址中、
 /// 读不到）时留出同样的高度，进度条出现时页面不跳。
 class DiaryVideoPlaybackBar extends StatelessWidget {
   const DiaryVideoPlaybackBar({super.key, required this.player});

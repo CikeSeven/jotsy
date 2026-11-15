@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import '../../../../core/database/file_embed_codec.dart';
 import '../../../../core/services/app_platform.dart';
 import '../../../../core/services/audio_playback_service.dart';
 import '../../../../core/services/video_export_service.dart';
+import '../../../../core/services/video_poster_cache.dart';
 import '../../../../core/services/file_open_service.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -17,14 +19,21 @@ import '../diary_audio_player.dart';
 import '../diary_embedded_image.dart' show DiaryEmbeddedImage;
 import '../diary_image_options_menu.dart';
 import '../diary_playback_interaction_guard.dart';
+import '../diary_video_embed_menu.dart';
 import '../diary_video_player.dart';
 import '../diary_video_poster_card.dart';
+import '../diary_video_thumbnail_block.dart';
 import '../../models/diary_image_embed_data.dart';
+import '../../models/diary_video_embed_data.dart';
 import '../../controllers/diary_editor_controller.dart';
+import '../../controllers/diary_image_embed_actions.dart';
+import '../../controllers/diary_video_embed_actions.dart';
 import 'diary_embed_selectable.dart';
 
 /// 媒体保留原生块选区，播放器内部仍接管自己的点按；文字路径不参与选区。
-/// 图片缩放草稿只改变本块的显示约束，确认后才经菜单写入正文事务。
+/// 图片缩放与视频宽度的草稿只改变本块的显示约束，确认后才经菜单写入正文
+/// 事务。视频与图片一样可以显示为小图（[DiaryVideoThumbnailBlock]），编辑页
+/// 的视频菜单（小图、调整大小、保存、删除）由本块执行写入。
 class DiaryMediaBlockBuilder extends af.BlockComponentBuilder {
   DiaryMediaBlockBuilder({
     required this.controller,
@@ -35,7 +44,8 @@ class DiaryMediaBlockBuilder extends af.BlockComponentBuilder {
     this.videoPlayerFactory,
     this.videoExportService = const VideoExportService(),
     this.fileOpenService = const FileOpenService(),
-  });
+    VideoPosterCache? videoPosters,
+  }) : videoPosters = videoPosters ?? VideoPosterCache.shared;
   final DiaryEditorController controller;
   final void Function(String source, ImageViewerHero? hero)? onImageOpen;
   final void Function(BuildContext context, af.Node node)? onImageMenu;
@@ -44,6 +54,9 @@ class DiaryMediaBlockBuilder extends af.BlockComponentBuilder {
   final VideoPlayerController Function(String)? videoPlayerFactory;
   final VideoExportService videoExportService;
   final FileOpenService fileOpenService;
+
+  /// 视频小图的取帧缓存（测试注入假的）。
+  final VideoPosterCache videoPosters;
   @override
   af.BlockComponentValidate get validate =>
       (_) => true;
@@ -60,6 +73,7 @@ class DiaryMediaBlockBuilder extends af.BlockComponentBuilder {
         videoPlayerFactory: videoPlayerFactory,
         videoExportService: videoExportService,
         fileOpenService: fileOpenService,
+        videoPosters: videoPosters,
       );
 }
 
@@ -75,6 +89,7 @@ class _DiaryMediaBlock extends af.BlockComponentStatefulWidget {
     this.videoPlayerFactory,
     required this.videoExportService,
     required this.fileOpenService,
+    required this.videoPosters,
   }) : super(configuration: const af.BlockComponentConfiguration());
   final DiaryEditorController controller;
   final void Function(String source, ImageViewerHero? hero)? onImageOpen;
@@ -84,6 +99,7 @@ class _DiaryMediaBlock extends af.BlockComponentStatefulWidget {
   final VideoPlayerController Function(String)? videoPlayerFactory;
   final VideoExportService videoExportService;
   final FileOpenService fileOpenService;
+  final VideoPosterCache videoPosters;
   @override
   State<_DiaryMediaBlock> createState() => _DiaryMediaBlockState();
 }
@@ -92,9 +108,56 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
     with af.SelectableMixin, DiaryEmbedSelectable {
   BoxConstraints? _imageBoundsPreview;
 
+  /// “调整大小”拖动期间的视频宽度预览；确认或关闭面板后清掉，回到文档里
+  /// 记录的宽度。
+  double? _videoWidthPreview;
+
   void _previewImageBounds(BoxConstraints? bounds) {
     // 面板路由可能晚于正文卸载才返回，不能更新已经销毁的媒体块。
     if (mounted) setState(() => _imageBoundsPreview = bounds);
+  }
+
+  void _previewVideoWidth(double? width) {
+    if (mounted) setState(() => _videoWidthPreview = width);
+  }
+
+  /// 编辑页的视频菜单动作；只读正文没有菜单（卡片只有导出，小图点按即播）。
+  DiaryVideoEmbedMenu? _videoMenu({required bool thumbnail}) {
+    final controller = widget.controller;
+    if (controller.readOnly) return null;
+    return DiaryVideoEmbedMenu(
+      thumbnail: thumbnail,
+      onToggleThumbnail: () => DiaryImageEmbedActions.setThumbnail(
+        controller,
+        node: node,
+        enabled: !thumbnail,
+      ),
+      onResize: () => unawaited(_resizeVideo()),
+      onDelete: () => DiaryImageEmbedActions.remove(controller, node: node),
+    );
+  }
+
+  /// 滑条逐帧改本块的宽度预览，确认后一次事务写入；关闭、返回或卸载时清掉
+  /// 预览。滑条上限取本块现在的宽度（即正文列宽）。
+  Future<void> _resizeVideo() async {
+    final controller = widget.controller;
+    final box = context.findRenderObject();
+    final column = box is RenderBox && box.hasSize
+        ? box.size.width
+        : MediaQuery.sizeOf(context).width;
+    try {
+      final width = await showDiaryVideoResizer(
+        context,
+        current: math.min(diaryVideoWidthLimit(node) ?? column, column),
+        maxWidth: column,
+        onPreview: _previewVideoWidth,
+      );
+      if (width != null && !controller.isDisposed) {
+        DiaryVideoEmbedActions.resize(controller, node: node, width: width);
+      }
+    } finally {
+      _previewVideoWidth(null);
+    }
   }
 
   @override
@@ -165,20 +228,38 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
       case 'video':
         final video = DiaryFileAttachment.tryDecode(data);
         if (video == null) return Text(context.l10n.videoPlaybackFailed);
+        final thumbnail = diaryImageIsThumbnail(node);
+        final menu = _videoMenu(thumbnail: thumbnail);
+        final maxWidth = _videoWidthPreview ?? diaryVideoWidthLimit(node);
+        // 小图只画缓存的一帧，不创建播放器（点按才进全屏播放）。
         // video_player 没有 Linux / Windows 实现：那里换成交给系统播放器的
         // 封面卡片，也不调用播放器工厂（不创建任何原生播放器）。
-        child = AppPlatform.supportsInlineVideo
+        child = thumbnail
+            ? DiaryVideoThumbnailBlock(
+                key: ValueKey(('thumbnail', video.path)),
+                video: video,
+                posters: widget.videoPosters,
+                menu: menu,
+                playerFactory: widget.videoPlayerFactory,
+                exportService: widget.videoExportService,
+                openService: widget.fileOpenService,
+              )
+            : AppPlatform.supportsInlineVideo
             ? DiaryVideoPlayer(
                 key: ValueKey(video.path),
                 video: video,
                 player: widget.videoPlayerFactory?.call(video.path),
                 exportService: widget.videoExportService,
+                maxWidth: maxWidth,
+                menu: menu,
               )
             : DiaryVideoPosterCard(
                 key: ValueKey(video.path),
                 video: video,
                 openService: widget.fileOpenService,
                 exportService: widget.videoExportService,
+                maxWidth: maxWidth,
+                menu: menu,
               );
       case 'attachment':
         final file = DiaryFileAttachment.tryDecode(data);

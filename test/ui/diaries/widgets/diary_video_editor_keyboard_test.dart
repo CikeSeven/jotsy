@@ -80,7 +80,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.testTextInput.isVisible, isFalse);
         expect(focus.canRequestFocus, isTrue);
-        await tester.tap(find.byTooltip('导出视频'));
+        // 编辑页的导出在视频菜单（⋮）里。
+        await tester.tap(find.byTooltip('更多操作'));
+        await tester.pumpAndSettle();
+        expect(tester.testTextInput.isVisible, isFalse);
+        await tester.tap(find.text('保存到相册'));
         await tester.pumpAndSettle();
         expect(find.byType(AlertDialog), findsOneWidget);
         expect(tester.testTextInput.isVisible, isFalse);
@@ -91,7 +95,7 @@ void main() {
         await tester.tap(find.byTooltip('全屏播放'));
         await tester.pumpAndSettle();
         expect(tester.testTextInput.isVisible, isFalse);
-        await tester.tap(find.byTooltip('退出全屏'));
+        await tester.tap(find.byTooltip('返回'));
         await tester.pumpAndSettle();
         expect(tester.testTextInput.isVisible, isFalse);
         expect(focus.hasFocus, isFalse);

@@ -135,7 +135,7 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('priority leads by default and open rows show a flag pill', (
+  testWidgets('priority leads by default and shows only on the check box', (
     tester,
   ) async {
     await _pumpTodos(
@@ -162,7 +162,6 @@ void main() {
         await db.completeTodo(done);
       },
     );
-    final l10n = _l10n(tester);
     // 没改过排序：默认按优先级，同一天里高的在前。
     expect(_openTitles(tester), <String>['高优先级', '低优先级', '没有优先级']);
 
@@ -170,12 +169,14 @@ void main() {
       of: find.ancestor(of: find.text(title), matching: find.byType(TodoTile)),
       matching: finder,
     );
-    final flag = find.byIcon(FontAwesomeIcons.solidFlag.data);
-    expect(inTile('高优先级', flag), findsOneWidget);
-    expect(inTile('高优先级', find.text(l10n.todoPriorityHigh)), findsOneWidget);
-    expect(inTile('低优先级', find.text(l10n.todoPriorityLow)), findsOneWidget);
-    expect(inTile('没有优先级', flag), findsNothing);
-    expect(inTile('做完的高优先级', flag), findsNothing, reason: '已完成的不再强调');
+    // 行上不另放优先级胶囊，只靠方框表达。
+    expect(
+      find.descendant(
+        of: find.byType(TodoTile),
+        matching: find.byIcon(FontAwesomeIcons.solidFlag.data),
+      ),
+      findsNothing,
+    );
 
     // 有优先级的方框带淡底，没有的仍是空心细描边。
     TodoCheckBoxVisual box(String title) => tester.widget<TodoCheckBoxVisual>(

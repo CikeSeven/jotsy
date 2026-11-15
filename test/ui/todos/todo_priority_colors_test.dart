@@ -54,14 +54,12 @@ void main() {
         for (final p in _set) {
           final colors = TodoPriorityColors.of(blue, p)!;
           final surface = blue.surfaceContainerLowest;
-          final tint = Color.alphaBlend(colors.tint, surface);
-          // 描边与图标：非文字元素 3:1；对勾与胶囊上的小字：4.5:1。
+          // 描边与旗子：非文字元素 3:1；对勾：4.5:1。
           expect(_contrast(colors.accent, surface), greaterThanOrEqualTo(3));
           expect(
             _contrast(colors.onAccent, colors.accent),
             greaterThanOrEqualTo(4.5),
           );
-          expect(_contrast(colors.onTint, tint), greaterThanOrEqualTo(4.5));
           expect(colors.tint.a, lessThan(1), reason: '淡底半透明，叠在玻璃上');
         }
       });

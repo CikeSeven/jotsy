@@ -20,8 +20,8 @@ import 'todo_tile_meta.dart';
 /// 多选时选中底色补间到 `secondaryContainer`）；左侧 48dp 触控格里 22dp 方框
 /// 按优先级着色（[TodoPriorityColors]：高红、中橙、低蓝，2dp 描边 + 淡底；
 /// 无优先级为 `outline` 细描边）；标题 `bodyLarge` w500 最多两行，有备注时
-/// 下一行是备注的首行；再下一行是元信息胶囊（[buildTodoMetaPills]，有优先级
-/// 时打头是“⚑ 高”）。已完成的标题变灰并加删除线。
+/// 下一行是备注的首行；再下一行是元信息胶囊（[buildTodoMetaPills]）。已完成
+/// 的标题变灰并加删除线。
 ///
 /// 勾选动效（状态机：idle → checking → 交给 [onToggle]）：点未完成的方框时
 /// 方框立即画成勾选、按 `spatial` 弹一下（1 → 1.15 → 1），删除线与灰字随

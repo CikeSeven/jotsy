@@ -16,10 +16,8 @@ import '../../../core/database/app_database.dart';
 ///   一档，橙色不会发褐、红橙蓝在暗色里也不再都是淡粉，与页面表面的对比度
 ///   仍在 4.4:1 以上；用于方框描边、勾选后的填充与菜单里的旗子；
 /// - [onAccent] 为与之配对的前景（勾选后的对勾）；
-/// - [tint] 为 [accent] 的半透明淡底（未勾选的方框里、优先级胶囊底），半透明
-///   以便叠在玻璃卡片上；
-/// - [onTint] 取标准对比度的主色（浅色 tone 40、深色 tone 80），淡底上的
-///   小字也有 4.5:1。
+/// - [tint] 为 [accent] 的半透明淡底（未勾选的方框里），半透明以便叠在玻璃
+///   卡片上。
 ///
 /// 换算较贵，按（优先级, 明暗）缓存，最多六份。
 @immutable
@@ -28,13 +26,11 @@ class TodoPriorityColors {
     required this.accent,
     required this.onAccent,
     required this.tint,
-    required this.onTint,
   });
 
   final Color accent;
   final Color onAccent;
   final Color tint;
-  final Color onTint;
 
   /// 种子取自色板（`kColorPaletteFamilies`）的红、橙、蓝系。
   static const Color _highSeed = Color(0xFFD32F2F);
@@ -63,14 +59,12 @@ class TodoPriorityColors {
   }
 
   static TodoPriorityColors _derive(Color seed, Brightness brightness) {
-    ColorScheme derive(double contrastLevel) => ColorScheme.fromSeed(
+    final vivid = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: brightness,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-      contrastLevel: contrastLevel,
+      contrastLevel: -1,
     );
-    final vivid = derive(-1);
-    final standard = derive(0);
     final alpha = brightness == Brightness.dark
         ? _darkTintAlpha
         : _lightTintAlpha;
@@ -78,7 +72,6 @@ class TodoPriorityColors {
       accent: vivid.primary,
       onAccent: vivid.onPrimary,
       tint: vivid.primary.withValues(alpha: alpha),
-      onTint: standard.primary,
     );
   }
 }

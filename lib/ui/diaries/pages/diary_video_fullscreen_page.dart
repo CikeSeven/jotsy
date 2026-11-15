@@ -37,7 +37,8 @@ class DiaryVideoFullscreenPage extends StatelessWidget {
                         subtitle: context.l10n.videoPlaybackFailed,
                       ),
                     )
-                  : DiaryVideoSurface(controller: controller),
+                  // 全屏就是为了看清：画面可捏合放大（没有翻页与下拉关闭）。
+                  : DiaryVideoSurface(controller: controller, zoomable: true),
             ),
             DiaryVideoControls(
               video: video,

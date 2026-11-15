@@ -21,7 +21,8 @@ typedef DoubleTapZoomContentBuilder =
 ///
 /// - 双击未放大的内容：以点按位置为不动点放大到 [doubleTapScale]；已放大时双击
 ///   回到原始大小。过程是 Matrix4 补间（medium + effects），不是瞬间跳变；减少
-///   动画时直接落位。
+///   动画时直接落位。[doubleTapZoomsIn] 为 false 时（视频：单击要立即播放 /
+///   暂停，不能等双击判定）未放大时不响应双击，只在放大后双击复原。
 /// - 双指捏合由 [PinchZoomGestureRecognizer] 接管：第二根手指落下即胜出，不再
 ///   被翻页 / 下拉关闭抢走（#252）。以两指中点为不动点缩放、两指同移即平移；
 ///   越过 1 或 [maxScale] 时阻尼跟手（[ZoomGeometry.rubberBand]），松手后以
@@ -51,6 +52,7 @@ class DoubleTapZoomViewer extends StatefulWidget {
     required Widget this.child,
     this.maxScale = 4,
     this.doubleTapScale = 2.5,
+    this.doubleTapZoomsIn = true,
     this.onZoomChanged,
   }) : contentHeightFactor = null,
        builder = null,
@@ -62,6 +64,7 @@ class DoubleTapZoomViewer extends StatefulWidget {
     required DoubleTapZoomContentBuilder this.builder,
     this.maxScale = 4,
     this.doubleTapScale = 2.5,
+    this.doubleTapZoomsIn = true,
     this.onZoomChanged,
     this.onScrolledChanged,
   }) : child = null;
@@ -73,6 +76,9 @@ class DoubleTapZoomViewer extends StatefulWidget {
   final DoubleTapZoomContentBuilder? builder;
   final double maxScale;
   final double doubleTapScale;
+
+  /// 未放大时双击是否放大；为 false 时双击只用于复原。
+  final bool doubleTapZoomsIn;
   final ValueChanged<bool>? onZoomChanged;
 
   /// 长内容是否已离开顶部（滚动或放大后平移过）。
@@ -149,7 +155,12 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
     final matrix = _transformation.value;
     final zoomed = matrix.getMaxScaleOnAxis() > _zoomedEpsilon;
     if (zoomed != _zoomed) {
-      _zoomed = zoomed;
+      if (widget.doubleTapZoomsIn) {
+        _zoomed = zoomed;
+      } else {
+        // 双击识别器只在放大时挂上，要随放大态重建。
+        setState(() => _zoomed = zoomed);
+      }
       widget.onZoomChanged?.call(zoomed);
     }
     if (_tall) {
@@ -272,6 +283,7 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
         _contentSize = factor == null
             ? _viewportSize
             : Size(_viewportSize.width, _viewportSize.width * factor);
+        final doubleTaps = widget.doubleTapZoomsIn || _zoomed;
         final viewer = factor == null
             ? InteractiveViewer(
                 transformationController: _transformation,
@@ -314,10 +326,12 @@ class _DoubleTapZoomViewerState extends State<DoubleTapZoomViewer>
                 },
               );
         return GestureDetector(
-          onDoubleTapDown: (TapDownDetails details) {
-            _doubleTapPosition = details.localPosition;
-          },
-          onDoubleTap: _handleDoubleTap,
+          onDoubleTapDown: doubleTaps
+              ? (TapDownDetails details) {
+                  _doubleTapPosition = details.localPosition;
+                }
+              : null,
+          onDoubleTap: doubleTaps ? _handleDoubleTap : null,
           // 与 InteractiveViewer 同一个盒子：识别器的本地坐标即视口坐标。
           child: RawGestureDetector(
             behavior: HitTestBehavior.opaque,

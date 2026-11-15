@@ -4,6 +4,7 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
     id("dev.flutter.flutter-gradle-plugin")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 val localProperties = Properties()
@@ -52,6 +53,8 @@ android {
 
     buildFeatures {
         buildConfig = true
+        // 桌面小组件用 Jetpack Glance（Compose 写法生成 RemoteViews）。
+        compose = true
     }
 
     defaultConfig {
@@ -81,6 +84,11 @@ android {
         }
     }
 
+    testOptions {
+        // 桌面小组件的渲染测试要用到 Glance 自带的布局资源与本应用的资源。
+        unitTests.isIncludeAndroidResources = true
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -93,6 +101,15 @@ android {
             // signer, or Android rejects the replacement before touching data.
             signingConfig = signingConfigs.getByName("release")
         }
+    }
+}
+
+// 单元测试带上资源（上面的 testOptions）后，打包测试资源会读合并后的 assets，而 Flutter
+// 插件的 copyFlutterAssets* 也往同一个目录写 flutter_assets（小组件的图标字体就在里面）：
+// 显式声明依赖，Gradle 才不报隐式依赖、也保证测试拿得到这些字体。
+tasks.configureEach {
+    if (name.startsWith("package") && name.endsWith("UnitTestForUnitTest")) {
+        dependsOn("copyFlutterAssets" + name.removePrefix("package").removeSuffix("UnitTestForUnitTest"))
     }
 }
 
@@ -114,6 +131,9 @@ dependencies {
     implementation("androidx.media3:media3-transformer:1.9.2")
     implementation("androidx.media3:media3-effect:1.9.2")
     implementation("androidx.media3:media3-common:1.9.2")
+    // 桌面小组件。版本与 home_widget 插件以 api 带进来的 Glance 保持一致：不同
+    // 版本会被 Gradle 统一升到较高的那个。升级 home_widget 时一并核对。
+    implementation("androidx.glance:glance-appwidget:1.2.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.16.1")
 }

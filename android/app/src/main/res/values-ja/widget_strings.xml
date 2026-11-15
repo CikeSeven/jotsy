@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- values/widget_strings.xml を参照。 -->
+<resources>
+    <string name="widget_quick_capture_name">クイック記録</string>
+    <string name="widget_quick_capture_description">ワンタップで日記や ToDo、今日のカレンダーへ。</string>
+    <string name="widget_today_name">今日</string>
+    <string name="widget_today_description">日付、旧暦、祝日と今日の進み具合。</string>
+    <string name="widget_open_app">Jotsy を開いて設定を完了</string>
+</resources>

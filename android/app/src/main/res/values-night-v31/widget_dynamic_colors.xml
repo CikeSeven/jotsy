@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 桌面小组件“跟随壁纸”配色的色槽（docs/rules/home_widgets.md「配色」）。
+     widget_dyn_* 随系统明暗切换，_light / _dark 为固定明暗；改动须同步其他 API
+     版本 / 明暗目录的同名文件与 WidgetDynamicColors.kt。 -->
+<resources>
+    <color name="widget_dyn_primary">@android:color/system_accent1_200</color>
+    <color name="widget_dyn_on_primary">@android:color/system_accent1_800</color>
+    <color name="widget_dyn_primary_container">@android:color/system_accent1_700</color>
+    <color name="widget_dyn_on_primary_container">@android:color/system_accent1_100</color>
+    <color name="widget_dyn_secondary">@android:color/system_accent2_200</color>
+    <color name="widget_dyn_on_secondary">@android:color/system_accent2_800</color>
+    <color name="widget_dyn_secondary_container">@android:color/system_accent2_700</color>
+    <color name="widget_dyn_on_secondary_container">@android:color/system_accent2_100</color>
+    <color name="widget_dyn_tertiary">@android:color/system_accent3_200</color>
+    <color name="widget_dyn_on_tertiary">@android:color/system_accent3_800</color>
+    <color name="widget_dyn_tertiary_container">@android:color/system_accent3_700</color>
+    <color name="widget_dyn_on_tertiary_container">@android:color/system_accent3_100</color>
+    <color name="widget_dyn_surface">@android:color/system_neutral1_900</color>
+    <color name="widget_dyn_on_surface">@android:color/system_neutral1_100</color>
+    <color name="widget_dyn_on_surface_variant">@android:color/system_neutral2_200</color>
+    <color name="widget_dyn_surface_container_lowest">@android:color/system_neutral1_1000</color>
+    <color name="widget_dyn_surface_container_low">@android:color/system_neutral1_900</color>
+    <color name="widget_dyn_surface_container">@android:color/system_neutral1_900</color>
+    <color name="widget_dyn_surface_container_high">@android:color/system_neutral1_800</color>
+    <color name="widget_dyn_surface_container_highest">@android:color/system_neutral1_800</color>
+    <color name="widget_dyn_outline">@android:color/system_neutral2_400</color>
+    <color name="widget_dyn_outline_variant">@android:color/system_neutral2_700</color>
+    <color name="widget_dyn_error_container">#8C1D18</color>
+    <color name="widget_dyn_on_error_container">#F9DEDC</color>
+</resources>

@@ -20311,5 +20311,349 @@
   "aiChatExportJson": "JSON",
   "@aiChatExportJson": {
     "description": "Export format: JSON (structured, for programs)."
+  },
+  "homeWidgetsTitle": "Виджеты",
+  "@homeWidgetsTitle": {
+    "description": "Settings: the home screen widgets page title and its row."
+  },
+  "homeWidgetsSubtitle": "Дневник, даты и ярлыки на главном экране",
+  "@homeWidgetsSubtitle": {
+    "description": "Settings: subtitle of the home screen widgets row."
+  },
+  "homeWidgetsInstalledGroup": "На главном экране",
+  "@homeWidgetsInstalledGroup": {
+    "description": "Widgets page: group of the widgets currently on the home screen."
+  },
+  "homeWidgetsInstalledEmpty": "На главном экране пока нет виджетов. Выберите виджет в галерее ниже.",
+  "@homeWidgetsInstalledEmpty": {
+    "description": "Widgets page: shown when no widget is on the home screen."
+  },
+  "homeWidgetsInstalledHint": "Изменения сразу появятся на главном экране.",
+  "@homeWidgetsInstalledHint": {
+    "description": "Widget studio: note under the preview when editing a widget already on the home screen."
+  },
+  "homeWidgetsGalleryGroup": "Галерея виджетов",
+  "@homeWidgetsGalleryGroup": {
+    "description": "Widgets page: group of all widget kinds."
+  },
+  "homeWidgetGroupCapture": "Записи и воспоминания",
+  "@homeWidgetGroupCapture": {
+    "description": "Widget gallery section: capture and memories."
+  },
+  "homeWidgetGroupTime": "Дни и календарь",
+  "@homeWidgetGroupTime": {
+    "description": "Widget gallery section: dates and calendar."
+  },
+  "homeWidgetGroupTodos": "Задачи",
+  "@homeWidgetGroupTodos": {
+    "description": "Widget gallery section: to-dos."
+  },
+  "homeWidgetGroupStats": "Статистика и фото",
+  "@homeWidgetGroupStats": {
+    "description": "Widget gallery section: stats and photos."
+  },
+  "homeWidgetKindQuickCapture": "Быстрая запись",
+  "@homeWidgetKindQuickCapture": {
+    "description": "Widget kind name: quick capture shortcuts."
+  },
+  "homeWidgetKindQuickCaptureDescription": "Одно касание — и вы пишете запись, добавляете задачу или открываете календарь.",
+  "@homeWidgetKindQuickCaptureDescription": {
+    "description": "Widget gallery: description of the quick capture widget."
+  },
+  "homeWidgetKindToday": "Сегодня",
+  "@homeWidgetKindToday": {
+    "description": "Widget kind name: today card."
+  },
+  "homeWidgetKindTodayDescription": "Дата, лунный календарь, праздники и то, как проходит день.",
+  "@homeWidgetKindTodayDescription": {
+    "description": "Widget gallery: description of the today widget."
+  },
+  "homeWidgetAddToHome": "Добавить на главный экран",
+  "@homeWidgetAddToHome": {
+    "description": "Widget studio: button that asks the launcher to add the widget."
+  },
+  "homeWidgetPinRequested": "Подтвердите добавление в появившемся окне",
+  "@homeWidgetPinRequested": {
+    "description": "Snackbar after asking the launcher to add a widget."
+  },
+  "homeWidgetPinUnsupportedTitle": "Добавьте с главного экрана",
+  "@homeWidgetPinUnsupportedTitle": {
+    "description": "Dialog title when the launcher cannot add widgets from apps."
+  },
+  "homeWidgetPinUnsupportedBody": "Нажмите и удерживайте пустое место на главном экране, откройте «Виджеты» и найдите Jotsy. Следующий виджет «{name}», добавленный в течение 15 минут, получит этот дизайн.",
+  "@homeWidgetPinUnsupportedBody": {
+    "description": "Dialog body when the launcher cannot add widgets from apps.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetTabContent": "Содержимое",
+  "@homeWidgetTabContent": {
+    "description": "Widget studio tab: content options."
+  },
+  "homeWidgetTabStyle": "Стиль",
+  "@homeWidgetTabStyle": {
+    "description": "Widget studio tab: style options."
+  },
+  "homeWidgetPreviewSize": "Размер предпросмотра",
+  "@homeWidgetPreviewSize": {
+    "description": "Widget studio: label of the preview size buttons."
+  },
+  "homeWidgetStylePalette": "Цвета",
+  "@homeWidgetStylePalette": {
+    "description": "Widget style: color source."
+  },
+  "homeWidgetPaletteApp": "Тема приложения",
+  "@homeWidgetPaletteApp": {
+    "description": "Widget colors follow the app theme color."
+  },
+  "homeWidgetPaletteWallpaper": "Обои",
+  "@homeWidgetPaletteWallpaper": {
+    "description": "Widget colors follow the wallpaper (Android dynamic color)."
+  },
+  "homeWidgetPaletteWallpaperHint": "На Android 12 и новее цвета берутся из обоев.",
+  "@homeWidgetPaletteWallpaperHint": {
+    "description": "Widget style: hint for the wallpaper colors option."
+  },
+  "homeWidgetPaletteCustom": "Свой цвет",
+  "@homeWidgetPaletteCustom": {
+    "description": "Widget colors from a picked seed color."
+  },
+  "homeWidgetStyleBrightness": "Светлая и тёмная",
+  "@homeWidgetStyleBrightness": {
+    "description": "Widget style: light or dark."
+  },
+  "homeWidgetBrightnessSystem": "Как в системе",
+  "@homeWidgetBrightnessSystem": {
+    "description": "Widget brightness follows the system."
+  },
+  "homeWidgetBrightnessLight": "Светлая",
+  "@homeWidgetBrightnessLight": {
+    "description": "Widget brightness: always light."
+  },
+  "homeWidgetBrightnessDark": "Тёмная",
+  "@homeWidgetBrightnessDark": {
+    "description": "Widget brightness: always dark."
+  },
+  "homeWidgetStyleBackground": "Фон",
+  "@homeWidgetStyleBackground": {
+    "description": "Widget style: background."
+  },
+  "homeWidgetBackgroundSurface": "Сплошной",
+  "@homeWidgetBackgroundSurface": {
+    "description": "Widget background: the card surface color."
+  },
+  "homeWidgetBackgroundTonal": "Тональный",
+  "@homeWidgetBackgroundTonal": {
+    "description": "Widget background: the tonal container color."
+  },
+  "homeWidgetBackgroundVivid": "Яркий",
+  "@homeWidgetBackgroundVivid": {
+    "description": "Widget background: the primary color."
+  },
+  "homeWidgetBackgroundClear": "Прозрачный",
+  "@homeWidgetBackgroundClear": {
+    "description": "Widget background: none, straight on the wallpaper."
+  },
+  "homeWidgetStyleOpacity": "Непрозрачность",
+  "@homeWidgetStyleOpacity": {
+    "description": "Widget style: background opacity."
+  },
+  "homeWidgetStyleCorners": "Скругление",
+  "@homeWidgetStyleCorners": {
+    "description": "Widget style: corner radius."
+  },
+  "homeWidgetCornersSystem": "Как в системе",
+  "@homeWidgetCornersSystem": {
+    "description": "Widget corners follow the system widget radius."
+  },
+  "homeWidgetStyleTextSize": "Размер текста",
+  "@homeWidgetStyleTextSize": {
+    "description": "Widget style: text scale."
+  },
+  "homeWidgetStyleDensity": "Отступы",
+  "@homeWidgetStyleDensity": {
+    "description": "Widget style: padding density."
+  },
+  "homeWidgetDensityCompact": "Плотно",
+  "@homeWidgetDensityCompact": {
+    "description": "Widget spacing: compact."
+  },
+  "homeWidgetDensityStandard": "Стандарт",
+  "@homeWidgetDensityStandard": {
+    "description": "Widget spacing: standard."
+  },
+  "homeWidgetDensityRoomy": "Свободно",
+  "@homeWidgetDensityRoomy": {
+    "description": "Widget spacing: roomy."
+  },
+  "homeWidgetStyleAccent": "Акцент",
+  "@homeWidgetStyleAccent": {
+    "description": "Widget style: which color slot is the accent."
+  },
+  "homeWidgetAccentPrimary": "Основной",
+  "@homeWidgetAccentPrimary": {
+    "description": "Widget accent: primary."
+  },
+  "homeWidgetAccentSecondary": "Дополнительный",
+  "@homeWidgetAccentSecondary": {
+    "description": "Widget accent: secondary."
+  },
+  "homeWidgetAccentTertiary": "Третичный",
+  "@homeWidgetAccentTertiary": {
+    "description": "Widget accent: tertiary."
+  },
+  "homeWidgetQuickActions": "Действия",
+  "@homeWidgetQuickActions": {
+    "description": "Quick capture: the list of actions."
+  },
+  "homeWidgetQuickActionsHint": "До 4. Первое выделяется.",
+  "@homeWidgetQuickActionsHint": {
+    "description": "Quick capture: hint under the actions."
+  },
+  "homeWidgetQuickActionWrite": "Запись",
+  "@homeWidgetQuickActionWrite": {
+    "description": "Quick capture action: new entry."
+  },
+  "homeWidgetQuickActionTodo": "Задача",
+  "@homeWidgetQuickActionTodo": {
+    "description": "Quick capture action: new to-do."
+  },
+  "homeWidgetQuickActionCalendar": "Календарь",
+  "@homeWidgetQuickActionCalendar": {
+    "description": "Quick capture action: open today in the calendar."
+  },
+  "homeWidgetQuickActionSearch": "Поиск",
+  "@homeWidgetQuickActionSearch": {
+    "description": "Quick capture action: search entries."
+  },
+  "homeWidgetQuickAddAction": "Добавить действие",
+  "@homeWidgetQuickAddAction": {
+    "description": "Quick capture: button to add an action."
+  },
+  "homeWidgetQuickRemoveAction": "Убрать",
+  "@homeWidgetQuickRemoveAction": {
+    "description": "Quick capture: tooltip to remove an action."
+  },
+  "homeWidgetQuickNotebook": "Записывать в",
+  "@homeWidgetQuickNotebook": {
+    "description": "Quick capture: which notebook new entries go into."
+  },
+  "homeWidgetQuickNotebookNone": "Не выбрано",
+  "@homeWidgetQuickNotebookNone": {
+    "description": "Quick capture: no notebook chosen."
+  },
+  "homeWidgetQuickShowLabels": "Показывать подписи",
+  "@homeWidgetQuickShowLabels": {
+    "description": "Quick capture: show text under the icons."
+  },
+  "homeWidgetQuickShowGreeting": "Дата и приветствие",
+  "@homeWidgetQuickShowGreeting": {
+    "description": "Quick capture: show the date and a greeting."
+  },
+  "homeWidgetQuickShowGreetingHint": "В размере 2×2 и больше",
+  "@homeWidgetQuickShowGreetingHint": {
+    "description": "Quick capture: hint for the greeting option."
+  },
+  "homeWidgetTodayLunar": "Лунный календарь и сезоны",
+  "@homeWidgetTodayLunar": {
+    "description": "Today widget: show the lunar date, solar terms and festivals."
+  },
+  "homeWidgetTodayHoliday": "Праздники (Китай)",
+  "@homeWidgetTodayHoliday": {
+    "description": "Today widget: show public holidays and make-up workdays."
+  },
+  "homeWidgetTodayWriting": "Написано сегодня",
+  "@homeWidgetTodayWriting": {
+    "description": "Today widget: show how much was written today."
+  },
+  "homeWidgetTodayShowTodos": "Задачи на сегодня",
+  "@homeWidgetTodayShowTodos": {
+    "description": "Today widget: show how many to-dos are due."
+  },
+  "homeWidgetTodayYearProgress": "Прогресс года",
+  "@homeWidgetTodayYearProgress": {
+    "description": "Today widget: show how much of the year has passed."
+  },
+  "homeWidgetTapAction": "По нажатию",
+  "@homeWidgetTapAction": {
+    "description": "Widget option: what opens when tapped."
+  },
+  "homeWidgetTapCalendar": "Календарь",
+  "@homeWidgetTapCalendar": {
+    "description": "Tap action: open the calendar."
+  },
+  "homeWidgetTapWrite": "Новая запись",
+  "@homeWidgetTapWrite": {
+    "description": "Tap action: start a new entry."
+  },
+  "homeWidgetTapApp": "Приложение",
+  "@homeWidgetTapApp": {
+    "description": "Tap action: just open the app."
+  },
+  "homeWidgetGreetingMorning": "Доброе утро",
+  "@homeWidgetGreetingMorning": {
+    "description": "Widget greeting before noon."
+  },
+  "homeWidgetGreetingAfternoon": "Добрый день",
+  "@homeWidgetGreetingAfternoon": {
+    "description": "Widget greeting in the afternoon."
+  },
+  "homeWidgetGreetingEvening": "Добрый вечер",
+  "@homeWidgetGreetingEvening": {
+    "description": "Widget greeting in the evening."
+  },
+  "homeWidgetGreetingNight": "Не спится?",
+  "@homeWidgetGreetingNight": {
+    "description": "Widget greeting late at night."
+  },
+  "homeWidgetQuickPrompt": "О чём думаете?",
+  "@homeWidgetQuickPrompt": {
+    "description": "Quick capture widget: prompt above the write button."
+  },
+  "homeWidgetTodayWords": "{count, plural, one{Сегодня {count} слово} few{Сегодня {count} слова} many{Сегодня {count} слов} other{Сегодня {count} слова}}",
+  "@homeWidgetTodayWords": {
+    "description": "Today widget: how much was written today (count from TextStats).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNotWritten": "Сегодня ещё ничего не написано",
+  "@homeWidgetTodayNotWritten": {
+    "description": "Today widget: nothing written yet."
+  },
+  "homeWidgetTodayTodos": "{count, plural, one{{count} задача} few{{count} задачи} many{{count} задач} other{{count} задачи}}",
+  "@homeWidgetTodayTodos": {
+    "description": "Today widget: to-dos due by that day.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetTodayNoTodos": "Задач нет",
+  "@homeWidgetTodayNoTodos": {
+    "description": "Today widget: no to-dos due."
+  },
+  "homeWidgetYearProgress": "Прошло {percent} года",
+  "@homeWidgetYearProgress": {
+    "description": "Today widget: how much of the year has passed, e.g. “87%”.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWidgetFeatureOff": "Отключено в управлении функциями",
+  "@homeWidgetFeatureOff": {
+    "description": "Widget placeholder when its feature is turned off."
+  },
+  "homeWidgetOpenToUpdate": "Откройте Jotsy, чтобы обновить",
+  "@homeWidgetOpenToUpdate": {
+    "description": "Widget placeholder when its data is out of date."
   }
 }

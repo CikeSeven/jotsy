@@ -69,6 +69,7 @@ class SettingsService {
     required String? todoSettingsRaw,
     required String? aiPrefsRaw,
     required String? appLockOptionsRaw,
+    required String? homeWidgetsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        diaryTypographyNotifier = ValueNotifier<DiaryTypography>(
@@ -127,7 +128,8 @@ class SettingsService {
        diaryEditPrefsRawNotifier = ValueNotifier<String?>(diaryEditPrefsRaw),
        todoSettingsRawNotifier = ValueNotifier<String?>(todoSettingsRaw),
        aiPrefsRawNotifier = ValueNotifier<String?>(aiPrefsRaw),
-       appLockOptionsRawNotifier = ValueNotifier<String?>(appLockOptionsRaw);
+       appLockOptionsRawNotifier = ValueNotifier<String?>(appLockOptionsRaw),
+       homeWidgetsRawNotifier = ValueNotifier<String?>(homeWidgetsRaw);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -232,6 +234,12 @@ class SettingsService {
   /// 备份快照的键列表里。
   final ValueNotifier<String?> appLockOptionsRawNotifier;
 
+  /// 桌面小组件的设置（单个 JSON 字符串：桌面上各实例的种类、外观与内容，
+  /// 以及等待领取的“添加到桌面”配置）；解析由 `HomeWidgetSettings` 负责。
+  /// 本机偏好：实例按启动器分配的 id 记，换设备没有意义，不随备份导出、
+  /// 不参与同步，所以不在备份快照的键列表里。
+  final ValueNotifier<String?> homeWidgetsRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   // 旧版“标签页切换曲线”（首页切页改为弹簧后移除）；启动时删除。
@@ -316,6 +324,7 @@ class SettingsService {
   static const _keyAppLocaleCode = 'app.settings.locale_code';
   static const _keyAppLockEnabled = 'app.settings.app_lock_enabled';
   static const _keyAppLockOptions = 'app.settings.app_lock_options';
+  static const _keyHomeWidgets = 'app.settings.home_widgets';
 
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -375,6 +384,7 @@ class SettingsService {
     final storedTodoSettings = prefs.get(_keyTodoSettings);
     final storedAiPrefs = prefs.get(_keyAiPrefs);
     final storedAppLockOptions = prefs.get(_keyAppLockOptions);
+    final storedHomeWidgets = prefs.get(_keyHomeWidgets);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -434,6 +444,7 @@ class SettingsService {
       appLockOptionsRaw: storedAppLockOptions is String
           ? storedAppLockOptions
           : null,
+      homeWidgetsRaw: storedHomeWidgets is String ? storedHomeWidgets : null,
     );
   }
 
@@ -973,6 +984,12 @@ class SettingsService {
   Future<void> setAppLockOptionsRaw(String value) async {
     appLockOptionsRawNotifier.value = value;
     await _writePreference(_prefs.setString(_keyAppLockOptions, value));
+  }
+
+  /// 保存桌面小组件的设置（整份 JSON）。
+  Future<void> setHomeWidgetsRaw(String value) async {
+    homeWidgetsRawNotifier.value = value;
+    await _writePreference(_prefs.setString(_keyHomeWidgets, value));
   }
 
   static String _resolveInitialLocaleCodeFromSystem() {

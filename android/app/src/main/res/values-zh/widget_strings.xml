@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 见 values/widget_strings.xml。 -->
+<resources>
+    <string name="widget_quick_capture_name">快速记录</string>
+    <string name="widget_quick_capture_description">一点就开始写日记、记待办或看今天的日历。</string>
+    <string name="widget_today_name">今日</string>
+    <string name="widget_today_description">日期、农历与节假日，还有今天的进度。</string>
+    <string name="widget_open_app">打开 Jotsy 完成设置</string>
+</resources>

@@ -141,4 +141,9 @@ abstract final class AppPlatform {
   /// 读屏幕自带的圆角（`DisplayCorners`，Android 12+ 的 WindowInsets）：容器
   /// 展开的整页终点圆角取它。其他平台没有这个通道，终点为直角。
   static bool get supportsDisplayCorners => isAndroid;
+
+  /// 桌面小组件（Jetpack Glance + home_widget）：只做了 Android；iOS 需要另写
+  /// WidgetKit 扩展，桌面系统没有桌面小组件。不支持时设置里不出现入口，也
+  /// 不同步快照（docs/rules/home_widgets.md）。
+  static bool get supportsHomeWidgets => isAndroid;
 }

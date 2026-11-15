@@ -41,6 +41,7 @@ import '../widgets/app_update_badge.dart';
 import '../widgets/settings_card_group.dart';
 import '../widgets/settings_nav_tile.dart';
 import 'settings_app_lock_tile.dart';
+import 'settings_home_widgets_tile.dart';
 import 'settings_language_tile.dart';
 import 'settings_lan_sync_tile.dart';
 import 'settings_storage_tile.dart';
@@ -51,7 +52,7 @@ void _push(BuildContext context, Widget page) {
   ).push(MaterialPageRoute<void>(builder: (BuildContext context) => page));
 }
 
-/// 通用：外观、语言、功能管理。
+/// 通用：外观、语言、功能管理，以及桌面小组件（只在 Android）。
 class SettingsGeneralGroup extends StatelessWidget {
   const SettingsGeneralGroup({super.key});
 
@@ -74,6 +75,8 @@ class SettingsGeneralGroup extends StatelessWidget {
           subtitle: l10n.settingsFeaturesSubtitle,
           onTap: () => _push(context, const AppFeaturesPage()),
         ),
+        // 只在支持桌面小组件的平台（Android）出现。
+        if (SettingsHomeWidgetsTile.available) const SettingsHomeWidgetsTile(),
       ],
     );
   }

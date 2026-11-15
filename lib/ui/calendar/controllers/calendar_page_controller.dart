@@ -152,13 +152,16 @@ class _CalendarPageController {
   }
 
   /// 一键回到今天：重置选中日、焦点月份和格式状态（年视图回到月视图）。
-  void jumpToToday() {
-    final now = DateTime.now();
+  void jumpToToday() => jumpToDay(DateTime.now());
+
+  /// 选中 [day] 并翻到所在月份，同样回到月视图（“回到今天”与点桌面小组件
+  /// 的日期共用）。
+  void jumpToDay(DateTime day) {
     _state.applyState(() {
       _state._yearMode = false;
       _state._range = null;
-      _state._selectedDay = DateUtils.dateOnly(now);
-      _state._focusedMonth = DateUtils.dateOnly(now);
+      _state._selectedDay = DateUtils.dateOnly(day);
+      _state._focusedMonth = DateUtils.dateOnly(day);
       _state._calendarFormat = CalendarFormat.month;
     });
   }

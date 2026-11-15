@@ -27087,6 +27087,492 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'JSON'**
   String get aiChatExportJson;
+
+  /// Settings: the home screen widgets page title and its row.
+  ///
+  /// In en, this message translates to:
+  /// **'Home screen widgets'**
+  String get homeWidgetsTitle;
+
+  /// Settings: subtitle of the home screen widgets row.
+  ///
+  /// In en, this message translates to:
+  /// **'Your diary, dates and shortcuts on the home screen'**
+  String get homeWidgetsSubtitle;
+
+  /// Widgets page: group of the widgets currently on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'On your home screen'**
+  String get homeWidgetsInstalledGroup;
+
+  /// Widgets page: shown when no widget is on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No widgets on your home screen yet. Pick one from the gallery below.'**
+  String get homeWidgetsInstalledEmpty;
+
+  /// Widget studio: note under the preview when editing a widget already on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes appear on the home screen right away.'**
+  String get homeWidgetsInstalledHint;
+
+  /// Widgets page: group of all widget kinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget gallery'**
+  String get homeWidgetsGalleryGroup;
+
+  /// Widget gallery section: capture and memories.
+  ///
+  /// In en, this message translates to:
+  /// **'Write & remember'**
+  String get homeWidgetGroupCapture;
+
+  /// Widget gallery section: dates and calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Days & calendar'**
+  String get homeWidgetGroupTime;
+
+  /// Widget gallery section: to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos'**
+  String get homeWidgetGroupTodos;
+
+  /// Widget gallery section: stats and photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats & photos'**
+  String get homeWidgetGroupStats;
+
+  /// Widget kind name: quick capture shortcuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick capture'**
+  String get homeWidgetKindQuickCapture;
+
+  /// Widget gallery: description of the quick capture widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Start an entry, a to-do or today\'s calendar in one tap.'**
+  String get homeWidgetKindQuickCaptureDescription;
+
+  /// Widget kind name: today card.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get homeWidgetKindToday;
+
+  /// Widget gallery: description of the today widget.
+  ///
+  /// In en, this message translates to:
+  /// **'The date, lunar calendar and holidays, plus how today is going.'**
+  String get homeWidgetKindTodayDescription;
+
+  /// Widget studio: button that asks the launcher to add the widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to home screen'**
+  String get homeWidgetAddToHome;
+
+  /// Snackbar after asking the launcher to add a widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm in the dialog to add it'**
+  String get homeWidgetPinRequested;
+
+  /// Dialog title when the launcher cannot add widgets from apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Add it from the home screen'**
+  String get homeWidgetPinUnsupportedTitle;
+
+  /// Dialog body when the launcher cannot add widgets from apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press an empty spot on your home screen, open Widgets and find Jotsy. The next “{name}” you add within 15 minutes uses the design you made here.'**
+  String homeWidgetPinUnsupportedBody(String name);
+
+  /// Widget studio tab: content options.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get homeWidgetTabContent;
+
+  /// Widget studio tab: style options.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get homeWidgetTabStyle;
+
+  /// Widget studio: label of the preview size buttons.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview size'**
+  String get homeWidgetPreviewSize;
+
+  /// Widget style: color source.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors'**
+  String get homeWidgetStylePalette;
+
+  /// Widget colors follow the app theme color.
+  ///
+  /// In en, this message translates to:
+  /// **'App theme'**
+  String get homeWidgetPaletteApp;
+
+  /// Widget colors follow the wallpaper (Android dynamic color).
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper'**
+  String get homeWidgetPaletteWallpaper;
+
+  /// Widget style: hint for the wallpaper colors option.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes colors from your wallpaper on Android 12 and later.'**
+  String get homeWidgetPaletteWallpaperHint;
+
+  /// Widget colors from a picked seed color.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom color'**
+  String get homeWidgetPaletteCustom;
+
+  /// Widget style: light or dark.
+  ///
+  /// In en, this message translates to:
+  /// **'Light & dark'**
+  String get homeWidgetStyleBrightness;
+
+  /// Widget brightness follows the system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get homeWidgetBrightnessSystem;
+
+  /// Widget brightness: always light.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get homeWidgetBrightnessLight;
+
+  /// Widget brightness: always dark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get homeWidgetBrightnessDark;
+
+  /// Widget style: background.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get homeWidgetStyleBackground;
+
+  /// Widget background: the card surface color.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid'**
+  String get homeWidgetBackgroundSurface;
+
+  /// Widget background: the tonal container color.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonal'**
+  String get homeWidgetBackgroundTonal;
+
+  /// Widget background: the primary color.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivid'**
+  String get homeWidgetBackgroundVivid;
+
+  /// Widget background: none, straight on the wallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get homeWidgetBackgroundClear;
+
+  /// Widget style: background opacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity'**
+  String get homeWidgetStyleOpacity;
+
+  /// Widget style: corner radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Corners'**
+  String get homeWidgetStyleCorners;
+
+  /// Widget corners follow the system widget radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Match system'**
+  String get homeWidgetCornersSystem;
+
+  /// Widget style: text scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get homeWidgetStyleTextSize;
+
+  /// Widget style: padding density.
+  ///
+  /// In en, this message translates to:
+  /// **'Spacing'**
+  String get homeWidgetStyleDensity;
+
+  /// Widget spacing: compact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get homeWidgetDensityCompact;
+
+  /// Widget spacing: standard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get homeWidgetDensityStandard;
+
+  /// Widget spacing: roomy.
+  ///
+  /// In en, this message translates to:
+  /// **'Roomy'**
+  String get homeWidgetDensityRoomy;
+
+  /// Widget style: which color slot is the accent.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get homeWidgetStyleAccent;
+
+  /// Widget accent: primary.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary'**
+  String get homeWidgetAccentPrimary;
+
+  /// Widget accent: secondary.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary'**
+  String get homeWidgetAccentSecondary;
+
+  /// Widget accent: tertiary.
+  ///
+  /// In en, this message translates to:
+  /// **'Tertiary'**
+  String get homeWidgetAccentTertiary;
+
+  /// Quick capture: the list of actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get homeWidgetQuickActions;
+
+  /// Quick capture: hint under the actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 4. The first one stands out.'**
+  String get homeWidgetQuickActionsHint;
+
+  /// Quick capture action: new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Write'**
+  String get homeWidgetQuickActionWrite;
+
+  /// Quick capture action: new to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'To-do'**
+  String get homeWidgetQuickActionTodo;
+
+  /// Quick capture action: open today in the calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get homeWidgetQuickActionCalendar;
+
+  /// Quick capture action: search entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get homeWidgetQuickActionSearch;
+
+  /// Quick capture: button to add an action.
+  ///
+  /// In en, this message translates to:
+  /// **'Add action'**
+  String get homeWidgetQuickAddAction;
+
+  /// Quick capture: tooltip to remove an action.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get homeWidgetQuickRemoveAction;
+
+  /// Quick capture: which notebook new entries go into.
+  ///
+  /// In en, this message translates to:
+  /// **'Write into'**
+  String get homeWidgetQuickNotebook;
+
+  /// Quick capture: no notebook chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get homeWidgetQuickNotebookNone;
+
+  /// Quick capture: show text under the icons.
+  ///
+  /// In en, this message translates to:
+  /// **'Show labels'**
+  String get homeWidgetQuickShowLabels;
+
+  /// Quick capture: show the date and a greeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Date and greeting'**
+  String get homeWidgetQuickShowGreeting;
+
+  /// Quick capture: hint for the greeting option.
+  ///
+  /// In en, this message translates to:
+  /// **'On 2×2 and larger'**
+  String get homeWidgetQuickShowGreetingHint;
+
+  /// Today widget: show the lunar date, solar terms and festivals.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar calendar & solar terms'**
+  String get homeWidgetTodayLunar;
+
+  /// Today widget: show public holidays and make-up workdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Public holidays (China)'**
+  String get homeWidgetTodayHoliday;
+
+  /// Today widget: show how much was written today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s writing'**
+  String get homeWidgetTodayWriting;
+
+  /// Today widget: show how many to-dos are due.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos due'**
+  String get homeWidgetTodayShowTodos;
+
+  /// Today widget: show how much of the year has passed.
+  ///
+  /// In en, this message translates to:
+  /// **'Year progress'**
+  String get homeWidgetTodayYearProgress;
+
+  /// Widget option: what opens when tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'When tapped'**
+  String get homeWidgetTapAction;
+
+  /// Tap action: open the calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get homeWidgetTapCalendar;
+
+  /// Tap action: start a new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'New entry'**
+  String get homeWidgetTapWrite;
+
+  /// Tap action: just open the app.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get homeWidgetTapApp;
+
+  /// Widget greeting before noon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get homeWidgetGreetingMorning;
+
+  /// Widget greeting in the afternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get homeWidgetGreetingAfternoon;
+
+  /// Widget greeting in the evening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get homeWidgetGreetingEvening;
+
+  /// Widget greeting late at night.
+  ///
+  /// In en, this message translates to:
+  /// **'Still up?'**
+  String get homeWidgetGreetingNight;
+
+  /// Quick capture widget: prompt above the write button.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind?'**
+  String get homeWidgetQuickPrompt;
+
+  /// Today widget: how much was written today (count from TextStats).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 word today} other{{count} words today}}'**
+  String homeWidgetTodayWords(int count);
+
+  /// Today widget: nothing written yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing written yet today'**
+  String get homeWidgetTodayNotWritten;
+
+  /// Today widget: to-dos due by that day.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to-do} other{{count} to-dos}}'**
+  String homeWidgetTodayTodos(int count);
+
+  /// Today widget: no to-dos due.
+  ///
+  /// In en, this message translates to:
+  /// **'No to-dos'**
+  String get homeWidgetTodayNoTodos;
+
+  /// Today widget: how much of the year has passed, e.g. “87%”.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} of the year'**
+  String homeWidgetYearProgress(String percent);
+
+  /// Widget placeholder when its feature is turned off.
+  ///
+  /// In en, this message translates to:
+  /// **'Turned off in Feature management'**
+  String get homeWidgetFeatureOff;
+
+  /// Widget placeholder when its data is out of date.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Jotsy to update'**
+  String get homeWidgetOpenToUpdate;
 }
 
 class _AppLocalizationsDelegate

@@ -135,6 +135,60 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('priority leads by default and shows only on the check box', (
+    tester,
+  ) async {
+    await _pumpTodos(
+      tester,
+      seed: (db) async {
+        await db.createTodo(TodoInput(title: '没有优先级', dueDate: _today));
+        await db.createTodo(
+          TodoInput(title: '低优先级', dueDate: _today, priority: TodoPriority.low),
+        );
+        await db.createTodo(
+          TodoInput(
+            title: '高优先级',
+            dueDate: _today,
+            priority: TodoPriority.high,
+          ),
+        );
+        final done = await db.createTodo(
+          TodoInput(
+            title: '做完的高优先级',
+            dueDate: _today,
+            priority: TodoPriority.high,
+          ),
+        );
+        await db.completeTodo(done);
+      },
+    );
+    // 没改过排序：默认按优先级，同一天里高的在前。
+    expect(_openTitles(tester), <String>['高优先级', '低优先级', '没有优先级']);
+
+    Finder inTile(String title, Finder finder) => find.descendant(
+      of: find.ancestor(of: find.text(title), matching: find.byType(TodoTile)),
+      matching: finder,
+    );
+    // 行上不另放优先级胶囊，只靠方框表达。
+    expect(
+      find.descendant(
+        of: find.byType(TodoTile),
+        matching: find.byIcon(FontAwesomeIcons.solidFlag.data),
+      ),
+      findsNothing,
+    );
+
+    // 有优先级的方框带淡底，没有的仍是空心细描边。
+    TodoCheckBoxVisual box(String title) => tester.widget<TodoCheckBoxVisual>(
+      inTile(title, find.byType(TodoCheckBoxVisual)),
+    );
+    expect(box('高优先级').tint, isNotNull);
+    expect(box('高优先级').accent, isNot(box('低优先级').accent));
+    expect(box('没有优先级').tint, isNull);
+    expect(box('没有优先级').accent, isNull);
+    await _unmount(tester);
+  });
+
   testWidgets('ticking a todo collapses it, completes it and undo restores', (
     tester,
   ) async {

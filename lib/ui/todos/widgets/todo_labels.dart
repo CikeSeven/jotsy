@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/database/app_database.dart';
 import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
+import '../viewmodels/todo_priority_colors.dart';
 
 /// 待办的展示文案（列表行、详情页、选择面板、提示共用），保证各处说法一致。
 ///
@@ -70,24 +71,14 @@ abstract final class TodoLabels {
         TodoPriority.high => l10n.todoPriorityHigh,
       };
 
-  /// 优先级的强调色：高为 error、中为 tertiary、低为 primary；无优先级为 null
-  /// （用默认描边）。
+  /// 优先级的强调色（高红、中橙、低蓝，见 [TodoPriorityColors]）：方框描边与
+  /// 填充、菜单里的旗子；无优先级为 null（用默认描边）。
   static Color? priorityColor(ColorScheme scheme, TodoPriority priority) =>
-      switch (priority) {
-        TodoPriority.none => null,
-        TodoPriority.low => scheme.primary,
-        TodoPriority.medium => scheme.tertiary,
-        TodoPriority.high => scheme.error,
-      };
+      TodoPriorityColors.of(scheme, priority)?.accent;
 
   /// 与 [priorityColor] 配对的前景色（勾选后方框里的对勾）；无优先级为 null。
   static Color? priorityOnColor(ColorScheme scheme, TodoPriority priority) =>
-      switch (priority) {
-        TodoPriority.none => null,
-        TodoPriority.low => scheme.onPrimary,
-        TodoPriority.medium => scheme.onTertiary,
-        TodoPriority.high => scheme.onError,
-      };
+      TodoPriorityColors.of(scheme, priority)?.onAccent;
 
   /// 一天中的分钟数 → 按系统 12 / 24 小时制的时刻文字。
   static String formatTodoTime(BuildContext context, int minute) {

@@ -818,7 +818,7 @@ void main() {
         await saveTodoSettings(settings, todos().copyWith(smartParse: false));
         await undo('change_settings', outcome);
         expect(todos().showCompleted, isTrue);
-        expect(todos().sort, TodoSortMode.manual);
+        expect(todos().sort, TodoSortMode.priority);
         expect(todos().defaultListId, isNull);
         expect(todos().allDayReminderMinute, 9 * 60);
         expect(todos().smartParse, isFalse);

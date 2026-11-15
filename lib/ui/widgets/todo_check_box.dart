@@ -8,6 +8,9 @@ import 'expressive_state_blend.dart';
 /// 颜色。日记正文的待办块（`DiaryTodoCheckbox`）与独立待办的列表行共用，
 /// 两处看起来是同一种方框。
 ///
+/// 给了 [tint]（独立待办有优先级时）：未勾选时方框里铺这层淡底、描边加粗到
+/// 2dp（按 18dp 等比），勾选时淡底补间到强调色；不给时与原来逐像素一致。
+///
 /// 只负责画，不处理点按与读屏：调用方按自己的点按区域包上手势与语义。
 class TodoCheckBoxVisual extends StatelessWidget {
   const TodoCheckBoxVisual({
@@ -16,6 +19,7 @@ class TodoCheckBoxVisual extends StatelessWidget {
     this.size = 18,
     this.accent,
     this.onAccent,
+    this.tint,
   });
 
   final bool checked;
@@ -31,11 +35,15 @@ class TodoCheckBoxVisual extends StatelessWidget {
   /// 为 `onPrimary`。
   final Color? onAccent;
 
+  /// 未勾选时方框里的淡底；null 时为空心。
+  final Color? tint;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final fill = accent ?? colors.primary;
     final rest = accent ?? colors.outline;
+    final tint = this.tint;
     final scale = size / 18;
     return SizedBox.square(
       dimension: size,
@@ -44,11 +52,13 @@ class TodoCheckBoxVisual extends StatelessWidget {
         builder: (context, t, _) => Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: fill.withValues(alpha: t),
+            color: tint == null
+                ? fill.withValues(alpha: t)
+                : Color.lerp(tint, fill, t),
             borderRadius: BorderRadius.circular(5 * scale),
             border: Border.all(
               color: Color.lerp(rest, fill, t)!,
-              width: 1.6 * scale,
+              width: (tint == null ? 1.6 : 2) * scale,
             ),
           ),
           child: Opacity(

@@ -7,15 +7,15 @@ import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../widgets/todo_check_box.dart';
+import '../viewmodels/todo_priority_colors.dart';
 import '../widgets/todo_bare_input.dart';
-import '../widgets/todo_labels.dart';
 import '../widgets/todo_progress_ring.dart';
 
 /// 待办详情（[TodoDetailBody] 所在的 `todo_detail_body.dart`）的几块版式：
 /// 头部、步骤 / 备注卡片与创建 / 完成时间。只负责排版，写库与状态都在
 /// 详情内容里。
 
-/// 头部：28dp 方框（勾选完成）+ `titleLarge` w700 标题输入框 + “更多”。
+/// 头部：28dp 方框（勾选完成，按优先级着色同列表行）+ `titleLarge` w700 标题输入框 + “更多”。
 class TodoDetailHeader extends StatelessWidget {
   const TodoDetailHeader({
     super.key,
@@ -42,7 +42,10 @@ class TodoDetailHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final done = row.completedAt != null;
-    final priority = TodoPriority.of(row.priority);
+    final priority = TodoPriorityColors.of(
+      scheme,
+      TodoPriority.of(row.priority),
+    );
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -62,8 +65,9 @@ class TodoDetailHeader extends StatelessWidget {
                 child: TodoCheckBoxVisual(
                   checked: done,
                   size: 28,
-                  accent: TodoLabels.priorityColor(scheme, priority),
-                  onAccent: TodoLabels.priorityOnColor(scheme, priority),
+                  accent: priority?.accent,
+                  onAccent: priority?.onAccent,
+                  tint: priority?.tint,
                 ),
               ),
             ),

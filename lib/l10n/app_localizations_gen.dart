@@ -9228,6 +9228,18 @@ abstract class AppLocalizations {
   /// **'Fixed layout for reading and printing'**
   String get diaryExportFormatPdfDescription;
 
+  /// Export format name: EPUB e-book.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB e-book'**
+  String get diaryExportFormatEpub;
+
+  /// Export format description: EPUB e-book.
+  ///
+  /// In en, this message translates to:
+  /// **'Text reflows to fit any screen in reading apps; images and a table of contents included'**
+  String get diaryExportFormatEpubDescription;
+
   /// Export format name: Word document.
   ///
   /// In en, this message translates to:

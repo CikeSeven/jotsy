@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/backup_constants.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_export_controller.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_epub_package.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_font.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:path/path.dart' as p;
@@ -452,6 +454,61 @@ void main() {
     expect(
       await artifact.file.readAsString(),
       contains('<p style="text-indent:3em">Body</p>'),
+    );
+  });
+
+  test('EPUB is written as a .epub whose first entry is the uncompressed '
+      'mimetype, and carries the body font and typography', () async {
+    final a = await diary(
+      '电子书',
+      createdAt: DateTime(2026, 5, 1),
+      content: '[{"insert":"Body\\n"}]',
+    );
+    final artifact =
+        await DiaryExportController(
+          database: fixture.database,
+          now: () => now,
+          loadBodyFont: () async => DiaryExportFont(
+            bytes: Uint8List(0),
+            families: const <String>['LXGW WenKai'],
+          ),
+        ).build(
+          [a],
+          options: const DiaryExportOptions(format: DiaryExportFormat.epub),
+          labels: testExportLabels,
+          languageTag: 'zh-CN',
+          typography: const DiaryTypography(firstLineIndent: 2),
+        );
+    expect(artifact.fileName, endsWith('电子书.epub'));
+    expect(artifact.mimeType, 'application/epub+zip');
+
+    // OCF：第一个本地文件头就是 mimetype，存储方式 0（不压缩），没有扩展
+    // 字段，内容紧跟在第 38 字节处——阅读器按这个固定位置识别格式。
+    final bytes = await artifact.file.readAsBytes();
+    final header = ByteData.sublistView(bytes);
+    expect(header.getUint32(0, Endian.little), 0x04034b50);
+    expect(header.getUint16(8, Endian.little), 0);
+    expect(header.getUint16(26, Endian.little), 'mimetype'.length);
+    expect(header.getUint16(28, Endian.little), 0);
+    expect(ascii.decode(bytes.sublist(30, 38)), 'mimetype');
+    expect(ascii.decode(bytes.sublist(38, 58)), 'application/epub+zip');
+
+    final files = <String, String>{
+      for (final file in ZipDecoder().decodeBytes(bytes).files)
+        file.name: utf8.decode(file.content),
+    };
+    expect(files.keys.first, 'mimetype');
+    expect(files['OEBPS/style.css'], contains('font-family:"LXGW WenKai"'));
+    expect(
+      files['OEBPS/text/0001.xhtml'],
+      contains('<p style="text-indent:2em">Body</p>'),
+    );
+    expect(
+      files['OEBPS/content.opf'],
+      contains(
+        '<meta property="dcterms:modified">'
+        '${DiaryEpubPackage.timestamp(now)}</meta>',
+      ),
     );
   });
 }

@@ -5705,6 +5705,13 @@ class AppLocalizationsRu extends AppLocalizations {
       'Фиксированная вёрстка для чтения и печати';
 
   @override
+  String get diaryExportFormatEpub => 'Электронная книга EPUB';
+
+  @override
+  String get diaryExportFormatEpubDescription =>
+      'Текст подстраивается под экран в приложениях для чтения; с изображениями и оглавлением';
+
+  @override
   String get diaryExportFormatWord => 'Документ Word';
 
   @override

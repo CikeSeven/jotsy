@@ -1028,8 +1028,12 @@ void main() {
       expect(DiaryExportOptions.fromRaw(null), DiaryExportOptions.defaults);
       expect(DiaryExportOptions.fromRaw('[]'), DiaryExportOptions.defaults);
       expect(
-        DiaryExportOptions.fromRaw('{"format":"epub","meta":false}'),
+        DiaryExportOptions.fromRaw('{"format":"mobi","meta":false}'),
         DiaryExportOptions.defaults.copyWith(includeMeta: false),
+      );
+      expect(
+        DiaryExportOptions.fromRaw('{"format":"epub"}').format,
+        DiaryExportFormat.epub,
       );
     });
   });

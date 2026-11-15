@@ -34,7 +34,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 | ✍️ **Easy to write** | Rich text with images, videos, attachments and voice recordings. Backfilling an old day brings up the photos you took that day |
 | 🌤️ **Full of context** | Record mood, energy, weather and location with every entry |
 | 📅 **Easy to look back** | Lunar calendar with Chinese public holidays, anniversaries and countdowns, yearly heatmap, On this day, time capsules |
-| 📦 **No lock-in** | ZIP backups, cloud backup (WebDAV / object storage / major cloud drives), export to PDF / Word / Markdown / web page / TXT / CSV, import from 18 apps |
+| 📦 **No lock-in** | ZIP backups, cloud backup (WebDAV / object storage / major cloud drives), export to PDF / EPUB / Word / Markdown / web page / TXT / CSV, import from 18 apps |
 | 🎨 **Make it yours** | Material 3 Expressive design, 80 theme colors, plus customizable diary cards, reading page and body font |
 
 ## 📱 Features
@@ -68,7 +68,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 
 - List or waterfall layout, sorted by date updated, date published or title.
 - Filter by tags (optionally remembered for next time), and combine tag conditions with a title or content search.
-- **Notebooks**: gather entries into notebooks. One entry can sit in several notebooks, and removing it from one never deletes it. Switch notebooks from the first chip in the home tag bar. Split a notebook into chapters and arrange it by hand from its table of contents, set a writing goal, see its stats, and export the whole notebook as a book with a title page and contents, as PDF, Word, a web page, Markdown or plain text. Smart notebooks collect entries automatically by tags, mood, date and other conditions. A notebook can also be kept out of All entries, or locked so it asks for your screen lock or biometrics when opened.
+- **Notebooks**: gather entries into notebooks. One entry can sit in several notebooks, and removing it from one never deletes it. Switch notebooks from the first chip in the home tag bar. Split a notebook into chapters and arrange it by hand from its table of contents, set a writing goal, see its stats, and export the whole notebook as a book with a title page and contents, as PDF, an EPUB e-book, Word, a web page, Markdown or plain text. Smart notebooks collect entries automatically by tags, mood, date and other conditions. A notebook can also be kept out of All entries, or locked so it asks for your screen lock or biometrics when opened.
 - Pin, archive (just swipe left), and act on many entries at once. Deleted entries go to the recycle bin, with instant undo.
 - Swipe left or right on an entry's detail page to move to the previous or next one, in the order of the list you came from.
 - One word count everywhere: each Chinese character counts as one, English words and numbers count by word. Tap the count on the detail page to see paragraphs, images and estimated reading time.
@@ -105,7 +105,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 - **Full backups**: one ZIP with entries, tags, anniversaries, settings and every image, recording, video and attachment. Add a password for AES-256 encryption.
 - **Merge or overwrite**: choose how a backup is restored. Overwriting local data asks for a clear second confirmation.
 - **Cloud backup**: back up to WebDAV (Nextcloud, NAS, Alist…), S3-compatible object storage (R2, B2, OSS…) or Google Drive / OneDrive / Dropbox / Baidu Netdisk / Alipan, and restore from them directly. See [cloud_backup.md](cloud_backup.md).
-- **Export**: one entry, a selection, or a date / tag range as PDF, Word, Markdown (with front matter, ready for Obsidian), a web page, plain text, CSV, or a diary file that can be merged on another device.
+- **Export**: one entry, a selection, or a date / tag range as PDF, an EPUB e-book for reading apps, Word, Markdown (with front matter, ready for Obsidian), a web page, plain text, CSV, or a diary file that can be merged on another device.
 - **Share**: as a long image, or straight to Weibo, Xiaohongshu, WeChat, WeChat Moments, QQ and Qzone. The text is copied for you and the diary's photos come along.
 
 ## 🔁 Moving from another app

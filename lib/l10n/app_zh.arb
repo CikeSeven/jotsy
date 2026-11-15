@@ -7053,6 +7053,14 @@
   "@diaryExportFormatPdfDescription": {
     "description": "导出格式说明：PDF。"
   },
+  "diaryExportFormatEpub": "EPUB 电子书",
+  "@diaryExportFormatEpub": {
+    "description": "导出格式名称：EPUB 电子书。"
+  },
+  "diaryExportFormatEpubDescription": "文字随屏幕重排，适合在阅读器里看；带图片与目录",
+  "@diaryExportFormatEpubDescription": {
+    "description": "导出格式说明：EPUB 电子书。"
+  },
   "diaryExportFormatWord": "Word 文档",
   "@diaryExportFormatWord": {
     "description": "导出格式名称：Word 文档。"

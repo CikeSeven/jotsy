@@ -24,7 +24,7 @@ Settings → Editor → Code block style, with a preview at the top and three ta
 - **Theme**: Brightness (Follow theme / Light / Dark) and 10 color themes: Match app, GitHub, One, Solarized, Gruvbox, Catppuccin, Tokyo Night, Nord, Dracula, Rosé Pine.
 - **Display**: Line numbers, Header bar (language name and a copy button on top), Detect language, Border, and Corner radius.
 - **Font**: Code font (System monospace / Body font / imported fonts), Font size (70%–130% of the body text size), Line height.
-- Code highlighting in PDF, Word and web page exports follows the theme chosen here.
+- Code highlighting in PDF, EPUB, Word and web page exports follows the theme chosen here.
 
 ## Toolbar
 - **Toolbar order**: drag to reorder the editor toolbar, and untick a tool to hide it. Tools below the "Tools below go into More" divider go into the More button at the end of the toolbar. Tap **Save** in the top-right corner when done; **Reset** next to it restores the default order and shows every tool again. The gear on Insert current time sets the time format, and the gear on the code block tool opens Code block style.

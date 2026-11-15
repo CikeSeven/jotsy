@@ -5015,6 +5015,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryExportFormatPdfDescription => '版式固定，适合阅读与打印';
 
   @override
+  String get diaryExportFormatEpub => 'EPUB 电子书';
+
+  @override
+  String get diaryExportFormatEpubDescription => '文字随屏幕重排，适合在阅读器里看；带图片与目录';
+
+  @override
   String get diaryExportFormatWord => 'Word 文档';
 
   @override

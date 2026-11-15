@@ -5,11 +5,14 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../viewmodels/todo_list_style.dart';
+import '../viewmodels/todo_priority_colors.dart';
 import 'todo_labels.dart';
 
 /// 待办行标题下的一排元信息胶囊（`labelSmall` w600、高 20、10 圆角）。
 ///
-/// 依次为：截止（图标 + “今天 09:00”；未完成时逾期为 `errorContainer`、今天
+/// 依次为：优先级（未完成且有优先级时，`solidFlag` + “高 / 中 / 低”，底与字取
+/// [TodoPriorityColors] 的淡底与文字色——颜色之外还有文字，分不清颜色的人
+/// 也认得出）、截止（图标 + “今天 09:00”；未完成时逾期为 `errorContainer`、今天
 /// 为 `primaryContainer`，其余与已完成的一律 `surfaceContainerHigh`）、步骤
 /// 进度“1/3”、所在清单（6dp 强调色圆点 + 名称，只在跨清单的视图里给出
 /// [list]），以及只画图标的提醒、重复、关联日记。都没有时返回空列表，调用方
@@ -24,6 +27,18 @@ List<Widget> buildTodoMetaPills(
   final scheme = Theme.of(context).colorScheme;
   final done = row.completedAt != null;
   final pills = <Widget>[];
+  final priority = TodoPriority.of(row.priority);
+  final priorityColors = done ? null : TodoPriorityColors.of(scheme, priority);
+  if (priorityColors != null) {
+    pills.add(
+      TodoMetaPill(
+        icon: FontAwesomeIcons.solidFlag,
+        text: TodoLabels.priority(l10n, priority),
+        background: priorityColors.tint,
+        foreground: priorityColors.onTint,
+      ),
+    );
+  }
   final dueText = row.dueDate;
   final due = TodoLabels.dueOfRow(context, row, today);
   if (due != null && dueText != null) {

@@ -11,16 +11,17 @@ import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/selectable_row_surface.dart';
 import '../../widgets/todo_check_box.dart';
-import 'todo_labels.dart';
+import '../viewmodels/todo_priority_colors.dart';
 import 'todo_tile_meta.dart';
 
 /// 一条待办的列表行：方框、标题、备注预览与一排元信息胶囊。
 ///
 /// 外观：卡片表面（[SelectableRowSurface]：16 圆角、0.8dp 微边框、无投影，
 /// 多选时选中底色补间到 `secondaryContainer`）；左侧 48dp 触控格里 22dp 方框
-/// 按优先级着色（高 error、中 tertiary、低 primary）；标题 `bodyLarge` w500 最
-/// 多两行，有备注时下一行是备注的首行；再下一行是元信息胶囊
-/// （[buildTodoMetaPills]）。已完成的标题变灰并加删除线。
+/// 按优先级着色（[TodoPriorityColors]：高红、中橙、低蓝，2dp 描边 + 淡底；
+/// 无优先级为 `outline` 细描边）；标题 `bodyLarge` w500 最多两行，有备注时
+/// 下一行是备注的首行；再下一行是元信息胶囊（[buildTodoMetaPills]，有优先级
+/// 时打头是“⚑ 高”）。已完成的标题变灰并加删除线。
 ///
 /// 勾选动效（状态机：idle → checking → 交给 [onToggle]）：点未完成的方框时
 /// 方框立即画成勾选、按 `spatial` 弹一下（1 → 1.15 → 1），删除线与灰字随
@@ -134,7 +135,10 @@ class _TodoTileState extends State<TodoTile>
     final scheme = theme.colorScheme;
     final row = widget.row;
     final checked = _done || _checking;
-    final priority = TodoPriority.of(row.priority);
+    final priority = TodoPriorityColors.of(
+      scheme,
+      TodoPriority.of(row.priority),
+    );
     final meta = buildTodoMetaPills(
       context,
       row: row,
@@ -149,8 +153,9 @@ class _TodoTileState extends State<TodoTile>
             animation: _check,
             checked: checked,
             enabled: widget.onToggle != null,
-            accent: TodoLabels.priorityColor(scheme, priority),
-            onAccent: TodoLabels.priorityOnColor(scheme, priority),
+            accent: priority?.accent,
+            onAccent: priority?.onAccent,
+            tint: priority?.tint,
             semanticsLabel: widget.onToggle == null
                 ? widget.disabledHint
                 : _done
@@ -282,6 +287,7 @@ class _CheckButton extends StatelessWidget {
     required this.enabled,
     required this.accent,
     required this.onAccent,
+    required this.tint,
     required this.semanticsLabel,
     required this.onTap,
   });
@@ -291,6 +297,7 @@ class _CheckButton extends StatelessWidget {
   final bool enabled;
   final Color? accent;
   final Color? onAccent;
+  final Color? tint;
   final String? semanticsLabel;
   final VoidCallback onTap;
 
@@ -334,6 +341,7 @@ class _CheckButton extends StatelessWidget {
                 size: 22,
                 accent: accent,
                 onAccent: onAccent,
+                tint: tint,
               ),
             ),
           ),

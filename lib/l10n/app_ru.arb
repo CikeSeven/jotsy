@@ -2244,6 +2244,22 @@
   "@recordingIdleHint": {
     "description": "Hint under the timer before a recording has started."
   },
+  "recordingNoticeRecording": "Идёт запись",
+  "@recordingNoticeRecording": {
+    "description": "Title of the ongoing notification while a recording keeps going with the app in the background or the screen off."
+  },
+  "recordingNoticePaused": "Запись приостановлена",
+  "@recordingNoticePaused": {
+    "description": "Title of the ongoing recording notification while the recording is paused."
+  },
+  "recordingNoticeHint": "Нажмите, чтобы вернуться к записи",
+  "@recordingNoticeHint": {
+    "description": "Text of the ongoing recording notification; tapping it brings the app back."
+  },
+  "recordingNoticeChannel": "Запись звука",
+  "@recordingNoticeChannel": {
+    "description": "Name of the recording notification category in the system notification settings."
+  },
   "diaryToolbarToolSettingsTooltip": "Параметры инструмента",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "Tooltip for the tool parameter settings button on the toolbar order page."

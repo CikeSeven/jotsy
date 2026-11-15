@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/services/audio_recording_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
+import 'package:node_diary/core/services/recording_keep_alive.dart';
 import 'package:node_diary/ui/diaries/models/diary_audio_waveform.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:record/record.dart' show RecordState;
@@ -13,20 +14,29 @@ import 'package:record/record.dart' show RecordState;
 /// SDK calls are serialized so closing during a permission prompt cannot leave
 /// the microphone running after the page closes. A file becomes durable only
 /// after stop succeeds; committed files belong to the document, not this panel.
+///
+/// 离开应用（熄屏、切到别的应用、最小化）时是否继续录音取决于
+/// [RecordingKeepAlive]（#251）：开录时（应用在前台、权限已给）启动保活，
+/// 它回答能在后台采音（Android 前台服务起来了、桌面）就继续录，否则照旧
+/// 暂停——Android 后台应用没有前台服务只能录到静音。保活在录音结束、取消、
+/// 失败与页面关闭时随待定文件一起释放（[_discardPending]）。
 class DiaryRecordingController extends ChangeNotifier
     with WidgetsBindingObserver {
   DiaryRecordingController({
     AudioRecordingService? recorder,
     DiaryAudioStorageService? storage,
+    RecordingKeepAlive? keepAlive,
     Stopwatch? clock,
   }) : _recorder = recorder ?? MicrophoneRecordingService(),
        _storage = storage ?? const DiaryAudioStorageService(),
+       _keepAlive = keepAlive ?? PlatformRecordingKeepAlive(),
        _clock = clock ?? Stopwatch() {
     WidgetsBinding.instance.addObserver(this);
   }
 
   final AudioRecordingService _recorder;
   final DiaryAudioStorageService _storage;
+  final RecordingKeepAlive _keepAlive;
   final Stopwatch _clock;
   Future<void> _operationTail = Future<void>.value();
   StreamSubscription<RecordState>? _stateSubscription;
@@ -35,6 +45,13 @@ class DiaryRecordingController extends ChangeNotifier
   bool _disposed = false;
   bool _hasNativeSession = false;
   int _generation = 0;
+
+  // 后台保活：这次录音的通知文案、保活是否在用、离开应用后能否继续采音，
+  // 以及通知上一次显示的是不是“已暂停”（只在录音 ↔ 暂停切换时刷新通知）。
+  RecordingNoticeTexts? _noticeTexts;
+  bool _keepAliveHeld = false;
+  bool _capturesInBackground = false;
+  bool? _noticePaused;
 
   DiaryRecordingPhase _phase = DiaryRecordingPhase.idle;
   DiaryRecordingFailure? _failure;
@@ -62,9 +79,12 @@ class DiaryRecordingController extends ChangeNotifier
     notifyListeners();
   }
 
-  Future<void> start() async {
+  /// 开始录音。[notice] 为离开应用后继续录音时通知用的文案；为空时不启用
+  /// 后台保活，离开应用即暂停。
+  Future<void> start({RecordingNoticeTexts? notice}) async {
     if (_disposed || _phase != DiaryRecordingPhase.idle) return;
     final generation = ++_generation;
+    _noticeTexts = notice;
     _failure = null;
     _waveform.clear();
     _clock.reset();
@@ -84,6 +104,11 @@ class DiaryRecordingController extends ChangeNotifier
           onError: (Object error) => unawaited(_failAndDiscard()),
         );
         _pendingPath = await _storage.createPendingPath();
+        if (_isStale(generation)) return;
+        // 保活必须在采音前、应用还在前台时启动（Android 不允许后台启动麦克风
+        // 前台服务）。这之后变旧（取消、关闭页面）由随后排队的 _discardPending
+        // 释放。
+        await _acquireKeepAlive();
         if (_isStale(generation)) return;
         _hasNativeSession = true;
         await _recorder.start(_pendingPath!);
@@ -159,6 +184,7 @@ class DiaryRecordingController extends ChangeNotifier
       try {
         final path = await _recorder.stop();
         _hasNativeSession = false;
+        await _releaseKeepAlive();
         if (path == null || _isStale(generation)) return null;
         final durablePath = await _storage.persistRecording(path);
         _pendingPath = null;
@@ -205,7 +231,57 @@ class DiaryRecordingController extends ChangeNotifier
     });
   }
 
+  Future<void> _acquireKeepAlive() async {
+    final texts = _noticeTexts;
+    if (texts == null) return;
+    try {
+      _capturesInBackground = await _keepAlive.start(
+        texts.notice(paused: false, elapsed: Duration.zero),
+      );
+    } catch (_) {
+      _capturesInBackground = false;
+    }
+    _keepAliveHeld = true;
+    _noticePaused = false;
+  }
+
+  Future<void> _releaseKeepAlive() async {
+    if (!_keepAliveHeld) return;
+    _keepAliveHeld = false;
+    _capturesInBackground = false;
+    _noticePaused = null;
+    try {
+      await _keepAlive.stop();
+    } catch (_) {
+      // The service may already be gone with the activity.
+    }
+  }
+
+  /// 通知跟着录音 ↔ 暂停切换（含来电等系统打断造成的暂停）。不等待：通道
+  /// 调用按发出顺序执行，之后的 stop 不会被它越过。
+  void _syncNotice() {
+    final texts = _noticeTexts;
+    if (!_keepAliveHeld || texts == null) return;
+    final bool paused;
+    switch (_phase) {
+      case DiaryRecordingPhase.recording:
+        paused = false;
+      case DiaryRecordingPhase.paused:
+        paused = true;
+      default:
+        return;
+    }
+    if (paused == _noticePaused) return;
+    _noticePaused = paused;
+    unawaited(
+      _keepAlive
+          .update(texts.notice(paused: paused, elapsed: _clock.elapsed))
+          .catchError((Object _) {}),
+    );
+  }
+
   Future<void> _discardPending() async {
+    await _releaseKeepAlive();
     if (_hasNativeSession) {
       try {
         await _recorder.cancel();
@@ -256,9 +332,11 @@ class DiaryRecordingController extends ChangeNotifier
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Permission dialogs only make the app inactive. Pause on actual background
     // transitions; never restart capture automatically when the user returns.
+    // 保活确认能在后台采音时（#251）照常录下去。
     if ((state == AppLifecycleState.paused ||
             state == AppLifecycleState.hidden) &&
-        _phase == DiaryRecordingPhase.recording) {
+        _phase == DiaryRecordingPhase.recording &&
+        !_capturesInBackground) {
       unawaited(pause());
     }
   }
@@ -266,6 +344,7 @@ class DiaryRecordingController extends ChangeNotifier
   bool _isStale(int generation) => _disposed || generation != _generation;
   void _setPhase(DiaryRecordingPhase phase) {
     _phase = phase;
+    _syncNotice();
     if (!_disposed) notifyListeners();
   }
 

@@ -2,6 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 熄屏 / 切到后台继续录音（#251）：Android 9 起后台应用的麦克风只得到静音，
+         要靠 microphone 类型的前台服务（RecordingForegroundService）；Android 14+
+         还要单独声明该类型的权限。 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- 局域网同步的设备发现（组播锁）与扫码配对 -->
@@ -228,6 +233,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 录音的前台服务：只显示“正在录音”通知，录音本身仍在 record 插件里。 -->
+        <service
+            android:name=".RecordingForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
         <!-- 分享日记到指定应用：只暴露 cacheDir/diary_share/ 下的暂存图片。 -->
         <provider
             android:name=".DiaryShareFileProvider"

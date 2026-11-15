@@ -2940,6 +2940,30 @@ abstract class AppLocalizations {
   /// **'Tap the microphone to start'**
   String get recordingIdleHint;
 
+  /// Title of the ongoing notification while a recording keeps going with the app in the background or the screen off.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get recordingNoticeRecording;
+
+  /// Title of the ongoing recording notification while the recording is paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording paused'**
+  String get recordingNoticePaused;
+
+  /// Text of the ongoing recording notification; tapping it brings the app back.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to return to your diary'**
+  String get recordingNoticeHint;
+
+  /// Name of the recording notification category in the system notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get recordingNoticeChannel;
+
   /// Tooltip for the tool parameter settings button on the toolbar order page.
   ///
   /// In en, this message translates to:

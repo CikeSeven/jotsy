@@ -1639,6 +1639,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordingIdleHint => 'Tap the microphone to start';
 
   @override
+  String get recordingNoticeRecording => 'Recording';
+
+  @override
+  String get recordingNoticePaused => 'Recording paused';
+
+  @override
+  String get recordingNoticeHint => 'Tap to return to your diary';
+
+  @override
+  String get recordingNoticeChannel => 'Recording';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => 'Configure tool parameters';
 
   @override

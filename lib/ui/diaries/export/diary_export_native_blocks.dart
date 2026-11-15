@@ -150,9 +150,12 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
               : kDiaryCalloutTones.contains(tone)
               ? tone as String
               : kDiaryCalloutToneDefault,
-          firstLineIndent:
-              type == kDiaryBlockParagraph &&
-              data[kDiaryParagraphIndentKey] == true,
+          firstLineIndent: type == kDiaryBlockParagraph
+              ? switch (data[kDiaryParagraphIndentKey]) {
+                  final bool mark => mark,
+                  _ => null,
+                }
+              : null,
           // 链接卡片在应用里是一张卡片，导出的标题行不按正文缩进。
           standIn: type == kDiaryBlockLinkCard,
           imageMaxWidth: imageLimits?.width,

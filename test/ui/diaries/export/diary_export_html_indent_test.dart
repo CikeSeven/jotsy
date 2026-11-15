@@ -33,6 +33,8 @@ void main() {
     final children = <Map<String, Object?>>[
       pdfTextBlock('paragraph', 'Body'),
       pdfTextBlock('paragraph', 'Marked', data: {'firstLineIndent': true}),
+      // 取消了全局缩进的段落（#253）。
+      pdfTextBlock('paragraph', 'Unindented', data: {'firstLineIndent': false}),
       pdfTextBlock('paragraph', 'Justified', data: {'align': 'justify'}),
       pdfTextBlock('paragraph', 'Centered', data: {'align': 'center'}),
       pdfTextBlock('bulleted_list', 'Item'),
@@ -52,6 +54,7 @@ void main() {
     );
     expect(one, contains('<p style="text-indent:1em">Body</p>'));
     expect(one, contains('<p style="text-indent:2em">Marked</p>'));
+    expect(one, contains('<p>Unindented</p>'));
     expect(
       one,
       contains('<p style="text-align:justify;text-indent:1em">Justified</p>'),

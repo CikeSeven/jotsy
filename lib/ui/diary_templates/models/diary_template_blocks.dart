@@ -56,9 +56,10 @@ Map<String, Object?> sanitizeDiaryTemplateBlocks(Object? raw) {
           if (source['align'] case final String align
               when ['center', 'right', 'justify'].contains(align))
             'align': align,
+          // 三态：true 缩进、false 取消全局缩进，没有即跟随全局。
           if (type == kDiaryBlockParagraph &&
-              source[kDiaryParagraphIndentKey] == true)
-            kDiaryParagraphIndentKey: true,
+              source[kDiaryParagraphIndentKey] is bool)
+            kDiaryParagraphIndentKey: source[kDiaryParagraphIndentKey],
           if (type == 'code' && source['language'] is String)
             'language': source['language'],
           if (sanitizeDiaryListStyleId(type, source[kDiaryListStyleKey])

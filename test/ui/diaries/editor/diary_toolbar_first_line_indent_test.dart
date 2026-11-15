@@ -42,8 +42,9 @@ void main() {
 
   Future<void> pump(
     WidgetTester tester,
-    DiaryEditorController controller,
-  ) async {
+    DiaryEditorController controller, {
+    DiaryTypography typography = const DiaryTypography(),
+  }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -66,9 +67,7 @@ void main() {
                 Expanded(
                   child: DiaryEditor(
                     controller: controller,
-                    appearance: const DiaryTextAppearance(
-                      typography: DiaryTypography(),
-                    ),
+                    appearance: DiaryTextAppearance(typography: typography),
                   ),
                 ),
                 Builder(
@@ -98,6 +97,24 @@ void main() {
   Future<void> tap(WidgetTester tester, String tooltip) async {
     await tester.tap(find.byTooltip(tooltip));
     await tester.pumpAndSettle();
+  }
+
+  bool enabled(WidgetTester tester, String tooltip) =>
+      tester
+          .widget<IconButton>(
+            find.ancestor(
+              of: find.byTooltip(tooltip),
+              matching: find.byType(IconButton),
+            ),
+          )
+          .onPressed !=
+      null;
+
+  Object? mark(DiaryEditorController controller, List<int> path) {
+    final attributes = controller.state.getNodeAtPath(path)!.attributes;
+    return attributes.containsKey(kDiaryParagraphIndentKey)
+        ? attributes[kDiaryParagraphIndentKey]
+        : 'absent';
   }
 
   Rect caret(DiaryEditorController controller, List<int> path, int offset) =>
@@ -154,6 +171,79 @@ void main() {
       controller.state.getNodeAtPath([1])!.attributes[kDiaryParagraphIndentKey],
       isTrue,
     );
+    await tearDownEditor(tester, controller);
+  });
+
+  // #253：全局首行缩进两字时，「取消缩进」只取消这一段，「缩进」再缩回来；
+  // 每次按下画面都有变化，不会出现标记加了又删、画面不动。
+  testWidgets('outdent cancels the global first-line indent for one paragraph '
+      'and indent brings it back', (tester) async {
+    final controller = controllerOf([
+      block('paragraph', '第一段'),
+      block('paragraph', '第二段'),
+    ]);
+    await pump(
+      tester,
+      controller,
+      typography: const DiaryTypography(firstLineIndent: 2),
+    );
+    controller.state.selection = af.Selection.collapsed(
+      af.Position(path: [1], offset: 0),
+    );
+    await tester.pumpAndSettle();
+    double lead(List<int> path) =>
+        caret(controller, path, 0).left -
+        tester.getTopLeft(find.byType(af.AppFlowyEditor)).dx;
+    final edge = lead([0]) - indent;
+    expect(lead([1]) - edge, closeTo(indent, 1.5));
+    // 已经按全局缩进了两字：「缩进」按下也不会变，停用。
+    expect(enabled(tester, '增加缩进'), isFalse);
+    expect(enabled(tester, '减少缩进'), isTrue);
+
+    await tap(tester, '减少缩进');
+    expect(mark(controller, [1]), isFalse);
+    expect(lead([1]) - edge, closeTo(0, 1.5));
+    // 只有这一段：前一段照旧按全局缩进。
+    expect(lead([0]) - edge, closeTo(indent, 1.5));
+    expect(enabled(tester, '增加缩进'), isTrue);
+    expect(enabled(tester, '减少缩进'), isFalse);
+
+    // 缩回来即跟随全局（删键），之后改全局缩进时跟着变。
+    await tap(tester, '增加缩进');
+    expect(mark(controller, [1]), 'absent');
+    expect(lead([1]) - edge, closeTo(indent, 1.5));
+
+    controller.undo();
+    await tester.pumpAndSettle();
+    expect(mark(controller, [1]), isFalse);
+    expect(tester.takeException(), isNull);
+    await tearDownEditor(tester, controller);
+  });
+
+  testWidgets('with a global indent under two characters indent widens to two '
+      'and outdent removes the indent entirely', (tester) async {
+    final controller = controllerOf([block('paragraph', '一段')]);
+    await pump(
+      tester,
+      controller,
+      typography: const DiaryTypography(firstLineIndent: 1),
+    );
+    controller.state.selection = af.Selection.collapsed(
+      af.Position(path: [0], offset: 0),
+    );
+    await tester.pumpAndSettle();
+    final blockLeft = tester.getTopLeft(find.byType(DiaryParagraphBlock)).dx;
+    expect(caret(controller, [0], 0).left - blockLeft, closeTo(16, 1.5));
+
+    await tap(tester, '增加缩进');
+    expect(mark(controller, [0]), isTrue);
+    expect(caret(controller, [0], 0).left - blockLeft, closeTo(indent, 1.5));
+
+    // 删掉 true 会回到全局的一个字，仍缩进着：直接写成不缩进。
+    await tap(tester, '减少缩进');
+    expect(mark(controller, [0]), isFalse);
+    expect(find.byType(DiaryParagraphBlock), findsNothing);
+    expect(enabled(tester, '减少缩进'), isFalse);
     await tearDownEditor(tester, controller);
   });
 

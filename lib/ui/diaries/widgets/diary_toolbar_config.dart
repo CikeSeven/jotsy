@@ -140,7 +140,7 @@ Widget buildDiaryToolbarItem(
                         final targets? =>
                           outdent
                               ? canOutdentDiaryFirstLine(controller, targets)
-                              : canIndentDiaryFirstLine(targets),
+                              : canIndentDiaryFirstLine(controller, targets),
                         null =>
                           outdent
                               ? af.isOutdentable(controller.state)

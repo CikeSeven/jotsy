@@ -131,6 +131,8 @@ void main() {
     final children = <Map<String, Object?>>[
       pdfTextBlock('paragraph', 'Body'),
       pdfTextBlock('paragraph', 'Marked', data: {'firstLineIndent': true}),
+      // 取消了全局缩进的段落（#253）。
+      pdfTextBlock('paragraph', 'Unindented', data: {'firstLineIndent': false}),
       pdfTextBlock('paragraph', 'Justified', data: {'align': 'justify'}),
       pdfTextBlock('bulleted_list', 'Item'),
       pdfTextBlock('heading', 'Title', data: {'level': 2}),
@@ -141,6 +143,7 @@ void main() {
     );
     expect(pdfXsOf(one, 'Body'), <double>[bodyFontSize]);
     expect(pdfXsOf(one, 'Marked'), <double>[2 * bodyFontSize]);
+    expect(pdfXsOf(one, 'Unindented'), <double>[0]);
     expect(pdfXsOf(one, 'Justified'), <double>[bodyFontSize]);
     // 列表与标题不是正文段落，不缩进首行。
     final itemWithoutIndent = pdfXsOf(
@@ -156,6 +159,7 @@ void main() {
     );
     expect(pdfXsOf(three, 'Body'), <double>[3 * bodyFontSize]);
     expect(pdfXsOf(three, 'Marked'), <double>[3 * bodyFontSize]);
+    expect(pdfXsOf(three, 'Unindented'), <double>[0]);
   });
 
   test('centered and right-aligned paragraphs never indent their first '
@@ -196,6 +200,11 @@ void main() {
     final body = await DiaryPdfWriter.prepareBody(
       pdfEntryOf(<Map<String, Object?>>[
         pdfTextBlock('paragraph', 'Marked', data: {'firstLineIndent': true}),
+        pdfTextBlock(
+          'paragraph',
+          'Unindented',
+          data: {'firstLineIndent': false},
+        ),
         pdfTextBlock('paragraph', 'Centered', data: {'align': 'center'}),
         <String, Object?>{
           'type': 'video',
@@ -208,14 +217,15 @@ void main() {
       images: <Uint8List>[],
     );
     expect(
-      <(bool, ExportAlign, bool)>[
+      <(bool?, ExportAlign, bool)>[
         for (final block in body!)
           (block.firstLineIndent, block.align, block.standIn),
       ],
-      <(bool, ExportAlign, bool)>[
+      <(bool?, ExportAlign, bool)>[
         (true, ExportAlign.start, false),
-        (false, ExportAlign.center, false),
-        (false, ExportAlign.start, true),
+        (false, ExportAlign.start, false),
+        (null, ExportAlign.center, false),
+        (null, ExportAlign.start, true),
       ],
     );
   });

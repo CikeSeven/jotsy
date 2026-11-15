@@ -134,10 +134,25 @@ const String kDiaryBlockLevelKey = 'level';
 const String kDiaryBlockCheckedKey = 'checked';
 const String kDiaryBlockAlignKey = 'align';
 
-/// 正文段落的首行缩进标记（工具栏「缩进」写入，只认 `true`，取消时删键）：
-/// 只缩进这一段的第一行（两个字），折行后的各行顶格。与排版设置的全局首行
-/// 缩进取较大的一个；只对 `paragraph` 生效，表格格子里的段落不缩进。
+/// 正文段落的首行缩进标记（工具栏「缩进 / 取消缩进」写入）：只缩进这一段的
+/// 第一行，折行后的各行顶格。三态，取值只经 [diaryParagraphIndentFor]：
+/// `true` 缩进两个字（与排版设置的全局首行缩进取较大的一个）；`false` 这一段
+/// 不缩进，盖过全局缩进；没有这个键时跟随全局。只对 `paragraph` 生效，表格
+/// 格子里的段落不缩进。
 const String kDiaryParagraphIndentKey = 'firstLineIndent';
+
+/// 段落首行缩进按标记 [mark]（[kDiaryParagraphIndentKey] 的值）取哪一档：
+/// `true` 取 [marked]，`false` 为 0，没有标记（或认不出的值）取全局的
+/// [regular]。应用正文、工具栏「缩进 / 取消缩进」与导出共用这一个口径。
+double diaryParagraphIndentFor(
+  Object? mark, {
+  required double regular,
+  required double marked,
+}) => switch (mark) {
+  true => marked,
+  false => 0,
+  _ => regular,
+};
 const String kDiaryBlockLanguageKey = 'language';
 const String kDiaryBlockUrlKey = 'url';
 

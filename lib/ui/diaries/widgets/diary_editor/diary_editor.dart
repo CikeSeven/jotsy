@@ -350,6 +350,10 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     final notebooksEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.notebooks),
     );
+    // 工具栏的「缩进 / 取消缩进」按这里画段落的全局缩进判断（只是普通字段，
+    // 不通知监听者；排版设置只能在别的页面改，回到编辑页时会重建到这里）。
+    widget.controller.globalFirstLineIndent =
+        widget.appearance.typography.firstLineIndent;
     final linking =
         !widget.controller.readOnly && widget.controller.linkSource != null;
     _headerSlot.value = _slotOutsideBodyFocus(widget.header);

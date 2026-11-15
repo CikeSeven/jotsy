@@ -97,6 +97,40 @@ void main() {
     );
   });
 
+  test('paragraph first-line indent marks keep all three states', () {
+    Map<String, Object?> block(String type, Object? mark) => {
+      'type': type,
+      'data': {
+        'delta': [
+          {'insert': 'x'},
+        ],
+        'firstLineIndent': ?mark,
+      },
+    };
+    final body = sanitizeDiaryTemplateBlocks({
+      'document': {
+        'type': 'page',
+        'children': [
+          block('paragraph', true),
+          // false = 这一段取消了全局首行缩进（#253），不能丢成“跟随全局”。
+          block('paragraph', false),
+          block('paragraph', null),
+          block('paragraph', 'yes'),
+          block('heading', false),
+        ],
+      },
+    });
+    expect(
+      [
+        for (final (node, _) in walkDiaryBlocks(body))
+          diaryBlockData(node).containsKey('firstLineIndent')
+              ? diaryBlockData(node)['firstLineIndent']
+              : 'absent',
+      ],
+      [true, false, 'absent', 'absent', 'absent'],
+    );
+  });
+
   test('children of quotes, headings and code move after them', () {
     final body = sanitizeDiaryTemplateBlocks({
       'document': {

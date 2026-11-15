@@ -242,13 +242,12 @@ class DiaryExportLabels {
   }
 
   /// 一篇日记的信息行：“天气 · 地点 · 心情 · 精力 n/5”，没有时为空。
-  /// [includeMood] 为 false 时省略心情（PDF 字体不含 emoji，会画成方框）。
-  String metaLine(DiaryExportEntry entry, {bool includeMood = true}) {
+  String metaLine(DiaryExportEntry entry) {
     final context = entry.context;
     return <String>[
       ?context.weather,
       ?context.location,
-      if (includeMood && context.moodEmoji != null) context.moodEmoji!,
+      ?context.moodEmoji,
       if (context.energyLevel != null) '$energy ${context.energyLevel}/5',
     ].join(' · ');
   }
@@ -263,22 +262,16 @@ class DiaryExportLabels {
     ].join(' · ');
   }
 
-  /// 一条留言的文字，心情 emoji 在前、空一格。[includeMood] 为 false 时
-  /// 省略心情（PDF 字体不含 emoji，与 [metaLine] 同一处理）。
+  /// 一条留言的文字，心情 emoji 在前、空一格。
   ///
   /// 留言带图片时，没有以图片写出的那几张在文字后另起一行写成
   /// “[图片]” / “[图片 ×N]”（[commentImagesNote]），只有图片的留言就只有这
   /// 一行：[unrenderedImages] 为这几张的张数，缺省为全部（纯文本、表格这类
   /// 写不了图片的格式）；能写图片的格式传入没写成的张数（关闭了媒体、文件
   /// 缺失或格式不支持）。没有图片的留言与加图片之前逐字节相同。
-  String commentText(
-    DiaryCommentRow comment, {
-    bool includeMood = true,
-    int? unrenderedImages,
-  }) {
-    final mood = includeMood ? comment.mood : null;
+  String commentText(DiaryCommentRow comment, {int? unrenderedImages}) {
     final text = <String>[
-      ?mood,
+      ?comment.mood,
       if (comment.hasText) comment.content,
     ].join(' ');
     final missing = unrenderedImages ?? comment.imagePaths.length;

@@ -20,6 +20,7 @@ import 'diary_export_format.dart';
 import 'diary_export_media.dart';
 import 'diary_export_pdf_body.dart';
 import 'diary_export_pdf_comments.dart';
+import 'diary_export_pdf_emoji.dart';
 import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 用的字体，生成时按实际字符做子集嵌入。字体文件各约 8MB 起，加载一次
@@ -90,8 +91,11 @@ class DiaryPdfFonts {
 /// 段落对齐与首行缩进同应用：首行缩进的字数取 `write` 的 `typography` 快照
 /// （与 Word 同一口径），写出器不自行读取设置。
 ///
-/// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。有留言的
-/// 日记在正文之后接留言区（[buildDiaryPdfComments]，同样不写心情）。
+/// emoji（正文、标题、信息行里的心情、标签、留言、扉页与目录）经
+/// [DiaryPdfEmoji] 画成图片：嵌入的字体没有 emoji 字形，写成文字会印成方框。
+/// 所有组件先建好（emoji 只按字号占位并登记），再统一栅格化，最后才
+/// `addPage` 与保存——扉页 `pw.Page` 的 `build` 到保存时才调用，所以扉页与
+/// 目录也提前建好。有留言的日记在正文之后接留言区（[buildDiaryPdfComments]）。
 ///
 /// 排版库生成文档时要同时持有全部图片；图片总量超过 [maxImageBytes] 时
 /// 抛出 [DiaryExportTooLargeException]，请用户缩小范围或关闭图片，而不是
@@ -134,10 +138,14 @@ class DiaryPdfWriter {
     DiaryExportCodeTheme? code,
     DiaryTypography typography = const DiaryTypography(),
   }) async {
+    final emoji = DiaryPdfEmoji(
+      fontCovers: diaryPdfFontCoverage(<pw.Font>[fonts.regular, fonts.bundled]),
+    );
     final textEffects = DiaryPdfTextEffects(
       regular: fonts.regular,
       bold: fonts.bold,
       bundled: fonts.bundled,
+      emoji: emoji,
     );
     final theme = pw.ThemeData.withFont(
       base: fonts.regular,
@@ -167,6 +175,7 @@ class DiaryPdfWriter {
         textDirection: textDirection,
         code: code,
         typography: typography,
+        emoji: emoji,
       );
       return DiaryExportOutput.single(await document.save());
     }
@@ -189,9 +198,12 @@ class DiaryPdfWriter {
           textDirection: textDirection,
           code: code,
           typography: typography,
+          emoji: emoji,
         ),
       );
     }
+    // 组件已全部建好，emoji 都已登记（见类注释）。
+    await emoji.rasterize();
     document.addPage(
       pw.MultiPage(
         pageFormat: _pageFormat,
@@ -232,6 +244,7 @@ class DiaryPdfWriter {
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
     required DiaryTypography typography,
+    required DiaryPdfEmoji emoji,
     pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     final widgets = await _header(
@@ -240,6 +253,7 @@ class DiaryPdfWriter {
       labels: labels,
       media: media,
       images: images,
+      emoji: emoji,
       wrapTitle: wrapTitle,
     );
     final body = await prepareBody(
@@ -283,7 +297,9 @@ class DiaryPdfWriter {
         }
       }
     }
-    widgets.addAll(buildDiaryPdfComments(entry, labels, images: commentImages));
+    widgets.addAll(
+      buildDiaryPdfComments(entry, labels, images: commentImages, emoji: emoji),
+    );
     return widgets;
   }
 
@@ -301,6 +317,7 @@ class DiaryPdfWriter {
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
     required DiaryTypography typography,
+    required DiaryPdfEmoji emoji,
   }) async {
     // 锚点 → 页码：正文绘制时由 _BookAnchor 写入，目录绘制时读取。
     final pages = <String, int>{};
@@ -331,8 +348,9 @@ class DiaryPdfWriter {
             pages: pages,
             child: pw.Padding(
               padding: const pw.EdgeInsets.only(bottom: 20),
-              child: pw.Text(
+              child: buildDiaryPdfText(
                 title,
+                emoji: emoji,
                 style: pw.TextStyle(
                   fontSize: 26,
                   fontWeight: pw.FontWeight.bold,
@@ -360,6 +378,7 @@ class DiaryPdfWriter {
             textDirection: textDirection,
             code: code,
             typography: typography,
+            emoji: emoji,
             wrapTitle: (pw.Widget child) => _BookAnchor(
               name: book.anchorOf(entry),
               title: labels.titleOf(entry),
@@ -372,12 +391,16 @@ class DiaryPdfWriter {
       }
     }
 
+    // 扉页与目录也先建好（emoji 要在栅格化之前登记，见类注释）。
+    final titlePage = _titlePage(book, cover, emoji);
+    final contents = _contents(book, labels, pages, emoji);
+    await emoji.rasterize();
     document
       ..addPage(
         pw.Page(
           pageFormat: _pageFormat,
           theme: theme,
-          build: (pw.Context context) => _titlePage(book, cover),
+          build: (pw.Context context) => titlePage,
         ),
       )
       ..addPage(
@@ -396,13 +419,17 @@ class DiaryPdfWriter {
           theme: theme,
           maxPages: 100000,
           footer: _footer,
-          build: (pw.Context context) => _contents(book, labels, pages),
+          build: (pw.Context context) => contents,
         ),
         index: 1,
       );
   }
 
-  static pw.Widget _titlePage(DiaryExportBookLayout book, Uint8List? cover) {
+  static pw.Widget _titlePage(
+    DiaryExportBookLayout book,
+    Uint8List? cover,
+    DiaryPdfEmoji emoji,
+  ) {
     final info = cover == null ? null : ExportImageInfo.read(cover);
     pw.Widget? coverImage;
     if (cover != null && info != null && info.width > 0 && info.height > 0) {
@@ -430,15 +457,17 @@ class DiaryPdfWriter {
             coverImage,
             pw.SizedBox(height: 28),
           ],
-          pw.Text(
+          buildDiaryPdfText(
             book.title,
+            emoji: emoji,
             textAlign: pw.TextAlign.center,
             style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold),
           ),
           if (book.description != null) ...<pw.Widget>[
             pw.SizedBox(height: 12),
-            pw.Text(
+            buildDiaryPdfText(
               book.description!,
+              emoji: emoji,
               textAlign: pw.TextAlign.center,
               style: const pw.TextStyle(fontSize: 13, color: PdfColors.grey700),
             ),
@@ -465,6 +494,7 @@ class DiaryPdfWriter {
     DiaryExportBookLayout book,
     DiaryExportLabels labels,
     Map<String, int> pages,
+    DiaryPdfEmoji emoji,
   ) {
     final widgets = <pw.Widget>[
       pw.Padding(
@@ -483,6 +513,7 @@ class DiaryPdfWriter {
             section.title!,
             section.anchor,
             pages,
+            emoji: emoji,
             style: pw.TextStyle(fontSize: 12.5, fontWeight: pw.FontWeight.bold),
             top: widgets.length > 1 ? 10 : 0,
           ),
@@ -495,6 +526,7 @@ class DiaryPdfWriter {
             '${labels.titleOf(entry)}',
             book.anchorOf(entry),
             pages,
+            emoji: emoji,
             style: const pw.TextStyle(fontSize: 11),
             indent: indent,
           ),
@@ -509,6 +541,7 @@ class DiaryPdfWriter {
     String text,
     String anchor,
     Map<String, int> pages, {
+    required DiaryPdfEmoji emoji,
     required pw.TextStyle style,
     double indent = 0,
     double top = 0,
@@ -520,7 +553,9 @@ class DiaryPdfWriter {
         child: pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: <pw.Widget>[
-            pw.Expanded(child: pw.Text(text, style: style)),
+            pw.Expanded(
+              child: buildDiaryPdfText(text, emoji: emoji, style: style),
+            ),
             pw.SizedBox(width: 12),
             // 排版时页码还不知道，先占一格；绘制时（正文已绘制完）再取。
             pw.SizedBox(
@@ -545,11 +580,13 @@ class DiaryPdfWriter {
     required DiaryExportLabels labels,
     required DiaryExportMediaLibrary media,
     required List<Uint8List> images,
+    required DiaryPdfEmoji emoji,
     pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     const muted = pw.TextStyle(fontSize: 10.5, color: PdfColors.grey700);
-    final title = pw.Text(
+    final title = buildDiaryPdfText(
       labels.titleOf(entry),
+      emoji: emoji,
       style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
     );
     final widgets = <pw.Widget>[
@@ -558,14 +595,15 @@ class DiaryPdfWriter {
       pw.Text(labels.formatDateTime(entry.createdAt.toLocal()), style: muted),
     ];
     if (options.includeMeta) {
-      final meta = labels.metaLine(entry, includeMood: false);
+      final meta = labels.metaLine(entry);
       if (meta.isNotEmpty) {
-        widgets.add(pw.Text(meta, style: muted));
+        widgets.add(buildDiaryPdfText(meta, emoji: emoji, style: muted));
       }
       if (entry.tagNames.isNotEmpty) {
         widgets.add(
-          pw.Text(
+          buildDiaryPdfText(
             entry.tagNames.map((String tag) => '#$tag').join('  '),
+            emoji: emoji,
             style: const pw.TextStyle(
               fontSize: 10.5,
               color: PdfColors.blueGrey700,

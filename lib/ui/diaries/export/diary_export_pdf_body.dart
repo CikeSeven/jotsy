@@ -213,7 +213,13 @@ List<pw.Widget> buildDiaryPdfBody(
           textDirection: direction,
         );
       } else if (block.kind == ExportBlockKind.callout) {
-        content = buildDiaryPdfCallout(block, content);
+        content = buildDiaryPdfCallout(
+          block,
+          content,
+          base: base,
+          textDirection: direction,
+          emoji: effects.emoji,
+        );
       } else if (block.kind == ExportBlockKind.quote) {
         content = pw.Container(
           padding: const pw.EdgeInsetsDirectional.only(start: 10),

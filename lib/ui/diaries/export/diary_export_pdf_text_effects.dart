@@ -2,20 +2,26 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'diary_export_pdf_canvas.dart';
+import 'diary_export_pdf_emoji.dart';
 
 /// 为 PDF 正文的字体登记绘制效果，不改字形度量或换行结果。内置与导入
 /// 字体通常没有斜体字面，且导入字体可能只有一个字重，所以在绘制时补上
 /// 倾斜与适量描边。字体仍按原字符子集嵌入，文字可搜索、链接也保持原位。
+///
+/// [emoji] 随它一起传到正文的每个文字片段（`buildDiaryPdfInline`），字体
+/// 画不出的 emoji 改画成图片；为 null 时 emoji 照原样写成文字。
 class DiaryPdfTextEffects {
   DiaryPdfTextEffects({
     required this.regular,
     required this.bold,
     required this.bundled,
+    this.emoji,
   });
 
   final pw.Font regular;
   final pw.Font bold;
   final pw.Font bundled;
+  final DiaryPdfEmoji? emoji;
   final _variants = <({pw.Font font, bool bold, bool italic}), pw.Font>{};
   final _effects = <PdfFont, ({bool bold, bool italic})>{};
 

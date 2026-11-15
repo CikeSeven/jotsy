@@ -58,5 +58,6 @@ enum HomeWidgetCellSize {
           s4x2,
           s4x4,
         ],
+        HomeWidgetKind.todos => const <HomeWidgetCellSize>[s4x2, s2x2, s4x4],
       };
 }

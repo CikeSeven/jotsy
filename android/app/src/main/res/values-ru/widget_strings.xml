@@ -10,4 +10,6 @@
     <string name="widget_anniversary_description">Крупный обратный отсчёт до одного дня или список ближайших.</string>
     <string name="widget_mood_calendar_name">Календарь настроения</string>
     <string name="widget_mood_calendar_description">Месяц одним взглядом: настроение каждого дня и дни с записями.</string>
+    <string name="widget_todos_name">Список задач</string>
+    <string name="widget_todos_description">Задачи на сегодня или любой список. Отмечайте их прямо на главном экране.</string>
 </resources>

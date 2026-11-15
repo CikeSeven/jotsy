@@ -27,6 +27,15 @@ abstract class HomeWidgetDataSource {
     DateTime start,
     DateTime end,
   );
+
+  /// 未完成的待办。
+  Future<List<TodoRow>> openTodos();
+
+  /// 最近完成的待办（按完成时间倒序，最多几百条）。
+  Future<List<TodoRow>> completedTodos();
+
+  /// 待办清单。
+  Future<List<TodoListRow>> todoLists();
 }
 
 class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
@@ -53,6 +62,16 @@ class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
     final rows = await _db.getOpenTodos();
     return <String?>[for (final row in rows) row.dueDate];
   }
+
+  @override
+  Future<List<TodoRow>> openTodos() => _db.getOpenTodos();
+
+  @override
+  Future<List<TodoRow>> completedTodos() =>
+      _db.watchCompletedTodos(limit: 200).first;
+
+  @override
+  Future<List<TodoListRow>> todoLists() => _db.getTodoLists();
 
   @override
   Future<List<Anniversary>> anniversaries() => _db.watchAnniversaries().first;

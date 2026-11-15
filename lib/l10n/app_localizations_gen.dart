@@ -27693,6 +27693,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next month'**
   String get homeWidgetMonthNext;
+
+  /// Widget kind name: to-do list.
+  ///
+  /// In en, this message translates to:
+  /// **'To-do list'**
+  String get homeWidgetKindTodos;
+
+  /// Widget gallery: description of the to-do list widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s to-dos or any list. Check them off right on the home screen.'**
+  String get homeWidgetKindTodosDescription;
+
+  /// To-do widget option: which to-dos to show.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get homeWidgetTodoView;
+
+  /// To-do widget option: show one list.
+  ///
+  /// In en, this message translates to:
+  /// **'A list'**
+  String get homeWidgetTodoViewList;
+
+  /// To-do widget option: which list to show.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get homeWidgetTodoList;
+
+  /// To-do widget option: keep today's completed to-dos at the end.
+  ///
+  /// In en, this message translates to:
+  /// **'Done today'**
+  String get homeWidgetTodoShowCompleted;
+
+  /// To-do widget option: hint for the done-today option.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossed out at the end. Tap one to bring it back.'**
+  String get homeWidgetTodoShowCompletedHint;
+
+  /// To-do widget option: show due date and time on each row.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date and time'**
+  String get homeWidgetTodoShowDue;
+
+  /// To-do widget: description of the check circle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as done'**
+  String get homeWidgetTodoCheck;
+
+  /// To-do widget: description of a checked circle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as not done'**
+  String get homeWidgetTodoUncheck;
 }
 
 class _AppLocalizationsDelegate

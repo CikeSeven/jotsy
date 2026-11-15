@@ -20740,5 +20740,45 @@
   "homeWidgetMonthNext": "次の月",
   "@homeWidgetMonthNext": {
     "description": "Mood calendar widget: button to the next month."
+  },
+  "homeWidgetKindTodos": "ToDo リスト",
+  "@homeWidgetKindTodos": {
+    "description": "Widget kind name: to-do list."
+  },
+  "homeWidgetKindTodosDescription": "今日の ToDo や任意のリスト。ホーム画面でそのままチェック。",
+  "@homeWidgetKindTodosDescription": {
+    "description": "Widget gallery: description of the to-do list widget."
+  },
+  "homeWidgetTodoView": "表示",
+  "@homeWidgetTodoView": {
+    "description": "To-do widget option: which to-dos to show."
+  },
+  "homeWidgetTodoViewList": "リスト",
+  "@homeWidgetTodoViewList": {
+    "description": "To-do widget option: show one list."
+  },
+  "homeWidgetTodoList": "リスト",
+  "@homeWidgetTodoList": {
+    "description": "To-do widget option: which list to show."
+  },
+  "homeWidgetTodoShowCompleted": "今日完了したもの",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "To-do widget option: keep today's completed to-dos at the end."
+  },
+  "homeWidgetTodoShowCompletedHint": "取り消し線を付けて最後に表示。タップで未完了に戻せます。",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "To-do widget option: hint for the done-today option."
+  },
+  "homeWidgetTodoShowDue": "期限と時刻",
+  "@homeWidgetTodoShowDue": {
+    "description": "To-do widget option: show due date and time on each row."
+  },
+  "homeWidgetTodoCheck": "完了にする",
+  "@homeWidgetTodoCheck": {
+    "description": "To-do widget: description of the check circle."
+  },
+  "homeWidgetTodoUncheck": "未完了に戻す",
+  "@homeWidgetTodoUncheck": {
+    "description": "To-do widget: description of a checked circle."
   }
 }

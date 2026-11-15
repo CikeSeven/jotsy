@@ -129,7 +129,11 @@ Future<void> todoNotificationBackgroundHandler(
     if (event.action == TodoNotificationAction.snooze) {
       await _scheduleSnooze(plugin, database, event, response.payload);
     } else if (event.action == TodoNotificationAction.complete) {
-      await _cancelOccurrence(plugin, event);
+      await cancelTodoOccurrenceNotifications(
+        plugin,
+        todoId: event.todoId,
+        occurrence: event.occurrence,
+      );
     }
   } catch (error) {
     debugPrint('todo reminders: background action failed: $error');
@@ -203,17 +207,19 @@ Future<void> _scheduleSnooze(
 }
 
 /// 后台完成后取消同一次剩下的提醒（如“提前 1 天”已响、“准时”还没响）。
-/// 重复待办下一次及以后的提醒保留：它们本来就排好了。
-Future<void> _cancelOccurrence(
-  FlutterLocalNotificationsPlugin plugin,
-  TodoNotificationEvent event,
-) async {
+/// 重复待办下一次及以后的提醒保留：它们本来就排好了。通知按钮与桌面小组件
+/// 的勾选（应用没在运行时）共用。
+Future<void> cancelTodoOccurrenceNotifications(
+  FlutterLocalNotificationsPlugin plugin, {
+  required String todoId,
+  required String? occurrence,
+}) async {
   final pending = await plugin.pendingNotificationRequests();
   for (final request in pending) {
     final decoded = decodeTodoReminderPayload(request.payload);
     if (decoded != null &&
-        decoded.todoId == event.todoId &&
-        decoded.occurrence == event.occurrence) {
+        decoded.todoId == todoId &&
+        decoded.occurrence == occurrence) {
       await plugin.cancel(id: request.id);
     }
   }

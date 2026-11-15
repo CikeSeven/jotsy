@@ -18,7 +18,7 @@
   - `plurals`：原生现算数量的文案（纪念日的“天后 / 天前 / 还有 N 天”），每个键是“复数类别 → 写法”，数量写成 `%d`；由 `homeWidgetPluralForms` 用各类别的代表数调 ARB 导出，原生用 `android.icu.text.PluralRules` 按界面语言挑类别（`WidgetSnapshot.plural`）。新增界面语言必须在 `home_widget_plurals.dart` 登记代表数（测试兜底）。
   - `builtAt`：写入时刻；比它新的乐观更新才覆盖快照（见「桌面上的操作」）。
   - `instances`：appWidgetId → 原生口径的配置（`homeWidgetNativeConfig`：功能开关、界面语言与日记本已过一遍），`defaults`：种类 → 默认配置（刚放下、应用还没同步过的实例用它）。
-  - 数据节：`today`（逐日的日期文字、农历、节假日、待办数，今天的字数与心情）、`anniversaries`（按列表顺序的纪念日，各带接下来 3 次的日子与第几周年）、`calendar`（这个月与前两个月每天的心情段、是否写过、节假日，以及一周从哪天开始）。只为桌面上有的种类计算；小组件页 / 工作室打开期间（`homeWidgetPreviewDemandProvider`）为全部种类计算，预览才有真实数据。
+  - 数据节：`today`（逐日的日期文字、农历、节假日、待办数，今天的字数与心情）、`anniversaries`（按列表顺序的纪念日，各带接下来 3 次的日子与第几周年）、`calendar`（这个月与前两个月每天的心情段、是否写过、节假日，以及一周从哪天开始）、`todos`（按截止日 / 时刻 / 优先级排好的未完成待办（最多 80 条）、今天完成的（最多 20 条）与清单名；“今天 / 明天 / 已逾期”与视图筛选由原生按本机日期做）。只为桌面上有的种类计算；小组件页 / 工作室打开期间（`homeWidgetPreviewDemandProvider`）为全部种类计算，预览才有真实数据。
 - 必须：按日期变化的内容逐日预算 `kHomeWidgetDayHorizon`（14）天，原生按本机日期取那一天；超出预算时只显示本机算得出的东西（公历日期与星期），不显示可能过期的内容。
 - 必须：快照字段变化时同步改 Kotlin 解析、`docs` 本节，并用 `UPDATE_WIDGET_FIXTURE=1 flutter test test/ui/home_widgets/home_widget_snapshot_builder_test.dart` 重新生成原生渲染测试读的夹具 `android/app/src/test/resources/widget_snapshot_fixture.json`（测试比对两者逐字一致）。
 
@@ -44,15 +44,16 @@
 
 ## 桌面上的操作
 
-- 必须：不打开应用就完成的点按（今日小组件的心情脸）链接为 `jotsy://widget-action/<动作>?参数`，Dart `HomeWidgetAction.parse` 解析、`applyHomeWidgetAction` 是唯一的写库口径。原生先乐观更新（`WidgetOverlay`，存 `HomeWidgetPreferences` 的 `jotsy.widgets.overlay`，只有比快照 `builtAt` 新的条目生效）并立刻重画，再经 home_widget 的后台广播交给 `homeWidgetBackgroundCallback`。
+- 必须：不打开应用就完成的点按（今日小组件的心情脸、待办的勾选与恢复）链接为 `jotsy://widget-action/<动作>?参数`，Dart `HomeWidgetAction.parse` 解析、`applyHomeWidgetAction` 是唯一的写库口径。原生先乐观更新（`WidgetOverlay`，存 `HomeWidgetPreferences` 的 `jotsy.widgets.overlay`，只有比快照 `builtAt` 新的条目生效）并立刻重画，再经 home_widget 的后台广播交给 `homeWidgetBackgroundCallback`。
 - 必须：后台回调先经 `IsolateNameServer` 转交主 isolate（端口 `jotsy.home_widget_actions`，同步控制器启动时打开，等 3 秒），由主 isolate 用自己的连接写库；主 isolate 不在时后台引擎自己打开 `AppDatabase()` 写库、按同一套口径重建快照并刷新，再关闭连接。与待办通知按钮同一种做法，两个连接不同时写库。
+- 必须：勾选待办只完成小组件上显示的那一次（`todo-complete?id=&due=`，截止日已被别处推进时不写，与通知上的“完成”同一口径）；后台引擎写库后顺手取消这一次剩下的提醒（`cancelTodoOccurrenceNotifications`，与通知按钮共用），应用下次运行时提醒调度器再按库对账。恢复为未完成（`todo-reopen`）与待办列表里取消勾选同一口径。
 - 必须：`HomeWidgetBackgroundReceiver` 在 Manifest 里不导出（只接受本应用发出的显式广播），其他应用不能借它改数据。
 - 必须：只影响显示的操作（心情月历翻月）不经过 Dart，状态存原生自己的 `JotsyWidgetState`；翻月 10 分钟后回到这个月。
 - 必须：心情脸的五官画法逐笔移植自应用的 `DayMoodFace`（`WidgetMoodFace.kt`），改动任一端须同步另一端。
 
 ## 点按与打开
 
-- 必须：链接格式 `jotsy://widget/<目标>?参数`，原生 `WidgetLaunch.uri` 拼、Dart `HomeWidgetLaunch.parse` 解析，两端目标名一致：`home`、`write?notebook=`、`todo-new`、`calendar?day=YYYY-MM-DD`、`search`、`anniversary`（列表）/ `anniversary?id=`（详情）、`configure?id=&kind=`。认不出的目标只打开应用。
+- 必须：链接格式 `jotsy://widget/<目标>?参数`，原生 `WidgetLaunch.uri` 拼、Dart `HomeWidgetLaunch.parse` 解析，两端目标名一致：`home`、`write?notebook=`、`todo-new`、`calendar?day=YYYY-MM-DD`、`search`、`anniversary`（列表）/ `anniversary?id=`（详情）、`todo?id=`（切到待办 Tab 打开详情）、`todo-new?list=`（预先选好清单）、`configure?id=&kind=`。认不出的目标只打开应用。
 - 必须：链接经 `homeWidgetLaunchInboxProvider` 交给首页（`homeWidgetLaunchRequestProvider`，冷启动经 `fireImmediately` 接住），由 `openHomeWidgetLaunch` 走统一入口：`runDiaryCreateEntryFlow`、`showTodoQuickAddSheet`、切到日历 Tab 后经 `calendarFocusRequestProvider` 选中那天、`DiarySearchPage.buildRoute`、小组件工作室。应用锁遮罩盖在导航之上，打开的页面同样要先解锁。
 
 ## 文案、配色与字形

@@ -25,6 +25,7 @@
     <color name="widget_dyn_surface_container_highest">@android:color/system_surface_container_highest_dark</color>
     <color name="widget_dyn_outline">@android:color/system_outline_dark</color>
     <color name="widget_dyn_outline_variant">@android:color/system_outline_variant_dark</color>
+    <color name="widget_dyn_error">@android:color/system_error_dark</color>
     <color name="widget_dyn_error_container">@android:color/system_error_container_dark</color>
     <color name="widget_dyn_on_error_container">@android:color/system_on_error_container_dark</color>
 </resources>

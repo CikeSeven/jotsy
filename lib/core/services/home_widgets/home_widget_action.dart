@@ -31,6 +31,17 @@ sealed class HomeWidgetAction {
         // 空串表示取消；认不出的心情（更新版本的原生）不写。
         if (raw.isNotEmpty && mood == null) return null;
         return HomeWidgetSetMoodAction(day: day, mood: mood);
+      case 'todo-complete':
+        final id = query['id'] ?? '';
+        if (id.isEmpty) return null;
+        final due = query['due'] ?? '';
+        return HomeWidgetCompleteTodoAction(
+          todoId: id,
+          occurrence: due.isEmpty ? null : due,
+        );
+      case 'todo-reopen':
+        final id = query['id'] ?? '';
+        return id.isEmpty ? null : HomeWidgetReopenTodoAction(todoId: id);
       default:
         return null;
     }
@@ -45,6 +56,21 @@ class HomeWidgetSetMoodAction extends HomeWidgetAction {
   final DayMood? mood;
 }
 
+/// 完成一条待办的这一次（[occurrence] 为小组件上显示的截止日）。
+class HomeWidgetCompleteTodoAction extends HomeWidgetAction {
+  const HomeWidgetCompleteTodoAction({required this.todoId, this.occurrence});
+
+  final String todoId;
+  final String? occurrence;
+}
+
+/// 把刚完成的待办恢复为未完成（与待办列表里取消勾选同一口径）。
+class HomeWidgetReopenTodoAction extends HomeWidgetAction {
+  const HomeWidgetReopenTodoAction({required this.todoId});
+
+  final String todoId;
+}
+
 /// 按动作写库；返回是否写了库。
 Future<bool> applyHomeWidgetAction(
   AppDatabase database,
@@ -56,6 +82,18 @@ Future<bool> applyHomeWidgetAction(
         return await database.clearDayMood(day) != null;
       }
       await database.setDayMood(day, mood);
+      return true;
+    case HomeWidgetCompleteTodoAction(:final todoId, :final occurrence):
+      final row = await database.getTodo(todoId);
+      if (row == null || row.completedAt != null) return false;
+      // 只完成小组件上显示的那一次：另一台设备或应用里已经完成、重复待办已经
+      // 推到下一次时不再重复完成（与通知上的“完成”同一口径）。
+      if (row.dueDate != occurrence) return false;
+      return await database.completeTodo(todoId) != null;
+    case HomeWidgetReopenTodoAction(:final todoId):
+      final row = await database.getTodo(todoId);
+      if (row == null || row.completedAt == null) return false;
+      await database.uncompleteTodo(todoId);
       return true;
   }
 }

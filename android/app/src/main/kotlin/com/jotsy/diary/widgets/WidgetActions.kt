@@ -13,6 +13,7 @@ import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
+import com.jotsy.diary.widgets.kinds.TodosWidget
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
 
@@ -37,6 +38,26 @@ object WidgetActions {
   fun shiftMonth(delta: Int): Action =
     actionRunCallback<ShiftMonthAction>(actionParametersOf(DeltaKey to delta))
 
+  private val TodoKey = ActionParameters.Key<String>("todo")
+  private val DueKey = ActionParameters.Key<String>("due")
+
+  /** 勾选一条待办的这一次（[due] 为小组件上显示的截止日，没有为空串）。 */
+  fun completeTodo(todoId: String, due: String?): Action =
+    actionRunCallback<CompleteTodoAction>(actionParametersOf(TodoKey to todoId, DueKey to (due ?: "")))
+
+  /** 把今天完成的一条恢复为未完成。 */
+  fun reopenTodo(todoId: String): Action =
+    actionRunCallback<ReopenTodoAction>(actionParametersOf(TodoKey to todoId))
+
+  /** 交给 Dart 写库：`jotsy://widget-action/<动作>?参数`（Dart `HomeWidgetAction.parse`）。 */
+  private fun sendToDart(context: Context, action: String, params: Map<String, String>) {
+    val uri =
+      android.net.Uri.Builder().scheme("jotsy").authority("widget-action").appendPath(action).apply {
+        params.forEach { (key, value) -> appendQueryParameter(key, value) }
+      }.build()
+    HomeWidgetBackgroundIntent.getBroadcast(context, uri).send()
+  }
+
   class SetMoodAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
       val day = parameters[DayKey] ?: return
@@ -48,17 +69,26 @@ object WidgetActions {
       WidgetOverlay.putMood(context, day, next)
       WidgetState.redrawAll(context, TodayWidget())
       WidgetState.redrawAll(context, MoodCalendarWidget())
-      HomeWidgetBackgroundIntent.getBroadcast(
-          context,
-          android.net.Uri.Builder()
-            .scheme("jotsy")
-            .authority("widget-action")
-            .appendPath("mood")
-            .appendQueryParameter("day", day)
-            .appendQueryParameter("mood", next)
-            .build(),
-        )
-        .send()
+      sendToDart(context, "mood", mapOf("day" to day, "mood" to next))
+    }
+  }
+
+  class CompleteTodoAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+      val todoId = parameters[TodoKey] ?: return
+      val due = parameters[DueKey] ?: ""
+      WidgetOverlay.putTodo(context, todoId, done = true)
+      WidgetState.redrawAll(context, TodosWidget())
+      sendToDart(context, "todo-complete", mapOf("id" to todoId, "due" to due))
+    }
+  }
+
+  class ReopenTodoAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+      val todoId = parameters[TodoKey] ?: return
+      WidgetOverlay.putTodo(context, todoId, done = false)
+      WidgetState.redrawAll(context, TodosWidget())
+      sendToDart(context, "todo-reopen", mapOf("id" to todoId))
     }
   }
 

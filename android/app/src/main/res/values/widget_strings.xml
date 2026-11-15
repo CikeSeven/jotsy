@@ -12,4 +12,6 @@
     <string name="widget_anniversary_description">A big countdown to one day, or the next few in a list.</string>
     <string name="widget_mood_calendar_name">Mood calendar</string>
     <string name="widget_mood_calendar_description">This month at a glance: how each day felt and the days you wrote.</string>
+    <string name="widget_todos_name">To-do list</string>
+    <string name="widget_todos_description">Today\'s to-dos or any list. Check them off right on the home screen.</string>
 </resources>

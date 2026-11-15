@@ -23,6 +23,7 @@ import '../../diaries/pages/diary_search_page.dart';
 import '../../home/models/home_tab.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../todos/controllers/todo_navigation.dart';
 import '../../todos/widgets/todo_quick_add_sheet.dart';
 import '../pages/home_widget_studio_page.dart';
 import '../pages/home_widgets_page.dart';
@@ -49,9 +50,19 @@ Future<void> openHomeWidgetLaunch(
             ? _writableNotebook(ref, notebookId)
             : null,
       );
-    case HomeWidgetNewTodoLaunch():
+    case HomeWidgetNewTodoLaunch(:final listId):
       if (!features.todos) return;
-      await showTodoQuickAddSheet(context);
+      // 清单已被删除时快速新建面板自己按“不放进清单”处理。
+      await showTodoQuickAddSheet(
+        context,
+        preset: TodoQuickAddPreset(listId: listId),
+      );
+    case HomeWidgetTodoLaunch(:final todoId):
+      if (!features.todos) return;
+      // 与点待办提醒通知同一做法：切到待办 Tab 再打开详情。
+      Navigator.of(context).popUntil((Route<dynamic> route) => route.isFirst);
+      if (!await switchToTab(HomeTab.todos) || !context.mounted) return;
+      await openTodoDetail(context, todoId);
     case HomeWidgetCalendarLaunch(:final day):
       if (!features.calendar) return;
       Navigator.of(context).popUntil((Route<dynamic> route) => route.isFirst);

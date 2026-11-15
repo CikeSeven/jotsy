@@ -9,6 +9,7 @@ import 'home_widget_kind.dart';
 
 part 'home_widget_content_today.dart';
 part 'home_widget_content_time.dart';
+part 'home_widget_content_todos.dart';
 
 /// 农历、节气与法定节假日的显示口径：与日历页的同名选项一致，`locale`
 /// 只在中文界面显示（只与中国相关的能力不随界面语言改变内容，只决定默认
@@ -25,6 +26,7 @@ sealed class HomeWidgetContent {
     HomeWidgetKind.today => TodayContent.defaults,
     HomeWidgetKind.anniversary => AnniversaryContent.defaults,
     HomeWidgetKind.moodCalendar => MoodCalendarContent.defaults,
+    HomeWidgetKind.todos => TodoListContent.defaults,
   };
 
   static HomeWidgetContent fromJson(HomeWidgetKind kind, Object? json) {
@@ -34,6 +36,7 @@ sealed class HomeWidgetContent {
       HomeWidgetKind.today => TodayContent._fromJson(map),
       HomeWidgetKind.anniversary => AnniversaryContent._fromJson(map),
       HomeWidgetKind.moodCalendar => MoodCalendarContent._fromJson(map),
+      HomeWidgetKind.todos => TodoListContent._fromJson(map),
     };
   }
 }

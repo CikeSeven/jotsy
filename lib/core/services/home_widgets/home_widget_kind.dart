@@ -44,6 +44,14 @@ enum HomeWidgetKind {
     receiverName: 'MoodCalendarWidgetReceiver',
     group: HomeWidgetGroup.time,
     requirement: HomeWidgetRequirement.calendar,
+  ),
+
+  /// 待办清单：今天 / 计划 / 全部 / 某个清单的待办，在桌面上直接勾选完成。
+  todos(
+    id: 'todos',
+    receiverName: 'TodosWidgetReceiver',
+    group: HomeWidgetGroup.todos,
+    requirement: HomeWidgetRequirement.todos,
   );
 
   const HomeWidgetKind({

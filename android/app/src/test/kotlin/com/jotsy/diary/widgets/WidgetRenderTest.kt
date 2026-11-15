@@ -8,6 +8,7 @@ import com.jotsy.diary.widgets.kinds.AnniversaryWidget
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.QuickCaptureWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
+import com.jotsy.diary.widgets.kinds.TodosWidget
 import java.io.File
 import org.json.JSONObject
 import org.junit.Assert.assertTrue
@@ -66,6 +67,14 @@ private val cases: List<RenderCase> =
       { MoodCalendarWidget() },
       listOf(SQ2, SQ3, WIDE4, LARGE4),
       JSONObject().put("holiday", true),
+    ),
+    RenderCase(TodosWidget.KIND, TodosWidget.KIND, { TodosWidget() }, listOf(SQ2, WIDE4, LARGE4)),
+    RenderCase(
+      "todos_all",
+      TodosWidget.KIND,
+      { TodosWidget() },
+      listOf(WIDE4),
+      JSONObject().put("view", "all"),
     ),
   )
 

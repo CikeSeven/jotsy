@@ -12,6 +12,7 @@ String homeWidgetKindName(AppLocalizations l10n, HomeWidgetKind kind) =>
       HomeWidgetKind.today => l10n.homeWidgetKindToday,
       HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversary,
       HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendar,
+      HomeWidgetKind.todos => l10n.homeWidgetKindTodos,
     };
 
 String homeWidgetKindDescription(AppLocalizations l10n, HomeWidgetKind kind) =>
@@ -20,6 +21,7 @@ String homeWidgetKindDescription(AppLocalizations l10n, HomeWidgetKind kind) =>
       HomeWidgetKind.today => l10n.homeWidgetKindTodayDescription,
       HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversaryDescription,
       HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendarDescription,
+      HomeWidgetKind.todos => l10n.homeWidgetKindTodosDescription,
     };
 
 FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
@@ -27,6 +29,7 @@ FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
   HomeWidgetKind.today => FontAwesomeIcons.solidCalendar,
   HomeWidgetKind.anniversary => FontAwesomeIcons.heart,
   HomeWidgetKind.moodCalendar => FontAwesomeIcons.faceSmile,
+  HomeWidgetKind.todos => FontAwesomeIcons.solidSquareCheck,
 };
 
 String homeWidgetGroupName(AppLocalizations l10n, HomeWidgetGroup group) =>

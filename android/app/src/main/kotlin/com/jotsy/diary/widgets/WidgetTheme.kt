@@ -43,6 +43,7 @@ class WidgetPalettePair(val light: Map<String, Int>, val dark: Map<String, Int>)
             "surfaceContainerHighest" to 0xFFDEE3E7.toInt(),
             "onSurface" to 0xFF171C1F.toInt(),
             "onSurfaceVariant" to 0xFF41484D.toInt(),
+            "error" to 0xFFB3261E.toInt(),
           ),
         dark =
           mapOf(
@@ -55,6 +56,7 @@ class WidgetPalettePair(val light: Map<String, Int>, val dark: Map<String, Int>)
             "surfaceContainerHighest" to 0xFF303539.toInt(),
             "onSurface" to 0xFFDEE3E7.toInt(),
             "onSurfaceVariant" to 0xFFC0C7CD.toInt(),
+            "error" to 0xFFF2B8B5.toInt(),
           ),
       )
   }
@@ -94,6 +96,8 @@ class WidgetColors(
    * 色槽：error / tertiary 容器、最高层容器、secondary / primary 容器。
    */
   val moodTiles: List<Pair<ColorProvider, ColorProvider>>,
+  /** 需要警示的文字（逾期的待办）。 */
+  val danger: ColorProvider,
 ) {
   companion object {
     fun resolve(context: Context, snapshot: WidgetSnapshot, style: WidgetStyle): WidgetColors {
@@ -112,6 +116,8 @@ class WidgetColors(
           "secondaryContainer" to "onSecondaryContainer",
           "primaryContainer" to "onPrimaryContainer",
         ).map { (tile, on) -> source.color(tile) to source.color(on) }
+      // 浓郁底上 error 色与强调色铺底撞色、读不清，改用反白的前景色。
+      val danger = if (style.background == "vivid") source.color(onAccentRole) else source.color("error")
       return when (style.background) {
         "tonal" ->
           WidgetColors(
@@ -128,6 +134,7 @@ class WidgetColors(
             workTag = source.color("surfaceContainerLowest", alpha = 0.72f),
             onWorkTag = source.color(onContainerRole),
             moodTiles = moods,
+            danger = danger,
           )
         "vivid" ->
           WidgetColors(
@@ -144,6 +151,7 @@ class WidgetColors(
             workTag = source.color(onAccentRole, alpha = 0.22f),
             onWorkTag = source.color(onAccentRole),
             moodTiles = moods,
+            danger = danger,
           )
         "clear" ->
           WidgetColors(
@@ -160,6 +168,7 @@ class WidgetColors(
             workTag = source.color("surfaceContainerHighest", alpha = 0.8f),
             onWorkTag = source.color("onSurfaceVariant"),
             moodTiles = moods,
+            danger = danger,
           )
         else ->
           WidgetColors(
@@ -177,6 +186,7 @@ class WidgetColors(
             workTag = source.color("surfaceContainerHighest"),
             onWorkTag = source.color("onSurfaceVariant"),
             moodTiles = moods,
+            danger = danger,
           )
       }
     }

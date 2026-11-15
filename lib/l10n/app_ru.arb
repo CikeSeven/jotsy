@@ -20740,5 +20740,45 @@
   "homeWidgetMonthNext": "Следующий месяц",
   "@homeWidgetMonthNext": {
     "description": "Mood calendar widget: button to the next month."
+  },
+  "homeWidgetKindTodos": "Список задач",
+  "@homeWidgetKindTodos": {
+    "description": "Widget kind name: to-do list."
+  },
+  "homeWidgetKindTodosDescription": "Задачи на сегодня или любой список. Отмечайте их прямо на главном экране.",
+  "@homeWidgetKindTodosDescription": {
+    "description": "Widget gallery: description of the to-do list widget."
+  },
+  "homeWidgetTodoView": "Показывать",
+  "@homeWidgetTodoView": {
+    "description": "To-do widget option: which to-dos to show."
+  },
+  "homeWidgetTodoViewList": "Список",
+  "@homeWidgetTodoViewList": {
+    "description": "To-do widget option: show one list."
+  },
+  "homeWidgetTodoList": "Список",
+  "@homeWidgetTodoList": {
+    "description": "To-do widget option: which list to show."
+  },
+  "homeWidgetTodoShowCompleted": "Выполненные сегодня",
+  "@homeWidgetTodoShowCompleted": {
+    "description": "To-do widget option: keep today's completed to-dos at the end."
+  },
+  "homeWidgetTodoShowCompletedHint": "Зачёркнуты и стоят в конце. Нажмите, чтобы вернуть.",
+  "@homeWidgetTodoShowCompletedHint": {
+    "description": "To-do widget option: hint for the done-today option."
+  },
+  "homeWidgetTodoShowDue": "Срок и время",
+  "@homeWidgetTodoShowDue": {
+    "description": "To-do widget option: show due date and time on each row."
+  },
+  "homeWidgetTodoCheck": "Отметить выполненной",
+  "@homeWidgetTodoCheck": {
+    "description": "To-do widget: description of the check circle."
+  },
+  "homeWidgetTodoUncheck": "Вернуть в работу",
+  "@homeWidgetTodoUncheck": {
+    "description": "To-do widget: description of a checked circle."
   }
 }

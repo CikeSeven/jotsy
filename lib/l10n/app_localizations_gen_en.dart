@@ -17778,4 +17778,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetMonthNext => 'Next month';
+
+  @override
+  String get homeWidgetKindTodos => 'To-do list';
+
+  @override
+  String get homeWidgetKindTodosDescription =>
+      'Today\'s to-dos or any list. Check them off right on the home screen.';
+
+  @override
+  String get homeWidgetTodoView => 'Show';
+
+  @override
+  String get homeWidgetTodoViewList => 'A list';
+
+  @override
+  String get homeWidgetTodoList => 'List';
+
+  @override
+  String get homeWidgetTodoShowCompleted => 'Done today';
+
+  @override
+  String get homeWidgetTodoShowCompletedHint =>
+      'Crossed out at the end. Tap one to bring it back.';
+
+  @override
+  String get homeWidgetTodoShowDue => 'Due date and time';
+
+  @override
+  String get homeWidgetTodoCheck => 'Mark as done';
+
+  @override
+  String get homeWidgetTodoUncheck => 'Mark as not done';
 }

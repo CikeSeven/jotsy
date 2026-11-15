@@ -10,13 +10,15 @@ import 'diary_first_line_indent.dart';
 /// 首行缩进的正文段落块：与上游段落块同样的结构与行为，另把首行缩进
 /// [firstLineIndent]（逻辑像素，见 `DiaryTypography.firstLineIndentExtent`）。
 ///
-/// 段落带工具栏写入的首行缩进标记（`kDiaryParagraphIndentKey`）时改用
-/// [markedFirstLineIndent]（两个字与全局取较大者）。只缩进第一行，折行后的
-/// 各行顶格——这与上游嵌套缩进（整块右移）不同。
+/// 段落带工具栏写入的首行缩进标记（`kDiaryParagraphIndentKey`）为 `true` 时
+/// 改用 [markedFirstLineIndent]（两个字与全局取较大者），为 `false` 时不缩进
+/// （这一段取消了全局缩进，见 `diaryParagraphIndentFor`）。只缩进第一行，折行
+/// 后的各行顶格——这与上游嵌套缩进（整块右移）不同。
 ///
-/// 全局不缩进、段落也没有标记时 [DiaryParagraphBlockBuilder] 仍交给上游段落
-/// 块构建，默认排版与改版前逐像素一致。居中、右对齐的段落不缩进，两端对齐的照常
-/// 缩进（对齐经块配置的 `textAlign`，见 `diaryBlockTextAlign`）。
+/// 本段不缩进（全局不缩进且没有标记，或标记为 `false`）时
+/// [DiaryParagraphBlockBuilder] 仍交给上游段落块构建，默认排版与改版前逐像素
+/// 一致。居中、右对齐的段落不缩进，两端对齐的照常缩进（对齐经块配置的
+/// `textAlign`，见 `diaryBlockTextAlign`）。
 ///
 /// 缩进的画法见 [diaryIndentFirstGlyph]：段首的字被换成“缩进 + 字”的占位，
 /// 文字偏移与文档一致，但占位框从行首算起。本类在几何查询上把这段缩进当成
@@ -44,8 +46,12 @@ class DiaryParagraphBlockBuilder extends af.BlockComponentBuilder {
     af.BlockComponentContext blockComponentContext,
   ) {
     final node = blockComponentContext.node;
-    final marked = node.attributes[kDiaryParagraphIndentKey] == true;
-    if (firstLineIndent <= 0 && !marked) {
+    if (diaryParagraphIndentFor(
+          node.attributes[kDiaryParagraphIndentKey],
+          regular: firstLineIndent,
+          marked: markedFirstLineIndent,
+        ) <=
+        0) {
       return af.ParagraphBlockComponentBuilder(
         configuration: configuration,
       ).build(blockComponentContext);
@@ -139,19 +145,21 @@ class _DiaryParagraphBlockState extends State<DiaryParagraphBlock>
     }
   }
 
-  /// 本段生效的缩进（逻辑像素，未缩放）：带首行缩进标记时取
-  /// [DiaryParagraphBlock.markedFirstLineIndent]，否则为全局缩进；居中、
-  /// 右对齐的段落与表格格子里的段落为 0（格子窄，缩进只会挤掉内容，导出的
-  /// 表格同样不缩进）。两端对齐照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
+  /// 本段生效的缩进（逻辑像素，未缩放）：首行缩进标记为 `true` 时取
+  /// [DiaryParagraphBlock.markedFirstLineIndent]，`false` 时为 0，没有标记
+  /// 时为全局缩进；居中、右对齐的段落与表格格子里的段落为 0（格子窄，缩进
+  /// 只会挤掉内容，导出的表格同样不缩进）。两端对齐照常缩进：它与左对齐一样从起始侧排起（上游 [alignment] 认不出
   /// `justify`、为 null），只是把各行拉满，首行的缩进位置不变。
   double get _indent =>
       alignment == Alignment.center ||
           alignment == Alignment.centerRight ||
           diaryNodeInTableCell(node)
       ? 0
-      : node.attributes[kDiaryParagraphIndentKey] == true
-      ? widget.markedFirstLineIndent
-      : widget.firstLineIndent;
+      : diaryParagraphIndentFor(
+          node.attributes[kDiaryParagraphIndentKey],
+          regular: widget.firstLineIndent,
+          marked: widget.markedFirstLineIndent,
+        );
 
   /// 缩进在屏幕上的位移：占位里的内容随正文字体缩放，从行首起向书写方向。
   double get _shift {

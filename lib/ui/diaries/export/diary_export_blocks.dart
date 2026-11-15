@@ -186,7 +186,7 @@ class ExportBlock {
     this.calloutTone,
     this.tableRows = const <List<List<ExportInline>>>[],
     this.tableHeaderRow = false,
-    this.firstLineIndent = false,
+    this.firstLineIndent,
     this.standIn = false,
     this.imageMaxWidth,
     this.imageMaxHeight,
@@ -203,9 +203,10 @@ class ExportBlock {
   /// 列表与段落缩进级别（0 起）。
   final int indent;
 
-  /// 正文段落带工具栏「缩进」写入的首行缩进标记（`kDiaryParagraphIndentKey`）：
-  /// Word 与 PDF 写成首行缩进（与全局首行缩进同一口径，两字与全局取较大者）。
-  final bool firstLineIndent;
+  /// 正文段落的首行缩进标记（`kDiaryParagraphIndentKey`，工具栏「缩进 /
+  /// 取消缩进」写入）：`true` 缩进两字与全局的较大者，`false` 这一段不缩进
+  /// （盖过全局缩进），null 跟随全局；口径见 [firstLineIndentOf]。
+  final bool? firstLineIndent;
 
   /// 非文字块退化成的一行说明：写出器把媒体退化成的名称行（[paragraphWith]），
   /// 以及日记链接卡片的快照标题。种类是段落，但不是正文段落，不加首行缩进。
@@ -377,12 +378,17 @@ class ExportBlock {
 
   /// 首行缩进取哪一档（PDF、Word 与网页共用，单位由调用方定）：只有正文
   /// 段落（不含 [standIn]）、且从起始侧排起（左对齐或两端对齐）时缩进，
-  /// 带工具栏缩进标记（[firstLineIndent]）的取 [marked]，否则取 [regular]；
-  /// 其余为 0。与应用一致：居中、右对齐不缩进。
+  /// 再按工具栏缩进标记（[firstLineIndent]，经 `diaryParagraphIndentFor`）：
+  /// `true` 取 [marked]，`false` 为 0，没有标记取 [regular]；其余为 0。与
+  /// 应用一致：居中、右对齐不缩进。
   double firstLineIndentOf({required double regular, required double marked}) {
     if (kind != ExportBlockKind.paragraph || standIn) return 0;
     if (align == ExportAlign.center || align == ExportAlign.end) return 0;
-    return firstLineIndent ? marked : regular;
+    return diaryParagraphIndentFor(
+      firstLineIndent,
+      regular: regular,
+      marked: marked,
+    );
   }
 
   bool get isListItem =>

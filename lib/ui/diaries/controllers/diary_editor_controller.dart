@@ -98,6 +98,12 @@ class DiaryEditorController extends ChangeNotifier {
   /// 图片菜单里的“AI 描述图片”：编辑页在图片理解可用时设置，返回描述文字
   /// （取消或失败为 null）；为 null 时菜单里没有这一项。
   Future<String?> Function(String source)? aiImageDescriber;
+
+  /// 正文排版设置的全局首行缩进字数（`DiaryTypography.firstLineIndent`，0 为
+  /// 不缩进）。显示本会话的 `DiaryEditor` 每次构建时写入，与它画段落用的是
+  /// 同一份排版；工具栏「缩进 / 取消缩进」据此判断按下后段落会不会变、取消
+  /// 时该删掉标记还是写成“这段不缩进”（见 `diary_paragraph_indent_editing`）。
+  double globalFirstLineIndent = 0;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
 

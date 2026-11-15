@@ -200,6 +200,52 @@ void main() {
       expect(content.showYearProgress, isTrue);
       expect(content.tapAction, TodayTapAction.write);
     });
+
+    test('on this day keeps a known match and resets broken fields', () {
+      final content =
+          HomeWidgetContent.fromJson(
+                HomeWidgetKind.onThisDay,
+                <String, Object?>{
+                  'match': 'sameMonth',
+                  'photo': 'yes',
+                  'excerpt': false,
+                },
+              )
+              as OnThisDayContent;
+      expect(content.match, OnThisDayMatch.sameMonth);
+      expect(content.showPhoto, OnThisDayContent.defaults.showPhoto);
+      expect(content.showExcerpt, isFalse);
+      expect(
+        HomeWidgetContent.fromJson(HomeWidgetKind.onThisDay, content.toJson()),
+        content,
+      );
+    });
+
+    test('recent entries keep the source and drop empty ids', () {
+      final content =
+          HomeWidgetContent.fromJson(
+                HomeWidgetKind.recentDiaries,
+                <String, Object?>{
+                  'source': 'tag',
+                  'tag': '旅行',
+                  'notebook': '',
+                  'photos': false,
+                },
+              )
+              as RecentDiariesContent;
+      expect(content.source, RecentDiariesSource.tag);
+      expect(content.tagName, '旅行');
+      expect(content.notebookId, isNull);
+      expect(content.showPhotos, isFalse);
+      expect(content.showExcerpt, isTrue);
+      expect(
+        HomeWidgetContent.fromJson(
+          HomeWidgetKind.recentDiaries,
+          <String, Object?>{'source': 'everything'},
+        ),
+        RecentDiariesContent.defaults,
+      );
+    });
   });
 
   group('HomeWidgetStyle', () {
@@ -240,6 +286,28 @@ void main() {
       );
       expect(launch, isA<HomeWidgetWriteLaunch>());
       expect((launch! as HomeWidgetWriteLaunch).notebookId, 'nb-1');
+      expect((launch as HomeWidgetWriteLaunch).capture, isNull);
+    });
+
+    test('write can start with the camera or a recording', () {
+      HomeWidgetCapture? capture(String query) =>
+          (HomeWidgetLaunch.parse(Uri.parse('jotsy://widget/write?$query'))!
+                  as HomeWidgetWriteLaunch)
+              .capture;
+      expect(capture('with=camera'), HomeWidgetCapture.camera);
+      expect(capture('with=voice&notebook=nb'), HomeWidgetCapture.voice);
+      expect(capture('with=video'), isNull);
+    });
+
+    test('diary needs an id', () {
+      final launch =
+          HomeWidgetLaunch.parse(Uri.parse('jotsy://widget/diary?id=d-1'))!
+              as HomeWidgetDiaryLaunch;
+      expect(launch.diaryId, 'd-1');
+      expect(
+        HomeWidgetLaunch.parse(Uri.parse('jotsy://widget/diary')),
+        isA<HomeWidgetOpenAppLaunch>(),
+      );
     });
 
     test('calendar rejects impossible dates', () {

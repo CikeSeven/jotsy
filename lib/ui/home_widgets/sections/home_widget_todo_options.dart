@@ -9,8 +9,8 @@ import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_nav_tile.dart';
 import '../../settings/widgets/settings_option_tiles.dart';
 import '../../todos/providers/todo_providers.dart';
-import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
+import 'home_widget_choice_sheet.dart';
 
 /// 待办清单小组件的内容选项：显示哪些待办（今天 / 计划 / 全部 / 某个清单），
 /// 是否把今天完成的划掉列在最后，是否显示截止日与时刻。
@@ -119,51 +119,17 @@ class HomeWidgetTodoOptions extends ConsumerWidget {
     BuildContext context,
     List<TodoListRow> lists,
     TodoListRow? current,
-  ) {
-    final l10n = context.l10n;
-    return showAppModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      constraints: const BoxConstraints(maxWidth: 640),
-      builder: (BuildContext sheetContext) {
-        final theme = Theme.of(sheetContext);
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.8,
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.only(bottom: 24),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(
-                  l10n.homeWidgetTodoList,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              for (final list in lists)
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                  leading: const FaIcon(FontAwesomeIcons.listCheck, size: 16),
-                  title: Text(list.name),
-                  trailing: list.listId == current?.listId
-                      ? FaIcon(
-                          FontAwesomeIcons.check,
-                          size: 14,
-                          color: theme.colorScheme.primary,
-                        )
-                      : null,
-                  onTap: () => Navigator.of(sheetContext).pop(list.listId),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  ) => showHomeWidgetChoiceSheet<String>(
+    context,
+    title: context.l10n.homeWidgetTodoList,
+    selected: current?.listId,
+    choices: <HomeWidgetChoice<String>>[
+      for (final list in lists)
+        HomeWidgetChoice<String>(
+          value: list.listId,
+          label: list.name,
+          icon: FontAwesomeIcons.listCheck,
+        ),
+    ],
+  );
 }

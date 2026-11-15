@@ -23,6 +23,15 @@ internal class QuickAction(val icon: String, val label: String, val action: Acti
               snapshot.string("actionWrite"),
               WidgetLaunch.action(scope.context, "write", mapOf("notebook" to notebook)),
             )
+          "camera",
+          "voice" -> {
+            val action = names.optString(index)
+            result += QuickAction(
+              action,
+              snapshot.string(if (action == "camera") "actionCamera" else "actionVoice"),
+              WidgetLaunch.action(scope.context, "write", mapOf("notebook" to notebook, "with" to action)),
+            )
+          }
           "todo" ->
             result += QuickAction(
               "todo",

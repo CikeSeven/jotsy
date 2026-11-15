@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../../../core/services/home_widgets/home_widget_gateway.dart';
 import '../../../core/services/home_widgets/home_widget_gateway_plugin.dart';
 import '../../../core/services/home_widgets/home_widget_launch.dart';
@@ -97,5 +98,23 @@ class HomeWidgetPreviewDemand extends Notifier<int> {
 
   void close() {
     if (ref.mounted && state > 0) state--;
+  }
+}
+
+/// 工作室里正在编辑的内容（没有打开工作室时为 null）。快照据此为预览算上草稿
+/// 选的数据来源（最近日记的某个日记本、那年今日的口径），还没放到桌面上的设计
+/// 也能看到真实内容。
+final homeWidgetPreviewContentProvider =
+    NotifierProvider<HomeWidgetPreviewContent, HomeWidgetContent?>(
+      HomeWidgetPreviewContent.new,
+    );
+
+class HomeWidgetPreviewContent extends Notifier<HomeWidgetContent?> {
+  @override
+  HomeWidgetContent? build() => null;
+
+  // 同预览需求：进出工作室的调用在帧回调里，ProviderScope 可能已销毁。
+  void show(HomeWidgetContent? content) {
+    if (ref.mounted) state = content;
   }
 }

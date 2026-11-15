@@ -6,10 +6,14 @@
 //   关闭时按不指定处理。
 // - 今日：农历 / 节假日的“跟随语言”按界面语言落成显示与否；待办关闭时不显示
 //   待办数；日历关闭时点按改为打开应用。
+// - 最近日记：来源落成快照「最近日记」一节的键（[homeWidgetRecentSourceKey]），
+//   日记本已不能看（删除、变成私密）、日记本功能关闭或标签已不存在时按全部日记；
+//   表头的“写一篇”只在来源是能写进去的日记本时预先选好这本。
 //
 // [disabled] 为 true 时原生显示“功能已关闭”占位（所需功能整体关闭）。
 
 import '../../../core/services/app_features.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../../../core/services/home_widgets/home_widget_kind.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
@@ -20,6 +24,8 @@ class HomeWidgetNativeContext {
     required this.features,
     required this.languageCode,
     required this.writableNotebooks,
+    this.readableNotebooks = const <String, String>{},
+    this.tagNames = const <String>{},
   });
 
   final AppFeatures features;
@@ -27,6 +33,12 @@ class HomeWidgetNativeContext {
 
   /// 能写进去的日记本 id → 名字（见 `HomeWidgetDataSource`）。
   final Map<String, String> writableNotebooks;
+
+  /// 能看的日记本（非私密）id → 名字，最近日记的来源只认这些。
+  final Map<String, String> readableNotebooks;
+
+  /// 现有标签的名字。
+  final Set<String> tagNames;
 
   bool get isZh => languageCode.startsWith('zh');
 }
@@ -47,8 +59,29 @@ bool quickCaptureActionAvailable(
   AppFeatures features,
 ) => switch (action) {
   QuickCaptureAction.write || QuickCaptureAction.search => true,
+  QuickCaptureAction.camera => AppPlatform.supportsCameraCapture,
+  QuickCaptureAction.voice => AppPlatform.supportsAudioRecording,
   QuickCaptureAction.todo => features.todos,
   QuickCaptureAction.calendar => features.calendar,
+};
+
+/// 最近日记一个实例实际取数的来源键：`all`、`pinned`、`notebook:<id>` 或
+/// `tag:<名字>`；失效的来源落回 `all`。快照「最近日记」一节按这个键存。
+String homeWidgetRecentSourceKey(
+  RecentDiariesContent content,
+  HomeWidgetNativeContext context,
+) => switch (content.source) {
+  RecentDiariesSource.all => 'all',
+  RecentDiariesSource.pinned => 'pinned',
+  RecentDiariesSource.notebook =>
+    context.features.notebooks &&
+            context.readableNotebooks.containsKey(content.notebookId)
+        ? 'notebook:${content.notebookId}'
+        : 'all',
+  RecentDiariesSource.tag =>
+    context.tagNames.contains(content.tagName)
+        ? 'tag:${content.tagName}'
+        : 'all',
 };
 
 Map<String, Object?> homeWidgetNativeConfig(
@@ -78,6 +111,12 @@ Map<String, Object?> homeWidgetNativeConfig(
         'written': content.showWritten,
         'holiday': _almanac(content.holiday, context),
       },
+      final OnThisDayContent content => <String, Object?>{
+        'match': content.match.name,
+        'photo': content.showPhoto,
+        'excerpt': content.showExcerpt,
+      },
+      final RecentDiariesContent content => _recent(content, context),
     },
   };
 }
@@ -122,6 +161,24 @@ Map<String, Object?> _today(
     'yearProgress': content.showYearProgress,
     'mood': content.showMood,
     'tap': tap.name,
+  };
+}
+
+Map<String, Object?> _recent(
+  RecentDiariesContent content,
+  HomeWidgetNativeContext context,
+) {
+  final key = homeWidgetRecentSourceKey(content, context);
+  final notebook = key.startsWith('notebook:') ? content.notebookId : null;
+  return <String, Object?>{
+    'source': key,
+    // 表头：日记本名、“#标签”；全部与置顶由原生取快照里的文案。
+    if (notebook != null) 'title': context.readableNotebooks[notebook],
+    if (key.startsWith('tag:')) 'title': '#${content.tagName}',
+    if (notebook != null && context.writableNotebooks.containsKey(notebook))
+      'notebook': notebook,
+    'photos': content.showPhotos,
+    'excerpt': content.showExcerpt,
   };
 }
 

@@ -25,6 +25,8 @@ Map<String, String> homeWidgetStringsOf(AppLocalizations l10n) =>
       'greetingNight': l10n.homeWidgetGreetingNight,
       'quickPrompt': l10n.homeWidgetQuickPrompt,
       'actionWrite': l10n.homeWidgetQuickActionWrite,
+      'actionCamera': l10n.homeWidgetQuickActionCamera,
+      'actionVoice': l10n.homeWidgetQuickActionVoice,
       'actionTodo': l10n.homeWidgetQuickActionTodo,
       'actionCalendar': l10n.homeWidgetQuickActionCalendar,
       'actionSearch': l10n.homeWidgetQuickActionSearch,
@@ -53,6 +55,18 @@ Map<String, String> homeWidgetStringsOf(AppLocalizations l10n) =>
       'todoAdd': l10n.homeWidgetQuickActionTodo,
       'todoCheck': l10n.homeWidgetTodoCheck,
       'todoUncheck': l10n.homeWidgetTodoUncheck,
+      'locked': l10n.homeWidgetLocked,
+      'lockedHint': l10n.homeWidgetLockedHint,
+      'onThisDayTitle': l10n.homeWidgetKindOnThisDay,
+      'onThisDayEmpty': l10n.homeWidgetOnThisDayEmpty,
+      'entryPrevious': l10n.homeWidgetEntryPrevious,
+      'entryNext': l10n.homeWidgetEntryNext,
+      'writeOne': l10n.homeWidgetWriteOne,
+      'recentTitle': l10n.homeWidgetKindRecentDiaries,
+      'recentPinned': l10n.homeWidgetRecentPinned,
+      'recentEmpty': l10n.homeWidgetRecentEmpty,
+      // 没有标题也没有正文的日记（只有照片或录音）显示这句，与探索页一致。
+      'untitled': l10n.autoT0186,
     };
 
 /// 一个图标：字体族在 `FontManifest.json` 里的键与码位。
@@ -81,4 +95,10 @@ Map<String, Object?> homeWidgetIcons() => <String, Object?>{
   'checked': _icon(FontAwesomeIcons.solidCircleCheck),
   'plus': _icon(FontAwesomeIcons.plus),
   'repeat': _icon(FontAwesomeIcons.arrowsRotate),
+  'camera': _icon(FontAwesomeIcons.camera),
+  'voice': _icon(FontAwesomeIcons.microphone),
+  'lock': _icon(FontAwesomeIcons.lock),
+  'memory': _icon(FontAwesomeIcons.clockRotateLeft),
+  'diary': _icon(FontAwesomeIcons.bookOpen),
+  'tag': _icon(FontAwesomeIcons.hashtag),
 };

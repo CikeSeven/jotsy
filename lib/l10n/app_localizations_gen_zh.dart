@@ -15524,4 +15524,73 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetTodoUncheck => '恢复为未完成';
+
+  @override
+  String get homeWidgetKindOnThisDay => '那年今日';
+
+  @override
+  String get homeWidgetKindOnThisDayDescription => '往年今天写下的日记，照片优先，多篇时在桌面上翻看。';
+
+  @override
+  String get homeWidgetKindRecentDiaries => '最近日记';
+
+  @override
+  String get homeWidgetKindRecentDiariesDescription => '全部、某个日记本、某个标签或置顶的最近几篇。';
+
+  @override
+  String get homeWidgetQuickActionCamera => '拍照记';
+
+  @override
+  String get homeWidgetQuickActionVoice => '录音记';
+
+  @override
+  String get homeWidgetLocked => '已锁定';
+
+  @override
+  String get homeWidgetLockedHint => '点按解锁';
+
+  @override
+  String get homeWidgetOnThisDayEmpty => '往年的今天还没有日记';
+
+  @override
+  String get homeWidgetWriteOne => '写一篇';
+
+  @override
+  String get homeWidgetRecentEmpty => '这里还没有日记';
+
+  @override
+  String get homeWidgetRecentPinned => '置顶日记';
+
+  @override
+  String get homeWidgetEntryPrevious => '上一篇';
+
+  @override
+  String get homeWidgetEntryNext => '下一篇';
+
+  @override
+  String get homeWidgetShowPhoto => '照片优先';
+
+  @override
+  String get homeWidgetShowPhotoHint => '封面优先，其次是正文里的第一张。';
+
+  @override
+  String get homeWidgetShowExcerpt => '正文摘要';
+
+  @override
+  String get homeWidgetRecentShowPhotos => '缩略图';
+
+  @override
+  String get homeWidgetRecentShowPhotosHint => '有照片的日记在行首显示照片，其余显示日期。';
+
+  @override
+  String get homeWidgetRecentSource => '显示';
+
+  @override
+  String get homeWidgetRecentNotebook => '日记本';
+
+  @override
+  String get homeWidgetRecentTag => '标签';
+
+  @override
+  String get homeWidgetPrivacyHint => '私密日记本里的日记不会出现在桌面上；开了应用锁时，这类小组件只显示锁定。';
 }

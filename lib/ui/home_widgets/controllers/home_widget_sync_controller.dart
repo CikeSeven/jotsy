@@ -29,6 +29,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_features.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/home_widgets/home_widget_action.dart';
+import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../../../core/services/home_widgets/home_widget_gateway.dart';
 import '../../../core/services/home_widgets/home_widget_kind.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
@@ -60,12 +61,19 @@ final homeWidgetSyncControllerProvider = Provider<HomeWidgetSyncController?>((
     readFeatures: () => ref.read(appFeaturesProvider),
     readSettings: () => ref.read(homeWidgetSettingsProvider),
     previewing: () => ref.read(homeWidgetPreviewDemandProvider) > 0,
+    previewContents: () => <HomeWidgetContent>[
+      ?ref.read(homeWidgetPreviewContentProvider),
+    ],
     onInstalledChanged: () => ref.invalidate(installedHomeWidgetsProvider),
   );
   ref.onDispose(controller.dispose);
   ref.listen<AppFeatures>(appFeaturesProvider, (_, _) => controller.schedule());
   ref.listen<HomeWidgetSettings>(
     homeWidgetSettingsProvider,
+    (_, _) => controller.schedule(),
+  );
+  ref.listen<HomeWidgetContent?>(
+    homeWidgetPreviewContentProvider,
     (_, _) => controller.schedule(),
   );
   ref.listen<int>(homeWidgetPreviewDemandProvider, (int? previous, int next) {
@@ -86,8 +94,11 @@ class HomeWidgetSyncController {
     required this.readSettings,
     required this.previewing,
     required this.onInstalledChanged,
+    this.previewContents = _noContents,
     this.now = DateTime.now,
   });
+
+  static List<HomeWidgetContent> _noContents() => const <HomeWidgetContent>[];
 
   final HomeWidgetGateway gateway;
   final SettingsService settingsService;
@@ -97,6 +108,9 @@ class HomeWidgetSyncController {
   final HomeWidgetSettings Function() readSettings;
   final bool Function() previewing;
   final VoidCallback onInstalledChanged;
+
+  /// 工作室草稿的内容（见 `homeWidgetPreviewContentProvider`）。
+  final List<HomeWidgetContent> Function() previewContents;
 
   /// 只供测试注入的时钟。
   final DateTime Function() now;
@@ -125,6 +139,9 @@ class HomeWidgetSyncController {
             database.diaries,
             database.notebooks,
             database.diaryNotebooks,
+            // 最近日记可以按标签取。
+            database.tags,
+            database.diaryTags,
             database.anniversaries,
             database.dayMoods,
             database.todoLists,
@@ -222,6 +239,9 @@ class HomeWidgetSyncController {
         weekStart: CalendarDisplayOptions.decode(
           settingsService.calendarDisplayOptionsRaw,
         ).weekStart,
+        previewContents: preview
+            ? previewContents()
+            : const <HomeWidgetContent>[],
       ),
     );
     if (_disposed) return;

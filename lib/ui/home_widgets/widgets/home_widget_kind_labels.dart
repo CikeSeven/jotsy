@@ -13,6 +13,8 @@ String homeWidgetKindName(AppLocalizations l10n, HomeWidgetKind kind) =>
       HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversary,
       HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendar,
       HomeWidgetKind.todos => l10n.homeWidgetKindTodos,
+      HomeWidgetKind.onThisDay => l10n.homeWidgetKindOnThisDay,
+      HomeWidgetKind.recentDiaries => l10n.homeWidgetKindRecentDiaries,
     };
 
 String homeWidgetKindDescription(AppLocalizations l10n, HomeWidgetKind kind) =>
@@ -22,6 +24,9 @@ String homeWidgetKindDescription(AppLocalizations l10n, HomeWidgetKind kind) =>
       HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversaryDescription,
       HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendarDescription,
       HomeWidgetKind.todos => l10n.homeWidgetKindTodosDescription,
+      HomeWidgetKind.onThisDay => l10n.homeWidgetKindOnThisDayDescription,
+      HomeWidgetKind.recentDiaries =>
+        l10n.homeWidgetKindRecentDiariesDescription,
     };
 
 FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
@@ -30,6 +35,8 @@ FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
   HomeWidgetKind.anniversary => FontAwesomeIcons.heart,
   HomeWidgetKind.moodCalendar => FontAwesomeIcons.faceSmile,
   HomeWidgetKind.todos => FontAwesomeIcons.solidSquareCheck,
+  HomeWidgetKind.onThisDay => FontAwesomeIcons.clockRotateLeft,
+  HomeWidgetKind.recentDiaries => FontAwesomeIcons.bookOpen,
 };
 
 String homeWidgetGroupName(AppLocalizations l10n, HomeWidgetGroup group) =>
@@ -45,6 +52,8 @@ String quickCaptureActionName(
   QuickCaptureAction action,
 ) => switch (action) {
   QuickCaptureAction.write => l10n.homeWidgetQuickActionWrite,
+  QuickCaptureAction.camera => l10n.homeWidgetQuickActionCamera,
+  QuickCaptureAction.voice => l10n.homeWidgetQuickActionVoice,
   QuickCaptureAction.todo => l10n.homeWidgetQuickActionTodo,
   QuickCaptureAction.calendar => l10n.homeWidgetQuickActionCalendar,
   QuickCaptureAction.search => l10n.homeWidgetQuickActionSearch,
@@ -53,6 +62,8 @@ String quickCaptureActionName(
 FaIconData quickCaptureActionIcon(QuickCaptureAction action) =>
     switch (action) {
       QuickCaptureAction.write => FontAwesomeIcons.penNib,
+      QuickCaptureAction.camera => FontAwesomeIcons.camera,
+      QuickCaptureAction.voice => FontAwesomeIcons.microphone,
       QuickCaptureAction.todo => FontAwesomeIcons.solidSquareCheck,
       QuickCaptureAction.calendar => FontAwesomeIcons.solidCalendar,
       QuickCaptureAction.search => FontAwesomeIcons.magnifyingGlass,

@@ -15783,4 +15783,76 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetTodoUncheck => '未完了に戻す';
+
+  @override
+  String get homeWidgetKindOnThisDay => 'あの日の今日';
+
+  @override
+  String get homeWidgetKindOnThisDayDescription =>
+      '過去の今日に書いた日記。写真を優先し、ホーム画面でめくれます。';
+
+  @override
+  String get homeWidgetKindRecentDiaries => '最近の日記';
+
+  @override
+  String get homeWidgetKindRecentDiariesDescription =>
+      'すべて・日記帳・タグ・ピン留めから最近の数件。';
+
+  @override
+  String get homeWidgetQuickActionCamera => '写真';
+
+  @override
+  String get homeWidgetQuickActionVoice => '録音';
+
+  @override
+  String get homeWidgetLocked => 'ロック中';
+
+  @override
+  String get homeWidgetLockedHint => 'タップしてロック解除';
+
+  @override
+  String get homeWidgetOnThisDayEmpty => '過去の今日の日記はまだありません';
+
+  @override
+  String get homeWidgetWriteOne => '書く';
+
+  @override
+  String get homeWidgetRecentEmpty => 'ここにはまだ日記がありません';
+
+  @override
+  String get homeWidgetRecentPinned => 'ピン留めの日記';
+
+  @override
+  String get homeWidgetEntryPrevious => '前の日記';
+
+  @override
+  String get homeWidgetEntryNext => '次の日記';
+
+  @override
+  String get homeWidgetShowPhoto => '写真を優先';
+
+  @override
+  String get homeWidgetShowPhotoHint => 'カバーを優先し、次に本文の最初の写真。';
+
+  @override
+  String get homeWidgetShowExcerpt => '本文の抜粋';
+
+  @override
+  String get homeWidgetRecentShowPhotos => 'サムネイル';
+
+  @override
+  String get homeWidgetRecentShowPhotosHint => '写真のある日記は行の先頭に写真を、ほかは日付を表示。';
+
+  @override
+  String get homeWidgetRecentSource => '表示';
+
+  @override
+  String get homeWidgetRecentNotebook => '日記帳';
+
+  @override
+  String get homeWidgetRecentTag => 'タグ';
+
+  @override
+  String get homeWidgetPrivacyHint =>
+      '非公開の日記帳の日記はホーム画面に表示されません。アプリロック中はロック表示になります。';
 }

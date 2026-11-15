@@ -93,7 +93,11 @@ class TodosWidget : JotsyGlanceWidget(KIND, setOf(SQUARE, WIDE, LARGE)) {
           // 预览与桌面会不一致。放得下几行就放几行：表头约 44dp，每行约 34dp，按格子的
           // 实际高度算（桌面上是挑中的那一档）。
           val room = scope.size.height.value - scope.metrics.padding.value * 2 - 44f - scope.metrics.gap.value
-          rows.take(max(1, (room / 34f).toInt())).forEach { TodoRow(scope, it, view == "today") }
+          // 行另放进一个 Column：Glance 的一个 Column 最多 10 个子项，4×4 时表头、提示加上
+          // 七八行会超出，多出来的行被丢掉。
+          Column(modifier = GlanceModifier.fillMaxWidth()) {
+            rows.take(max(1, (room / 34f).toInt())).forEach { TodoRow(scope, it, view == "today") }
+          }
         }
       }
     }

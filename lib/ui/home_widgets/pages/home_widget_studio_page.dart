@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../../../core/services/home_widgets/home_widget_kind.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
 import '../../../core/services/settings_service.dart';
@@ -63,10 +64,29 @@ class _HomeWidgetStudioPageState extends ConsumerState<HomeWidgetStudioPage>
           ? HomeWidgetInstance.defaultsFor(widget.kind)
           : settings.instanceFor(widgetId, widget.kind),
     );
+    // 草稿的内容交给快照（预览要画出它选的来源）；进出页面在帧回调里改 provider，
+    // 理由同 HomeWidgetPreviewDemandMixin。
+    _previewContent = ref.read(homeWidgetPreviewContentProvider.notifier);
+    _controller.addListener(_showPreviewContent);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showPreviewContent());
+  }
+
+  late final HomeWidgetPreviewContent _previewContent;
+  HomeWidgetContent? _shownContent;
+
+  void _showPreviewContent() {
+    if (!mounted || identical(_shownContent, _controller.content)) return;
+    _shownContent = _controller.content;
+    _previewContent.show(_shownContent);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_showPreviewContent);
+    final previewContent = _previewContent;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      previewContent.show(null);
+    });
     _controller.dispose();
     super.dispose();
   }

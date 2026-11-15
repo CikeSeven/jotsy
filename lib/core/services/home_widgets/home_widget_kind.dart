@@ -21,6 +21,23 @@ enum HomeWidgetKind {
     requirement: HomeWidgetRequirement.none,
   ),
 
+  /// 那年今日：往年这一天（或前后几天、同月）写下的日记，照片优先，多篇时
+  /// 在桌面上翻看。
+  onThisDay(
+    id: 'on_this_day',
+    receiverName: 'OnThisDayWidgetReceiver',
+    group: HomeWidgetGroup.capture,
+    requirement: HomeWidgetRequirement.none,
+  ),
+
+  /// 最近日记：全部、某个日记本、某个标签或置顶的最近几篇。
+  recentDiaries(
+    id: 'recent_diaries',
+    receiverName: 'RecentDiariesWidgetReceiver',
+    group: HomeWidgetGroup.capture,
+    requirement: HomeWidgetRequirement.none,
+  ),
+
   /// 今日：日期、农历、节气与法定节假日，今天写了多少、还有几项待办，点脸
   /// 记下今天的心情。
   today(

@@ -9,12 +9,16 @@
 // 有的，加上小组件页打开期间要预览的全部种类。快照不含构建时刻以外的
 // 易变字段，同样的输入得到同样的 JSON，调用方据此跳过没有变化的写入
 // （`HomeWidgetSyncController`）。
+//
+// 应用锁开着时（[HomeWidgetSnapshotInput.appLocked]）涉及日记内容的三节
+// （`diaries`、`onThisDay`、`recent`）一概不算、不写，原生按 `redacted` 显示锁定占位。
 
 import 'package:flutter/painting.dart' show Color;
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../../../core/database/app_database.dart' show DayMood;
 import '../../../core/services/app_features.dart';
+import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../../../core/services/home_widgets/home_widget_gateway.dart';
 import '../../../core/services/home_widgets/home_widget_kind.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
@@ -22,6 +26,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../calendar/models/calendar_display_options.dart';
 import 'home_widget_anniversary_section.dart';
 import 'home_widget_data_source.dart';
+import 'home_widget_diary_sections.dart';
 import 'home_widget_month_section.dart';
 import 'home_widget_native_config.dart';
 import 'home_widget_palette.dart';
@@ -48,6 +53,7 @@ class HomeWidgetSnapshotInput {
     required this.kinds,
     this.moodOptions = const <String>[],
     this.weekStart = CalendarWeekStart.locale,
+    this.previewContents = const <HomeWidgetContent>[],
   });
 
   final DateTime now;
@@ -70,6 +76,21 @@ class HomeWidgetSnapshotInput {
 
   /// 日历设置里一周从哪天开始（心情月历与日历页一致）。
   final CalendarWeekStart weekStart;
+
+  /// 工作室里正在编辑、还没放到桌面上的内容：预览要画出它选的来源与口径
+  /// （最近日记的某个日记本、那年今日的同月等），数据节一并算上。
+  final List<HomeWidgetContent> previewContents;
+
+  /// 桌面上的实例、待领取的设计与工作室草稿的全部内容。
+  Iterable<HomeWidgetContent> get usedContents sync* {
+    for (final widget in installed) {
+      yield settings.instanceFor(widget.widgetId, widget.kind).content;
+    }
+    for (final pin in settings.pending) {
+      yield pin.instance.content;
+    }
+    yield* previewContents;
+  }
 }
 
 class HomeWidgetSnapshotBuilder {
@@ -82,12 +103,20 @@ class HomeWidgetSnapshotBuilder {
     // 星期、月份按界面语言格式化（intl）。应用里 MaterialApp 的本地化已加载过
     // 这份数据，后台 isolate 里没有：自己加载一次（已加载时立即返回）。
     await initializeDateFormatting(l10n.localeName);
+    final needsWritable =
+        input.kinds.contains(HomeWidgetKind.quickCapture) ||
+        input.kinds.contains(HomeWidgetKind.recentDiaries);
+    final needsRecent = input.kinds.contains(HomeWidgetKind.recentDiaries);
     final nativeContext = HomeWidgetNativeContext(
       features: input.features,
       languageCode: l10n.localeName,
-      writableNotebooks: input.kinds.contains(HomeWidgetKind.quickCapture)
+      writableNotebooks: needsWritable
           ? await data.writableNotebooks()
           : const <String, String>{},
+      readableNotebooks: needsRecent
+          ? await data.readableNotebooks()
+          : const <String, String>{},
+      tagNames: needsRecent ? await data.tagNames() : const <String>{},
     );
     final instances = <String, Object?>{};
     final styles = [
@@ -108,6 +137,9 @@ class HomeWidgetSnapshotBuilder {
     final dayMoods = needsMoods
         ? await data.dayMoods()
         : const <String, DayMood>{};
+    final diarySections = input.appLocked
+        ? const <String, Object?>{}
+        : await _diarySections(input, nativeContext);
     return <String, Object?>{
       'v': kHomeWidgetSnapshotVersion,
       'locale': l10n.localeName,
@@ -165,6 +197,70 @@ class HomeWidgetSnapshotBuilder {
           moodOptions: input.moodOptions,
           weekStart: input.weekStart,
         ),
+      ...diarySections,
     };
+  }
+
+  /// `diaries`、`onThisDay` 与 `recent` 三节（见 home_widget_diary_sections.dart）：
+  /// 那年今日算桌面上与草稿里用到的口径（加上默认的同月同日，组件库与刚放下的实例
+  /// 用它），最近日记算用到的来源（加上默认的全部日记）。
+  Future<Map<String, Object?>> _diarySections(
+    HomeWidgetSnapshotInput input,
+    HomeWidgetNativeContext nativeContext,
+  ) async {
+    final onThisDay = input.kinds.contains(HomeWidgetKind.onThisDay);
+    final recent = input.kinds.contains(HomeWidgetKind.recentDiaries);
+    if (!onThisDay && !recent) return const <String, Object?>{};
+    final diaries = HomeWidgetDiaryCollector(
+      l10n: input.l10n,
+      now: input.now,
+      localImage: data.localImage,
+    );
+    final result = <String, Object?>{};
+    if (onThisDay) {
+      final matches = <OnThisDayMatch>{
+        OnThisDayContent.defaults.match,
+        for (final content in input.usedContents)
+          if (content is OnThisDayContent) content.match,
+      };
+      result['onThisDay'] = buildHomeWidgetOnThisDaySection(
+        now: input.now,
+        l10n: input.l10n,
+        rows: await data.diariesCreatedInRanges(
+          homeWidgetOnThisDayRanges(input.now, matches),
+        ),
+        matches: matches,
+        diaries: diaries,
+      );
+    }
+    if (recent) {
+      final sources = <String, RecentDiariesContent>{
+        'all': RecentDiariesContent.defaults,
+        for (final content in input.usedContents)
+          if (content is RecentDiariesContent)
+            homeWidgetRecentSourceKey(content, nativeContext): content,
+      };
+      final lists = <String, Object?>{};
+      for (final MapEntry(:key, value: content) in sources.entries) {
+        final source = switch (key) {
+          'all' => RecentDiariesSource.all,
+          'pinned' => RecentDiariesSource.pinned,
+          _ => content.source,
+        };
+        lists[key] = buildHomeWidgetRecentList(
+          await data.recentDiaries(
+            source,
+            notebookId: content.notebookId,
+            tagName: content.tagName,
+            now: input.now,
+            limit: kHomeWidgetRecentLimit,
+          ),
+          diaries,
+        );
+      }
+      result['recent'] = lists;
+    }
+    result['diaries'] = diaries.toJson();
+    return result;
   }
 }

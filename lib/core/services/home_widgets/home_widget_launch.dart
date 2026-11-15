@@ -28,7 +28,17 @@ sealed class HomeWidgetLaunch {
         final notebook = query['notebook'];
         return HomeWidgetWriteLaunch(
           notebookId: notebook == null || notebook.isEmpty ? null : notebook,
+          capture: switch (query['with']) {
+            'camera' => HomeWidgetCapture.camera,
+            'voice' => HomeWidgetCapture.voice,
+            _ => null,
+          },
         );
+      case 'diary':
+        final id = query['id'];
+        return id == null || id.isEmpty
+            ? const HomeWidgetOpenAppLaunch()
+            : HomeWidgetDiaryLaunch(diaryId: id);
       case 'todo-new':
         final list = query['list'];
         return HomeWidgetNewTodoLaunch(
@@ -82,11 +92,23 @@ class HomeWidgetOpenAppLaunch extends HomeWidgetLaunch {
   const HomeWidgetOpenAppLaunch();
 }
 
-/// 写日记；[notebookId] 为要写进的普通日记本。
+/// 新建日记后立即开始的拍摄方式（快速记录的“拍照记 / 录音记”）。
+enum HomeWidgetCapture { camera, voice }
+
+/// 写日记；[notebookId] 为要写进的普通日记本，[capture] 为打开编辑页后立即
+/// 开始的拍照或录音。
 class HomeWidgetWriteLaunch extends HomeWidgetLaunch {
-  const HomeWidgetWriteLaunch({this.notebookId});
+  const HomeWidgetWriteLaunch({this.notebookId, this.capture});
 
   final String? notebookId;
+  final HomeWidgetCapture? capture;
+}
+
+/// 打开一篇日记（那年今日、最近日记）。打开前按当前状态复核是否私密。
+class HomeWidgetDiaryLaunch extends HomeWidgetLaunch {
+  const HomeWidgetDiaryLaunch({required this.diaryId});
+
+  final String diaryId;
 }
 
 /// 新建待办；[listId] 为预先选好的清单。

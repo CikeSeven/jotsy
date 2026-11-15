@@ -12,4 +12,8 @@
     <string name="widget_mood_calendar_description">Месяц одним взглядом: настроение каждого дня и дни с записями.</string>
     <string name="widget_todos_name">Список задач</string>
     <string name="widget_todos_description">Задачи на сегодня или любой список. Отмечайте их прямо на главном экране.</string>
+    <string name="widget_on_this_day_name">В этот день</string>
+    <string name="widget_on_this_day_description">Что вы писали в этот день в прошлые годы — сначала фото.</string>
+    <string name="widget_recent_diaries_name">Последние записи</string>
+    <string name="widget_recent_diaries_description">Последние записи: все, из блокнота, с тегом или закреплённые.</string>
 </resources>

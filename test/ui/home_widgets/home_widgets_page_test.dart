@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/home_widgets/home_widget_content.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_gateway.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_kind.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_settings.dart';
@@ -126,6 +128,47 @@ void main() {
       HomeWidgetBackground.vivid,
     );
     expect(find.text(l10n.homeWidgetPinRequested), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('a new recent entries design shows its source in the preview', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    _wide(tester);
+    final gateway = FakeHomeWidgetGateway();
+    await h.pump(
+      HomeWidgetStudioPage(
+        settingsService: h.settings,
+        kind: HomeWidgetKind.recentDiaries,
+      ),
+      overrides: [homeWidgetGatewayProvider.overrideWithValue(gateway)],
+    );
+    final l10n = h.l10n;
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeWidgetStudioPage)),
+    );
+    // 草稿交给快照，预览才算得出它选的来源。
+    expect(
+      container.read(homeWidgetPreviewContentProvider),
+      RecentDiariesContent.defaults,
+    );
+    await _openTab(tester, l10n.homeWidgetTabContent);
+    await _tapInPanel(tester, find.text(l10n.diaryPinnedBadge));
+    await h.settle();
+    expect(
+      container.read(homeWidgetPreviewContentProvider),
+      const RecentDiariesContent(source: RecentDiariesSource.pinned),
+    );
+    await tester.tap(find.text(l10n.homeWidgetAddToHome));
+    await h.settle();
+    final stored = HomeWidgetSettings.decode(
+      h.settings.homeWidgetsRawNotifier.value,
+    );
+    expect(
+      (stored.pending.single.instance.content as RecentDiariesContent).source,
+      RecentDiariesSource.pinned,
+    );
     await h.unmount();
   });
 

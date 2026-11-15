@@ -12,4 +12,8 @@
     <string name="widget_mood_calendar_description">一眼看完这个月：每天的心情，和写过日记的日子。</string>
     <string name="widget_todos_name">待办清单</string>
     <string name="widget_todos_description">今天的待办或某个清单，在桌面上直接勾选完成。</string>
+    <string name="widget_on_this_day_name">那年今日</string>
+    <string name="widget_on_this_day_description">往年今天写下的日记，照片优先。</string>
+    <string name="widget_recent_diaries_name">最近日记</string>
+    <string name="widget_recent_diaries_description">全部、某个日记本、某个标签或置顶的最近几篇。</string>
 </resources>

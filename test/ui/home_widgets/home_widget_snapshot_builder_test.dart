@@ -11,71 +11,12 @@ import 'package:node_diary/core/services/home_widgets/home_widget_kind.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_settings.dart';
 import 'package:node_diary/core/services/home_widgets/home_widget_style.dart';
 import 'package:node_diary/l10n/app_localizations_gen.dart';
-import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_data_source.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_palette.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_snapshot_builder.dart';
 import 'package:node_diary/ui/home_widgets/viewmodels/home_widget_today_section.dart';
 
 import '../../support/anniversary_fixtures.dart';
-
-/// 假数据源：字数、待办截止日与能写的日记本由测试设定。
-class _FakeData implements HomeWidgetDataSource {
-  _FakeData({
-    this.words = 0,
-    this.dueDates = const <String?>[],
-    this.notebooks = const <String, String>{},
-    this.anniversaryRows = const <Anniversary>[],
-    this.moods = const <String, DayMood>{},
-    this.markers = const <DiaryCalendarMarker>[],
-    this.open = const <TodoRow>[],
-    this.completed = const <TodoRow>[],
-    this.lists = const <TodoListRow>[],
-  });
-
-  final int words;
-  final List<String?> dueDates;
-  final Map<String, String> notebooks;
-  final List<Anniversary> anniversaryRows;
-  final Map<String, DayMood> moods;
-  final List<DiaryCalendarMarker> markers;
-  final List<TodoRow> open;
-  final List<TodoRow> completed;
-  final List<TodoListRow> lists;
-
-  @override
-  Future<List<TodoRow>> openTodos() async => open;
-
-  @override
-  Future<List<TodoRow>> completedTodos() async => completed;
-
-  @override
-  Future<List<TodoListRow>> todoLists() async => lists;
-
-  @override
-  Future<List<Anniversary>> anniversaries() async => anniversaryRows;
-
-  @override
-  Future<Map<String, DayMood>> dayMoods() async => moods;
-
-  @override
-  Future<List<DiaryCalendarMarker>> markersBetween(
-    DateTime start,
-    DateTime end,
-  ) async => <DiaryCalendarMarker>[
-    for (final marker in markers)
-      if (!marker.createdAt.isBefore(start) && marker.createdAt.isBefore(end))
-        marker,
-  ];
-
-  @override
-  Future<int> wordsOn(DateTime day) async => words;
-
-  @override
-  Future<List<String?>> openTodoDueDates() async => dueDates;
-
-  @override
-  Future<Map<String, String>> writableNotebooks() async => notebooks;
-}
+import '../../support/fake_home_widget_data.dart';
 
 /// Kotlin 渲染测试读的快照样例（与 Dart 构建结果逐字一致，见下方测试）。
 const String _fixturePath =
@@ -110,7 +51,7 @@ void main() {
   group('today section', () {
     test('covers the horizon from today and counts overdue to-dos', () async {
       final snapshot = await HomeWidgetSnapshotBuilder(
-        _FakeData(
+        FakeHomeWidgetData(
           words: 1234,
           dueDates: <String?>['2026-11-10', '2026-11-15', '2026-11-17', null],
         ),
@@ -130,7 +71,7 @@ void main() {
 
     test('skips to-do due dates when to-dos are turned off', () async {
       final snapshot = await HomeWidgetSnapshotBuilder(
-        _FakeData(dueDates: <String?>['2026-11-15']),
+        FakeHomeWidgetData(dueDates: <String?>['2026-11-15']),
       ).build(_input(features: const AppFeatures()));
       final days = ((snapshot['today']! as Map)['days']! as Map);
       expect((days['2026-11-15']! as Map)['todos'], 0);
@@ -138,7 +79,7 @@ void main() {
 
     test('is left out when no widget needs it', () async {
       final snapshot = await HomeWidgetSnapshotBuilder(
-        _FakeData(),
+        FakeHomeWidgetData(),
       ).build(_input(installed: const <InstalledHomeWidget>[]));
       expect(snapshot.containsKey('today'), isFalse);
     });
@@ -161,7 +102,7 @@ void main() {
       );
       final snapshot =
           await HomeWidgetSnapshotBuilder(
-            _FakeData(notebooks: <String, String>{'nb': 'Travel'}),
+            FakeHomeWidgetData(notebooks: <String, String>{'nb': 'Travel'}),
           ).build(
             _input(
               features: const AppFeatures(calendar: false),
@@ -190,7 +131,7 @@ void main() {
       );
       final snapshot =
           await HomeWidgetSnapshotBuilder(
-            _FakeData(notebooks: <String, String>{'nb': 'Travel'}),
+            FakeHomeWidgetData(notebooks: <String, String>{'nb': 'Travel'}),
           ).build(
             _input(
               settings: settings,
@@ -208,7 +149,7 @@ void main() {
     test('lunar "follow language" shows only in Chinese', () async {
       Future<bool> lunarFor(String language) async {
         final snapshot = await HomeWidgetSnapshotBuilder(
-          _FakeData(),
+          FakeHomeWidgetData(),
         ).build(_input(language: language));
         return (_config(snapshot, 1)['content']! as Map)['lunar']! as bool;
       }
@@ -219,14 +160,14 @@ void main() {
 
     test('today taps open the app when the calendar is off', () async {
       final snapshot = await HomeWidgetSnapshotBuilder(
-        _FakeData(),
+        FakeHomeWidgetData(),
       ).build(_input(features: const AppFeatures(calendar: false)));
       expect((_config(snapshot, 1)['content']! as Map)['tap'], 'app');
     });
 
     test('an unconfigured widget uses the kind defaults', () async {
       final snapshot = await HomeWidgetSnapshotBuilder(
-        _FakeData(),
+        FakeHomeWidgetData(),
       ).build(_input());
       expect(_config(snapshot, 1)['kind'], 'today');
       expect((_config(snapshot, 1)['style']! as Map)['palette'], 'app');
@@ -252,7 +193,7 @@ void main() {
           _now,
         );
     final snapshot = await HomeWidgetSnapshotBuilder(
-      _FakeData(),
+      FakeHomeWidgetData(),
     ).build(_input(settings: settings));
     final palettes = (snapshot['palettes']! as Map).cast<String, Object?>();
     expect(palettes.keys, unorderedEquals(<String>['app', 'seed:FF7A9A5B']));
@@ -262,7 +203,7 @@ void main() {
 
   test('marks the snapshot redacted when the app lock is on', () async {
     final snapshot = await HomeWidgetSnapshotBuilder(
-      _FakeData(),
+      FakeHomeWidgetData(),
     ).build(_input(appLocked: true));
     expect(snapshot['redacted'], isTrue);
   });
@@ -288,6 +229,8 @@ void main() {
           InstalledHomeWidget(widgetId: 3, kind: HomeWidgetKind.anniversary),
           InstalledHomeWidget(widgetId: 4, kind: HomeWidgetKind.moodCalendar),
           InstalledHomeWidget(widgetId: 5, kind: HomeWidgetKind.todos),
+          InstalledHomeWidget(widgetId: 6, kind: HomeWidgetKind.onThisDay),
+          InstalledHomeWidget(widgetId: 7, kind: HomeWidgetKind.recentDiaries),
         ],
         features: const AppFeatures(todos: true, anniversaries: true),
       ),
@@ -303,8 +246,9 @@ void main() {
 }
 
 /// 渲染夹具的数据：几个纪念日（置顶、每年、不重复的将来与过去）、这个月的
-/// 心情与日记。
-_FakeData _fixtureData() => _FakeData(
+/// 心情与日记、往年今天的日记（有照片的与只有文字的）与最近几篇。照片路径以
+/// [kFakeHomeWidgetImagePrefix] 开头，Kotlin 渲染测试换成现画的图片。
+FakeHomeWidgetData _fixtureData() => FakeHomeWidgetData(
   words: 1284,
   dueDates: <String?>['2026-11-14', '2026-11-15', '2026-11-15'],
   notebooks: <String, String>{'nb-travel': '旅行'},
@@ -358,6 +302,48 @@ _FakeData _fixtureData() => _FakeData(
     _todo('昨天的事', due: '2026-11-14', completedAt: DateTime(2026, 11, 14, 22)),
   ],
   lists: <TodoListRow>[_list('list-health', '健康'), _list('list-reading', '阅读')],
+  diaries: [
+    fakeWidgetDiary(
+      'otd-sea',
+      DateTime(2023, 11, 15, 20, 10),
+      title: '第一次去海边',
+      text: '风很大，浪一层一层地扑过来。我们在礁石上坐到天黑，回去的路上谁都没说话。',
+      cover: '/fixture/sea.png',
+      mood: '😊',
+    ),
+    fakeWidgetDiary(
+      'otd-start',
+      DateTime(2021, 11, 15, 9),
+      text: '今天开始写日记。希望能坚持下去，哪怕每天只写一句。',
+    ),
+    fakeWidgetDiary(
+      'recent-run',
+      DateTime(2026, 11, 15, 7, 40),
+      title: '晨跑',
+      text: '五公里，配速比上周快了二十秒。',
+      images: <String>['/fixture/run.png'],
+      mood: '💪',
+    ),
+    fakeWidgetDiary(
+      'recent-book',
+      DateTime(2026, 11, 14, 22),
+      title: '读书笔记',
+      text: '“我是雨和雪的老熟人了。”',
+    ),
+    fakeWidgetDiary(
+      'recent-market',
+      DateTime(2026, 11, 12, 18),
+      title: '周末的市集',
+      text: '买了一束干花和两罐蜂蜜。',
+      cover: '/fixture/market.png',
+    ),
+    fakeWidgetDiary(
+      'recent-rain',
+      DateTime(2026, 11, 8, 21),
+      text: '下了一整天雨，窝在家里把旧照片整理完了。',
+    ),
+    fakeWidgetDiary('recent-walk', DateTime(2026, 11, 2, 16), title: '散步'),
+  ],
 );
 
 var _nextTodo = 0;

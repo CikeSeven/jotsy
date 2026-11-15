@@ -12,6 +12,7 @@ import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
+import com.jotsy.diary.widgets.kinds.OnThisDayWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import com.jotsy.diary.widgets.kinds.TodosWidget
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
@@ -23,7 +24,7 @@ import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
  * 流程：先改原生这边看得到的状态并立即重画（乐观更新，[WidgetOverlay]），再把
  * `jotsy://widget-action/...` 经 home_widget 的后台广播交给 Dart 写库
  * （`homeWidgetBackgroundCallback`：应用在运行时转交主 isolate，否则后台引擎自己写库
- * 并重建快照）。翻月这类只影响显示的操作不经过 Dart。
+ * 并重建快照）。翻月、翻篇这类只影响显示的操作不经过 Dart。
  */
 object WidgetActions {
   private val DayKey = ActionParameters.Key<String>("day")
@@ -37,6 +38,10 @@ object WidgetActions {
   /** 心情月历翻月（[delta] 为 -1 / +1）。 */
   fun shiftMonth(delta: Int): Action =
     actionRunCallback<ShiftMonthAction>(actionParametersOf(DeltaKey to delta))
+
+  /** 那年今日翻到上一篇 / 下一篇（[delta] 为 -1 / +1，首尾相接）。 */
+  fun shiftEntry(delta: Int): Action =
+    actionRunCallback<ShiftEntryAction>(actionParametersOf(DeltaKey to delta))
 
   private val TodoKey = ActionParameters.Key<String>("todo")
   private val DueKey = ActionParameters.Key<String>("due")
@@ -101,6 +106,16 @@ object WidgetActions {
       WidgetState.redraw(context, MoodCalendarWidget(), glanceId)
     }
   }
+
+  class ShiftEntryAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+      val delta = parameters[DeltaKey] ?: return
+      val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
+      val today = WidgetDates.key(java.time.LocalDate.now())
+      WidgetState.setEntryIndex(context, appWidgetId, today, WidgetState.entryIndex(context, appWidgetId, today) + delta)
+      WidgetState.redraw(context, OnThisDayWidget(), glanceId)
+    }
+  }
 }
 
 /** 原生自己记的小状态与重画入口。 */
@@ -123,6 +138,20 @@ object WidgetState {
 
   fun setMonthOffset(context: Context, appWidgetId: Int, offset: Int) {
     own(context).edit().putString("month.$appWidgetId", "$offset|${System.currentTimeMillis()}").apply()
+  }
+
+  /**
+   * 那年今日翻到了第几篇（未取模，绘制时按篇数取模）。只在同一天内有效：换了一天
+   * 回到第一篇（最近的那一年）。
+   */
+  fun entryIndex(context: Context, appWidgetId: Int, day: String): Int {
+    val raw = own(context).getString("entry.$appWidgetId", null) ?: return 0
+    val parts = raw.split('|')
+    return if (parts.getOrNull(0) == day) parts.getOrNull(1)?.toIntOrNull() ?: 0 else 0
+  }
+
+  fun setEntryIndex(context: Context, appWidgetId: Int, day: String, index: Int) {
+    own(context).edit().putString("entry.$appWidgetId", "$day|$index").apply()
   }
 
   /** 让某种小组件的全部实例按最新的状态重画。 */

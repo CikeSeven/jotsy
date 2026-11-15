@@ -18,15 +18,18 @@
   - `plurals`：原生现算数量的文案（纪念日的“天后 / 天前 / 还有 N 天”），每个键是“复数类别 → 写法”，数量写成 `%d`；由 `homeWidgetPluralForms` 用各类别的代表数调 ARB 导出，原生用 `android.icu.text.PluralRules` 按界面语言挑类别（`WidgetSnapshot.plural`）。新增界面语言必须在 `home_widget_plurals.dart` 登记代表数（测试兜底）。
   - `builtAt`：写入时刻；比它新的乐观更新才覆盖快照（见「桌面上的操作」）。
   - `instances`：appWidgetId → 原生口径的配置（`homeWidgetNativeConfig`：功能开关、界面语言与日记本已过一遍），`defaults`：种类 → 默认配置（刚放下、应用还没同步过的实例用它）。
-  - 数据节：`today`（逐日的日期文字、农历、节假日、待办数，今天的字数与心情）、`anniversaries`（按列表顺序的纪念日，各带接下来 3 次的日子与第几周年）、`calendar`（这个月与前两个月每天的心情段、是否写过、节假日，以及一周从哪天开始）、`todos`（按截止日 / 时刻 / 优先级排好的未完成待办（最多 80 条）、今天完成的（最多 20 条）与清单名；“今天 / 明天 / 已逾期”与视图筛选由原生按本机日期做）。只为桌面上有的种类计算；小组件页 / 工作室打开期间（`homeWidgetPreviewDemandProvider`）为全部种类计算，预览才有真实数据。
-- 必须：按日期变化的内容逐日预算 `kHomeWidgetDayHorizon`（14）天，原生按本机日期取那一天；超出预算时只显示本机算得出的东西（公历日期与星期），不显示可能过期的内容。
+  - 数据节：`today`（逐日的日期文字、农历、节假日、待办数，今天的字数与心情）、`anniversaries`（按列表顺序的纪念日，各带接下来 3 次的日子与第几周年）、`calendar`（这个月与前两个月每天的心情段、是否写过、节假日，以及一周从哪天开始）、`todos`（按截止日 / 时刻 / 优先级排好的未完成待办（最多 80 条）、今天完成的（最多 20 条）与清单名；“今天 / 明天 / 已逾期”与视图筛选由原生按本机日期做）、`diaries`（日记 id → 标题、摘要（最多 140 字）、发表日期与它的几种写法、心情、第一张本机照片的路径）、`onThisDay`（逐日 → 匹配口径 → `[{id, label}]`，`label` 为“N 年前的今天”或日期）、`recent`（来源键 `all` / `pinned` / `notebook:<id>` / `tag:<名字>` → 日记 id，从新到旧最多 8 篇）。只为桌面上有的种类计算；小组件页 / 工作室打开期间（`homeWidgetPreviewDemandProvider`）为全部种类计算，预览才有真实数据。
+  - 那年今日只算用到的匹配口径（桌面上的实例、待领取的设计与工作室草稿，加上默认的同月同日），最近日记只算用到的来源（加上默认的全部日记）。工作室草稿的内容经 `homeWidgetPreviewContentProvider` 交给同步控制器，还没放到桌面上的设计也能预览它选的来源。
+- 必须：按日期变化的内容逐日预算 `kHomeWidgetDayHorizon`（14）天，原生按本机日期取那一天；超出预算时只显示本机算得出的东西（公历日期与星期），不显示可能过期的内容（那年今日显示“打开 Jotsy 以更新”）。
+- 必须：那年今日的选取与探索页同一规则（`ExplorePageController.pickOnThisDayList`），查询经日历的 `watchDiariesCreatedInRanges`：区间按预算的天数、用到的口径与往前 `calendarOnThisDayYearSpan` 年合并成每年一两段，禁止逐天逐年各查一次。最近日记经首页列表的 `watchDiaries`（日记本经 `resolveNotebookScope`，按发表时间而不是本子的书序），未到期的胶囊在 SQL 里排除，免得占掉条数。
+- 必须：照片只交本机文件的路径（`HomeWidgetDataSource.localImage`：网络图片、内置示例图与 base64 内嵌图不交），原生在应用进程里解码（`WidgetBitmaps.photo`：按区域比例居中裁切、长边不超过 640 像素、EXIF 方向转正；Android 12+ 由 `cornerRadius` 裁圆角，更早的系统把圆角画进位图），不把文件交给桌面进程。
 - 必须：快照字段变化时同步改 Kotlin 解析、`docs` 本节，并用 `UPDATE_WIDGET_FIXTURE=1 flutter test test/ui/home_widgets/home_widget_snapshot_builder_test.dart` 重新生成原生渲染测试读的夹具 `android/app/src/test/resources/widget_snapshot_fixture.json`（测试比对两者逐字一致）。
 
 ## 同步与刷新
 
 - 必须：快照只由 `HomeWidgetSyncController`（`NodeDiaryApp` 常驻监听）写入：库表变化（`tableUpdates`）、功能开关、小组件设置、界面语言、主题色、应用锁与回到前台都会触发，防抖后串行执行。桌面上没有小组件且小组件页没开时什么都不做；快照与上一份相同就不写入、不刷新。
 - 必须：每天第一次同步为桌面上的种类排好之后 14 天零点的重画（快速记录另加问候换时段的整点，`homeWidgetRedrawTimes`），经 home_widget 的 `HomeWidgetScheduledUpdateReceiver`（已在 Manifest 登记，开机 / 更新后重排）。
-- 必须：新增数据来源的表时，把它加进同步控制器的 `tableUpdates` 清单。
+- 必须：新增数据来源的表时，把它加进同步控制器的 `tableUpdates` 清单（最近日记按标签取，标签两表也在其中）。
 
 ## 设置与配置
 
@@ -39,8 +42,9 @@
 ## 隐私
 
 - 必须：快照只用已带私密过滤的查询；私密日记（含继承）与未到期的时间胶囊的 id、标题、正文、照片路径永远不进快照。快速记录“写进日记本”只列可写的普通日记本（非智能、非私密、未合上），本子之后变得不可写时按不指定处理。
-- 必须：应用锁开启时快照标记 `redacted`，涉及日记标题、正文与照片的数据节不写入内容，原生显示锁定占位；纪念日、待办与统计照常显示。
-- 必须：点按链接打开日记 / 日记本前按当前状态复核（日记是否私密、日记本是否可写、功能是否开启），不能因为桌面上留着旧链接而绕过功能开关或私密规则。
+- 必须：应用锁开启时快照标记 `redacted`，`diaries`、`onThisDay` 与 `recent` 三节整节不算、不写（连篇数都不留），那年今日与最近日记显示锁定占位（`WidgetLocked`：锁、“已锁定”、“点按解锁”，点按只打开应用，由应用锁遮罩盖住）；纪念日、待办与统计照常显示。
+- 必须：最近日记的“某个日记本”只列非私密（含继承）的本子；本子之后变成私密、被删除、日记本功能关闭或标签被删除时按全部日记显示（`homeWidgetRecentSourceKey`）。标签按名字存（本地 id 在恢复备份后会变）。
+- 必须：点按链接打开日记 / 日记本前按当前状态复核（日记是否私密、日记本是否可写、功能是否开启），不能因为桌面上留着旧链接而绕过功能开关或私密规则：`diary?id=` 先经 `isDiaryPrivate`，已变成私密时只打开首页（按 id 打开本身不过滤私密）。
 
 ## 桌面上的操作
 
@@ -48,13 +52,13 @@
 - 必须：后台回调先经 `IsolateNameServer` 转交主 isolate（端口 `jotsy.home_widget_actions`，同步控制器启动时打开，等 3 秒），由主 isolate 用自己的连接写库；主 isolate 不在时后台引擎自己打开 `AppDatabase()` 写库、按同一套口径重建快照并刷新，再关闭连接。与待办通知按钮同一种做法，两个连接不同时写库。
 - 必须：勾选待办只完成小组件上显示的那一次（`todo-complete?id=&due=`，截止日已被别处推进时不写，与通知上的“完成”同一口径）；后台引擎写库后顺手取消这一次剩下的提醒（`cancelTodoOccurrenceNotifications`，与通知按钮共用），应用下次运行时提醒调度器再按库对账。恢复为未完成（`todo-reopen`）与待办列表里取消勾选同一口径。
 - 必须：`HomeWidgetBackgroundReceiver` 在 Manifest 里不导出（只接受本应用发出的显式广播），其他应用不能借它改数据。
-- 必须：只影响显示的操作（心情月历翻月）不经过 Dart，状态存原生自己的 `JotsyWidgetState`；翻月 10 分钟后回到这个月。
+- 必须：只影响显示的操作（心情月历翻月、那年今日翻篇）不经过 Dart，状态存原生自己的 `JotsyWidgetState`；翻月 10 分钟后回到这个月，翻篇换一天回到第一篇（最近的那一年）。
 - 必须：心情脸的五官画法逐笔移植自应用的 `DayMoodFace`（`WidgetMoodFace.kt`），改动任一端须同步另一端。
 
 ## 点按与打开
 
-- 必须：链接格式 `jotsy://widget/<目标>?参数`，原生 `WidgetLaunch.uri` 拼、Dart `HomeWidgetLaunch.parse` 解析，两端目标名一致：`home`、`write?notebook=`、`todo-new`、`calendar?day=YYYY-MM-DD`、`search`、`anniversary`（列表）/ `anniversary?id=`（详情）、`todo?id=`（切到待办 Tab 打开详情）、`todo-new?list=`（预先选好清单）、`configure?id=&kind=`。认不出的目标只打开应用。
-- 必须：链接经 `homeWidgetLaunchInboxProvider` 交给首页（`homeWidgetLaunchRequestProvider`，冷启动经 `fireImmediately` 接住），由 `openHomeWidgetLaunch` 走统一入口：`runDiaryCreateEntryFlow`、`showTodoQuickAddSheet`、切到日历 Tab 后经 `calendarFocusRequestProvider` 选中那天、`DiarySearchPage.buildRoute`、小组件工作室。应用锁遮罩盖在导航之上，打开的页面同样要先解锁。
+- 必须：链接格式 `jotsy://widget/<目标>?参数`，原生 `WidgetLaunch.uri` 拼、Dart `HomeWidgetLaunch.parse` 解析，两端目标名一致：`home`、`write?notebook=`、`todo-new`、`calendar?day=YYYY-MM-DD`、`search`、`anniversary`（列表）/ `anniversary?id=`（详情）、`todo?id=`（切到待办 Tab 打开详情）、`todo-new?list=`（预先选好清单）、`write?with=camera|voice`（拍照记 / 录音记）、`diary?id=`（打开一篇日记）、`configure?id=&kind=`。认不出的目标只打开应用。
+- 必须：链接经 `homeWidgetLaunchInboxProvider` 交给首页（`homeWidgetLaunchRequestProvider`，冷启动经 `fireImmediately` 接住），由 `openHomeWidgetLaunch` 走统一入口：`runDiaryCreateEntryFlow`（拍照记 / 录音记带 `initialAction`：不弹草稿面板、直接新建空白，编辑页入场后经工具栏同一条链路开始拍照或录音）、`openDiaryPage`、`showTodoQuickAddSheet`、切到日历 Tab 后经 `calendarFocusRequestProvider` 选中那天、`DiarySearchPage.buildRoute`、小组件工作室。应用锁遮罩盖在导航之上，打开的页面同样要先解锁。
 
 ## 文案、配色与字形
 
@@ -66,6 +70,8 @@
 ## 版式
 
 - 必须：每个种类声明 `SizeMode.Responsive` 的几档尺寸，版式按阈值分档（如高度不足方块即为一行），禁止比较 `LocalSize` 是否等于某一档：桌面上它是挑中的那一档，应用内预览按精确尺寸组合时则是实际尺寸。
+- 必须：Glance 的一个 `Column` / `Row` / `Box` 最多 10 个子项，多出来的被静默丢掉：行数随高度的列表（待办、纪念日列表、最近日记）把各行另放进一个 `Column`，行与分隔线、行间距包在同一个子项里，不与表头并排计数。
+- 必须：内容随格子放大的种类（那年今日、最近日记）在最小档之外再声明常见手机上的实际格子档（如 250×150），桌面上按挑中的那一档排版，不至于 4×2 只放得下最小档的一行。
 - 必须：可用尺寸三处一致：`res/xml/widget_info_*.xml` 的缩放范围、Kotlin 的分档、Dart `HomeWidgetCellSize.sizesOf`（预览与组件库的尺寸标签）。
 
 ## 预览

@@ -20780,5 +20780,97 @@
   "homeWidgetTodoUncheck": "未完了に戻す",
   "@homeWidgetTodoUncheck": {
     "description": "To-do widget: description of a checked circle."
+  },
+  "homeWidgetKindOnThisDay": "あの日の今日",
+  "@homeWidgetKindOnThisDay": {
+    "description": "Widget kind name: entries written on this day in past years."
+  },
+  "homeWidgetKindOnThisDayDescription": "過去の今日に書いた日記。写真を優先し、ホーム画面でめくれます。",
+  "@homeWidgetKindOnThisDayDescription": {
+    "description": "Widget gallery: description of the on-this-day widget."
+  },
+  "homeWidgetKindRecentDiaries": "最近の日記",
+  "@homeWidgetKindRecentDiaries": {
+    "description": "Widget kind name: the latest diary entries."
+  },
+  "homeWidgetKindRecentDiariesDescription": "すべて・日記帳・タグ・ピン留めから最近の数件。",
+  "@homeWidgetKindRecentDiariesDescription": {
+    "description": "Widget gallery: description of the recent entries widget."
+  },
+  "homeWidgetQuickActionCamera": "写真",
+  "@homeWidgetQuickActionCamera": {
+    "description": "Quick capture action: start an entry by taking a photo."
+  },
+  "homeWidgetQuickActionVoice": "録音",
+  "@homeWidgetQuickActionVoice": {
+    "description": "Quick capture action: start an entry by recording audio."
+  },
+  "homeWidgetLocked": "ロック中",
+  "@homeWidgetLocked": {
+    "description": "Widget placeholder when the app lock is on and diary content is hidden."
+  },
+  "homeWidgetLockedHint": "タップしてロック解除",
+  "@homeWidgetLockedHint": {
+    "description": "Widget placeholder hint under \"Locked\"."
+  },
+  "homeWidgetOnThisDayEmpty": "過去の今日の日記はまだありません",
+  "@homeWidgetOnThisDayEmpty": {
+    "description": "On-this-day widget: empty state."
+  },
+  "homeWidgetWriteOne": "書く",
+  "@homeWidgetWriteOne": {
+    "description": "Widget empty state button: write a new entry."
+  },
+  "homeWidgetRecentEmpty": "ここにはまだ日記がありません",
+  "@homeWidgetRecentEmpty": {
+    "description": "Recent entries widget: empty state."
+  },
+  "homeWidgetRecentPinned": "ピン留めの日記",
+  "@homeWidgetRecentPinned": {
+    "description": "Recent entries widget header when showing pinned entries."
+  },
+  "homeWidgetEntryPrevious": "前の日記",
+  "@homeWidgetEntryPrevious": {
+    "description": "On-this-day widget: description of the previous button."
+  },
+  "homeWidgetEntryNext": "次の日記",
+  "@homeWidgetEntryNext": {
+    "description": "On-this-day widget: description of the next button."
+  },
+  "homeWidgetShowPhoto": "写真を優先",
+  "@homeWidgetShowPhoto": {
+    "description": "On-this-day widget option: show the entry photo when it has one."
+  },
+  "homeWidgetShowPhotoHint": "カバーを優先し、次に本文の最初の写真。",
+  "@homeWidgetShowPhotoHint": {
+    "description": "On-this-day widget option: hint for photos first."
+  },
+  "homeWidgetShowExcerpt": "本文の抜粋",
+  "@homeWidgetShowExcerpt": {
+    "description": "Diary widget option: show a few lines of the entry text."
+  },
+  "homeWidgetRecentShowPhotos": "サムネイル",
+  "@homeWidgetRecentShowPhotos": {
+    "description": "Recent entries widget option: show photo thumbnails."
+  },
+  "homeWidgetRecentShowPhotosHint": "写真のある日記は行の先頭に写真を、ほかは日付を表示。",
+  "@homeWidgetRecentShowPhotosHint": {
+    "description": "Recent entries widget option: hint for thumbnails."
+  },
+  "homeWidgetRecentSource": "表示",
+  "@homeWidgetRecentSource": {
+    "description": "Recent entries widget option: where the entries come from."
+  },
+  "homeWidgetRecentNotebook": "日記帳",
+  "@homeWidgetRecentNotebook": {
+    "description": "Recent entries widget option: which notebook."
+  },
+  "homeWidgetRecentTag": "タグ",
+  "@homeWidgetRecentTag": {
+    "description": "Recent entries widget option: which tag."
+  },
+  "homeWidgetPrivacyHint": "非公開の日記帳の日記はホーム画面に表示されません。アプリロック中はロック表示になります。",
+  "@homeWidgetPrivacyHint": {
+    "description": "Diary widget options: privacy note."
   }
 }

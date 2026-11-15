@@ -20780,5 +20780,97 @@
   "homeWidgetTodoUncheck": "Вернуть в работу",
   "@homeWidgetTodoUncheck": {
     "description": "To-do widget: description of a checked circle."
+  },
+  "homeWidgetKindOnThisDay": "В этот день",
+  "@homeWidgetKindOnThisDay": {
+    "description": "Widget kind name: entries written on this day in past years."
+  },
+  "homeWidgetKindOnThisDayDescription": "Что вы писали в этот день в прошлые годы — сначала фото. Листайте прямо на главном экране.",
+  "@homeWidgetKindOnThisDayDescription": {
+    "description": "Widget gallery: description of the on-this-day widget."
+  },
+  "homeWidgetKindRecentDiaries": "Последние записи",
+  "@homeWidgetKindRecentDiaries": {
+    "description": "Widget kind name: the latest diary entries."
+  },
+  "homeWidgetKindRecentDiariesDescription": "Последние записи: все, из блокнота, с тегом или закреплённые.",
+  "@homeWidgetKindRecentDiariesDescription": {
+    "description": "Widget gallery: description of the recent entries widget."
+  },
+  "homeWidgetQuickActionCamera": "Фото",
+  "@homeWidgetQuickActionCamera": {
+    "description": "Quick capture action: start an entry by taking a photo."
+  },
+  "homeWidgetQuickActionVoice": "Голос",
+  "@homeWidgetQuickActionVoice": {
+    "description": "Quick capture action: start an entry by recording audio."
+  },
+  "homeWidgetLocked": "Заблокировано",
+  "@homeWidgetLocked": {
+    "description": "Widget placeholder when the app lock is on and diary content is hidden."
+  },
+  "homeWidgetLockedHint": "Нажмите, чтобы разблокировать",
+  "@homeWidgetLockedHint": {
+    "description": "Widget placeholder hint under \"Locked\"."
+  },
+  "homeWidgetOnThisDayEmpty": "В этот день в прошлые годы записей пока нет",
+  "@homeWidgetOnThisDayEmpty": {
+    "description": "On-this-day widget: empty state."
+  },
+  "homeWidgetWriteOne": "Написать",
+  "@homeWidgetWriteOne": {
+    "description": "Widget empty state button: write a new entry."
+  },
+  "homeWidgetRecentEmpty": "Здесь пока нет записей",
+  "@homeWidgetRecentEmpty": {
+    "description": "Recent entries widget: empty state."
+  },
+  "homeWidgetRecentPinned": "Закреплённые записи",
+  "@homeWidgetRecentPinned": {
+    "description": "Recent entries widget header when showing pinned entries."
+  },
+  "homeWidgetEntryPrevious": "Предыдущая запись",
+  "@homeWidgetEntryPrevious": {
+    "description": "On-this-day widget: description of the previous button."
+  },
+  "homeWidgetEntryNext": "Следующая запись",
+  "@homeWidgetEntryNext": {
+    "description": "On-this-day widget: description of the next button."
+  },
+  "homeWidgetShowPhoto": "Сначала фото",
+  "@homeWidgetShowPhoto": {
+    "description": "On-this-day widget option: show the entry photo when it has one."
+  },
+  "homeWidgetShowPhotoHint": "Сначала обложка, затем первое фото в записи.",
+  "@homeWidgetShowPhotoHint": {
+    "description": "On-this-day widget option: hint for photos first."
+  },
+  "homeWidgetShowExcerpt": "Отрывок",
+  "@homeWidgetShowExcerpt": {
+    "description": "Diary widget option: show a few lines of the entry text."
+  },
+  "homeWidgetRecentShowPhotos": "Миниатюры",
+  "@homeWidgetRecentShowPhotos": {
+    "description": "Recent entries widget option: show photo thumbnails."
+  },
+  "homeWidgetRecentShowPhotosHint": "У записей с фото в начале строки — фото, у остальных — дата.",
+  "@homeWidgetRecentShowPhotosHint": {
+    "description": "Recent entries widget option: hint for thumbnails."
+  },
+  "homeWidgetRecentSource": "Показывать",
+  "@homeWidgetRecentSource": {
+    "description": "Recent entries widget option: where the entries come from."
+  },
+  "homeWidgetRecentNotebook": "Блокнот",
+  "@homeWidgetRecentNotebook": {
+    "description": "Recent entries widget option: which notebook."
+  },
+  "homeWidgetRecentTag": "Тег",
+  "@homeWidgetRecentTag": {
+    "description": "Recent entries widget option: which tag."
+  },
+  "homeWidgetPrivacyHint": "Записи из личных блокнотов не появляются на главном экране. При включённой блокировке такие виджеты показывают замок.",
+  "@homeWidgetPrivacyHint": {
+    "description": "Diary widget options: privacy note."
   }
 }

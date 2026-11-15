@@ -20387,5 +20387,73 @@
   "homeWidgetPhotoEmpty": "No entries with photos yet",
   "@homeWidgetPhotoEmpty": {
     "description": "Photo memories widget: empty state."
+  },
+  "homeWidgetTabPresets": "Presets",
+  "@homeWidgetTabPresets": {
+    "description": "Widget studio tab: built-in looks, my styles and style codes."
+  },
+  "homeWidgetPresetClassic": "Classic",
+  "@homeWidgetPresetClassic": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClassicDescription": "Solid card in your theme color, like the app",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetWallpaper": "Wallpaper",
+  "@homeWidgetPresetWallpaper": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetWallpaperDescription": "Tonal colors picked from your wallpaper",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetVivid": "Vivid",
+  "@homeWidgetPresetVivid": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetVividDescription": "Filled with your theme color, content in reverse",
+  "@homeWidgetPresetVividDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetGlass": "Glass",
+  "@homeWidgetPresetGlass": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetGlassDescription": "See-through card with rounder corners and more room",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetClear": "Minimal",
+  "@homeWidgetPresetClear": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClearDescription": "No background, just the content",
+  "@homeWidgetPresetClearDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetSunrise": "Sunrise",
+  "@homeWidgetPresetSunrise": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetSunriseDescription": "Soft, warm orange tones",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetForest": "Forest",
+  "@homeWidgetPresetForest": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetForestDescription": "Calm deep green fill",
+  "@homeWidgetPresetForestDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetNight": "Night",
+  "@homeWidgetPresetNight": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetNightDescription": "Always dark with indigo accents, easy on the eyes",
+  "@homeWidgetPresetNightDescription": {
+    "description": "Widget look preset description."
   }
 }

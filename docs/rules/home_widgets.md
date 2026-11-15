@@ -36,6 +36,7 @@
 
 - 必须：小组件设置只存单个 JSON 键 `app.settings.home_widgets`（`HomeWidgetSettings`，逐项容错），是本机偏好：不随备份导出、不参与局域网同步（实例按启动器分配的 appWidgetId 记，换设备没有意义）。经 `homeWidgetSettingsProvider` 读取、`saveHomeWidgetSettings` 写入。
 - 必须：每个实例一份外观（`HomeWidgetStyle`：配色、明暗、底色与不透明度、圆角、文字大小、间距、强调色）与一份按种类不同的内容（`HomeWidgetContent` 的子类）。对账（`reconcile`）删掉已移除实例的配置。
+- 必须：预设与“我的样式”只换外观、不动内容，在所有种类之间共用。内置外观为 `HomeWidgetStylePreset`（枚举名不持久化，套用后存的是外观本身）。“我的样式”存在同一个设置键的 `saved` 字段：核心层只原样保留这段 JSON，编解码与增删改在界面层复用样式库的 `SavedStyles`（上限、名字规范化、逐条容错），禁止另写一套；同样不随备份导出。样式码复用 `StyleCodeFormat`，前缀 `jotsy-widget:v1:`。
 - 必须：工作室“添加到桌面”时先把设计存为待领取（`pending`），再请求系统固定：`requestPinAppWidget` 不回传新实例的 id，桌面上第一个出现的、还没有配置的同类实例在 15 分钟内领走它。启动器不支持固定时同样暂存，并提示用户手动添加。
 - 必须：小组件信息声明 `reconfigurable|configuration_optional`，配置入口 `WidgetConfigureActivity` 只做中转：先 `setResult(RESULT_OK)`（否则启动器移除刚放下的小组件），Android 12+ 带着 id 与种类打开工作室；更早的系统放置时直接确认、不打开应用。
 - 必须：写作统计所需功能为探索（统计与热力图都属于探索页）；照片回忆不依赖其他功能。

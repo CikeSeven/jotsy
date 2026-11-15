@@ -15916,4 +15916,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetPhotoEmpty => '写真付きの日記はまだありません';
+
+  @override
+  String get homeWidgetTabPresets => 'プリセット';
+
+  @override
+  String get homeWidgetPresetClassic => 'クラシック';
+
+  @override
+  String get homeWidgetPresetClassicDescription => 'テーマカラーの無地カード。アプリと同じ見た目';
+
+  @override
+  String get homeWidgetPresetWallpaper => '壁紙に合わせる';
+
+  @override
+  String get homeWidgetPresetWallpaperDescription => '壁紙から取った色のトーン';
+
+  @override
+  String get homeWidgetPresetVivid => 'ビビッド';
+
+  @override
+  String get homeWidgetPresetVividDescription => 'テーマカラーで塗りつぶし、文字は白抜き';
+
+  @override
+  String get homeWidgetPresetGlass => 'ガラス';
+
+  @override
+  String get homeWidgetPresetGlassDescription => '半透明の背景、大きめの角丸とゆとりある余白';
+
+  @override
+  String get homeWidgetPresetClear => 'ミニマル';
+
+  @override
+  String get homeWidgetPresetClearDescription => '背景なし、内容だけ';
+
+  @override
+  String get homeWidgetPresetSunrise => '朝日';
+
+  @override
+  String get homeWidgetPresetSunriseDescription => 'やわらかく明るいオレンジ';
+
+  @override
+  String get homeWidgetPresetForest => '森';
+
+  @override
+  String get homeWidgetPresetForestDescription => '落ち着いた深い緑';
+
+  @override
+  String get homeWidgetPresetNight => 'ナイト';
+
+  @override
+  String get homeWidgetPresetNightDescription => '常にダーク、藍色のアクセントで目にやさしい';
 }

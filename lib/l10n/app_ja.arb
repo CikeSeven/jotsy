@@ -20954,5 +20954,73 @@
   "homeWidgetPhotoEmpty": "写真付きの日記はまだありません",
   "@homeWidgetPhotoEmpty": {
     "description": "Photo memories widget: empty state."
+  },
+  "homeWidgetTabPresets": "プリセット",
+  "@homeWidgetTabPresets": {
+    "description": "Widget studio tab: built-in looks, my styles and style codes."
+  },
+  "homeWidgetPresetClassic": "クラシック",
+  "@homeWidgetPresetClassic": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClassicDescription": "テーマカラーの無地カード。アプリと同じ見た目",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetWallpaper": "壁紙に合わせる",
+  "@homeWidgetPresetWallpaper": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetWallpaperDescription": "壁紙から取った色のトーン",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetVivid": "ビビッド",
+  "@homeWidgetPresetVivid": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetVividDescription": "テーマカラーで塗りつぶし、文字は白抜き",
+  "@homeWidgetPresetVividDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetGlass": "ガラス",
+  "@homeWidgetPresetGlass": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetGlassDescription": "半透明の背景、大きめの角丸とゆとりある余白",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetClear": "ミニマル",
+  "@homeWidgetPresetClear": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClearDescription": "背景なし、内容だけ",
+  "@homeWidgetPresetClearDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetSunrise": "朝日",
+  "@homeWidgetPresetSunrise": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetSunriseDescription": "やわらかく明るいオレンジ",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetForest": "森",
+  "@homeWidgetPresetForest": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetForestDescription": "落ち着いた深い緑",
+  "@homeWidgetPresetForestDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetNight": "ナイト",
+  "@homeWidgetPresetNight": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetNightDescription": "常にダーク、藍色のアクセントで目にやさしい",
+  "@homeWidgetPresetNightDescription": {
+    "description": "Widget look preset description."
   }
 }

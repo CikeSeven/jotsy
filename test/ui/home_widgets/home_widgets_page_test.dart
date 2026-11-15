@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/home_widgets/home_widget_settings.dart'
 import 'package:node_diary/core/services/home_widgets/home_widget_style.dart';
 import 'package:node_diary/ui/home_widgets/pages/home_widget_studio_page.dart';
 import 'package:node_diary/ui/home_widgets/pages/home_widgets_page.dart';
+import 'package:node_diary/ui/home_widgets/models/home_widget_style_library.dart';
 import 'package:node_diary/ui/home_widgets/providers/home_widget_providers.dart';
 import 'package:node_diary/ui/settings/sections/settings_home_groups.dart';
 
@@ -169,6 +170,44 @@ void main() {
       (stored.pending.single.instance.content as RecentDiariesContent).source,
       RecentDiariesSource.pinned,
     );
+    await h.unmount();
+  });
+
+  testWidgets('presets restyle the widget and the look can be saved', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    _wide(tester);
+    final gateway = FakeHomeWidgetGateway(
+      installed: const <InstalledHomeWidget>[
+        InstalledHomeWidget(widgetId: 4, kind: HomeWidgetKind.today),
+      ],
+    );
+    await h.pump(
+      HomeWidgetStudioPage(
+        settingsService: h.settings,
+        kind: HomeWidgetKind.today,
+        widgetId: 4,
+      ),
+      overrides: [homeWidgetGatewayProvider.overrideWithValue(gateway)],
+    );
+    final l10n = h.l10n;
+    await _openTab(tester, l10n.homeWidgetTabPresets);
+    await _tapInPanel(tester, find.text(l10n.homeWidgetPresetNight));
+    await tester.pump(const Duration(milliseconds: 400));
+    await h.settle();
+    HomeWidgetSettings stored() =>
+        HomeWidgetSettings.decode(h.settings.homeWidgetsRawNotifier.value);
+    expect(stored().instances[4]!.style, HomeWidgetStylePreset.night.style);
+    // 存为“我的样式”：命名对话框里直接确认默认名字。
+    await _tapInPanel(tester, find.text(l10n.styleEditorSaveCurrent));
+    await tester.tap(find.text(l10n.commonConfirm).last);
+    await h.settle();
+    final saved = homeWidgetSavedStyles(stored());
+    expect(saved.single.style, HomeWidgetStylePreset.night.style);
+    expect(find.text(saved.single.name), findsWidgets);
+    // 外观改动与“我的样式”各自写回，不互相覆盖。
+    expect(stored().instances[4]!.style, HomeWidgetStylePreset.night.style);
     await h.unmount();
   });
 

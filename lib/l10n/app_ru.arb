@@ -20954,5 +20954,73 @@
   "homeWidgetPhotoEmpty": "Пока нет записей с фото",
   "@homeWidgetPhotoEmpty": {
     "description": "Photo memories widget: empty state."
+  },
+  "homeWidgetTabPresets": "Шаблоны",
+  "@homeWidgetTabPresets": {
+    "description": "Widget studio tab: built-in looks, my styles and style codes."
+  },
+  "homeWidgetPresetClassic": "Классика",
+  "@homeWidgetPresetClassic": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClassicDescription": "Сплошная карточка в цвете темы, как в приложении",
+  "@homeWidgetPresetClassicDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetWallpaper": "Под обои",
+  "@homeWidgetPresetWallpaper": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetWallpaperDescription": "Тональные цвета из ваших обоев",
+  "@homeWidgetPresetWallpaperDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetVivid": "Яркий",
+  "@homeWidgetPresetVivid": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetVividDescription": "Заливка цветом темы, светлый текст",
+  "@homeWidgetPresetVividDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetGlass": "Стекло",
+  "@homeWidgetPresetGlass": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetGlassDescription": "Полупрозрачная карточка, более круглые углы и простор",
+  "@homeWidgetPresetGlassDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetClear": "Минимализм",
+  "@homeWidgetPresetClear": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetClearDescription": "Без фона, только содержимое",
+  "@homeWidgetPresetClearDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetSunrise": "Рассвет",
+  "@homeWidgetPresetSunrise": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetSunriseDescription": "Мягкие тёплые оранжевые тона",
+  "@homeWidgetPresetSunriseDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetForest": "Лес",
+  "@homeWidgetPresetForest": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetForestDescription": "Спокойная глубокая зелёная заливка",
+  "@homeWidgetPresetForestDescription": {
+    "description": "Widget look preset description."
+  },
+  "homeWidgetPresetNight": "Ночь",
+  "@homeWidgetPresetNight": {
+    "description": "Widget look preset name."
+  },
+  "homeWidgetPresetNightDescription": "Всегда тёмный, индиго, не режет глаза",
+  "@homeWidgetPresetNightDescription": {
+    "description": "Widget look preset description."
   }
 }

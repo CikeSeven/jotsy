@@ -8,7 +8,8 @@
 // - `pending`：在小组件工作室里设计好、刚请求“添加到桌面”的配置。
 //   `requestPinAppWidget` 不把新实例的 id 交回 Dart，所以先按种类暂存，桌面上
 //   第一个出现的、还没有配置的同类实例在 [pendingLifetime] 内领走它
-//   （`HomeWidgetSettings.claimPending`）。
+//   （`HomeWidgetSettings.claimPending`）；
+// - `saved`：“我的样式”，各种类共用的外观（原样保存，界面层编解码）。
 //
 // 解析逐项容错：一个实例或一条暂存坏了只丢它自己。
 
@@ -106,6 +107,7 @@ class HomeWidgetSettings {
   const HomeWidgetSettings({
     this.instances = const <int, HomeWidgetInstance>{},
     this.pending = const <HomeWidgetPendingPin>[],
+    this.savedStyles = const <Object?>[],
   });
 
   static const HomeWidgetSettings empty = HomeWidgetSettings();
@@ -116,6 +118,17 @@ class HomeWidgetSettings {
 
   final Map<int, HomeWidgetInstance> instances;
   final List<HomeWidgetPendingPin> pending;
+
+  /// “我的样式”（工作室「预设」页保存的外观），原样保存的 JSON 列表。编解码与
+  /// 增删改在界面层（`HomeWidgetStyleLibrary`，复用样式库的 `SavedStyles`），这里只
+  /// 负责随设置一起读写、在其他改动中原样保留。
+  final List<Object?> savedStyles;
+
+  HomeWidgetSettings withSavedStyles(List<Object?> raw) => HomeWidgetSettings(
+    instances: instances,
+    pending: pending,
+    savedStyles: List<Object?>.unmodifiable(raw),
+  );
 
   /// 某个实例实际使用的配置：没调整过的按种类默认。
   HomeWidgetInstance instanceFor(int widgetId, HomeWidgetKind kind) {
@@ -129,6 +142,7 @@ class HomeWidgetSettings {
       HomeWidgetSettings(
         instances: <int, HomeWidgetInstance>{...instances, widgetId: instance},
         pending: pending,
+        savedStyles: savedStyles,
       );
 
   HomeWidgetSettings withPending(HomeWidgetInstance instance, DateTime now) =>
@@ -141,6 +155,7 @@ class HomeWidgetSettings {
             if (pin.instance.kind != instance.kind) pin,
           HomeWidgetPendingPin(instance: instance, requestedAt: now),
         ],
+        savedStyles: savedStyles,
       );
 
   /// 按桌面上现有的实例对账：已经不在桌面上的实例删掉配置；没有配置的
@@ -175,7 +190,11 @@ class HomeWidgetSettings {
       changed = true;
     }
     if (!changed) return null;
-    return HomeWidgetSettings(instances: nextInstances, pending: nextPending);
+    return HomeWidgetSettings(
+      instances: nextInstances,
+      pending: nextPending,
+      savedStyles: savedStyles,
+    );
   }
 
   String encode() => jsonEncode(<String, Object?>{
@@ -186,6 +205,7 @@ class HomeWidgetSettings {
     },
     if (pending.isNotEmpty)
       'pending': <Object?>[for (final pin in pending) pin.toJson()],
+    if (savedStyles.isNotEmpty) 'saved': savedStyles,
   });
 
   static HomeWidgetSettings decode(String? raw) {
@@ -214,6 +234,13 @@ class HomeWidgetSettings {
         if (pin != null) pending.add(pin);
       }
     }
-    return HomeWidgetSettings(instances: instances, pending: pending);
+    final saved = node['saved'];
+    return HomeWidgetSettings(
+      instances: instances,
+      pending: pending,
+      savedStyles: saved is List
+          ? List<Object?>.unmodifiable(saved)
+          : const <Object?>[],
+    );
   }
 }

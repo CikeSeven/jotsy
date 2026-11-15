@@ -508,6 +508,46 @@ void main() {
         expect(html, contains('<p>点我</p>'));
       },
     );
+
+    test('puts the alignment of a to-do on its item, not on the box', () async {
+      final entry = DiaryExportEntry.parse(
+        diaryId: 'todo',
+        title: '待办',
+        createdAt: DateTime(2026, 4, 3),
+        updatedAt: DateTime(2026, 4, 3),
+        deltaOps: <dynamic>[
+          <String, dynamic>{'insert': '居中'},
+          <String, dynamic>{
+            'insert': '\n',
+            'attributes': <String, dynamic>{
+              'list': 'checked',
+              'align': 'center',
+            },
+          },
+          <String, dynamic>{'insert': '照常'},
+          <String, dynamic>{
+            'insert': '\n',
+            'attributes': <String, dynamic>{'list': 'unchecked'},
+          },
+        ],
+      );
+      final output = await DiaryHtmlWriter.write(
+        <DiaryExportEntry>[entry],
+        options: DiaryExportOptions.defaults,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '待办',
+        languageTag: 'zh',
+      );
+      expect(
+        utf8.decode(output.bytes!),
+        contains(
+          '<ul><li class="task" style="text-align:center">'
+          '<input type="checkbox" disabled checked> 居中'
+          '</li><li class="task"><input type="checkbox" disabled> 照常</li></ul>',
+        ),
+      );
+    });
   });
 
   group('DiaryDocxWriter', () {

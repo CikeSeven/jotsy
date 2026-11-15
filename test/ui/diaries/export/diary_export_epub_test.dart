@@ -404,7 +404,7 @@ void main() {
         '<h3 style="text-align:right">标题 2</h3>',
         '<h6 class="h-level-7" aria-level="7">标题 6</h6>',
         '<ol><li class="ls-circled">第一<ul><li class="ls-star">',
-        '<input type="checkbox" disabled="disabled" checked="checked" style="text-align:center"/> 做完了',
+        '<li class="task" style="text-align:center"><input type="checkbox" disabled="disabled" checked="checked"/> 做完了',
         '<input type="checkbox" disabled="disabled"/> 还没做',
         '<blockquote><p>一句引用</p></blockquote>',
         '<code class="language-dart"><span class="hl-keyword">if</span>',

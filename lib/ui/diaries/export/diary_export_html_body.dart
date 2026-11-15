@@ -425,23 +425,24 @@ class DiaryHtmlBody {
       } else if (itemOpen) {
         out.write('</li>');
       }
-      final disabled = markup.flag('disabled');
-      final task = switch (item.kind) {
+      // 待办的方框是只读的复选框；对齐写在 li 上（写在复选框上不起作用）。
+      final box = switch (item.kind) {
         ExportBlockKind.checked =>
-          ' class="task"><input type="checkbox" $disabled '
-              '${markup.flag('checked')}',
+          '<input type="checkbox" ${markup.flag('disabled')} '
+              '${markup.flag('checked')}${markup.voidEnd}',
         ExportBlockKind.unchecked =>
-          ' class="task"><input type="checkbox" $disabled',
+          '<input type="checkbox" ${markup.flag('disabled')}'
+              '${markup.voidEnd}',
         _ => null,
       };
       // 列表样式按项写类名（见样式表的 li.ls-*）：无序项与待办共用一个
       // ul，一个 ul 里可能有几段样式不同的列表。
       final styleId = item.orderedStyle?.id ?? item.bulletStyle?.id;
       out.write(
-        task == null
+        box == null
             ? '<li${styleId == null ? '' : ' class="ls-$styleId"'}'
                   '${_align(item)}>${markup.inlines(item.inlines)}'
-            : '<li$task${_align(item)}${markup.voidEnd} '
+            : '<li class="task"${_align(item)}>$box '
                   '${markup.inlines(item.inlines)}',
       );
       itemOpen = true;

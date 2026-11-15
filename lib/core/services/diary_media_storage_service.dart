@@ -6,11 +6,15 @@ import 'package:path_provider/path_provider.dart';
 
 import '../database/file_embed_codec.dart';
 import 'app_data_directory.dart';
+import 'diary_audio_storage_service.dart';
 import 'heif_image_converter.dart';
 
-enum DiaryMediaKind { image, video, attachment }
+/// [audio] 为从文件导入、在正文里做成录音块的音频（#251），与应用内录音
+/// 同放 `diary_recordings/`；工具栏没有单独的入口，由选文件 / 拖放按扩展名
+/// 分出来（见 DiaryMediaImportController）。
+enum DiaryMediaKind { image, video, attachment, audio }
 
-/// 日记正文图片、视频和附件存储服务。
+/// 日记正文图片、视频、附件与导入音频的存储服务。
 ///
 /// 约束：
 /// - 外部路径/文件流复制到私有目录后才允许写入正文；
@@ -42,6 +46,7 @@ class DiaryMediaStorageService {
     DiaryMediaKind.image => imagesDirectoryName,
     DiaryMediaKind.video => videosDirectoryName,
     DiaryMediaKind.attachment => attachmentsDirectoryName,
+    DiaryMediaKind.audio => DiaryAudioStorageService.directoryName,
   };
 
   static Future<DiaryFileAttachment> importFile({

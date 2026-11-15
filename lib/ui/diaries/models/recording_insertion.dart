@@ -12,5 +12,11 @@ void insertDiaryRecording({
 }) => insertDiaryEditorNodes(
   controller: controller,
   selection: selection,
-  nodes: [af.Node(type: 'audio', attributes: jsonDecode(recording.encode()))],
+  nodes: [diaryAudioNode(recording)],
+);
+
+/// 录音块（应用内录音与导入的音频共用）。
+af.Node diaryAudioNode(DiaryAudioAttachment recording) => af.Node(
+  type: diaryAudioEmbedType,
+  attributes: jsonDecode(recording.encode()) as Map<String, dynamic>,
 );

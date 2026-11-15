@@ -669,7 +669,7 @@ void main() {
     final values = (on.data! as Map)['settings'] as Map;
     expect(values['todo_all_day_reminder_time'], '08:30');
     expect(values['todo_default_list'], 'Inbox');
-    expect(values['todo_sort'], 'manual');
+    expect(values['todo_sort'], 'priority');
   });
 
   test('get_app_context reports features and mood options', () async {

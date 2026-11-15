@@ -135,6 +135,59 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('priority leads by default and open rows show a flag pill', (
+    tester,
+  ) async {
+    await _pumpTodos(
+      tester,
+      seed: (db) async {
+        await db.createTodo(TodoInput(title: '没有优先级', dueDate: _today));
+        await db.createTodo(
+          TodoInput(title: '低优先级', dueDate: _today, priority: TodoPriority.low),
+        );
+        await db.createTodo(
+          TodoInput(
+            title: '高优先级',
+            dueDate: _today,
+            priority: TodoPriority.high,
+          ),
+        );
+        final done = await db.createTodo(
+          TodoInput(
+            title: '做完的高优先级',
+            dueDate: _today,
+            priority: TodoPriority.high,
+          ),
+        );
+        await db.completeTodo(done);
+      },
+    );
+    final l10n = _l10n(tester);
+    // 没改过排序：默认按优先级，同一天里高的在前。
+    expect(_openTitles(tester), <String>['高优先级', '低优先级', '没有优先级']);
+
+    Finder inTile(String title, Finder finder) => find.descendant(
+      of: find.ancestor(of: find.text(title), matching: find.byType(TodoTile)),
+      matching: finder,
+    );
+    final flag = find.byIcon(FontAwesomeIcons.solidFlag.data);
+    expect(inTile('高优先级', flag), findsOneWidget);
+    expect(inTile('高优先级', find.text(l10n.todoPriorityHigh)), findsOneWidget);
+    expect(inTile('低优先级', find.text(l10n.todoPriorityLow)), findsOneWidget);
+    expect(inTile('没有优先级', flag), findsNothing);
+    expect(inTile('做完的高优先级', flag), findsNothing, reason: '已完成的不再强调');
+
+    // 有优先级的方框带淡底，没有的仍是空心细描边。
+    TodoCheckBoxVisual box(String title) => tester.widget<TodoCheckBoxVisual>(
+      inTile(title, find.byType(TodoCheckBoxVisual)),
+    );
+    expect(box('高优先级').tint, isNotNull);
+    expect(box('高优先级').accent, isNot(box('低优先级').accent));
+    expect(box('没有优先级').tint, isNull);
+    expect(box('没有优先级').accent, isNull);
+    await _unmount(tester);
+  });
+
   testWidgets('ticking a todo collapses it, completes it and undo restores', (
     tester,
   ) async {

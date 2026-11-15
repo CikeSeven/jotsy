@@ -6,13 +6,14 @@ import 'todo_view.dart';
 
 /// 清单与智能视图里待办的排序方式。枚举名即持久化值。
 enum TodoSortMode {
-  /// 拖动顺序（新建的在前）；日期分组的视图里按截止时刻。
+  /// 拖动顺序（新建的在前）；日期分组的视图里按截止时刻。只有这种排序下
+  /// 收集箱与清单能拖动。
   manual,
 
   /// 截止日期近的在前，没有日期的在最后。
   due,
 
-  /// 优先级高的在前。
+  /// 优先级高的在前，同级按截止日期与时刻（默认）。
   priority,
 
   /// 新建的在前。
@@ -25,12 +26,19 @@ enum TodoSortMode {
 /// `SettingsService.setTodoSettingsRaw`），逐字段容错解析，随完整备份导出、
 /// 导入失败时随设置快照回滚；局域网同步只在两端都开启“同步设置”时同步。
 /// 全部为默认值时移除该键。
+///
+/// 排序默认为优先级（#256）。排序存在字段 `sortMode`；旧版本存在 `sort`，
+/// 且旧版 [encode] 只要有一项不是默认值就把所有字段一起写出，`sort: manual`
+/// 分不清是用户选的还是顺带写出的旧默认值。所以读旧字段时只认主动选过的
+/// `due / priority / created`，`manual` 当作没选、落到新默认值；之后再选
+/// “手动”写进 `sortMode`，会被记住。备份导入与局域网同步来的旧设置同样经此
+/// 兼容。
 @immutable
 class TodoSettings {
   const TodoSettings({
     this.showCompleted = true,
     this.defaultListId,
-    this.sort = TodoSortMode.manual,
+    this.sort = TodoSortMode.priority,
     this.defaultViewKey = 'today',
     this.allDayReminderMinute = 9 * 60,
     this.snoozeMinutes = 10,
@@ -73,7 +81,10 @@ class TodoSettings {
 
   static const _keyShowCompleted = 'showCompleted';
   static const _keyDefaultList = 'defaultList';
-  static const _keySort = 'sort';
+  static const _keySort = 'sortMode';
+
+  /// 旧版本的排序字段，只读不写（见类注释）。
+  static const _keyLegacySort = 'sort';
   static const _keyDefaultView = 'defaultView';
   static const _keyAllDayReminder = 'allDayReminderMinute';
   static const _keySnooze = 'snoozeMinutes';
@@ -99,7 +110,7 @@ class TodoSettings {
           ? map[_keyShowCompleted] as bool
           : defaults.showCompleted,
       defaultListId: list is String && list.isNotEmpty ? list : null,
-      sort: TodoSortMode.values.asNameMap()[map[_keySort]] ?? defaults.sort,
+      sort: _decodeSort(map),
       defaultViewKey: view is String && TodoView.parse(view) != null
           ? view
           : defaults.defaultViewKey,
@@ -116,6 +127,17 @@ class TodoSettings {
           ? map[_keySmartParse] as bool
           : defaults.smartParse,
     );
+  }
+
+  /// 排序：新字段认得出就用它；否则旧字段里主动选过的（非 `manual`）；都
+  /// 没有时为默认。
+  static TodoSortMode _decodeSort(Map<Object?, Object?> map) {
+    final modes = TodoSortMode.values.asNameMap();
+    final current = modes[map[_keySort]];
+    if (current != null) return current;
+    final legacy = modes[map[_keyLegacySort]];
+    if (legacy != null && legacy != TodoSortMode.manual) return legacy;
+    return defaults.sort;
   }
 
   /// 编码；全部为默认值时为 null（移除设置键）。

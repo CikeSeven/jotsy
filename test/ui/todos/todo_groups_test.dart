@@ -197,10 +197,11 @@ void main() {
 
   test('settings decode tolerantly and drop the key at defaults', () {
     expect(TodoSettings.defaults.encode(), isNull);
+    expect(TodoSettings.defaults.sort, TodoSortMode.priority);
     const custom = TodoSettings(
       showCompleted: false,
       defaultListId: 'work',
-      sort: TodoSortMode.priority,
+      sort: TodoSortMode.manual,
       defaultViewKey: 'list:work',
       allDayReminderMinute: 8 * 60,
       snoozeMinutes: 30,
@@ -221,6 +222,49 @@ void main() {
       TodoSettings.defaults,
     );
     expect(TodoSettings.decode('not json'), TodoSettings.defaults);
+  });
+
+  test('sort moves old implicit manual to priority but keeps real choices', () {
+    TodoSortMode sortOf(String raw) => TodoSettings.decode(raw).sort;
+    // 旧版本顺带写出的默认值“手动”当作没选，换成新的默认值。
+    expect(
+      sortOf('{"showCompleted":false,"sort":"manual"}'),
+      TodoSortMode.priority,
+    );
+    // 旧版本里主动选过的其他排序保留。
+    expect(sortOf('{"sort":"due"}'), TodoSortMode.due);
+    expect(sortOf('{"sort":"created"}'), TodoSortMode.created);
+    // 新字段里的“手动”是新版本里选的，记住它，也优先于旧字段。
+    expect(sortOf('{"sortMode":"manual","sort":"due"}'), TodoSortMode.manual);
+    expect(sortOf('{"sortMode":"weird","sort":"due"}'), TodoSortMode.due);
+    final manual = TodoSettings.defaults.copyWith(sort: TodoSortMode.manual);
+    expect(manual.encode(), contains('"sortMode":"manual"'));
+    expect(manual.encode(), isNot(contains('"sort":')));
+    expect(TodoSettings.decode(manual.encode()).sort, TodoSortMode.manual);
+  });
+
+  test('default sort puts higher priority first within a day', () {
+    final result = groups(
+      TodoView.today,
+      sort: TodoSettings.defaults.sort,
+      open: <TodoRow>[
+        _todo('none early', due: '2026-11-10', minute: 8 * 60),
+        _todo('low', due: '2026-11-10', priority: 1),
+        _todo('high late', due: '2026-11-10', minute: 20 * 60, priority: 3),
+        _todo('high early', due: '2026-11-10', minute: 9 * 60, priority: 3),
+        _todo('overdue medium', due: '2026-11-09', priority: 2),
+      ],
+    );
+    expect(result.map((g) => g.kind), <TodoGroupKind>[
+      TodoGroupKind.overdue,
+      TodoGroupKind.today,
+    ]);
+    expect(_titles(result.last), <String>[
+      'high early',
+      'high late',
+      'low',
+      'none early',
+    ]);
   });
 
   test('today ends with what was completed today unless hidden', () {

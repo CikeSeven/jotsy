@@ -5,8 +5,10 @@ import '../controllers/home_widget_studio_controller.dart';
 import 'home_widget_anniversary_options.dart';
 import 'home_widget_mood_calendar_options.dart';
 import 'home_widget_on_this_day_options.dart';
+import 'home_widget_photo_options.dart';
 import 'home_widget_quick_capture_options.dart';
 import 'home_widget_recent_options.dart';
+import 'home_widget_stats_options.dart';
 import 'home_widget_today_options.dart';
 import 'home_widget_todo_options.dart';
 
@@ -45,6 +47,14 @@ class HomeWidgetContentTab extends StatelessWidget {
         onChanged: controller.updateContent,
       ),
       final RecentDiariesContent content => HomeWidgetRecentOptions(
+        content: content,
+        onChanged: controller.updateContent,
+      ),
+      final WritingStatsContent content => HomeWidgetStatsOptions(
+        content: content,
+        onChanged: controller.updateContent,
+      ),
+      final PhotoMemoriesContent content => HomeWidgetPhotoOptions(
         content: content,
         onChanged: controller.updateContent,
       ),

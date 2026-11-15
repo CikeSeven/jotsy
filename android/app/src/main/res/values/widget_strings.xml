@@ -18,4 +18,8 @@
     <string name="widget_on_this_day_description">What you wrote on this day in past years, photos first.</string>
     <string name="widget_recent_diaries_name">Recent entries</string>
     <string name="widget_recent_diaries_description">The latest entries from all of them, a notebook, a tag or the pinned ones.</string>
+    <string name="widget_writing_stats_name">Writing stats</string>
+    <string name="widget_writing_stats_description">Your writing streak, this month and this year, with a heatmap of recent weeks.</string>
+    <string name="widget_photo_memories_name">Photo memories</string>
+    <string name="widget_photo_memories_description">A photo from your entries, a new one every day.</string>
 </resources>

@@ -17885,4 +17885,78 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeWidgetPrivacyHint =>
       'Entries in private notebooks never appear on the home screen. With the app lock on, these widgets show a lock instead.';
+
+  @override
+  String get homeWidgetKindWritingStats => 'Writing stats';
+
+  @override
+  String get homeWidgetKindWritingStatsDescription =>
+      'Your writing streak, this month and this year at a glance, with a heatmap of recent weeks.';
+
+  @override
+  String get homeWidgetKindPhotoMemories => 'Photo memories';
+
+  @override
+  String get homeWidgetKindPhotoMemoriesDescription =>
+      'A photo from your entries, a new one every day. Swap it right on the home screen.';
+
+  @override
+  String homeWidgetStreakUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days in a row',
+      one: 'day in a row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeWidgetStatsRecentWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Last $count weeks',
+      one: 'Last week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeWidgetStatsMonthEntries => 'This month';
+
+  @override
+  String get homeWidgetStatsMonthWords => 'Words this month';
+
+  @override
+  String get homeWidgetStatsYearEntries => 'This year';
+
+  @override
+  String get homeWidgetStatsWroteToday => 'Written today';
+
+  @override
+  String get homeWidgetStatsNotYetToday => 'Nothing yet today';
+
+  @override
+  String get homeWidgetStatsShowHeatmap => 'Heatmap';
+
+  @override
+  String get homeWidgetStatsShowHeatmapHint =>
+      'On 4×2 and 4×4, how much you wrote each day in recent weeks.';
+
+  @override
+  String get homeWidgetPhotoSource => 'Photos from';
+
+  @override
+  String get homeWidgetPhotoSourceOnThisDayHint =>
+      'Entries from around this day in past years. When there are none with photos, recent photos show instead.';
+
+  @override
+  String get homeWidgetPhotoShowDate => 'Date';
+
+  @override
+  String get homeWidgetPhotoShuffle => 'Another photo';
+
+  @override
+  String get homeWidgetPhotoEmpty => 'No entries with photos yet';
 }

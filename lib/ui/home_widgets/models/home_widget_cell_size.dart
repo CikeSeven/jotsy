@@ -57,5 +57,12 @@ enum HomeWidgetCellSize {
     HomeWidgetKind.todos => const <HomeWidgetCellSize>[s4x2, s2x2, s4x4],
     HomeWidgetKind.onThisDay => const <HomeWidgetCellSize>[s2x2, s4x2, s4x4],
     HomeWidgetKind.recentDiaries => const <HomeWidgetCellSize>[s4x2, s4x4],
+    HomeWidgetKind.writingStats => const <HomeWidgetCellSize>[s2x2, s4x2, s4x4],
+    HomeWidgetKind.photoMemories => const <HomeWidgetCellSize>[
+      s2x2,
+      s1x1,
+      s4x2,
+      s4x4,
+    ],
   };
 }

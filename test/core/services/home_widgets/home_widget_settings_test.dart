@@ -221,6 +221,37 @@ void main() {
       );
     });
 
+    test('writing stats and photo memories reset broken fields', () {
+      final stats =
+          HomeWidgetContent.fromJson(
+                HomeWidgetKind.writingStats,
+                <String, Object?>{'basis': 'words', 'heatmap': 'no'},
+              )
+              as WritingStatsContent;
+      expect(stats.basis, WritingHeatBasis.words);
+      expect(stats.showHeatmap, WritingStatsContent.defaults.showHeatmap);
+      final photos =
+          HomeWidgetContent.fromJson(
+                HomeWidgetKind.photoMemories,
+                <String, Object?>{
+                  'source': 'notebook',
+                  'notebook': 'nb',
+                  'date': false,
+                },
+              )
+              as PhotoMemoriesContent;
+      expect(photos.source, PhotoMemorySource.notebook);
+      expect(photos.notebookId, 'nb');
+      expect(photos.showDate, isFalse);
+      expect(
+        HomeWidgetContent.fromJson(
+          HomeWidgetKind.photoMemories,
+          photos.toJson(),
+        ),
+        photos,
+      );
+    });
+
     test('recent entries keep the source and drop empty ids', () {
       final content =
           HomeWidgetContent.fromJson(
@@ -297,6 +328,13 @@ void main() {
       expect(capture('with=camera'), HomeWidgetCapture.camera);
       expect(capture('with=voice&notebook=nb'), HomeWidgetCapture.voice);
       expect(capture('with=video'), isNull);
+    });
+
+    test('explore opens the explore tab', () {
+      expect(
+        HomeWidgetLaunch.parse(Uri.parse('jotsy://widget/explore')),
+        isA<HomeWidgetExploreLaunch>(),
+      );
     });
 
     test('diary needs an id', () {

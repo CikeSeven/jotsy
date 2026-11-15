@@ -59,6 +59,15 @@ abstract class HomeWidgetDataSource {
     required int limit,
   });
 
+  /// 照片回忆的候选：全部（[notebookId] 为 null）或某个日记本里可能带图的日记
+  /// （有封面或正文里有图片块），按发表时间从新到旧的前 [limit] 篇，含归档，不含
+  /// 私密日记与未到期的胶囊。日记本已不能看时为空。
+  Future<List<DiaryWithTags>> photoDiaries({
+    String? notebookId,
+    required DateTime now,
+    required int limit,
+  });
+
   /// 能看的日记本：非私密（含继承）的普通与智能日记本，id → 名字。最近日记的
   /// “某个日记本”只认这里面的。
   Future<Map<String, String>> readableNotebooks();
@@ -140,15 +149,9 @@ class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
     var scope = DiaryListScope.all;
     var tagIds = const <int>[];
     if (source == RecentDiariesSource.notebook) {
-      final tree = NotebookTree(await _db.watchNotebooks().first);
-      final notebook = notebookId == null ? null : tree[notebookId];
-      if (notebook == null || notebook.isPrivate) return const [];
-      // 按发表时间而不是本子自己的排序（书序）：小组件上是“最近”。
-      scope = resolveNotebookScope(
-        notebook,
-        tree: tree,
-        sort: NotebookSort.createdDesc,
-      );
+      final notebookScope = await _readableNotebookScope(notebookId);
+      if (notebookScope == null) return const [];
+      scope = notebookScope;
     } else if (source == RecentDiariesSource.tag) {
       final tags = await _db.watchAllTags().first;
       final tag = tags.where((tag) => tag.name == tagName).firstOrNull;
@@ -172,6 +175,51 @@ class DatabaseHomeWidgetDataSource implements HomeWidgetDataSource {
           limit: limit,
         )
         .first;
+  }
+
+  @override
+  Future<List<DiaryWithTags>> photoDiaries({
+    String? notebookId,
+    required DateTime now,
+    required int limit,
+  }) async {
+    var scope = DiaryListScope.all;
+    if (notebookId != null) {
+      final notebookScope = await _readableNotebookScope(notebookId);
+      if (notebookScope == null) return const [];
+      scope = notebookScope;
+    }
+    // 与探索页“最近带图的日记”同一个粗筛（有封面或正文里有图片块）；图片是否真是
+    // 本机文件由快照构建逐篇判断。
+    final filter = DiaryScopePredicate(
+      sql:
+          '(d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?) AND '
+          '((d.cover IS NOT NULL AND trim(d.cover) <> \'\') '
+          'OR d.content LIKE \'%"image"%\')',
+      variables: <Variable<Object>>[Variable<DateTime>(now)],
+    );
+    return _db
+        .watchDiaries(
+          scope: scope,
+          sortMode: DiarySortMode.createdDesc,
+          includeArchived: true,
+          filter: filter,
+          limit: limit,
+        )
+        .first;
+  }
+
+  /// 能看的（非私密）日记本的查询范围：按发表时间而不是本子自己的排序（书序），
+  /// 小组件上是“最近”。本子不存在或是私密的为 null。
+  Future<DiaryListScope?> _readableNotebookScope(String? notebookId) async {
+    final tree = NotebookTree(await _db.watchNotebooks().first);
+    final notebook = notebookId == null ? null : tree[notebookId];
+    if (notebook == null || notebook.isPrivate) return null;
+    return resolveNotebookScope(
+      notebook,
+      tree: tree,
+      sort: NotebookSort.createdDesc,
+    );
   }
 
   @override

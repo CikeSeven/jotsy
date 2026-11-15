@@ -88,6 +88,10 @@ Future<void> openHomeWidgetLaunch(
           .request(day ?? DateTime.now());
     case HomeWidgetSearchLaunch():
       await Navigator.of(context).push(DiarySearchPage.buildRoute());
+    case HomeWidgetExploreLaunch():
+      if (!features.explore) return;
+      Navigator.of(context).popUntil((Route<dynamic> route) => route.isFirst);
+      await switchToTab(HomeTab.explore);
     case HomeWidgetAnniversaryLaunch(:final anniversaryId):
       if (!features.anniversariesEnabled) return;
       // 纪念日已被删除时详情页自己显示“已删除”，不必在这里先查。

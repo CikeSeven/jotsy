@@ -15593,4 +15593,65 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetPrivacyHint => '私密日记本里的日记不会出现在桌面上；开了应用锁时，这类小组件只显示锁定。';
+
+  @override
+  String get homeWidgetKindWritingStats => '写作统计';
+
+  @override
+  String get homeWidgetKindWritingStatsDescription =>
+      '连续记录的天数、本月与今年写了多少，以及最近几周的热力图。';
+
+  @override
+  String get homeWidgetKindPhotoMemories => '照片回忆';
+
+  @override
+  String get homeWidgetKindPhotoMemoriesDescription =>
+      '日记里的照片，每天换一张，也能在桌面上随手换。';
+
+  @override
+  String homeWidgetStreakUnit(int count) {
+    return '天连续记录';
+  }
+
+  @override
+  String homeWidgetStatsRecentWeeks(int count) {
+    return '最近 $count 周';
+  }
+
+  @override
+  String get homeWidgetStatsMonthEntries => '本月篇数';
+
+  @override
+  String get homeWidgetStatsMonthWords => '本月字数';
+
+  @override
+  String get homeWidgetStatsYearEntries => '今年篇数';
+
+  @override
+  String get homeWidgetStatsWroteToday => '今天已写';
+
+  @override
+  String get homeWidgetStatsNotYetToday => '今天还没写';
+
+  @override
+  String get homeWidgetStatsShowHeatmap => '热力图';
+
+  @override
+  String get homeWidgetStatsShowHeatmapHint => '4×2 与 4×4 显示最近几周每天写了多少。';
+
+  @override
+  String get homeWidgetPhotoSource => '照片来自';
+
+  @override
+  String get homeWidgetPhotoSourceOnThisDayHint =>
+      '往年今天前后的日记；这几天没有带照片的日记时，显示最近的照片。';
+
+  @override
+  String get homeWidgetPhotoShowDate => '日期';
+
+  @override
+  String get homeWidgetPhotoShuffle => '换一张';
+
+  @override
+  String get homeWidgetPhotoEmpty => '还没有带照片的日记';
 }

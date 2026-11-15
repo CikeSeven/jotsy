@@ -15,19 +15,24 @@ String homeWidgetKindName(AppLocalizations l10n, HomeWidgetKind kind) =>
       HomeWidgetKind.todos => l10n.homeWidgetKindTodos,
       HomeWidgetKind.onThisDay => l10n.homeWidgetKindOnThisDay,
       HomeWidgetKind.recentDiaries => l10n.homeWidgetKindRecentDiaries,
+      HomeWidgetKind.writingStats => l10n.homeWidgetKindWritingStats,
+      HomeWidgetKind.photoMemories => l10n.homeWidgetKindPhotoMemories,
     };
 
-String homeWidgetKindDescription(AppLocalizations l10n, HomeWidgetKind kind) =>
-    switch (kind) {
-      HomeWidgetKind.quickCapture => l10n.homeWidgetKindQuickCaptureDescription,
-      HomeWidgetKind.today => l10n.homeWidgetKindTodayDescription,
-      HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversaryDescription,
-      HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendarDescription,
-      HomeWidgetKind.todos => l10n.homeWidgetKindTodosDescription,
-      HomeWidgetKind.onThisDay => l10n.homeWidgetKindOnThisDayDescription,
-      HomeWidgetKind.recentDiaries =>
-        l10n.homeWidgetKindRecentDiariesDescription,
-    };
+String homeWidgetKindDescription(
+  AppLocalizations l10n,
+  HomeWidgetKind kind,
+) => switch (kind) {
+  HomeWidgetKind.quickCapture => l10n.homeWidgetKindQuickCaptureDescription,
+  HomeWidgetKind.today => l10n.homeWidgetKindTodayDescription,
+  HomeWidgetKind.anniversary => l10n.homeWidgetKindAnniversaryDescription,
+  HomeWidgetKind.moodCalendar => l10n.homeWidgetKindMoodCalendarDescription,
+  HomeWidgetKind.todos => l10n.homeWidgetKindTodosDescription,
+  HomeWidgetKind.onThisDay => l10n.homeWidgetKindOnThisDayDescription,
+  HomeWidgetKind.recentDiaries => l10n.homeWidgetKindRecentDiariesDescription,
+  HomeWidgetKind.writingStats => l10n.homeWidgetKindWritingStatsDescription,
+  HomeWidgetKind.photoMemories => l10n.homeWidgetKindPhotoMemoriesDescription,
+};
 
 FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
   HomeWidgetKind.quickCapture => FontAwesomeIcons.penNib,
@@ -37,6 +42,8 @@ FaIconData homeWidgetKindIcon(HomeWidgetKind kind) => switch (kind) {
   HomeWidgetKind.todos => FontAwesomeIcons.solidSquareCheck,
   HomeWidgetKind.onThisDay => FontAwesomeIcons.clockRotateLeft,
   HomeWidgetKind.recentDiaries => FontAwesomeIcons.bookOpen,
+  HomeWidgetKind.writingStats => FontAwesomeIcons.chartSimple,
+  HomeWidgetKind.photoMemories => FontAwesomeIcons.solidImages,
 };
 
 String homeWidgetGroupName(AppLocalizations l10n, HomeWidgetGroup group) =>

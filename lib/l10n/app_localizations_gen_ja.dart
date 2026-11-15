@@ -15855,4 +15855,65 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get homeWidgetPrivacyHint =>
       '非公開の日記帳の日記はホーム画面に表示されません。アプリロック中はロック表示になります。';
+
+  @override
+  String get homeWidgetKindWritingStats => '執筆の記録';
+
+  @override
+  String get homeWidgetKindWritingStatsDescription =>
+      '連続記録の日数、今月と今年の記録、最近数週間のヒートマップ。';
+
+  @override
+  String get homeWidgetKindPhotoMemories => '写真の思い出';
+
+  @override
+  String get homeWidgetKindPhotoMemoriesDescription =>
+      '日記の写真を毎日1枚。ホーム画面でも切り替えられます。';
+
+  @override
+  String homeWidgetStreakUnit(int count) {
+    return '日連続';
+  }
+
+  @override
+  String homeWidgetStatsRecentWeeks(int count) {
+    return '最近 $count 週間';
+  }
+
+  @override
+  String get homeWidgetStatsMonthEntries => '今月の日記';
+
+  @override
+  String get homeWidgetStatsMonthWords => '今月の文字数';
+
+  @override
+  String get homeWidgetStatsYearEntries => '今年の日記';
+
+  @override
+  String get homeWidgetStatsWroteToday => '今日は書きました';
+
+  @override
+  String get homeWidgetStatsNotYetToday => '今日はまだです';
+
+  @override
+  String get homeWidgetStatsShowHeatmap => 'ヒートマップ';
+
+  @override
+  String get homeWidgetStatsShowHeatmapHint => '4×2 と 4×4 で最近数週間の毎日の記録を表示。';
+
+  @override
+  String get homeWidgetPhotoSource => '写真の出どころ';
+
+  @override
+  String get homeWidgetPhotoSourceOnThisDayHint =>
+      '過去の今日の前後の日記。写真がないときは最近の写真を表示します。';
+
+  @override
+  String get homeWidgetPhotoShowDate => '日付';
+
+  @override
+  String get homeWidgetPhotoShuffle => '別の写真';
+
+  @override
+  String get homeWidgetPhotoEmpty => '写真付きの日記はまだありません';
 }

@@ -13,6 +13,7 @@ import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.OnThisDayWidget
+import com.jotsy.diary.widgets.kinds.PhotoMemoriesWidget
 import com.jotsy.diary.widgets.kinds.TodayWidget
 import com.jotsy.diary.widgets.kinds.TodosWidget
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
@@ -24,7 +25,7 @@ import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
  * 流程：先改原生这边看得到的状态并立即重画（乐观更新，[WidgetOverlay]），再把
  * `jotsy://widget-action/...` 经 home_widget 的后台广播交给 Dart 写库
  * （`homeWidgetBackgroundCallback`：应用在运行时转交主 isolate，否则后台引擎自己写库
- * 并重建快照）。翻月、翻篇这类只影响显示的操作不经过 Dart。
+ * 并重建快照）。翻月、翻篇、换照片这类只影响显示的操作不经过 Dart。
  */
 object WidgetActions {
   private val DayKey = ActionParameters.Key<String>("day")
@@ -38,6 +39,9 @@ object WidgetActions {
   /** 心情月历翻月（[delta] 为 -1 / +1）。 */
   fun shiftMonth(delta: Int): Action =
     actionRunCallback<ShiftMonthAction>(actionParametersOf(DeltaKey to delta))
+
+  /** 照片回忆“换一张”：轮到下一张（只记在原生）。 */
+  fun shufflePhoto(): Action = actionRunCallback<ShufflePhotoAction>()
 
   /** 那年今日翻到上一篇 / 下一篇（[delta] 为 -1 / +1，首尾相接）。 */
   fun shiftEntry(delta: Int): Action =
@@ -107,6 +111,14 @@ object WidgetActions {
     }
   }
 
+  class ShufflePhotoAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+      val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
+      WidgetState.setPhotoOffset(context, appWidgetId, WidgetState.photoOffset(context, appWidgetId) + 1)
+      WidgetState.redraw(context, PhotoMemoriesWidget(), glanceId)
+    }
+  }
+
   class ShiftEntryAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
       val delta = parameters[DeltaKey] ?: return
@@ -152,6 +164,16 @@ object WidgetState {
 
   fun setEntryIndex(context: Context, appWidgetId: Int, day: String, index: Int) {
     own(context).edit().putString("entry.$appWidgetId", "$day|$index").apply()
+  }
+
+  /**
+   * 照片回忆在按日期轮换之外多换了几张。不随日期清零：换过之后每天照样往下轮，只是
+   * 整体错开几张。
+   */
+  fun photoOffset(context: Context, appWidgetId: Int): Int = own(context).getInt("photo.$appWidgetId", 0)
+
+  fun setPhotoOffset(context: Context, appWidgetId: Int, offset: Int) {
+    own(context).edit().putInt("photo.$appWidgetId", offset).apply()
   }
 
   /** 让某种小组件的全部实例按最新的状态重画。 */

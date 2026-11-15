@@ -127,6 +127,26 @@ class FakeHomeWidgetData implements HomeWidgetDataSource {
   }
 
   @override
+  Future<List<DiaryWithTags>> photoDiaries({
+    String? notebookId,
+    required DateTime now,
+    required int limit,
+  }) async {
+    final rows = <DiaryWithTags>[
+      for (final row in diaries)
+        if ((notebookId == null ||
+                (notebookMembers[notebookId]?.contains(row.diary.diaryId) ??
+                    false)) &&
+            (row.diary.cover != null ||
+                row.diary.content.contains('"image"')) &&
+            (row.diary.capsuleUnlockAt == null ||
+                !row.diary.capsuleUnlockAt!.isAfter(now)))
+          row,
+    ]..sort((a, b) => b.diary.createdAt.compareTo(a.diary.createdAt));
+    return rows.take(limit).toList();
+  }
+
+  @override
   Future<Map<String, String>> readableNotebooks() async => readable;
 
   @override

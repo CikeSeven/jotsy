@@ -20305,5 +20305,87 @@
   "homeWidgetPrivacyHint": "私密日记本里的日记不会出现在桌面上；开了应用锁时，这类小组件只显示锁定。",
   "@homeWidgetPrivacyHint": {
     "description": "日记类小组件选项：隐私说明。"
+  },
+  "homeWidgetKindWritingStats": "写作统计",
+  "@homeWidgetKindWritingStats": {
+    "description": "小组件种类名：写作统计。"
+  },
+  "homeWidgetKindWritingStatsDescription": "连续记录的天数、本月与今年写了多少，以及最近几周的热力图。",
+  "@homeWidgetKindWritingStatsDescription": {
+    "description": "组件库：写作统计的说明。"
+  },
+  "homeWidgetKindPhotoMemories": "照片回忆",
+  "@homeWidgetKindPhotoMemories": {
+    "description": "小组件种类名：照片回忆。"
+  },
+  "homeWidgetKindPhotoMemoriesDescription": "日记里的照片，每天换一张，也能在桌面上随手换。",
+  "@homeWidgetKindPhotoMemoriesDescription": {
+    "description": "组件库：照片回忆的说明。"
+  },
+  "homeWidgetStreakUnit": "天连续记录",
+  "@homeWidgetStreakUnit": {
+    "description": "写作统计小组件：连续天数大数字下方的单位。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsRecentWeeks": "最近 {count} 周",
+  "@homeWidgetStatsRecentWeeks": {
+    "description": "写作统计小组件：热力图的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWidgetStatsMonthEntries": "本月篇数",
+  "@homeWidgetStatsMonthEntries": {
+    "description": "写作统计小组件：本月篇数。"
+  },
+  "homeWidgetStatsMonthWords": "本月字数",
+  "@homeWidgetStatsMonthWords": {
+    "description": "写作统计小组件：本月字数。"
+  },
+  "homeWidgetStatsYearEntries": "今年篇数",
+  "@homeWidgetStatsYearEntries": {
+    "description": "写作统计小组件：今年篇数。"
+  },
+  "homeWidgetStatsWroteToday": "今天已写",
+  "@homeWidgetStatsWroteToday": {
+    "description": "写作统计小组件：今天已经写过。"
+  },
+  "homeWidgetStatsNotYetToday": "今天还没写",
+  "@homeWidgetStatsNotYetToday": {
+    "description": "写作统计小组件：今天还没写。"
+  },
+  "homeWidgetStatsShowHeatmap": "热力图",
+  "@homeWidgetStatsShowHeatmap": {
+    "description": "写作统计小组件选项：显示热力图。"
+  },
+  "homeWidgetStatsShowHeatmapHint": "4×2 与 4×4 显示最近几周每天写了多少。",
+  "@homeWidgetStatsShowHeatmapHint": {
+    "description": "写作统计小组件选项：热力图的说明。"
+  },
+  "homeWidgetPhotoSource": "照片来自",
+  "@homeWidgetPhotoSource": {
+    "description": "照片回忆小组件选项：照片从哪里来。"
+  },
+  "homeWidgetPhotoSourceOnThisDayHint": "往年今天前后的日记；这几天没有带照片的日记时，显示最近的照片。",
+  "@homeWidgetPhotoSourceOnThisDayHint": {
+    "description": "照片回忆小组件选项：那年今日来源的说明。"
+  },
+  "homeWidgetPhotoShowDate": "日期",
+  "@homeWidgetPhotoShowDate": {
+    "description": "照片回忆小组件选项：在照片上显示日期。"
+  },
+  "homeWidgetPhotoShuffle": "换一张",
+  "@homeWidgetPhotoShuffle": {
+    "description": "照片回忆小组件：换一张按钮的说明。"
+  },
+  "homeWidgetPhotoEmpty": "还没有带照片的日记",
+  "@homeWidgetPhotoEmpty": {
+    "description": "照片回忆小组件：空状态。"
   }
 }

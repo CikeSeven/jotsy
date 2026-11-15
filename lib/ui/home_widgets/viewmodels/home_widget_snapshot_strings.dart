@@ -67,6 +67,14 @@ Map<String, String> homeWidgetStringsOf(AppLocalizations l10n) =>
       'recentEmpty': l10n.homeWidgetRecentEmpty,
       // 没有标题也没有正文的日记（只有照片或录音）显示这句，与探索页一致。
       'untitled': l10n.autoT0186,
+      'statsTitle': l10n.homeWidgetKindWritingStats,
+      'statsMonthEntries': l10n.homeWidgetStatsMonthEntries,
+      'statsMonthWords': l10n.homeWidgetStatsMonthWords,
+      'statsYearEntries': l10n.homeWidgetStatsYearEntries,
+      'statsWroteToday': l10n.homeWidgetStatsWroteToday,
+      'statsNotYetToday': l10n.homeWidgetStatsNotYetToday,
+      'photoShuffle': l10n.homeWidgetPhotoShuffle,
+      'photoEmpty': l10n.homeWidgetPhotoEmpty,
     };
 
 /// 一个图标：字体族在 `FontManifest.json` 里的键与码位。
@@ -101,4 +109,8 @@ Map<String, Object?> homeWidgetIcons() => <String, Object?>{
   'memory': _icon(FontAwesomeIcons.clockRotateLeft),
   'diary': _icon(FontAwesomeIcons.bookOpen),
   'tag': _icon(FontAwesomeIcons.hashtag),
+  'stats': _icon(FontAwesomeIcons.chartSimple),
+  'streak': _icon(FontAwesomeIcons.fire),
+  'shuffle': _icon(FontAwesomeIcons.shuffle),
+  'photo': _icon(FontAwesomeIcons.solidImages),
 };

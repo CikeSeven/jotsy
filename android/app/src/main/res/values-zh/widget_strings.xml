@@ -16,4 +16,8 @@
     <string name="widget_on_this_day_description">往年今天写下的日记，照片优先。</string>
     <string name="widget_recent_diaries_name">最近日记</string>
     <string name="widget_recent_diaries_description">全部、某个日记本、某个标签或置顶的最近几篇。</string>
+    <string name="widget_writing_stats_name">写作统计</string>
+    <string name="widget_writing_stats_description">连续记录的天数、本月与今年写了多少，以及最近几周的热力图。</string>
+    <string name="widget_photo_memories_name">照片回忆</string>
+    <string name="widget_photo_memories_description">日记里的照片，每天换一张。</string>
 </resources>

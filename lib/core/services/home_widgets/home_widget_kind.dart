@@ -69,6 +69,22 @@ enum HomeWidgetKind {
     receiverName: 'TodosWidgetReceiver',
     group: HomeWidgetGroup.todos,
     requirement: HomeWidgetRequirement.todos,
+  ),
+
+  /// 写作统计：连续记录天数、本月与今年写了多少，以及最近几周的热力图。
+  writingStats(
+    id: 'writing_stats',
+    receiverName: 'WritingStatsWidgetReceiver',
+    group: HomeWidgetGroup.stats,
+    requirement: HomeWidgetRequirement.explore,
+  ),
+
+  /// 照片回忆：日记里的照片满幅显示，每天换一张，也可以在桌面上换。
+  photoMemories(
+    id: 'photo_memories',
+    receiverName: 'PhotoMemoriesWidgetReceiver',
+    group: HomeWidgetGroup.stats,
+    requirement: HomeWidgetRequirement.none,
   );
 
   const HomeWidgetKind({

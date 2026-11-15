@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
@@ -399,7 +400,13 @@ void main() {
         DiaryMediaImportController.kindForPath('/a/clip.mov'),
         DiaryMediaKind.video,
       );
-      for (final path in ['/a/song.mp3', '/a/notes.pdf', '/a/noext']) {
+      for (final path in ['/a/song.mp3', '/a/Call.AMR', '/a/memo.m4a']) {
+        expect(
+          DiaryMediaImportController.kindForPath(path),
+          DiaryMediaKind.audio,
+        );
+      }
+      for (final path in ['/a/notes.pdf', '/a/noext']) {
         expect(
           DiaryMediaImportController.kindForPath(path),
           DiaryMediaKind.attachment,
@@ -414,7 +421,10 @@ void main() {
       await audio.writeAsBytes([7, 8]);
       final folder = Directory(p.join(root.path, 'folder'));
       await folder.create();
-      final importer = DiaryMediaImportController();
+      // 本机播放器读不出这段音频的时长：照旧当附件。
+      final importer = DiaryMediaImportController(
+        audioDurationProbe: (_) async => null,
+      );
       addTearDown(importer.dispose);
 
       expect(
@@ -479,6 +489,183 @@ void main() {
         DiaryMediaImportOutcome.cancelled,
       );
       expect(documentController.document.toPlainText(), '\n');
+    });
+  });
+
+  group('audio files become playable recordings (#251)', () {
+    Map<String, Object?> audioData(DiaryEditorController controller) {
+      final nodes = walkDiaryEditorNodes(
+        controller.document,
+      ).where((node) => node.type == diaryAudioEmbedType).toList();
+      expect(nodes, hasLength(1));
+      return nodes.single.attributes;
+    }
+
+    test('the file button turns a readable audio file into a recording '
+        'and keeps other files as attachments', () async {
+      final voice = File(p.join(root.path, 'Recorder 2026-11-13.m4a'));
+      await voice.writeAsBytes([1, 2, 3, 4]);
+      final probed = <String>[];
+      final importer = DiaryMediaImportController(
+        picker: (_) async => [
+          PlatformFile(name: p.basename(voice.path), size: 4, path: voice.path),
+          PlatformFile(name: 'notes.pdf', size: 3, path: pickedFile.path),
+        ],
+        audioDurationProbe: (path) async {
+          probed.add(path);
+          return const Duration(minutes: 2, seconds: 5);
+        },
+      );
+      addTearDown(importer.dispose);
+
+      expect(
+        await importer.pickAndInsert(
+          controller: documentController,
+          kind: DiaryMediaKind.attachment,
+          isCurrent: () => true,
+        ),
+        DiaryMediaImportOutcome.inserted,
+      );
+      // 只探测音频，时长在复制前对来源文件读取。
+      expect(probed, [voice.path]);
+
+      final data = audioData(documentController);
+      final recording = DiaryAudioAttachment.tryDecode(data)!;
+      expect(recording.duration, const Duration(minutes: 2, seconds: 5));
+      expect(recording.name, 'Recorder 2026-11-13');
+      expect(recording.waveform, isEmpty);
+      // 与应用内录音同放 diary_recordings/，随备份、同步与存储管理。
+      expect(
+        p.isWithin(p.join(root.path, 'diary_recordings'), recording.path),
+        isTrue,
+      );
+      expect(await File(recording.path).readAsBytes(), [1, 2, 3, 4]);
+      expect(await voice.exists(), isTrue);
+
+      final content = encodeDiaryDocumentToJson(documentController.document);
+      expect(extractDiaryAudioPaths(content), {recording.path});
+      final attachments = extractDiaryFilePaths(content);
+      expect(attachments, hasLength(1));
+      expect(
+        p.isWithin(p.join(root.path, 'diary_attachments'), attachments.single),
+        isTrue,
+      );
+    });
+
+    test('dropping an audio file on the desktop inserts a recording', () async {
+      final song = File(p.join(root.path, 'song.mp3'));
+      await song.writeAsBytes([9, 9]);
+      final importer = DiaryMediaImportController(
+        audioDurationProbe: (_) async => const Duration(seconds: 42),
+      );
+      addTearDown(importer.dispose);
+
+      expect(
+        await importer.insertFiles(
+          controller: documentController,
+          paths: [song.path],
+          isCurrent: () => true,
+        ),
+        DiaryMediaImportOutcome.inserted,
+      );
+      final recording = DiaryAudioAttachment.tryDecode(
+        audioData(documentController),
+      )!;
+      expect(recording.duration, const Duration(seconds: 42));
+      expect(recording.name, 'song');
+      // 拖进来的是用户自己的文件：复制一份，原文件不动。
+      expect(await song.exists(), isTrue);
+      expect(recording.path, isNot(song.path));
+    });
+
+    test('an audio file the player cannot read stays an attachment', () async {
+      final amr = File(p.join(root.path, 'call.amr'));
+      await amr.writeAsBytes([5]);
+      final importer = DiaryMediaImportController(
+        picker: (_) async => [
+          PlatformFile(name: 'call.amr', size: 1, path: amr.path),
+        ],
+        audioDurationProbe: (_) async => null,
+      );
+      addTearDown(importer.dispose);
+
+      await importer.pickAndInsert(
+        controller: documentController,
+        kind: DiaryMediaKind.attachment,
+        isCurrent: () => true,
+      );
+      final content = encodeDiaryDocumentToJson(documentController.document);
+      expect(extractDiaryAudioPaths(content), isEmpty);
+      final attachments = extractDiaryFilePaths(content);
+      expect(attachments, hasLength(1));
+      expect(p.basename(attachments.single), 'call.amr');
+      expect(
+        p.isWithin(p.join(root.path, 'diary_attachments'), attachments.single),
+        isTrue,
+      );
+    });
+
+    test(
+      'a stream-only pick is never probed and stays an attachment',
+      () async {
+        var probes = 0;
+        final importer = DiaryMediaImportController(
+          picker: (_) async => [
+            PlatformFile(
+              name: 'stream.mp3',
+              size: 2,
+              readStream: Stream<List<int>>.value([1, 2]),
+            ),
+          ],
+          audioDurationProbe: (_) async {
+            probes++;
+            return const Duration(seconds: 1);
+          },
+        );
+        addTearDown(importer.dispose);
+
+        expect(
+          await importer.pickAndInsert(
+            controller: documentController,
+            kind: DiaryMediaKind.attachment,
+            isCurrent: () => true,
+          ),
+          DiaryMediaImportOutcome.inserted,
+        );
+        expect(probes, 0);
+        final content = encodeDiaryDocumentToJson(documentController.document);
+        expect(extractDiaryAudioPaths(content), isEmpty);
+        expect(extractDiaryFilePaths(content), hasLength(1));
+      },
+    );
+
+    test('cancelling while the duration is read copies nothing', () async {
+      final voice = File(p.join(root.path, 'slow.m4a'));
+      await voice.writeAsBytes([1]);
+      final probe = Completer<Duration?>();
+      final importer = DiaryMediaImportController(
+        picker: (_) async => [
+          PlatformFile(name: 'slow.m4a', size: 1, path: voice.path),
+        ],
+        audioDurationProbe: (_) => probe.future,
+      );
+      addTearDown(importer.dispose);
+
+      final importing = importer.pickAndInsert(
+        controller: documentController,
+        kind: DiaryMediaKind.attachment,
+        isCurrent: () => true,
+      );
+      await Future<void>.delayed(Duration.zero);
+      importer.cancel();
+      probe.complete(const Duration(seconds: 1));
+
+      expect(await importing, DiaryMediaImportOutcome.cancelled);
+      expect(documentController.document.toPlainText(), '\n');
+      expect(
+        await Directory(p.join(root.path, 'diary_recordings')).exists(),
+        isFalse,
+      );
     });
   });
 

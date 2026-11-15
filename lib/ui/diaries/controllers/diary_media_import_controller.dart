@@ -9,9 +9,11 @@ import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/app_platform.dart';
+import 'package:node_diary/core/services/audio_duration_probe.dart';
 import 'package:node_diary/core/services/diary_camera_capture_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/diary_video_gallery_service.dart';
+import 'package:node_diary/ui/diaries/models/diary_imported_media.dart';
 import 'package:node_diary/ui/diaries/models/image_insertion.dart';
 import 'package:node_diary/ui/diaries/models/media_insertion.dart';
 import 'package:path/path.dart' as p;
@@ -39,20 +41,27 @@ enum DiaryMediaImportOutcome {
 /// 编排系统选文件（或系统相机拍摄）→ 私有目录复制 → 正文插入；不构建 UI，
 /// 不保存数据库。页面退出或正文控制器更换会使当前操作失效，并清理尚未提交
 /// 的文件。
+///
+/// 选文件（附件）与桌面拖放进来的音频（#251）：扩展名是音频、且本机播放器
+/// 读得出时长的，复制进 `diary_recordings/` 做成录音块，在正文里直接播放；
+/// 读不出的（本机播不了）照旧当附件。时长在复制前对来源文件读取。
 class DiaryMediaImportController extends ChangeNotifier {
   DiaryMediaImportController({
     DiaryMediaPicker? picker,
     DiaryMediaPicker? capturer,
     DiaryMediaImporter? importer,
+    AudioDurationProbe? audioDurationProbe,
   }) : _picker = picker ?? _pickFiles,
        _capturer = capturer ?? DiaryCameraCaptureService.capture,
-       _importer = importer ?? _importFile;
+       _importer = importer ?? _importFile,
+       _audioDurationProbe = audioDurationProbe ?? probeAudioDuration;
 
   final DiaryMediaPicker _picker;
 
   /// 拍照 / 录像的文件来源（默认交给系统相机，见 [captureAndInsert]）。
   final DiaryMediaPicker _capturer;
   final DiaryMediaImporter _importer;
+  final AudioDurationProbe _audioDurationProbe;
   DiaryMediaKind? _activeKind;
   bool _disposed = false;
   bool _copying = false;
@@ -120,7 +129,7 @@ class DiaryMediaImportController extends ChangeNotifier {
         end: anchors[1].position,
       );
     });
-    final imported = <DiaryFileAttachment>[];
+    final imported = <DiaryImportedMedia>[];
     List<PlatformFile>? files;
     String? previousContent;
     af.Selection? previousSelection;
@@ -134,7 +143,15 @@ class DiaryMediaImportController extends ChangeNotifier {
       _copying = true;
       notifyListeners();
       for (final file in files) {
-        imported.add(await _importer(file, kind));
+        final (fileKind, duration) = await _resolveKind(kind, file);
+        if (!canCommit()) return DiaryMediaImportOutcome.cancelled;
+        imported.add(
+          DiaryImportedMedia(
+            kind: fileKind,
+            file: await _importer(file, fileKind),
+            duration: duration,
+          ),
+        );
         if (!canCommit()) return DiaryMediaImportOutcome.cancelled;
       }
       await subscription.cancel();
@@ -144,26 +161,14 @@ class DiaryMediaImportController extends ChangeNotifier {
       if (kind == DiaryMediaKind.image) {
         insertDiaryImages(
           controller: controller,
-          imagePaths: imported.map((file) => file.path).toList(),
+          imagePaths: imported.map((media) => media.file.path).toList(),
           selection: selection,
         );
       } else {
         insertDiaryMediaBlocks(
           controller: controller,
           selection: selection,
-          embeds: [
-            for (final file in imported)
-              kind == DiaryMediaKind.video
-                  ? af.Node(type: 'video', attributes: {'url': file.path})
-                  : af.Node(
-                      type: diaryAttachmentEmbedType,
-                      attributes: {
-                        'path': file.path,
-                        if (file.name != null) 'name': file.name,
-                        if (file.sizeBytes != null) 'sizeBytes': file.sizeBytes,
-                      },
-                    ),
-          ],
+          embeds: [for (final media in imported) media.toNode()],
         );
       }
       imported.clear(); // 正文取得文件所有权，取消/失败清理不得删除已提交文件。
@@ -199,9 +204,11 @@ class DiaryMediaImportController extends ChangeNotifier {
       return DiaryMediaImportOutcome.failed;
     } finally {
       await subscription.cancel();
-      for (final file in imported) {
+      for (final media in imported) {
         try {
-          await DiaryMediaStorageService.deleteManagedDiaryFile(file.path);
+          await DiaryMediaStorageService.deleteManagedDiaryFile(
+            media.file.path,
+          );
         } catch (error) {
           debugPrint('Uncommitted diary file cleanup failed: $error');
         }
@@ -230,6 +237,7 @@ class DiaryMediaImportController extends ChangeNotifier {
     required bool Function() isCurrent,
   }) async {
     if (kind == DiaryMediaKind.attachment ||
+        kind == DiaryMediaKind.audio ||
         !AppPlatform.supportsCameraCapture) {
       return DiaryMediaImportOutcome.unsupported;
     }
@@ -241,32 +249,39 @@ class DiaryMediaImportController extends ChangeNotifier {
     );
   }
 
-  /// 正文图片块能显示的格式；其余按扩展名分到视频或附件。
-  static const Set<String> _imageExtensions = <String>{
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.webp',
-    '.bmp',
-  };
-  static const Set<String> _videoExtensions = <String>{
-    '.mp4',
-    '.mov',
-    '.m4v',
-    '.3gp',
-    '.avi',
-    '.webm',
-    '.mkv',
-  };
-
-  /// 按扩展名判断一份文件插入成哪种块：图片、视频，其余（音频、文档等）
-  /// 与工具栏“文件”一样作为附件。
+  /// 按扩展名判断一份文件插入成哪种块：图片、视频、音频（导入时还要读得
+  /// 出时长，见 [_resolveKind]），其余（文档等）与工具栏“文件”一样作为附件。
   static DiaryMediaKind kindForPath(String path) {
     final extension = p.extension(path).toLowerCase();
-    if (_imageExtensions.contains(extension)) return DiaryMediaKind.image;
-    if (_videoExtensions.contains(extension)) return DiaryMediaKind.video;
+    if (diaryImportImageExtensions.contains(extension)) {
+      return DiaryMediaKind.image;
+    }
+    if (diaryImportVideoExtensions.contains(extension)) {
+      return DiaryMediaKind.video;
+    }
+    if (diaryImportAudioExtensions.contains(extension)) {
+      return DiaryMediaKind.audio;
+    }
     return DiaryMediaKind.attachment;
+  }
+
+  /// 一份选来的文件实际存成哪种：附件 / 音频里扩展名是音频、且本机播放器
+  /// 读得出时长的做成录音块（带时长），其余音频与文件都是附件；图片、视频
+  /// 不变。没有本地路径（只有数据流）时读不了时长，按附件处理。
+  Future<(DiaryMediaKind, Duration?)> _resolveKind(
+    DiaryMediaKind kind,
+    PlatformFile file,
+  ) async {
+    if (kind != DiaryMediaKind.attachment && kind != DiaryMediaKind.audio) {
+      return (kind, null);
+    }
+    final path = file.path;
+    final name = file.name.isEmpty ? (path ?? '') : file.name;
+    if (path != null && path.isNotEmpty && isDiaryImportAudioName(name)) {
+      final duration = await _audioDurationProbe(path);
+      if (duration != null) return (DiaryMediaKind.audio, duration);
+    }
+    return (DiaryMediaKind.attachment, null);
   }
 
   /// 把本机文件（桌面上拖进正文的文件）插入正文：与工具栏选文件同一条链路
@@ -320,6 +335,7 @@ class DiaryMediaImportController extends ChangeNotifier {
         DiaryMediaKind.image => FileType.image,
         DiaryMediaKind.video => FileType.video,
         DiaryMediaKind.attachment => FileType.any,
+        DiaryMediaKind.audio => FileType.audio,
       },
       allowMultiple: true,
       withData: false,

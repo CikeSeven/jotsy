@@ -112,10 +112,16 @@ class UnsupportedMediaCompressor implements MediaCompressor {
 ///
 /// 除了 [AppPlatform] 还要运行时 `Platform.isAndroid`：widget 测试默认按
 /// Android 跑，但原生通道只在真机工程里注册。
+///
+/// 原生实现全应用只建一个：它在视频通道上登记进度回调的处理器，通道只认
+/// 最后登记的那个——存储管理与正文视频小图（[VideoPosterCache]）各建一个时，
+/// 压缩进度会被后建的那个吞掉。
 MediaCompressor createPlatformMediaCompressor() =>
     AppPlatform.supportsMediaCompression && Platform.isAndroid
-    ? NativeMediaCompressor()
+    ? _nativeCompressor ??= NativeMediaCompressor()
     : const UnsupportedMediaCompressor();
+
+NativeMediaCompressor? _nativeCompressor;
 
 /// Android 原生实现（见类型说明）。
 class NativeMediaCompressor implements MediaCompressor {

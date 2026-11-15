@@ -43,7 +43,8 @@ const String kDiaryBlockDivider = 'divider';
 /// 与小图标记 [kDiaryImageThumbnailKey]。
 const String kDiaryBlockImage = 'image';
 
-/// 视频：`data.url` 为来源。
+/// 视频：`data.url` 为来源，可带显示宽度上限 [kDiaryVideoWidthKey]、`align`
+/// 与小图标记 [kDiaryImageThumbnailKey]。
 const String kDiaryBlockVideo = 'video';
 
 /// 录音：`data` 为 DiaryAudioAttachment 的字段（`path` / `durationMs` /
@@ -140,10 +141,15 @@ const String kDiaryParagraphIndentKey = 'firstLineIndent';
 const String kDiaryBlockLanguageKey = 'language';
 const String kDiaryBlockUrlKey = 'url';
 
-/// 图片以方形小图显示（图片菜单写入，只认 `true`，取消时删键）：正文里画成
-/// cover 裁切的缩略图，点按照常查看大图。缩放菜单写入的宽高原样保留，取消后
-/// 恢复原来的大小；只影响应用内的正文显示，导出与分享仍是原图。
+/// 图片或视频以方形小图显示（图片菜单 / 视频菜单写入，只认 `true`，取消时
+/// 删键）：正文里画成 cover 裁切的缩略图（视频取一帧），点按照常查看大图 /
+/// 播放。缩放写入的宽高原样保留，取消后恢复原来的大小；只影响应用内的正文
+/// 显示，导出与分享仍是原文件。
 const String kDiaryImageThumbnailKey = 'thumbnail';
+
+/// 正文视频卡片的显示宽度上限（逻辑像素，数字；视频菜单“调整大小”写入，
+/// 正文列更窄时以列宽为准）。没有这个键时铺满正文列；高度随视频比例。
+const String kDiaryVideoWidthKey = 'width';
 const String kDiaryBlockPathKey = 'path';
 const String kDiaryBlockValueKey = 'value';
 

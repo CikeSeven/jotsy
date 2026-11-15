@@ -1887,7 +1887,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get videoFullscreen => 'Полноэкранный режим';
 
   @override
-  String get videoExitFullscreen => 'Выйти из полноэкранного режима';
+  String get videoMoreActions => 'Другие действия';
+
+  @override
+  String get diaryEditorVideoWidth => 'Ширина видео';
 
   @override
   String get locationPrecisionTitle => 'Точность адреса';

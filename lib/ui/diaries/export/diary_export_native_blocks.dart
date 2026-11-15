@@ -170,8 +170,9 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
   return List.unmodifiable(blocks);
 }
 
-/// 与编辑器的 `isDiaryThumbnailImage` 同一口径（图片块且 `data.thumbnail`
-/// 恰为 `true`），读的是块文档的 JSON。
+/// 导出里参与并排的小图：图片块且 `data.thumbnail` 恰为 `true`，读的是块
+/// 文档的 JSON。编辑器的 `isDiaryThumbnailMedia` 还认视频小图，导出不认：
+/// 导出里的视频是一行文件条、没有画面，夹在一排中间时把这一排断开。
 bool _isThumbnailImage(Map<String, Object?> node) =>
     node[kDiaryBlockTypeKey] == kDiaryBlockImage &&
     diaryBlockData(node)[kDiaryImageThumbnailKey] == true;

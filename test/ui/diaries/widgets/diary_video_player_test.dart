@@ -25,7 +25,8 @@ void main() {
           _app(brightness, DiaryVideoPlayer(video: video, player: player)),
         );
         await tester.pumpAndSettle();
-        expect(find.text('trip.mp4'), findsOneWidget);
+        // 控件只有一行：不再显示文件名（#252）。
+        expect(find.text('trip.mp4'), findsNothing);
         expect(find.text('00:00 / 00:12'), findsOneWidget);
         expect(player.playCount, 0);
         await tester.tap(find.byTooltip('播放视频').last);
@@ -103,20 +104,27 @@ void main() {
         await tester.tap(find.byTooltip('全屏播放'));
         await tester.pumpAndSettle();
         expect(find.byType(DiaryVideoFullscreenPage), findsOneWidget);
-        expect(find.text('00:04 / 00:12'), findsOneWidget);
+        // 全屏页叠在正文之上（不透明度为 false），只看全屏页里的控件。
+        expect(_inFullscreen(find.text('00:04 / 00:12')), findsOneWidget);
+        expect(_inFullscreen(find.text('trip.mp4')), findsNothing);
+        expect(_inFullscreen(find.byTooltip('退出全屏')), findsNothing);
         expect(player.value.isPlaying, isTrue);
         expect(player.wasDisposed, isFalse);
-        _dragSliderTo(tester, 8000);
+        _dragSliderTo(
+          tester,
+          8000,
+          within: find.byType(DiaryVideoFullscreenPage),
+        );
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('暂停视频'));
+        await tester.tap(_inFullscreen(find.byTooltip('暂停视频')).last);
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('导出视频'));
+        await tester.tap(_inFullscreen(find.byTooltip('导出视频')));
         await tester.pumpAndSettle();
         expect(find.byType(AlertDialog), findsOneWidget);
         await tester.tap(find.widgetWithText(TextButton, '取消'));
         await tester.pumpAndSettle();
         expect(service.sources, isEmpty);
-        await tester.tap(find.byTooltip('退出全屏'));
+        await tester.tap(_inFullscreen(find.byTooltip('返回')));
         await tester.pumpAndSettle();
         expect(find.byType(DiaryVideoFullscreenPage), findsNothing);
         expect(find.text('00:08 / 00:12'), findsOneWidget);
@@ -267,8 +275,17 @@ class FakeVideoExportService extends VideoExportService {
 }
 
 /// 模拟一次完整的滑块拖动：拖动中只更新显示，松手（onChangeEnd）才 seek。
-void _dragSliderTo(WidgetTester tester, double milliseconds) {
-  final slider = tester.widget<Slider>(find.byType(Slider));
+/// [within] 限定在某个子树里找滑块（全屏页叠在正文卡片之上时）。
+void _dragSliderTo(WidgetTester tester, double milliseconds, {Finder? within}) {
+  final finder = within == null
+      ? find.byType(Slider)
+      : find.descendant(of: within, matching: find.byType(Slider));
+  final slider = tester.widget<Slider>(finder);
   slider.onChanged!(milliseconds);
   slider.onChangeEnd!(milliseconds);
 }
+
+Finder _inFullscreen(Finder finder) => find.descendant(
+  of: find.byType(DiaryVideoFullscreenPage),
+  matching: finder,
+);

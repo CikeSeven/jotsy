@@ -84,7 +84,10 @@ void main() {
         expect(find.byType(DiaryVideoPlayer), findsNothing);
         expect(find.byType(VideoPlayer), findsNothing);
         expect(factoryCalls, 0);
-        expect(find.text('trip.mp4'), findsOneWidget);
+        expect(find.textContaining('点按用系统播放器打开'), findsOneWidget);
+        // 编辑页：控件行末尾是视频菜单（⋮），不再单独放导出按钮。
+        expect(find.byTooltip('更多操作'), findsOneWidget);
+        expect(find.byTooltip('导出视频'), findsNothing);
 
         await tester.tap(find.byType(IconButton).first);
         await tester.pumpAndSettle();
@@ -99,7 +102,7 @@ void main() {
   testWidgets('poster card has the same size as the inline player card', (
     tester,
   ) async {
-    // 初始化前的内嵌播放器同样是 16:9 画面区 + 两行控件。
+    // 初始化前的内嵌播放器同样是 16:9 画面区 + 一行控件。
     final gate = Completer<void>();
     final player = FakeVideoPlayer()..initializationGate = gate;
     await tester.pumpWidget(

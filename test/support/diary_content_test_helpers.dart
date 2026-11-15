@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/core/services/audio_playback_service.dart';
+import 'package:node_diary/core/services/video_poster_cache.dart';
 import 'package:node_diary/core/services/video_export_service.dart';
 import 'package:node_diary/core/services/file_open_service.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -35,6 +36,7 @@ Widget nativeTestEditor({
   VideoPlayerController Function(String)? videoPlayerFactory,
   VideoExportService videoExportService = const VideoExportService(),
   FileOpenService? fileOpenService,
+  VideoPosterCache? videoPosters,
   void Function(String, ImageViewerHero?)? onImageOpen,
   bool foldLongImages = true,
 }) => ProviderScope(
@@ -48,7 +50,8 @@ Widget nativeTestEditor({
     blockComponentOverrides: {
       if (audioPlayer != null ||
           videoPlayerFactory != null ||
-          fileOpenService != null) ...{
+          fileOpenService != null ||
+          videoPosters != null) ...{
         for (final type in ['audio', 'video', 'attachment'])
           type: DiaryMediaBlockBuilder(
             controller: controller,
@@ -56,6 +59,7 @@ Widget nativeTestEditor({
             videoPlayerFactory: videoPlayerFactory,
             videoExportService: videoExportService,
             fileOpenService: fileOpenService ?? const FileOpenService(),
+            videoPosters: videoPosters,
           ),
       },
     },

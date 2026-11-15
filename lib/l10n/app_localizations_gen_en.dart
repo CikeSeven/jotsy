@@ -1853,7 +1853,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get videoFullscreen => 'Fullscreen playback';
 
   @override
-  String get videoExitFullscreen => 'Exit fullscreen';
+  String get videoMoreActions => 'More actions';
+
+  @override
+  String get diaryEditorVideoWidth => 'Video width';
 
   @override
   String get locationPrecisionTitle => 'Address detail';

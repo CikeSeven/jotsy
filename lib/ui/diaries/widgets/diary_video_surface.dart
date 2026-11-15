@@ -18,16 +18,24 @@ import 'package:video_player/video_player.dart';
 /// 双击判定）。播放按钮叠在缩放层之上，不随画面放大。[onZoomChanged] 报告
 /// 放大态，宿主据此锁住翻页与下拉关闭。正文里的视频卡片不开启：它在滚动
 /// 的正文里，捏合会与页面滚动冲突，要放大先进全屏。
+///
+/// [onTap] 取代“点按画面播放 / 暂停”（全屏页用来显示 / 隐藏上下栏），此时
+/// 播放 / 暂停只经中央的按钮；[showPauseButton] 为 true 时播放中也显示
+/// 中央按钮（换成暂停），全屏页随上下栏一起出现与隐藏。
 class DiaryVideoSurface extends StatelessWidget {
   const DiaryVideoSurface({
     super.key,
     required this.controller,
     this.zoomable = false,
     this.onZoomChanged,
+    this.onTap,
+    this.showPauseButton = false,
   });
   final DiaryVideoPlayerController controller;
   final bool zoomable;
   final ValueChanged<bool>? onZoomChanged;
+  final VoidCallback? onTap;
+  final bool showPauseButton;
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +53,11 @@ class DiaryVideoSurface extends StatelessWidget {
         child: VideoPlayer(controller.player),
       ),
     );
+    final playing = value.isPlaying;
+    final showButton = !playing || showPauseButton;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => unawaited(controller.toggle()),
+      onTap: onTap ?? () => unawaited(controller.toggle()),
       child: Stack(
         alignment: Alignment.center,
         fit: StackFit.expand,
@@ -60,18 +70,26 @@ class DiaryVideoSurface extends StatelessWidget {
             )
           else
             picture,
-          // 暂停时的大播放按钮缩放淡入、开始播放时淡出，而不是硬切。
+          // 暂停时的大播放按钮缩放淡入、开始播放时淡出，而不是硬切；全屏页
+          // 显示上下栏时播放中换成暂停按钮。
           ExpressiveIconSwap(
-            switchKey: value.isPlaying,
-            child: value.isPlaying
-                ? const SizedBox.shrink()
-                : Center(
+            switchKey: showButton ? playing : 'hidden',
+            child: showButton
+                ? Center(
                     child: IconButton.filledTonal(
-                      tooltip: context.l10n.videoPlay,
+                      tooltip: playing
+                          ? context.l10n.videoPause
+                          : context.l10n.videoPlay,
                       onPressed: () => unawaited(controller.toggle()),
-                      icon: const FaIcon(FontAwesomeIcons.play, size: 24),
+                      icon: FaIcon(
+                        playing
+                            ? FontAwesomeIcons.pause
+                            : FontAwesomeIcons.play,
+                        size: 24,
+                      ),
                     ),
-                  ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),

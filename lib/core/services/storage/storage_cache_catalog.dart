@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import '../app_update_downloader.dart';
 import '../diary_media_storage_service.dart';
 import '../long_image_tile_service.dart';
+import '../video_poster_cache.dart';
 
 /// 存储管理能清的缓存：应用临时目录下由本应用写入、删了也会按需重建的
 /// 条目（docs/rules/storage.md）。
@@ -14,8 +15,9 @@ import '../long_image_tile_service.dart';
 /// 改动过”的：选图、拍照、导出、分享、下载更新与网盘备份都会在这里写暂存，
 /// 正在进行的不能被抽走；一小时足够覆盖这些操作，又不会让旧缓存一直留着。
 abstract final class StorageCacheCatalog {
-  /// 视频缩略图缓存（存储管理自己生成，见 `media_compressor.dart`）。
-  static const String videoThumbnailDirectoryName = 'storage_video_thumbs';
+  /// 视频封面帧缓存（存储管理的缩略图与正文视频小图，见 [VideoPosterCache]）。
+  static const String videoThumbnailDirectoryName =
+      VideoPosterCache.directoryName;
 
   /// 整个目录都是缓存、逐个子项判断新旧的目录。
   static const List<String> directories = [

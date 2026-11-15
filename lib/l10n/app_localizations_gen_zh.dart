@@ -1765,7 +1765,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get videoFullscreen => '全屏播放';
 
   @override
-  String get videoExitFullscreen => '退出全屏';
+  String get videoMoreActions => '更多操作';
+
+  @override
+  String get diaryEditorVideoWidth => '视频宽度';
 
   @override
   String get locationPrecisionTitle => '地址层级';

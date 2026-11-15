@@ -2457,9 +2457,13 @@
   "@videoFullscreen": {
     "description": "Tooltip and page title for fullscreen diary video playback."
   },
-  "videoExitFullscreen": "Exit fullscreen",
-  "@videoExitFullscreen": {
-    "description": "Tooltip for returning to the diary from fullscreen video playback."
+  "videoMoreActions": "More actions",
+  "@videoMoreActions": {
+    "description": "Tooltip for the ⋮ menu on a diary video (show as thumbnail, resize, save, delete)."
+  },
+  "diaryEditorVideoWidth": "Video width",
+  "@diaryEditorVideoWidth": {
+    "description": "Slider label in the diary video resize sheet."
   },
   "locationPrecisionTitle": "Address detail",
   "@locationPrecisionTitle": {

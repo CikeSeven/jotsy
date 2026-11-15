@@ -1783,7 +1783,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get videoFullscreen => '全画面再生';
 
   @override
-  String get videoExitFullscreen => '全画面を終了';
+  String get videoMoreActions => 'その他の操作';
+
+  @override
+  String get diaryEditorVideoWidth => '動画の幅';
 
   @override
   String get locationPrecisionTitle => '住所の詳しさ';

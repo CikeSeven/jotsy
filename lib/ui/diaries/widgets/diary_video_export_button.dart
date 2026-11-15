@@ -14,9 +14,106 @@ import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 
 import '../../widgets/app_modal/app_dialog.dart';
 
-/// 弹出二次确认后才授权 controller 保存，取消及页面退出均不会触发导出。
-/// 桌面没有相册，点按直接弹出“另存为…”对话框（对话框即确认）。
-class DiaryVideoExportButton extends StatefulWidget {
+/// 导出正文视频：手机上弹出二次确认后才授权 [controller] 保存到相册，桌面
+/// 没有相册，直接弹出“另存为…”对话框（对话框即确认）；结果经
+/// [HomeHintVisibilityScope.showTrackedSnackBar] 提示。取消、页面退出或视频
+/// 换了都不提示。导出按钮与视频菜单的“保存到相册”共用这一条（#252）。
+Future<void> runDiaryVideoExport(
+  BuildContext context, {
+  required DiaryFileAttachment video,
+  required DiaryVideoExportController controller,
+}) => AppPlatform.savesImagesToGallery
+    ? _confirmExport(context, video, controller)
+    : _saveAs(context, video, controller);
+
+Future<void> _saveAs(
+  BuildContext context,
+  DiaryFileAttachment video,
+  DiaryVideoExportController controller,
+) async {
+  final l10n = context.l10n;
+  final result = await controller.saveAs(
+    video.path,
+    fileName: video.displayName,
+    dialogTitle: l10n.desktopSaveVideoDialogTitle,
+  );
+  if (!context.mounted) return;
+  final path = result.path;
+  final failure = result.failure;
+  if (path == null && failure == null) return;
+  _showResult(
+    context,
+    path != null ? l10n.desktopSavedTo(path) : _failureText(l10n, failure!),
+  );
+}
+
+String _failureText(AppLocalizations l10n, VideoExportFailure failure) =>
+    switch (failure) {
+      VideoExportFailure.missingFile => l10n.videoExportFileMissing,
+      VideoExportFailure.permissionDenied => l10n.videoExportPermissionDenied,
+      VideoExportFailure.notEnoughSpace => l10n.videoExportNotEnoughSpace,
+      VideoExportFailure.unsupportedFormat => l10n.videoExportUnsupportedFormat,
+      VideoExportFailure.downloadFailed => l10n.videoExportDownloadFailed,
+      VideoExportFailure.failed => l10n.videoExportFailed,
+    };
+
+void _showResult(BuildContext context, String message) {
+  unawaited(
+    HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(content: Text(message)),
+    ),
+  );
+}
+
+Future<void> _confirmExport(
+  BuildContext context,
+  DiaryFileAttachment video,
+  DiaryVideoExportController controller,
+) async {
+  if (!controller.beginConfirmation()) return;
+  final confirmed = await showAppDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      final l10n = dialogContext.l10n;
+      final colors = Theme.of(dialogContext).colorScheme;
+      return AlertDialog(
+        title: Text(l10n.videoExportConfirmTitle),
+        content: Text(l10n.videoExportConfirmMessage(video.displayName)),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: colors.onSurfaceVariant,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: colors.primary),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.commonConfirm),
+          ),
+        ],
+      );
+    },
+  );
+  if (confirmed != true || !context.mounted) {
+    controller.cancelConfirmation();
+    return;
+  }
+  final failure = await controller.export(video.path);
+  if (!context.mounted) return;
+  _showResult(
+    context,
+    failure == null
+        ? context.l10n.videoExportSuccess
+        : _failureText(context.l10n, failure),
+  );
+}
+
+/// 导出按钮（下载图标）：流程见 [runDiaryVideoExport]。导出超过 300ms 时
+/// 换成等待指示。
+class DiaryVideoExportButton extends StatelessWidget {
   const DiaryVideoExportButton({
     super.key,
     required this.video,
@@ -26,96 +123,44 @@ class DiaryVideoExportButton extends StatefulWidget {
   final DiaryVideoExportController controller;
 
   @override
-  State<DiaryVideoExportButton> createState() => _DiaryVideoExportButtonState();
+  Widget build(BuildContext context) => DiaryVideoBusySwap(
+    controller: controller,
+    builder: (context) => IconButton(
+      tooltip: context.l10n.videoExport,
+      onPressed: controller.isBusy
+          ? null
+          : () => unawaited(
+              runDiaryVideoExport(
+                context,
+                video: video,
+                controller: controller,
+              ),
+            ),
+      icon: const FaIcon(FontAwesomeIcons.download, size: 16),
+    ),
+  );
 }
 
-class _DiaryVideoExportButtonState extends State<DiaryVideoExportButton> {
-  Future<void> _saveAs() async {
-    final video = widget.video;
-    final l10n = context.l10n;
-    final result = await widget.controller.saveAs(
-      video.path,
-      fileName: video.displayName,
-      dialogTitle: l10n.desktopSaveVideoDialogTitle,
-    );
-    if (!mounted || video.path != widget.video.path) return;
-    final path = result.path;
-    final failure = result.failure;
-    if (path == null && failure == null) return;
-    _showResult(
-      path != null ? l10n.desktopSavedTo(path) : _failureText(failure!),
-    );
-  }
+/// 44dp 见方的按钮位：导出进行中超过 300ms 时把 [builder] 画的按钮（导出
+/// 按钮或视频菜单的 ⋮）换成等待指示，两者缩放淡入切换；导出较快时不闪。
+/// 按钮随导出状态重建（忙碌时停用）。
+class DiaryVideoBusySwap extends StatelessWidget {
+  const DiaryVideoBusySwap({
+    super.key,
+    required this.controller,
+    required this.builder,
+  });
 
-  String _failureText(VideoExportFailure failure) {
-    final l10n = context.l10n;
-    return switch (failure) {
-      VideoExportFailure.missingFile => l10n.videoExportFileMissing,
-      VideoExportFailure.permissionDenied => l10n.videoExportPermissionDenied,
-      VideoExportFailure.notEnoughSpace => l10n.videoExportNotEnoughSpace,
-      VideoExportFailure.unsupportedFormat => l10n.videoExportUnsupportedFormat,
-      VideoExportFailure.downloadFailed => l10n.videoExportDownloadFailed,
-      VideoExportFailure.failed => l10n.videoExportFailed,
-    };
-  }
-
-  void _showResult(String message) {
-    unawaited(
-      HomeHintVisibilityScope.showTrackedSnackBar(
-        context: context,
-        snackBar: SnackBar(content: Text(message)),
-      ),
-    );
-  }
-
-  Future<void> _confirmExport() async {
-    final controller = widget.controller;
-    final video = widget.video;
-    if (!controller.beginConfirmation()) return;
-    final confirmed = await showAppDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        final l10n = dialogContext.l10n;
-        final colors = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
-          title: Text(l10n.videoExportConfirmTitle),
-          content: Text(l10n.videoExportConfirmMessage(video.displayName)),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colors.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: colors.primary),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.commonConfirm),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed != true || !mounted || video.path != widget.video.path) {
-      controller.cancelConfirmation();
-      return;
-    }
-    final failure = await controller.export(video.path);
-    if (!mounted || video.path != widget.video.path) return;
-    _showResult(
-      failure == null ? context.l10n.videoExportSuccess : _failureText(failure),
-    );
-  }
+  final DiaryVideoExportController controller;
+  final WidgetBuilder builder;
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-    animation: widget.controller,
-    // 导出较快时不闪等待指示：超过 300ms 才换成指示器，两者缩放淡入切换。
+    animation: controller,
     builder: (context, _) => SizedBox.square(
       dimension: 44,
       child: DelayedLoadingGate(
-        loading: widget.controller.isExporting,
+        loading: controller.isExporting,
         builder: (context, showLoading) => ExpressiveIconSwap(
           switchKey: showLoading,
           child: showLoading
@@ -125,17 +170,7 @@ class _DiaryVideoExportButtonState extends State<DiaryVideoExportButton> {
                     semanticLabel: context.l10n.videoExporting,
                   ),
                 )
-              : IconButton(
-                  tooltip: context.l10n.videoExport,
-                  onPressed: widget.controller.isBusy
-                      ? null
-                      : () => unawaited(
-                          AppPlatform.savesImagesToGallery
-                              ? _confirmExport()
-                              : _saveAs(),
-                        ),
-                  icon: const FaIcon(FontAwesomeIcons.download, size: 16),
-                ),
+              : builder(context),
         ),
       ),
     ),

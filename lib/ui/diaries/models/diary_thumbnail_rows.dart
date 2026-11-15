@@ -5,19 +5,21 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import 'diary_image_embed_data.dart';
 
-/// 小图并排：正文顶层连续的小图（图片块且 `data.thumbnail == true`）从这一串
-/// 的第一张起每 [kDiaryThumbnailRowCapacity] 张排成一排，余下的另起一排。
-/// 纯计算，不读布局、不改文档。
+/// 小图并排：正文顶层连续的小图（图片或视频块且 `data.thumbnail == true`，
+/// 图片与视频可以排在同一排）从这一串的第一张起每
+/// [kDiaryThumbnailRowCapacity] 张排成一排，余下的另起一排。纯计算，不读
+/// 布局、不改文档。
 ///
 /// 为什么只排顶层：顶层块是页面列表的一项一项（`DiaryScrollPage` /
 /// `DiaryInlinePage`），把一排的几块交给同一项横着摆即可，每块仍是自己的块
 /// 组件（自己的 `node.key`、选区与点按）；列表、折叠块等容器里的子块由各自
 /// 的块组件竖着排，不在这里并排。
 ///
-/// 数据不变：每张小图仍是独立的图片块，删掉小图标记、拖走或在中间插入别的
-/// 块，这一排就按新的顺序重新分。导出（PDF / Word / 网页）读块文档的 JSON，
-/// 经 [diaryThumbnailRowsBy] 按同一口径分排（`ExportBlock.thumbnailRow`）；
-/// 旧版本与 Markdown、纯文本仍一张一行。
+/// 数据不变：每张小图仍是独立的图片 / 视频块，删掉小图标记、拖走或在中间
+/// 插入别的块，这一排就按新的顺序重新分。导出（PDF / Word / 网页）读块文档
+/// 的 JSON，经 [diaryThumbnailRowsBy] 分排（`ExportBlock.thumbnailRow`），
+/// 只认图片小图：导出里的视频仍是一行文件条，不画画面；旧版本与 Markdown、
+/// 纯文本仍一张一行。
 
 /// 一排最多几张小图。
 const int kDiaryThumbnailRowCapacity = 3;
@@ -25,9 +27,17 @@ const int kDiaryThumbnailRowCapacity = 3;
 /// 一排里相邻小图的水平间距（逻辑像素）。
 const double kDiaryThumbnailRowGap = 8;
 
-/// [node] 是否参与并排：图片块且标为小图。
-bool isDiaryThumbnailImage(af.Node node) =>
-    node.type == kDiaryBlockImage && diaryImageIsThumbnail(node);
+/// 能以小图显示的块类型：图片与视频（视频小图画一帧画面，见
+/// `DiaryVideoThumbnail`）。
+const Set<String> kDiaryThumbnailBlockTypes = <String>{
+  kDiaryBlockImage,
+  kDiaryBlockVideo,
+};
+
+/// [node] 是否参与并排：图片或视频块且标为小图。
+bool isDiaryThumbnailMedia(af.Node node) =>
+    kDiaryThumbnailBlockTypes.contains(node.type) &&
+    diaryImageIsThumbnail(node);
 
 /// 正文列宽 [width] 下小图的边长：一排三张恰好放得下，最大
 /// [kDiaryImageThumbnailExtent]。单张的小图也取这个边长，几排之间上下对齐。
@@ -44,7 +54,7 @@ typedef DiaryThumbnailRow = ({int start, int end});
 /// [siblings] 里每一块所在那排的起止：不是小图的块自成一排（只有自己）。
 /// 下标与 [siblings] 一一对应。
 List<DiaryThumbnailRow> diaryThumbnailRows(List<af.Node> siblings) =>
-    diaryThumbnailRowsBy(siblings, isDiaryThumbnailImage);
+    diaryThumbnailRowsBy(siblings, isDiaryThumbnailMedia);
 
 /// [diaryThumbnailRows] 的通用形式：[isThumbnail] 判断一块是不是小图。编辑器
 /// 传节点，导出传块文档的 JSON（导出不经编辑器），两边分排的口径只在这里。
@@ -84,10 +94,10 @@ DiaryThumbnailRow? diaryThumbnailRowOf(af.Node node) {
   if (parent == null || parent.parent != null) return null;
   final index = node.path.last;
   // 只往前后看同一串小图，不必把整篇正文分一遍。
-  if (!isDiaryThumbnailImage(node)) return (start: index, end: index + 1);
+  if (!isDiaryThumbnailMedia(node)) return (start: index, end: index + 1);
   final siblings = parent.children;
   var runStart = index;
-  while (runStart > 0 && isDiaryThumbnailImage(siblings[runStart - 1])) {
+  while (runStart > 0 && isDiaryThumbnailMedia(siblings[runStart - 1])) {
     runStart--;
   }
   final start =
@@ -98,7 +108,7 @@ DiaryThumbnailRow? diaryThumbnailRowOf(af.Node node) {
   var end = start + 1;
   while (end < siblings.length &&
       end - start < kDiaryThumbnailRowCapacity &&
-      isDiaryThumbnailImage(siblings[end])) {
+      isDiaryThumbnailMedia(siblings[end])) {
     end++;
   }
   return (start: start, end: end);

@@ -78,10 +78,10 @@ void main() {
 
     final origin = origins.single!;
     expect(origin.tag, diaryCardTransitionTag(diary.diary.diaryId));
-    final shot = origin.takeShot()!;
-    expect(shot.rect, tester.getRect(find.byType(ContainerTransformSource)));
-    expect(shot.image.width, greaterThan(0));
-    shot.dispose();
+    expect(
+      origin.bounds.rect,
+      tester.getRect(find.byType(ContainerTransformSource)),
+    );
   });
 
   testWidgets('cards that are not a transition source hand over nothing', (

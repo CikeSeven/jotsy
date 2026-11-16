@@ -36,8 +36,7 @@ import 'diary_preview_edit_flow.dart';
 /// 入口给出 [origin]（点按的卡片，见 `ContainerTransformSource`）时预览页 /
 /// 编辑页从这张卡片展开成整页、返回时缩回去（[ContainerTransformPageRoute]）；
 /// 在里面删除了日记时不缩回（卡片随后会从列表里收起），原地淡出。没有
-/// [origin] 的入口照旧按主题转场推入。[origin] 的画面归这里：交给路由，或
-/// 没用上时释放。
+/// [origin] 的入口照旧按主题转场推入。
 Future<DiaryPreviewResult?> openDiaryPage(
   BuildContext context,
   WidgetRef ref, {
@@ -51,7 +50,6 @@ Future<DiaryPreviewResult?> openDiaryPage(
     final detail = initialDetail ?? await _loadDetail(ref, diaryId);
     if (!context.mounted) {
       coverHero?.dispose();
-      origin?.dispose();
       return null;
     }
     if (canOpenDiaryInEditor(detail, now: DateTime.now())) {

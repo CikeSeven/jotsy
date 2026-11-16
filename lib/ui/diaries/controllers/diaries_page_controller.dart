@@ -236,7 +236,6 @@ class DiariesPageController {
   ) {
     if (_state._twoPane) {
       coverHero?.dispose();
-      origin?.dispose();
       _state._readingSelection.select(diary.diary.diaryId);
       return;
     }

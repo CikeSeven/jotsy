@@ -118,8 +118,7 @@ void main() {
                     isSelectionMode: false,
                     maxVisibleTags: 3,
                     onToggleSelection: (_, _) {},
-                    onOpenEditor: (detail, coverHero, origin) {
-                      origin?.dispose();
+                    onOpenEditor: (detail, coverHero, _) {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => DiaryPreviewPage(

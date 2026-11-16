@@ -75,8 +75,7 @@ Future<void> _pump(
               selectedDiaryIds: selected,
               isSelectionMode: selectionMode,
               maxVisibleTags: 3,
-              onOpenEditor: (diary, _, origin) {
-                origin?.dispose();
+              onOpenEditor: (diary, _, _) {
                 onOpen?.call(diary);
               },
               onToggleSelection: (_, _) {},

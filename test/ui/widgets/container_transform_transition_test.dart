@@ -6,16 +6,31 @@ import 'package:node_diary/ui/app_surface/models/app_surface_settings.dart';
 import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
 import 'package:node_diary/ui/app_surface/services/app_background_image_cache.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_below_snapshot.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
 
 import '../app_surface/app_surface_test_images.dart';
 
-/// 截取真实合成结果：页面显出时使用正确的区域背景；收回末段页面已经
-/// 淡去时，卡片下方必须露出列表，不能留下比卡片高一截的不透明页面底。
+/// 截取真实合成结果：容器在任何进度下都不透明，后面的列表从不透出；里面
+/// 起点 / 终点是从下层快照裁出的卡片（这里是整屏 teal 快照），中段与页面
+/// （带它所在区域的背景）互相渐变；容器之外只有下层列表与遮罩。
 const _size = Size(400, 800);
 const _card = Rect.fromLTWH(16, 200, 368, 120);
 const _backdropKey = ValueKey<String>('backdrop');
+const _teal = Color(0xFF009688);
+
+void _expectColorNear(Color actual, Color expected, {required String reason}) {
+  final a = actual.toARGB32();
+  final e = expected.toARGB32();
+  for (final shift in <int>[0, 8, 16, 24]) {
+    expect(
+      (a >> shift) & 0xff,
+      closeTo((e >> shift) & 0xff, 2),
+      reason: reason,
+    );
+  }
+}
 
 class _Harness {
   _Harness(this.progress, this.boundary, this.scheme);
@@ -24,20 +39,36 @@ class _Harness {
   final GlobalKey boundary;
   final ColorScheme scheme;
 
-  /// 取卡片截图底边与容器底边之间的像素：截图只按宽度缩放，这一段正是
-  /// 旧版纯色底会露出来的位置，不能只检查某个背景 widget 是否已挂载。
-  Offset get _exposedPoint {
-    final rect = Rect.lerp(_card, Offset.zero & _size, progress.value)!;
-    final cardBottom = rect.top + _card.height * rect.width / _card.width;
-    final y = ((cardBottom + rect.bottom) / 2).round();
-    return Offset(rect.center.dx, y.toDouble());
+  Rect container(WidgetTester tester) => tester
+      .renderObject<RenderContainerTransform>(
+        find.byType(ContainerTransformTransition),
+      )
+      .debugContainerRect;
+
+  /// 容器底边内侧一点：页面文字在顶部，这里只有页面背景（或卡片）。
+  Future<Color> insideColor(WidgetTester tester) {
+    final rect = container(tester);
+    return colorAt(
+      tester,
+      Offset(rect.center.dx, (rect.bottom - 3).floorToDouble()),
+    );
   }
 
-  Future<Color> exposedColor(WidgetTester tester) =>
-      colorAt(tester, _exposedPoint);
+  /// 容器顶边内侧一点：卡片画在容器顶部。
+  Future<Color> topInsideColor(WidgetTester tester) {
+    final rect = container(tester);
+    return colorAt(tester, Offset(rect.right - 20, rect.top + 10));
+  }
 
-  Future<void> expectListBelowCard(WidgetTester tester) =>
-      expectListAt(tester, _exposedPoint, reason: '页面已淡去，卡片下方不应留底');
+  /// 容器底边外侧一点：只剩下层列表。
+  Future<void> expectListBelowContainer(WidgetTester tester) {
+    final rect = container(tester);
+    return expectListAt(
+      tester,
+      Offset(rect.center.dx, (rect.bottom + 6).ceilToDouble()),
+      reason: '容器之外只有列表',
+    );
+  }
 
   /// [point] 处没有容器，只有下层列表（errorContainer）与随进度加深的遮罩。
   Future<void> expectListAt(
@@ -82,6 +113,7 @@ Future<_Harness> _pump(
   Widget? backdrop,
   Widget? page,
   BorderRadius pageRadius = BorderRadius.zero,
+  bool fallback = false,
 }) async {
   tester.view.physicalSize = _size;
   tester.view.devicePixelRatio = 1;
@@ -90,18 +122,18 @@ Future<_Harness> _pump(
     seedColor: Colors.indigo,
     brightness: brightness,
   );
-  final image = (await tester.runAsync(
-    () => paintedImage(368, 120, Colors.teal),
-  ))!;
   final geometry = ContainerTransformGeometry(
-    ContainerTransformShot(
-      rect: _card,
-      radius: 16,
-      image: image,
-      imageRect: _card,
-    ),
+    fallback ? null : const ContainerTransformBounds(rect: _card, radius: 16),
   );
   addTearDown(geometry.dispose);
+  // 下层快照：整屏 teal，裁出来的卡片也是 teal。
+  final snapshot = (await tester.runAsync(
+    () => paintedImage(_size.width.round(), _size.height.round(), _teal),
+  ))!;
+  addTearDown(snapshot.dispose);
+  final below = ContainerTransformBelowSnapshotController()
+    ..debugSetSnapshot(snapshot, Offset.zero & _size);
+  addTearDown(below.dispose);
   final progress = AnimationController(vsync: tester, value: 0.15);
   addTearDown(progress.dispose);
   final cache = AppBackgroundImageCache(loader: loader?.call);
@@ -138,6 +170,7 @@ Future<_Harness> _pump(
               geometry: geometry,
               scrimColor: scheme.scrim,
               pageRadius: pageRadius,
+              belowSnapshot: below,
               backdrop:
                   backdrop ??
                   const AppPageBackgroundFill(
@@ -171,55 +204,60 @@ Future<_Harness> _pump(
 void main() {
   for (final brightness in Brightness.values) {
     for (final kind in AppBackgroundKind.values) {
-      testWidgets(
-        '$brightness $kind clears the page below the returning card',
-        (tester) async {
-          const light = Color(0xFF7B5F92);
-          const dark = Color(0xFF382742);
-          const imageColor = Color(0xFF3060C0);
-          final h = await _pump(
-            tester,
-            brightness: brightness,
-            background: AppBackground(
-              kind: kind,
-              colorLight: light.toARGB32(),
-              colorDark: dark.toARGB32(),
-              image: 'bg.png',
-              scrimLight: 0,
-              scrimDark: 0,
-            ),
-            loader: FakeBackgroundLoader(color: imageColor),
-          );
-          final expected = switch (kind) {
-            AppBackgroundKind.none => h.scheme.surface,
-            AppBackgroundKind.color =>
-              brightness == Brightness.light ? light : dark,
-            AppBackgroundKind.image => imageColor,
-          };
-          expect(tester.getSize(find.byKey(_backdropKey)), _size);
-          for (final p in <double>[0.75, 0.95, 0.75]) {
-            h.progress.value = p;
-            await tester.pump();
-            expect(
-              await h.exposedColor(tester),
-              expected,
-              reason: 'progress $p',
-            );
-          }
-          for (final p in <double>[0.04, 0.02, 0.005]) {
-            h.progress.value = p;
-            await tester.pump();
-            await h.expectListBelowCard(tester);
-          }
-          h.progress.value = 0;
+      testWidgets('$brightness $kind keeps the container opaque all the way', (
+        tester,
+      ) async {
+        const light = Color(0xFF7B5F92);
+        const dark = Color(0xFF382742);
+        const imageColor = Color(0xFF3060C0);
+        final h = await _pump(
+          tester,
+          brightness: brightness,
+          background: AppBackground(
+            kind: kind,
+            colorLight: light.toARGB32(),
+            colorDark: dark.toARGB32(),
+            image: 'bg.png',
+            scrimLight: 0,
+            scrimDark: 0,
+          ),
+          loader: FakeBackgroundLoader(color: imageColor),
+        );
+        final expected = switch (kind) {
+          AppBackgroundKind.none => h.scheme.surface,
+          AppBackgroundKind.color =>
+            brightness == Brightness.light ? light : dark,
+          AppBackgroundKind.image => imageColor,
+        };
+        expect(tester.getSize(find.byKey(_backdropKey)), _size);
+        // 页面段：容器里是页面与它的背景，不透出列表。
+        for (final p in <double>[0.95, 0.75, 0.6]) {
+          h.progress.value = p;
           await tester.pump();
-          expect(
-            (await h.colorAt(tester, _card.center)).toARGB32(),
-            Colors.teal.toARGB32(),
-          );
-          await tester.pumpWidget(const SizedBox());
-        },
-      );
+          expect(await h.insideColor(tester), expected, reason: 'progress $p');
+          await h.expectListBelowContainer(tester);
+        }
+        // 渐变段：卡片半透明地叠在不透明的页面上，列表仍不透出。
+        h.progress.value = 0.425;
+        await tester.pump();
+        _expectColorNear(
+          await h.topInsideColor(tester),
+          Color.alphaBlend(_teal.withValues(alpha: 0.5), expected),
+          reason: 'progress 0.425',
+        );
+        await h.expectListBelowContainer(tester);
+        // 卡片段（含落位）：容器正好是缩放后的卡片，从上到下都是卡片，
+        // 卡片下方不拖出一截页面。
+        for (final p in <double>[0.25, 0.1, 0.005, 0]) {
+          h.progress.value = p;
+          await tester.pump();
+          expect(await h.topInsideColor(tester), _teal, reason: 'top $p');
+          expect(await h.insideColor(tester), _teal, reason: 'bottom $p');
+          await h.expectListBelowContainer(tester);
+        }
+        expect(h.container(tester), _card);
+        await tester.pumpWidget(const SizedBox());
+      });
     }
 
     testWidgets('$brightness a missing image keeps the gap opaque', (
@@ -236,13 +274,31 @@ void main() {
       );
       h.progress.value = 0.75;
       await tester.pumpAndSettle();
-      expect(await h.exposedColor(tester), h.scheme.surface);
+      expect(await h.insideColor(tester), h.scheme.surface);
       h.progress.value = 0.02;
       await tester.pump();
-      await h.expectListBelowCard(tester);
+      expect(await h.insideColor(tester), _teal);
+      await h.expectListBelowContainer(tester);
       await tester.pumpWidget(const SizedBox());
     });
   }
+
+  testWidgets('without a card to land on the page fades out in place', (
+    tester,
+  ) async {
+    final h = await _pump(
+      tester,
+      background: const AppBackground(),
+      fallback: true,
+    );
+    // 无处可回：唯一保留的淡出。容器缩向屏幕中央，页面半透明地叠在列表上。
+    h.progress.value = 0.5;
+    await tester.pump();
+    final mixed = (await h.colorAt(tester, const Offset(200, 600))).toARGB32();
+    expect(mixed, isNot(h.scheme.surface.toARGB32()));
+    expect(mixed, isNot(h.scheme.errorContainer.toARGB32()));
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets('the expanding page grows into the screen corners', (
     tester,

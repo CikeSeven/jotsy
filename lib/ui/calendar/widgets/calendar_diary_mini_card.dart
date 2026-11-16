@@ -50,7 +50,7 @@ class CalendarDiaryMiniCard extends StatelessWidget {
     final anchor = ImageViewerHeroAnchor();
     const radiusValue = 20.0;
     final radius = BorderRadius.circular(radiusValue);
-    // 点按处的 context 在展开来源之内，才能从这里量出卡片、截下画面。
+    // 点按处的 context 在展开来源之内，才能从这里量出卡片。
     final content = Builder(
       builder: (BuildContext tapContext) => InkWell(
         onTap: () => onOpenDiary(

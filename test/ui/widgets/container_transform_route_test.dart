@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/display_corners.dart';
+import 'package:node_diary/ui/widgets/container_transform/container_transform_below_snapshot.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
@@ -11,7 +12,8 @@ import 'package:node_diary/ui/widgets/container_transform/container_transform_tr
 import '../app_surface/app_surface_test_images.dart';
 
 /// 容器展开路由：从卡片展开、首帧画完才起步、停稳后与普通页面无异、返回时
-/// 缩回卡片（找不到卡片或页面说不回时原地淡出）、转场期间关闭 Hero。
+/// 缩回卡片（找不到卡片或页面说不回时原地淡出）、转场期间关闭 Hero、下层
+/// 页面途中画成快照（玻璃取样照常在里面）。
 void main() {
   const cardRect = Rect.fromLTWH(16, 200, 368, 120);
 
@@ -22,6 +24,7 @@ void main() {
     bool Function(Object? result)? returnsToOrigin,
     List<ContainerTransformOrigin?>? captured,
     GlobalKey? sceneKey,
+    LayerLink? backdropLink,
   }) async {
     final results = <Object?>[];
     tester.view.physicalSize = const Size(400, 800);
@@ -77,7 +80,16 @@ void main() {
             ? null
             : (context, child) => RepaintBoundary(key: sceneKey, child: child),
         home: Scaffold(
-          body: Stack(children: <Widget>[card('a', 200), card('b', 340)]),
+          body: _wrapBackdropLink(
+            backdropLink,
+            Stack(
+              children: <Widget>[
+                card('a', 200),
+                card('b', 340),
+                if (backdropLink != null) _followerBand(backdropLink),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -94,18 +106,18 @@ void main() {
       )
       .geometry;
 
-  /// 推入后起步前的固定等待：首帧（offstage）构建排版、第二帧首次绘制并
-  /// 拍下层快照、第三帧空等光栅追上。再下一帧才开始计时（仍从 0 出发）。
+  /// 推入后起步前的固定等待：首帧（offstage）构建排版并拍下层快照、第二帧
+  /// 页面首次绘制。再下一帧才开始计时（仍从 0 出发）。
   Future<void> pumpOpeningHold(WidgetTester tester) async {
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 2; i++) {
       await tester.pump();
     }
   }
 
-  /// 返回后起步前的固定等待：重排下层并量卡片、拍下层快照、空等一帧。
-  /// 再下一帧才开始计时（仍从 1 出发）。
+  /// 停稳后返回、起步前的固定等待：重排下层并拍快照、空等一帧，之后量出
+  /// 卡片。再下一帧才开始计时（仍从 1 出发）。
   Future<void> pumpClosingHold(WidgetTester tester) async {
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 2; i++) {
       await tester.pump();
     }
   }
@@ -118,105 +130,104 @@ void main() {
     await tester.pump(const Duration(milliseconds: 16));
   }
 
-  void expectSourceVisible(WidgetTester tester, String tag, bool visible) {
-    final source = tester.renderObject(
-      find.ancestor(
-        of: find.text('card $tag', skipOffstage: false),
-        matching: find.byType(ContainerTransformSource, skipOffstage: false),
-      ),
-    );
-    final cardPaint = paints..rect(color: const Color(0xFF009688));
-    expect(source, visible ? cardPaint : isNot(cardPaint));
-  }
+  /// 下层页面的快照渲染对象（停稳后下层 offstage，查找时要带上它）。
+  RenderContainerTransformBelowSnapshot belowOf(WidgetTester tester) =>
+      tester.renderObject<RenderContainerTransformBelowSnapshot>(
+        find.byType(ContainerTransformBelowSnapshot, skipOffstage: false),
+      );
 
-  testWidgets('the first offstage frame keeps the original card on screen', (
+  Future<Color> scenePixel(
+    WidgetTester tester,
+    GlobalKey scene,
+    Offset at,
+  ) async => (await tester.runAsync(() async {
+    final boundary =
+        scene.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final image = await boundary.toImage();
+    try {
+      return (await pixelReader(image))(at.dx.round(), at.dy.round());
+    } finally {
+      image.dispose();
+    }
+  }))!;
+
+  testWidgets('the container starts and lands as the card itself', (
     tester,
   ) async {
     final scene = GlobalKey();
     await pumpList(tester, sceneKey: scene);
-    Future<int> cardPixel() async => (await tester.runAsync(() async {
-      final boundary =
-          scene.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = await boundary.toImage();
-      try {
-        return (await pixelReader(image))(200, 280).toARGB32();
-      } finally {
-        image.dispose();
-      }
-    }))!;
-    final before = await cardPixel();
+    const teal = Color(0xFF009688);
+    const inCard = Offset(200, 280);
+    expect(await scenePixel(tester, scene, inCard), teal);
     await tester.tap(find.text('card a'));
-    // Hero 首帧把目的路由放到 offstage：这帧还没有飞行画面接替来源。
-    // 连续三帧采集真正上屏的合成结果，不能只检查帧末的 widget 状态。
+    // Hero 首帧把目的路由放到 offstage：这帧仍是原卡片；之后容器停在卡片
+    // 上，画的是从下层快照裁出的同一张卡片（采集真正上屏的合成结果，不能
+    // 只检查帧末的 widget 状态）。
     for (var frame = 0; frame < 3; frame++) {
       await tester.pump();
-      expect(await cardPixel(), before, reason: 'opening frame $frame');
+      expect(
+        await scenePixel(tester, scene, inCard),
+        teal,
+        reason: 'opening frame $frame',
+      );
     }
+    // 渐变结束后容器里是页面。
+    final route = routeOf(tester);
+    final pageColor = Theme.of(
+      tester.element(find.byType(_DetailPage)),
+    ).scaffoldBackgroundColor;
+    while (route.animation!.value < 0.7) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(await scenePixel(tester, scene, inCard), pageColor);
     await tester.pumpAndSettle();
-  });
 
-  testWidgets('only the flying card paints until it reaches its source', (
-    tester,
-  ) async {
-    await pumpList(tester);
-    expectSourceVisible(tester, 'a', true);
-    await tester.tap(find.text('card a'));
-    await tester.pump();
-    await tester.pump();
-    expectSourceVisible(tester, 'a', false);
-    expectSourceVisible(tester, 'b', true);
-
-    await tester.pumpAndSettle();
-    expectSourceVisible(tester, 'a', true);
-
+    // 返回：落位前容器里已经完全是卡片，路由卸载后露出原卡片，不跳。
     Navigator.of(tester.element(find.byType(_DetailPage))).pop();
     await pumpClosingHold(tester);
     await pumpStart(tester);
-    await tester.pump(const Duration(milliseconds: 150));
-    expect(routeOf(tester).animation!.value, inExclusiveRange(0, 1));
-    expectSourceVisible(tester, 'a', false);
-    expectSourceVisible(tester, 'b', true);
-
+    while (route.animation!.value > 0.2) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(await scenePixel(tester, scene, inCard), teal);
     await tester.pumpAndSettle();
-    expectSourceVisible(tester, 'a', true);
+    expect(find.byType(_DetailPage), findsNothing);
+    expect(await scenePixel(tester, scene, inCard), teal);
   });
 
-  testWidgets('removing a route during expansion restores the source card', (
+  testWidgets('removing a route during expansion goes back to live painting', (
     tester,
   ) async {
     await pumpList(tester);
     await tester.tap(find.text('card a'));
     await tester.pump();
     await tester.pump();
-    expectSourceVisible(tester, 'a', false);
+    expect(belowOf(tester).debugImage, isNotNull);
 
     final context = tester.element(find.byType(_DetailPage));
     Navigator.of(context).removeRoute(routeOf(tester));
     await tester.pumpAndSettle();
-    expectSourceVisible(tester, 'a', true);
+    expect(find.byType(ContainerTransformBelowSnapshot), findsNothing);
+    expect(find.text('card a'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-    'losing the return target during expansion releases the old source',
-    (tester) async {
-      await pumpList(tester);
-      await tester.tap(find.text('card a'));
-      await pumpOpeningHold(tester);
-      await pumpStart(tester);
-      await tester.pump(const Duration(milliseconds: 100));
-      expectSourceVisible(tester, 'a', false);
+  testWidgets('losing the return target during expansion fades out in place', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tester.tap(find.text('card a'));
+    await pumpOpeningHold(tester);
+    await pumpStart(tester);
+    await tester.pump(const Duration(milliseconds: 100));
 
-      final context = tester.element(find.byType(_DetailPage));
-      ContainerTransformPageRoute.setReturnTag(context, 'missing');
-      Navigator.of(context).pop();
-      await tester.pump();
-      await tester.pump();
-      expectSourceVisible(tester, 'a', true);
-      expect(geometryOf(tester).fallback, isTrue);
-      await tester.pumpAndSettle();
-    },
-  );
+    final context = tester.element(find.byType(_DetailPage));
+    ContainerTransformPageRoute.setReturnTag(context, 'missing');
+    Navigator.of(context).pop();
+    expect(geometryOf(tester).fallback, isTrue);
+    await tester.pumpAndSettle();
+    expect(find.byType(_DetailPage), findsNothing);
+  });
 
   testWidgets(
     'disposing the navigator during return setup releases the source safely',
@@ -225,17 +236,69 @@ void main() {
       await tester.tap(find.text('card a'));
       await tester.pumpAndSettle();
       Navigator.of(tester.element(find.byType(_DetailPage))).pop();
-      // 截图与隐藏来源安排在帧末；在回调执行前移除整个导航器，不能再访问
-      // 已销毁的来源、路由控制器或截图。
+      // 量卡片、起步安排在帧末；在回调执行前移除整个导航器，不能再访问
+      // 已销毁的来源或路由控制器。
       await tester.pumpWidget(const SizedBox());
+      await tester.pump();
       await tester.pump();
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets('a tap captures the card rect and a snapshot of it', (
+  testWidgets('glass samples below stay in the snapshot both ways', (
     tester,
   ) async {
+    // 内容玻璃的预模糊取样是跟随页面背景 Leader 的 Follower（Leader 不在
+    // 时不画）。下层改画快照后，玻璃卡片必须与实时绘制时一样，不能只剩
+    // 半透明底色、透出更清楚的背景。
+    final scene = GlobalKey();
+    final link = LayerLink();
+    await pumpList(tester, sceneKey: scene, backdropLink: link);
+    Future<Color> bandPixel() =>
+        scenePixel(tester, scene, const Offset(200, _bandTop + 50));
+    expect(await bandPixel(), _bandColor);
+
+    await tester.tap(find.text('card a'));
+    // 起步前的几帧进度停在 0（遮罩为 0）：取样带在容器之外，原样可见。
+    // 推入时下层上一帧就在屏上，快照就地拍。
+    for (var frame = 0; frame < 3; frame++) {
+      await tester.pump();
+      expect(await bandPixel(), _bandColor, reason: 'opening frame $frame');
+    }
+    expect(belowOf(tester).debugImage, isNotNull);
+    await tester.pumpAndSettle();
+
+    // 停稳后返回：下层上一帧不在屏上，快照要临时挂到根图层上拍。
+    final route = routeOf(tester);
+    Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+    await tester.pump();
+    expect(belowOf(tester).debugImage, isNotNull);
+    while (route.animation!.value > 0.5) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    final p = route.animation!.value;
+    final container = Rect.lerp(
+      cardRect,
+      const Rect.fromLTWH(0, 0, 400, 800),
+      p,
+    )!;
+    expect(container.bottom, lessThan(_bandTop));
+    final expected = Color.alphaBlend(
+      Colors.black.withValues(alpha: 0.28 * p),
+      _bandColor,
+    ).toARGB32();
+    final actual = (await bandPixel()).toARGB32();
+    for (final shift in <int>[0, 8, 16, 24]) {
+      expect(
+        (actual >> shift) & 0xff,
+        closeTo((expected >> shift) & 0xff, 2),
+        reason: 'returning at progress $p',
+      );
+    }
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('a tap captures where the card sits', (tester) async {
     final captured = <ContainerTransformOrigin?>[];
     await pumpList(tester, captured: captured);
 
@@ -246,12 +309,13 @@ void main() {
 
     final origin = captured.single!;
     expect(origin.tag, 'a');
+    expect(
+      origin.bounds,
+      const ContainerTransformBounds(rect: cardRect, radius: 16),
+    );
     final geometry = geometryOf(tester);
     expect(geometry.fallback, isFalse);
-    expect(geometry.closed!.rect, cardRect);
-    expect(geometry.closed!.imageRect, cardRect);
-    expect(geometry.closed!.radius, 16);
-    expect(geometry.closed!.image.width, cardRect.width.round());
+    expect(geometry.closed, origin.bounds);
     await tester.pumpAndSettle();
   });
 
@@ -270,10 +334,7 @@ void main() {
     // 第二帧：页面第一次绘制，哪怕这两帧很慢，进度也停在卡片上。
     await tester.pump(const Duration(milliseconds: 200));
     expect(route.animation!.value, 0);
-    // 第三帧空等光栅线程消化下层快照，仍停在卡片上。
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(route.animation!.value, 0);
-    // 三帧画完后的这一帧才开始计时，仍从 0 出发——不会因前几帧耗时跳一截。
+    // 两帧画完后的这一帧才开始计时，仍从 0 出发——不会因前几帧耗时跳一截。
     await tester.pump(const Duration(milliseconds: 200));
     expect(route.animation!.value, 0);
 
@@ -286,8 +347,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(route.animation!.value, 1);
     expect(route.animation!.status, AnimationStatus.completed);
-    // 停稳后不再留着起飞的卡片画面。
-    expect(geometryOf(tester).closed, isNull);
+    // 停稳后不再留着下层的整屏快照。
+    expect(belowOf(tester).debugImage, isNull);
   });
 
   testWidgets('a stalled first step starts late instead of jumping', (
@@ -366,46 +427,35 @@ void main() {
     await tester.pump(frame);
     expect(route.animation!.status, AnimationStatus.dismissed);
     await tester.pumpAndSettle();
-    expectSourceVisible(tester, 'a', true);
   });
 
-  testWidgets('the page below is a snapshot only while the card is hidden', (
+  testWidgets('the page below is a snapshot only while the container moves', (
     tester,
   ) async {
     await pumpList(tester);
-    // 停稳后下层路由 offstage，查找时要带上它。
-    SnapshotController below() => tester
-        .widget<SnapshotWidget>(
-          find.byType(SnapshotWidget, skipOffstage: false),
-        )
-        .controller;
+    expect(find.byType(ContainerTransformBelowSnapshot), findsNothing);
 
     await tester.tap(find.text('card a'));
-    // 第一帧原卡片仍在下层实时绘制；帧末隐藏原卡片的同时才开启快照，
-    // 下一帧拍下的下层里没有这张卡片（先拍会在展开途中多出一张）。
+    // 第一帧（新路由 offstage）就拍下层，原卡片照常在快照里。
     await tester.pump();
-    expectSourceVisible(tester, 'a', false);
-    expect(below().allowSnapshotting, isTrue);
+    final first = belowOf(tester).debugImage;
+    expect(first, isNotNull);
     await tester.pump(const Duration(milliseconds: 200));
-    expect(below().allowSnapshotting, isTrue);
-    // 停稳当帧恢复实时绘制。
+    expect(belowOf(tester).debugImage, same(first));
+    // 停稳当帧恢复实时绘制、释放快照。
     await tester.pumpAndSettle();
-    expect(below().allowSnapshotting, isFalse);
+    expect(belowOf(tester).debugImage, isNull);
 
-    // 返回：pop 当帧下层仍实时绘制，好量出卡片此刻的样子；量完、隐藏
-    // 卡片后才改画快照。
+    // 返回：下层重新上屏的这一帧就拍成快照。
     Navigator.of(tester.element(find.byType(_DetailPage))).pop();
-    expect(below().allowSnapshotting, isFalse);
     await tester.pump();
-    expectSourceVisible(tester, 'a', false);
-    expect(below().allowSnapshotting, isTrue);
+    expect(belowOf(tester).debugImage, isNotNull);
     await tester.pumpAndSettle();
     // 归位后下层不再包快照。
-    expect(find.byType(SnapshotWidget), findsNothing);
-    expectSourceVisible(tester, 'a', true);
+    expect(find.byType(ContainerTransformBelowSnapshot), findsNothing);
   });
 
-  testWidgets('returning to another card mid-way retakes the snapshot', (
+  testWidgets('returning to another card mid-way keeps the snapshot', (
     tester,
   ) async {
     await pumpList(tester);
@@ -414,28 +464,23 @@ void main() {
     await pumpOpeningHold(tester);
     await pumpStart(tester);
     await tester.pump(const Duration(milliseconds: 100));
-    final below = tester
-        .widget<SnapshotWidget>(find.byType(SnapshotWidget))
-        .controller;
-    expect(below.allowSnapshotting, isTrue);
-    var retakes = 0;
-    below.addListener(() => retakes++);
+    final snapshot = belowOf(tester).debugImage;
+    expect(snapshot, isNotNull);
 
-    // 展开途中翻到 b 再返回：a 恢复、b 隐藏，旧快照里还是 a 空着、b 在，
-    // 必须重拍，否则缩回 b 的途中下面多一张 b、a 处空一块。
+    // 展开途中翻到 b 再返回：下层一直在屏上，当场量出 b、原路返回；原卡片
+    // 从没隐藏过，快照不必重拍。
+    final route = routeOf(tester);
+    final before = route.animation!.value;
     final context = tester.element(find.byType(_DetailPage));
     ContainerTransformPageRoute.setReturnTag(context, 'b');
     Navigator.of(context).pop();
-    // 量 b 的这一帧下层实时绘制（画快照时量不到卡片）。
-    expect(below.allowSnapshotting, isFalse);
-    await tester.pump();
     expect(geometryOf(tester).closed!.rect, cardRect.translate(0, 140));
-    expectSourceVisible(tester, 'a', true);
-    expectSourceVisible(tester, 'b', false);
-    expect(below.allowSnapshotting, isTrue);
-    expect(retakes, 2);
+    await tester.pump(const Duration(milliseconds: 16));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(route.animation!.value, lessThan(before));
+    expect(belowOf(tester).debugImage, same(snapshot));
     await tester.pumpAndSettle();
-    expectSourceVisible(tester, 'b', true);
+    expect(find.byType(_DetailPage), findsNothing);
   });
 
   testWidgets('heroes in the page are off until the route settles', (
@@ -508,17 +553,14 @@ void main() {
 
     final route = routeOf(tester);
     Navigator.of(tester.element(find.byType(_DetailPage))).pop('done');
-    // 下层页面重新排版的这一帧停在整页上，画完后量出卡片。
+    // 下层重新排版并拍快照、空等光栅的两帧都停在整页上，之后量出卡片。
     await tester.pump();
     expect(route.animation!.value, 1);
     await tester.pump();
+    expect(route.animation!.value, 1);
     final geometry = geometryOf(tester);
     expect(geometry.fallback, isFalse);
     expect(geometry.closed!.rect, cardRect);
-    // 下层重拍快照、空等光栅的两帧仍停在整页上。
-    expect(route.animation!.value, 1);
-    await tester.pump();
-    expect(route.animation!.value, 1);
     await pumpStart(tester);
     await tester.pump(const Duration(milliseconds: 150));
     expect(route.animation!.value, inExclusiveRange(0, 1));
@@ -540,10 +582,8 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(geometryOf(tester).closed!.rect, cardRect.translate(0, 140));
-    expectSourceVisible(tester, 'a', true);
-    expectSourceVisible(tester, 'b', false);
     await tester.pumpAndSettle();
-    expectSourceVisible(tester, 'b', true);
+    expect(find.byType(_DetailPage), findsNothing);
   });
 
   testWidgets('without a card to return to the page fades out in place', (
@@ -594,18 +634,16 @@ void main() {
     await tester.pump(const Duration(milliseconds: 120));
     final route = routeOf(tester);
     final before = route.animation!.value;
-    final openingShot = geometryOf(tester).closed;
+    final opening = geometryOf(tester).closed;
     expect(before, inExclusiveRange(0, 1));
 
     Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+    // 返回后的第一帧从当前进度出发，不跳变；终点仍是同一张卡片。
     await tester.pump(const Duration(milliseconds: 16));
-    // 等待下层重新排版的那一帧不动：进度停在返回时的位置，不跳变。
     expect(route.animation!.value, closeTo(before, 0.001));
-    expect(geometryOf(tester).closed, same(openingShot));
-    expectSourceVisible(tester, 'a', false);
+    expect(geometryOf(tester).closed, opening);
     await tester.pumpAndSettle();
     expect(find.byType(_DetailPage), findsNothing);
-    expectSourceVisible(tester, 'a', true);
   });
 
   testWidgets('with reduced motion no origin is captured', (tester) async {
@@ -632,6 +670,28 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 }
+
+const double _bandTop = 600;
+const Color _bandColor = Color(0xFF7B1FA2);
+
+/// 列表页的“页面背景”：一个 Leader 铺满整页（对应页面背景层上的取样锚点）。
+Widget _wrapBackdropLink(LayerLink? link, Widget child) =>
+    link == null ? child : CompositedTransformTarget(link: link, child: child);
+
+/// 一条“内容玻璃的预模糊取样”：跟随 [link] 的 Follower，Leader 不在时不画
+/// （与 `GlassBackdropSampleView` 相同）。
+Widget _followerBand(LayerLink link) => Positioned(
+  left: 0,
+  top: _bandTop,
+  width: 400,
+  height: 100,
+  child: CompositedTransformFollower(
+    link: link,
+    showWhenUnlinked: false,
+    offset: const Offset(0, _bandTop),
+    child: const ColoredBox(color: _bandColor),
+  ),
+);
 
 class _DetailPage extends StatefulWidget {
   const _DetailPage();

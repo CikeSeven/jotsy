@@ -50,7 +50,7 @@ Object diaryCardTransitionTag(String diaryId) => ('diary_card', diaryId);
 ///
 /// 交互：选择模式下点击切换选中；普通模式点击进入预览页（未解封胶囊进入
 /// 封存页），页面从这张卡片展开（卡片包在 [ContainerTransformSource] 里，
-/// 点按时量出位置、截下画面交给路由）；长按强制选中。
+/// 点按时量出位置交给路由）；长按强制选中。
 ///
 /// 重建：输入（数据按值、样式按身份、选择状态、标签上限、留言数、高亮词）
 /// 与上次相同、依赖的继承数据也没变时，直接交回上次建好的子树，Flutter
@@ -262,7 +262,7 @@ class DiaryCard extends StatefulWidget {
                 ),
               ),
             Positioned.fill(
-              // 点按处的 context 在展开来源之内，才能从这里量出卡片、截下画面。
+              // 点按处的 context 在展开来源之内，才能从这里量出卡片。
               child: Builder(
                 builder: (BuildContext tapContext) => Material(
                   type: MaterialType.transparency,

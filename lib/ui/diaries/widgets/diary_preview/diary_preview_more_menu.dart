@@ -25,7 +25,8 @@ import '../../controllers/diary_preview_export_controller.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 
 /// 预览页顶栏“更多”弹出菜单的条目：导出、收进日记本、设为纪念日、添加待办、
-/// 转为独立待办 | 页面样式 | 删除。分享在顶栏上；写留言与 AI 回应在页尾的
+/// 转为独立待办 | 查找（[onFind]，正文还没就绪时不给）、导图相关 | 页面样式 |
+/// 删除。分享在顶栏上；写留言与 AI 回应在页尾的
 /// 留言区、回应区各有一行入口，菜单里不再重复。
 ///
 /// 在预览页的 build 里调用：功能开关与设置经 `ref.watch` 订阅，开关一变菜单
@@ -41,6 +42,7 @@ List<Widget> diaryPreviewMoreItems(
   required DiaryPreviewViewData viewData,
   required Future<void> Function() onDelete,
   List<NotebookView> notebooks = const <NotebookView>[],
+  VoidCallback? onFind,
 }) {
   final l10n = context.l10n;
   final features = ref.watch(appFeaturesProvider);
@@ -96,6 +98,13 @@ List<Widget> diaryPreviewMoreItems(
             ),
           ),
     tools: <Widget>[
+      // 导图日记的正文是一张导图，没有可查找的文字。
+      if (onFind != null && map == null)
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.magnifyingGlass,
+          l10n.diaryFind,
+          () async => onFind(),
+        ),
       if (map != null) ...<Widget>[
         diaryMoreMenuEntry(
           FontAwesomeIcons.fileExport,

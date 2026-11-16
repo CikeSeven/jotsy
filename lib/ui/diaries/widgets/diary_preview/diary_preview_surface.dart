@@ -86,7 +86,8 @@ AppPageBackdrop? _yieldingBackdrop(
 
 /// 一篇预览的页面外壳：纸色底（或让位给页面背景，见 [diaryPreviewPageColors]）
 /// 的 Scaffold、整页主题（配色基调或纸张深浅
-/// 不同时），以及叠在内容上的阅读进度线、回到顶部与可选的遮罩（导出时的
+/// 不同时），以及叠在内容上的阅读进度线、回到顶部、可选的底部浮层（正文
+/// 查找栏，贴着页面底边、键盘弹起时随正文区上移）与可选的遮罩（导出时的
 /// 加载遮罩）。正式页面与设置页的实时预览共用，两处的外观因此一致。
 class DiaryPreviewSurface extends StatelessWidget {
   const DiaryPreviewSurface({
@@ -94,12 +95,16 @@ class DiaryPreviewSurface extends StatelessWidget {
     required this.resolved,
     required this.scrollController,
     required this.content,
+    this.bottomBar,
     this.overlay,
   });
 
   final DiaryPreviewResolvedStyle resolved;
   final ScrollController scrollController;
   final Widget content;
+
+  /// 贴着页面底边的浮层（正文查找栏）；有它时“回到顶部”让位。
+  final Widget? bottomBar;
 
   /// 铺满整页的最上层（不拦截时应自行 IgnorePointer）。
   final Widget? overlay;
@@ -108,6 +113,7 @@ class DiaryPreviewSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final page = resolved.style.page;
     final overlay = this.overlay;
+    final bottomBar = this.bottomBar;
     final scaffold = Scaffold(
       backgroundColor: diaryPreviewScaffoldColor(context, resolved),
       body: SafeArea(
@@ -124,12 +130,20 @@ class DiaryPreviewSurface extends StatelessWidget {
                 right: 0,
                 child: DiaryPreviewProgressLine(controller: scrollController),
               ),
-            if (page.backToTop)
+            if (page.backToTop && bottomBar == null)
               PositionedDirectional(
                 key: const ValueKey<String>('backToTop'),
                 end: 16,
                 bottom: 16,
                 child: DiaryPreviewBackToTop(controller: scrollController),
+              ),
+            if (bottomBar != null)
+              Positioned(
+                key: const ValueKey<String>('bottomBar'),
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: bottomBar,
               ),
             if (overlay != null)
               Positioned.fill(

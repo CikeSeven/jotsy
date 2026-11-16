@@ -9,11 +9,13 @@ import 'diary_editor_keyboard_reopen.dart';
 import 'diary_editor_selection_gestures.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
+import 'diary_find_revealer.dart';
 import 'diary_read_only_shortcuts.dart';
 
 /// 原生正文外围的交互层：手机选区菜单、软键盘扩选兼容、点回插入点重新弹出
 /// 键盘与点文末空白处补可写的行（[DiaryEditorKeyboardReopen]）、编辑态段落
-/// 把手与光标避让。
+/// 把手与光标避让，以及查找时把当前匹配滚进视野（[DiaryFindRevealer]，编辑
+/// 与只读正文都有）。
 /// 与块注册/主题解析分开，键盘约束变化时只更新这一层。
 class DiaryEditorInteractionLayer extends StatelessWidget {
   const DiaryEditorInteractionLayer({
@@ -115,7 +117,14 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
         controller: controller,
         enabled: textSelection,
         focusNode: focusNode,
-        child: content,
+        // 预览页的查找：当前匹配滚进视野（收缩嵌入时滚外层页面）。
+        child: DiaryFindRevealer(
+          controller: controller,
+          coveredHeight: coveredHeight,
+          pageScroll: shrinkWrap,
+          revealPath: shrinkWrap ? null : revealPath,
+          child: content,
+        ),
       );
     }
     final handles = DiaryBlockHandleLayer(
@@ -130,13 +139,24 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
       child: content,
     );
     return shrinkWrap
-        ? handles
+        ? DiaryFindRevealer(
+            controller: controller,
+            coveredHeight: 0,
+            pageScroll: true,
+            child: handles,
+          )
         : DiaryEditorViewport(
             controller: controller,
             focusNode: focusNode,
             coveredHeight: coveredHeight,
             revealPath: revealPath,
-            child: handles,
+            // 查找的当前匹配滚进视野（查找框有焦点时正文的视口不揭示光标）。
+            child: DiaryFindRevealer(
+              controller: controller,
+              coveredHeight: coveredHeight,
+              revealPath: revealPath,
+              child: handles,
+            ),
           );
   }
 }

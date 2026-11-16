@@ -7,6 +7,7 @@ import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/container_transform/container_transform_route.dart';
 import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../models/diary_find_query.dart';
 import '../pages/edit_diary_page.dart';
 import '../providers/diary_detail_provider.dart';
 import 'diary_editor_controller.dart' show Position;
@@ -27,7 +28,8 @@ import 'diary_editor_controller.dart' show Position;
 /// 与预览页相同，路由滑入时就是完整页面）。[coverHero]：入口抓取的封面
 /// 画面，交给编辑页的头图作共享元素落点，所有权随之转给编辑页。[origin]：
 /// 从列表直接进编辑页时点按的卡片，编辑页从它展开、返回时缩回去（见
-/// `openDiaryPage`）；从预览页进入时不传，照旧按主题转场。
+/// `openDiaryPage`）；从预览页进入时不传，照旧按主题转场。[find]：从搜索
+/// 结果直接进编辑页时带着的搜索词（见 `EditDiaryPage.initialFind`）。
 Future<bool> openDiaryEditorFromPreview(
   BuildContext context,
   WidgetRef ref,
@@ -36,11 +38,13 @@ Future<bool> openDiaryEditorFromPreview(
   DiaryWithTags? initialDetail,
   ImageViewerHero? coverHero,
   ContainerTransformOrigin? origin,
+  DiaryFindQuery? find,
 }) async {
   Widget page(BuildContext context) => EditDiaryPage(
     diaryId: diaryId,
     entryMode: EditDiaryEntryMode.edit,
     initialCaret: caret,
+    initialFind: find,
     initialDetail: initialDetail,
     coverHero: coverHero,
   );

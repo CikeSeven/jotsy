@@ -65,11 +65,42 @@ bool expandDiaryTogglesAroundSelection(af.EditorState state) {
       state.selectionUpdateReason == af.SelectionUpdateReason.selectAll) {
     return false;
   }
-  final toggles = <af.Node>{
+  return _expandDiaryToggles(state, {
     for (final position in {selection.start, selection.end})
       if (state.document.nodeAtPath(position.path) case final node?)
         ...collapsedDiaryTogglesAbove(node),
-  };
+  });
+}
+
+/// 把 [node] 外面每一层已收起的折叠块展开（正文查找跳到收起的内容里的
+/// 匹配时，见 `DiaryFindReplace`）；撤销口径同
+/// [expandDiaryTogglesAroundSelection]。不需要展开时返回 false。
+bool expandDiaryTogglesAbove(af.EditorState state, af.Node node) {
+  if (state.isDisposed || !state.editable) return false;
+  return _expandDiaryToggles(state, collapsedDiaryTogglesAbove(node).toSet());
+}
+
+/// 只读正文里把 [node] 外面每一层显示为收起的折叠块展开（预览页查找跳到
+/// 收起的内容里时）：只改本地显示状态（[setDiaryToggleViewCollapsed]），
+/// 不写文档，并让折叠块按新状态重建。不需要展开时返回 false。
+bool expandDiaryToggleViewsAbove(af.Node node) {
+  var expanded = false;
+  for (var parent = node.parent; parent != null; parent = parent.parent) {
+    if (parent.type != kDiaryBlockToggleList ||
+        !diaryToggleViewCollapsed(parent)) {
+      continue;
+    }
+    setDiaryToggleViewCollapsed(parent, false);
+    // 块组件按节点订阅重建（上游的 BlockComponentContainer）；节点本身
+    // 没变，只能直接通知。
+    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+    parent.notifyListeners();
+    expanded = true;
+  }
+  return expanded;
+}
+
+bool _expandDiaryToggles(af.EditorState state, Set<af.Node> toggles) {
   if (toggles.isEmpty) return false;
   final transaction = state.transaction;
   for (final toggle in toggles) {

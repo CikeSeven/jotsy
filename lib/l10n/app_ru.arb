@@ -22151,5 +22151,93 @@
   "mindMapAiEmpty": "ИИ не вернул ни одной темы. Попробуйте переформулировать и создать заново.",
   "@mindMapAiEmpty": {
     "description": "Mind map AI panel: the reply couldn't be read as topics."
+  },
+  "diaryFindReplace": "Найти и заменить",
+  "@diaryFindReplace": {
+    "description": "Diary editor more menu: open the find bar that floats above the keyboard, with replace."
+  },
+  "diaryFind": "Найти",
+  "@diaryFind": {
+    "description": "Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page."
+  },
+  "diaryFindClose": "Закрыть поиск",
+  "@diaryFindClose": {
+    "description": "Find bar: tooltip of the back button that closes the find bar."
+  },
+  "diaryFindHint": "Найти в тексте",
+  "@diaryFindHint": {
+    "description": "Find bar: placeholder of the find field (searches the diary body)."
+  },
+  "diaryFindPrevious": "Предыдущее совпадение",
+  "@diaryFindPrevious": {
+    "description": "Find bar: tooltip of the button that jumps to the previous match."
+  },
+  "diaryFindNext": "Следующее совпадение",
+  "@diaryFindNext": {
+    "description": "Find bar: tooltip of the button that jumps to the next match."
+  },
+  "diaryFindPosition": "{current}/{total}",
+  "@diaryFindPosition": {
+    "description": "Find bar: which match is current out of how many, shown at the end of the find field. total may end with + when there are too many to list.",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "3"
+      },
+      "total": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "diaryFindNoResults": "Нет совпадений",
+  "@diaryFindNoResults": {
+    "description": "Find bar: shown at the end of the find field when nothing matches."
+  },
+  "diaryFindInvalidRegex": "Ошибка в выражении",
+  "@diaryFindInvalidRegex": {
+    "description": "Find bar: shown at the end of the find field when the regular expression can't be compiled."
+  },
+  "diaryFindOptionRegex": "Рег. выражения",
+  "@diaryFindOptionRegex": {
+    "description": "Find bar option chip: interpret the find text as a regular expression."
+  },
+  "diaryFindOptionMatchCase": "Регистр",
+  "@diaryFindOptionMatchCase": {
+    "description": "Find bar option chip: case-sensitive matching."
+  },
+  "diaryFindOptionWholeWord": "Слово целиком",
+  "@diaryFindOptionWholeWord": {
+    "description": "Find bar option chip: only match whole words (not inside longer words)."
+  },
+  "diaryFindOptionReplace": "Замена",
+  "@diaryFindOptionReplace": {
+    "description": "Find bar chip: show or hide the replace row."
+  },
+  "diaryReplaceHint": "Заменить на",
+  "@diaryReplaceHint": {
+    "description": "Find bar: placeholder of the replace field."
+  },
+  "diaryReplaceHintRegex": "Заменить на ($1 — группа 1)",
+  "@diaryReplaceHintRegex": {
+    "description": "Find bar: placeholder of the replace field when regex is on; $1 is literal replacement syntax that refers to the first capture group."
+  },
+  "diaryReplaceOne": "Заменить",
+  "@diaryReplaceOne": {
+    "description": "Find bar button: replace the current match and go to the next one."
+  },
+  "diaryReplaceAll": "Заменить все",
+  "@diaryReplaceAll": {
+    "description": "Find bar button: replace every match at once (one undo step)."
+  },
+  "diaryReplaceAllDone": "{count, plural, one{Заменено {count} совпадение} few{Заменено {count} совпадения} many{Заменено {count} совпадений} other{Заменено {count} совпадения}}",
+  "@diaryReplaceAllDone": {
+    "description": "Snack bar after replace all: how many matches were replaced (with an undo action).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
   }
 }

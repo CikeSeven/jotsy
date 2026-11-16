@@ -6,8 +6,10 @@ import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../models/diary_find_query.dart';
 import '../models/diary_preview_sequence.dart';
 import '../providers/diary_preview_style_provider.dart';
+import '../widgets/diary_preview/diary_preview_find.dart';
 import '../widgets/diary_preview/diary_preview_pager.dart';
 import '../widgets/diary_preview/diary_preview_view.dart';
 
@@ -22,7 +24,10 @@ export '../models/diary_preview_sequence.dart';
 /// 入口给出 [sequence]（进入时所在列表的顺序）且不止一篇时，可左右滑动切换
 /// （[DiaryPreviewPager]）；否则只看这一篇。删除后以
 /// [DiaryPreviewResult.deleted] 返回被删的那一篇，由入口给出撤销提示。
-/// 桌面上 Esc 与返回按钮相同；翻页时的 ←/→ 与悬停按钮在翻页器里。
+/// 桌面上 Esc 与返回按钮相同（开着正文查找时先关查找）；翻页时的 ←/→ 与
+/// 悬停按钮在翻页器里；Ctrl / ⌘ + F 打开当前这一篇的查找
+/// （[DiaryPreviewFindShortcuts]）。从搜索结果进来时带着搜索词
+/// （[initialFind]），每一篇打开时都标出并跳到第一处。
 class DiaryPreviewPage extends ConsumerWidget {
   const DiaryPreviewPage({
     super.key,
@@ -30,6 +35,7 @@ class DiaryPreviewPage extends ConsumerWidget {
     this.initialDetail,
     this.coverHero,
     this.sequence,
+    this.initialFind,
   });
 
   final String diaryId;
@@ -43,6 +49,9 @@ class DiaryPreviewPage extends ConsumerWidget {
 
   /// 左右滑动的顺序；null（单篇入口）时不翻页。
   final DiaryPreviewSequence? sequence;
+
+  /// 打开时带着的正文查找条件（从搜索结果打开）；null 时不查找。
+  final DiaryFindQuery? initialFind;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,12 +74,16 @@ class DiaryPreviewPage extends ConsumerWidget {
   Widget _buildPage(BuildContext context) {
     final sequence = this.sequence;
     if (sequence == null || !sequence.canPage) {
-      return DesktopPageKeys(
-        onEscape: () => Navigator.of(context).maybePop(),
-        child: DiaryPreviewView(
-          diaryId: diaryId,
-          initialDetail: initialDetail,
-          coverHero: coverHero,
+      return DiaryPreviewFindShortcuts(
+        currentDiaryId: () => diaryId,
+        child: DesktopPageKeys(
+          onEscape: () => Navigator.of(context).maybePop(),
+          child: DiaryPreviewView(
+            diaryId: diaryId,
+            initialDetail: initialDetail,
+            coverHero: coverHero,
+            initialFind: initialFind,
+          ),
         ),
       );
     }
@@ -79,6 +92,7 @@ class DiaryPreviewPage extends ConsumerWidget {
       diaryId: diaryId,
       initialDetail: initialDetail,
       coverHero: coverHero,
+      initialFind: initialFind,
     );
   }
 }

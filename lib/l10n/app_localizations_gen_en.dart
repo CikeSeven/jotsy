@@ -18900,4 +18900,68 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mindMapAiEmpty =>
       'The AI didn\'t return any topics. Try rephrasing and generate again.';
+
+  @override
+  String get diaryFindReplace => 'Find and replace';
+
+  @override
+  String get diaryFind => 'Find';
+
+  @override
+  String get diaryFindClose => 'Close find';
+
+  @override
+  String get diaryFindHint => 'Find in text';
+
+  @override
+  String get diaryFindPrevious => 'Previous match';
+
+  @override
+  String get diaryFindNext => 'Next match';
+
+  @override
+  String diaryFindPosition(String current, String total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get diaryFindNoResults => 'No results';
+
+  @override
+  String get diaryFindInvalidRegex => 'Invalid regex';
+
+  @override
+  String get diaryFindOptionRegex => 'Regex';
+
+  @override
+  String get diaryFindOptionMatchCase => 'Match case';
+
+  @override
+  String get diaryFindOptionWholeWord => 'Whole word';
+
+  @override
+  String get diaryFindOptionReplace => 'Replace';
+
+  @override
+  String get diaryReplaceHint => 'Replace with';
+
+  @override
+  String get diaryReplaceHintRegex => 'Replace with (\$1 = group 1)';
+
+  @override
+  String get diaryReplaceOne => 'Replace';
+
+  @override
+  String get diaryReplaceAll => 'Replace all';
+
+  @override
+  String diaryReplaceAllDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Replaced $count matches',
+      one: 'Replaced 1 match',
+    );
+    return '$_temp0';
+  }
 }

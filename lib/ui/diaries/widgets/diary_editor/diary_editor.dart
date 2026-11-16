@@ -32,6 +32,7 @@ import 'diary_block_select_target.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
 import 'diary_embed_keys.dart';
+import 'diary_find_highlight.dart';
 import 'diary_mention_menu.dart';
 import 'diary_multiline_input_interceptor.dart';
 import 'diary_slash_commands.dart';
@@ -505,15 +506,19 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         widget.appearance,
         code,
         padding: widget.padding,
-        decorator: diaryEditorSpanDecorator(
-          code,
-          _tracker,
-          widget.appearance.typography.fontSize,
-          links: DiaryLinkSpanOptions(
-            state: controller.state,
-            notebooksEnabled: notebooksEnabled,
-            plainColor: body.color,
-            onOpen: _openLink,
+        // 查找的高亮按匹配切开行内片段、改文字样式（见 DiaryFindHighlight），
+        // 包在其余行内装饰外面。
+        decorator: diaryFindSpanDecorator(
+          diaryEditorSpanDecorator(
+            code,
+            _tracker,
+            widget.appearance.typography.fontSize,
+            links: DiaryLinkSpanOptions(
+              state: controller.state,
+              notebooksEnabled: notebooksEnabled,
+              plainColor: body.color,
+              onOpen: _openLink,
+            ),
           ),
         ),
       ),
@@ -704,7 +709,12 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   }
 
   Widget _decorateNative(af.AppFlowyEditor editor) {
-    final layer = _interactionLayer(editor);
+    // 查找状态交给正文里的文字块（高亮），在缓存的上游编辑器外面：开关
+    // 查找、换当前匹配只重建用到它的文字块。
+    final layer = DiaryFindHighlightHost(
+      find: widget.controller.find,
+      child: _interactionLayer(editor),
+    );
     return widget.controller.readOnly
         ? layer
         : DiarySlashMenuHost(

@@ -9379,7 +9379,7 @@
   "@notebookPrivacyHidden": {
     "description": "Privacy option: entries do not appear in All entries."
   },
-  "notebookPrivacyHiddenHint": "Only visible inside this notebook",
+  "notebookPrivacyHiddenHint": "Only listed inside this notebook, but still found by search",
   "@notebookPrivacyHiddenHint": {
     "description": "Description of the hide-from-All-entries option."
   },
@@ -9387,7 +9387,7 @@
   "@notebookPrivacyLocked": {
     "description": "Privacy option: opening the notebook needs authentication."
   },
-  "notebookPrivacyLockedHint": "Verify your identity to open, and hide from All entries",
+  "notebookPrivacyLockedHint": "Verify your identity to open; hidden from All entries and search",
   "@notebookPrivacyLockedHint": {
     "description": "Description of the lock option."
   },

@@ -1,12 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
-/// 日记列表查询的范围：全部日记、未收录的日记、某本手动日记本、或某本智能
-/// 日记本。
+/// 日记列表查询的范围：全部日记、全局搜索、未收录的日记、某本手动日记本、
+/// 或某本智能日记本。
 ///
 /// 只描述“查哪些日记、按什么口径排序”，SQL 由数据库层
-/// （`app_database_diary_scope_sql.dart`）生成。三种范围都遵守同一条私密规则：
-/// 在隐藏 / 加锁的手动日记本里的日记只出现在那本私密日记本的范围内。
+/// （`app_database_diary_scope_sql.dart`）生成。除全局搜索外都遵守同一条私密
+/// 规则：在隐藏 / 加锁的手动日记本里的日记只出现在那本私密日记本的范围内；
+/// 全局搜索只排除上锁的（见 [DiaryGlobalSearchScope]）。
 ///
 /// 实现了值相等：作为 Riverpod family 的 key（经 `DiaryPageQuery` 等）时，
 /// 每次重建出的同一范围必须命中同一个 provider 实例。
@@ -16,6 +17,9 @@ sealed class DiaryListScope {
 
   /// 全部日记（全局时间线），排除私密日记。
   static const DiaryListScope all = DiaryAllScope();
+
+  /// 搜索页的全局搜索：全部日记加上隐藏日记本里的日记。
+  static const DiaryListScope globalSearch = DiaryGlobalSearchScope();
 
   /// 没有收进任何日记本的日记。
   static const DiaryListScope unfiled = DiaryUnfiledScope();
@@ -33,6 +37,29 @@ final class DiaryAllScope extends DiaryListScope {
 
   @override
   String toString() => 'DiaryAllScope';
+}
+
+/// 搜索页不限日记本时的范围（含从标签点进来的搜索）：全部日记，加上
+/// “不在全部日记中显示”（隐藏）的日记本里的日记。
+///
+/// 隐藏只是不让日记出现在全部日记的时间线里，用户主动搜的时候仍要能找到；
+/// 生效可见性为上锁（自己或某个上级上锁，认不出的可见性按上锁解读）的
+/// 本子里的日记照常排除——打开上锁的本子要先验证身份，搜索不能绕过去。
+/// 一篇日记同时在隐藏本和上锁本里时按上锁处理。
+///
+/// 只用于搜索页的结果、计数、常用标签与从结果翻页的预览；其他全局查询
+/// （全部日记、探索、日历、导出等）仍用 [DiaryListScope.all]。
+final class DiaryGlobalSearchScope extends DiaryListScope {
+  const DiaryGlobalSearchScope();
+
+  @override
+  bool operator ==(Object other) => other is DiaryGlobalSearchScope;
+
+  @override
+  int get hashCode => (DiaryGlobalSearchScope).hashCode;
+
+  @override
+  String toString() => 'DiaryGlobalSearchScope';
 }
 
 /// 没有收进任何日记本的日记（首页书架“未收录”）。

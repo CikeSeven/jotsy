@@ -9,12 +9,13 @@ import '../pages/diary_search_page.dart';
 ///
 /// 日记本统计页传入这本的范围 [scope]（连同名称 [scopeLabel] 与图标
 /// [scopeIcon]），搜索页里显示为可移除的日记本条件，与在日记本里点搜索一致；
-/// 其余入口在全部日记中找，私密日记照常排除。搜索页自己维护筛选，进去后仍可
+/// 其余入口为全局搜索（[DiaryListScope.globalSearch]：隐藏日记本里的日记也
+/// 找得到，上锁的照常排除）。搜索页自己维护筛选，进去后仍可
 /// 增减标签、输入关键词，不影响首页的标签筛选。
 Future<void> openDiaryTagSearch(
   BuildContext context,
   int tagId, {
-  DiaryListScope scope = DiaryListScope.all,
+  DiaryListScope scope = DiaryListScope.globalSearch,
   String? scopeLabel,
   FaIconData? scopeIcon,
 }) {

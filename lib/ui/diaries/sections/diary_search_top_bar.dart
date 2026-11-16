@@ -58,8 +58,8 @@ class DiarySearchTopBar extends StatelessWidget {
   /// 已选为条件的标签（按标签列表的顺序）。
   final List<Tag> selectedTags;
 
-  /// 日记本条件的名称与图标；在全部日记中搜索（或已移除）时 [scopeLabel]
-  /// 为 null。
+  /// 日记本条件的名称与图标；全局搜索（含移除日记本条件之后）时
+  /// [scopeLabel] 为 null。
   final String? scopeLabel;
   final FaIconData scopeIcon;
 

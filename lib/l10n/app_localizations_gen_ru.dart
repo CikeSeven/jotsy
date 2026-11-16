@@ -7551,14 +7551,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookPrivacyHiddenHint =>
-      'Записи видны только внутри этого блокнота';
+      'Записи видны только внутри этого блокнота, но находятся поиском';
 
   @override
   String get notebookPrivacyLocked => 'Блокировка';
 
   @override
   String get notebookPrivacyLockedHint =>
-      'Для открытия нужно подтвердить личность; записи скрыты из раздела «Все записи»';
+      'Для открытия нужно подтвердить личность; записи скрыты из раздела «Все записи» и из поиска';
 
   @override
   String get notebookSortLabel => 'Порядок по умолчанию';

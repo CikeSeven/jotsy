@@ -384,7 +384,8 @@ class DiariesNotebookScopeController {
     return (notebookId: notebook.id, chapterId: current.state.chapterId);
   }
 
-  /// 搜索页的范围参数：在日记本或“未收录”里时带上范围与它的名称、图标。
+  /// 搜索页的范围参数：在日记本或“未收录”里时带上范围与它的名称、图标；
+  /// 在全部日记里时为全局搜索（隐藏日记本里的日记也搜得到）。
   ({DiaryListScope scope, String? label, FaIconData? icon}) searchScope() {
     final current = resolution;
     final notebook = current.notebook;
@@ -396,7 +397,7 @@ class DiariesNotebookScopeController {
       );
     }
     if (notebook == null) {
-      return (scope: DiaryListScope.all, label: null, icon: null);
+      return (scope: DiaryListScope.globalSearch, label: null, icon: null);
     }
     return (
       scope: current.scope,

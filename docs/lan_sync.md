@@ -7,7 +7,7 @@
 - 同一局域网内的 Jotsy（Android、Linux、Windows；macOS 可编译，iOS 不支持——`AppPlatform.supportsLanSync`）互相发现、配对后双向同步全部日记数据。
 - 时机：同步页里手动“立即同步”；应用在前台时与已配对设备自动同步（不做后台常驻）。
 - 同步范围：日记（含回收站中的）、标签、日记本（含成员、书序、层级）、留言、日记模板（含改过的内置模板）、纪念日、这天的心情、待办（含清单）、托管媒体；设置为可选（两端都开启才同步）。
-- **不同步**：草稿（单台设备上未完成的工作；发布即删除，两台都发布会重复；载荷带本机标签 id）、导入的字体文件（设置里只带字体 id，缺失回落内置字体）、心情选项 `mood_options`、本机偏好（不随备份导出的那些键）、网盘凭据、应用锁开关与应用密码。
+- **不同步**：草稿（单台设备上未完成的工作；发布即删除，两台都发布会重复；载荷带本机标签 id）、导入的字体文件（设置里只带按文件内容的字体引用 `jotsy-font:<sha256>`，写入时换回本机导入的同一文件；本机没有时回落内置字体，见 §2.2 settings 行）、心情选项 `mood_options`、本机偏好（不随备份导出的那些键）、网盘凭据、应用锁开关与应用密码。
 - 同步不是导入：不走 `chooseBackupImportMode`，不复用 `BackupMerge` 的合并/覆盖模式，也不调用 UI 写库函数（它们会改写 `updatedAt`、清掉归档/删除标记等）。
 
 ## 1. 模块与文件归属
@@ -15,7 +15,7 @@
 | 路径 | 职责 |
 |---|---|
 | `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 |
-| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,todo,settings,support}.dart`、`sync_media_refs.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一；可送进 isolate 的纯 Dart 原始行 |
+| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,todo,settings,support}.dart`、`sync_media_refs.dart`、`sync_settings_fonts.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一、设置里导入字体的本机 id ↔ 内容引用；可送进 isolate 的纯 Dart 原始行 |
 | `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 |
 | `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 |
 | `lib/core/database/app_database_sync_ops.dart`（读）、`app_database_sync_writes.dart`（`_AppDatabaseSyncWrites`：按原值写入、关联清理）、`app_database_sync_order.dart`（`_AppDatabaseSyncOrder`：顺序列表重排） | 读规范行；由写入层放进同一个事务的按原值写入与关联清理 |
@@ -80,7 +80,7 @@ class SyncManifest {
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |
 | todoList | `listId` | **main**：全部业务列：`name`、`colorKey`、`iconKey`、`sortOrder`、`metadata`（对象）、`createdAt`、`updatedAt`。手动顺序就是每行的 `sortOrder`（REAL，拖动只改被拖的一行），随记录整条同步，不另设顺序列表 |
 | todo | `todoId` | **main**：全部业务列：`listId`（清单业务 id，null = 收集箱）、`title`、`note`、`priority`、`dueDate`（`YYYY-MM-DD` 原文）、`dueMinute`、`reminders`、`repeat`、`steps`、`completedAt`、`snoozedUntil`、`linkedDiaryId`、`sortOrder`、`metadata`、`createdAt`、`updatedAt`。`reminders` / `steps` 为 JSON 列解析后的数组、`repeat` 与 `metadata` 为解析后的对象（`repeat` 为 null 即不重复）——不经 `todo_rules.dart` 的模型重新编码（它会丢掉认不出的字段与条目）。`sortOrder` 为 JSON 浮点数（`1.0`，与整数 `1` 的规范串不同；读出时一律转成浮点），非有限值按 `0.0` |
-| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw` 与 `tagOrderRaw`（在 prefs 里）；`appFeaturesRaw` 只留界面类开关（日历 Tab `calendar`、探索 Tab `explore`、侧滑归档 `swipeArchive`、AI 助手 `ai`），值为字段 → bool 的对象（取 `AppFeatures.decode` 之后的值），写入时合进本机开关、数据类开关保持本机值；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码。只在两端都开启“同步设置”时参与。 |
+| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw` 与 `tagOrderRaw`（在 prefs 里）；`appFeaturesRaw` 只留界面类开关（日历 Tab `calendar`、探索 Tab `explore`、侧滑归档 `swipeArchive`、AI 助手 `ai`），值为字段 → bool 的对象（取 `AppFeatures.decode` 之后的值），写入时合进本机开关、数据类开关保持本机值；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码；导入字体（`diaryTypography.fontId` 与 `diaryCodeBlockStyleRaw` 里的 `fontId`）的本机 id 换成按文件内容的引用 `jotsy-font:<sha256>`（`sync_settings_fonts.dart`，指纹由 `DiaryFontStorageService.contentFingerprints` 给出、补算后写回字体清单），`diaryCodeBlockStyleRaw` 只在换了 id 时按规范 JSON 重新编码；写入时引用换回本机同一文件的字体 id（同一文件导入了两份取 id 较小的），本机没有这款字体时原样存下引用（界面回落内置字体，再取值仍是同一个引用、不会来回改）；内置 / 系统 / 等宽字体与本机已没有文件的 id 原样同步。只在两端都开启“同步设置”时参与。 |
 | prefs | `prefs` | 始终参与（不受“同步设置”控制）。**tagOrderNames**：`value`（标签顺序：`tagOrderRaw` 的本地 id 换成标签名，查不到的丢掉；历史记录值，按列表三方合并）<br>**feature.&lt;字段&gt;**（`notebooks` / `anniversaries` / `templates` / `timeCapsules` / `comments` / `todos`，即数据类功能开关）：`on`（`AppFeatures.decode` 之后的值，没存过开关时为默认值）。为什么拆出来：标签顺序与这些开关决定同步过来的数据看不看得到——“同步设置”默认关闭时，两边标签栏顺序不同，对方没开留言就看不到同步过去的留言。 |
 
 - `content_text` 由正文推出、不参与哈希；写入时由（还原路径后的）正文经 `diaryBlocksPlainText` 重新生成（与预览页待办保存、导入写库同一口径）。

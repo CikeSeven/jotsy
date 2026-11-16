@@ -27,6 +27,7 @@ import '../controllers/diary_card_menu_flows.dart';
 import '../controllers/diary_open_flow.dart';
 import '../controllers/diary_search_controller.dart';
 import '../controllers/diary_search_filter_flows.dart';
+import '../models/diary_find_query.dart';
 import '../models/diary_preview_sequence.dart';
 import '../models/diary_search_preferences.dart';
 import '../providers/diary_card_style_provider.dart';
@@ -566,6 +567,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       coverHero: coverHero,
       sequence: sequence,
       origin: origin,
+      // 打开后带着搜索词查找：标出并跳到正文里的第一处。
+      findQuery: DiaryFindQuery.fromSearchTerms(session.terms),
     );
     if (result != null && mounted) {
       await offerDeletedDiaryUndo(context, ref, result.diaryId);

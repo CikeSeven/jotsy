@@ -18883,6 +18883,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryFindReplace => 'Find and replace';
 
   @override
+  String get diaryFind => 'Find';
+
+  @override
   String get diaryFindClose => 'Close find';
 
   @override

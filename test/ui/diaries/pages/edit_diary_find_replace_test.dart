@@ -12,18 +12,22 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_find_replace.dart';
+import 'package:node_diary/ui/diaries/models/diary_find_query.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_find_highlight.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_find_revealer.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_find_bar/diary_find_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
-/// 编辑页的查找与替换（#231）：“更多”菜单打开后顶栏换成查找栏，输入防抖
-/// 后计数、高亮画在块里，上一个 / 下一个，全部替换后提示条可撤销；返回键
-/// 先关查找、选中当前匹配交还正文；新建页同样有入口；桌面 Ctrl + F / Ctrl
-/// + H 打开、Esc 关闭；文末的匹配滚进视野。
+/// 编辑页的查找与替换（#231）：“更多”菜单打开后查找栏出现在键盘之上的
+/// 悬浮卡片里（顶栏不变），输入防抖后计数、匹配处换成搜索结果的高亮
+/// 样式（当前那一处更深），上一个 / 下一个，全部替换后提示条可撤销；返回键
+/// 先关查找（卡片降下后拿掉）、选中当前匹配交还正文；新建页同样有入口；
+/// 桌面 Ctrl + F / Ctrl + H 打开、Esc 关闭；文末的匹配滚进视野、停在查找栏
+/// 上方；从搜索结果进来时带着搜索词打开、不取焦点，正文没有时不打开。
 ///
 /// 编辑器拿到焦点后光标闪烁，pumpAndSettle 等不到静止，这里一律固定帧数。
 String _content(List<String> paragraphs) => jsonEncode({
@@ -138,6 +142,36 @@ void main() {
     await settle(tester, 4);
   }
 
+  /// 正文里文字样式的底色是 [style] 底色的那些片段（按出现顺序）。
+  List<String> highlighted(WidgetTester tester, TextStyle style) {
+    final out = <String>[];
+    for (final element
+        in find
+            .descendant(
+              of: find.byType(DiaryEditor),
+              matching: find.byType(RichText),
+            )
+            .evaluate()) {
+      (element.widget as RichText).text.visitChildren((span) {
+        if (span is TextSpan &&
+            span.text != null &&
+            span.style?.backgroundColor == style.backgroundColor) {
+          out.add(span.text!);
+        }
+        return true;
+      });
+    }
+    return out;
+  }
+
+  DiaryFindHighlightStyles stylesOf(WidgetTester tester) =>
+      DiaryFindHighlightStyles.of(
+        Theme.of(tester.element(find.byType(DiaryEditor))).colorScheme,
+      );
+
+  Finder floatingCard() =>
+      find.byKey(const ValueKey<String>('edit-floating-toolbar'));
+
   Future<void> openFromMenu(WidgetTester tester, String moreTooltip) async {
     await tester.tap(find.byTooltip(moreTooltip));
     await settle(tester, 8);
@@ -156,9 +190,12 @@ void main() {
     expect(find.byTooltip(l10n.previewShare), findsOneWidget);
 
     await openFromMenu(tester, l10n.autoT0125);
-    expect(find.byType(DiaryFindBar), findsOneWidget);
-    // 顶栏换成了查找栏，查找框拿到焦点。
-    expect(find.byTooltip(l10n.previewShare), findsNothing);
+    // 查找栏在键盘之上的悬浮卡片里，顶栏照旧；查找框拿到焦点。
+    expect(
+      find.descendant(of: floatingCard(), matching: find.byType(DiaryFindBar)),
+      findsOneWidget,
+    );
+    expect(find.byTooltip(l10n.previewShare), findsOneWidget);
     expect(
       tester.widget<TextField>(field('diary-find-field')).focusNode!.hasFocus,
       isTrue,
@@ -168,23 +205,17 @@ void main() {
     expect(count(tester), '1/2');
     final find0 = body(tester).find;
     expect(find0.matches, hasLength(2));
-    // 第一块里画着当前匹配（带描边的深色）。
-    final first = body(tester).document.root.children.first;
-    final highlight = find.byWidgetPredicate(
-      (widget) =>
-          widget is DiaryFindHighlight && identical(widget.block, first),
-    );
-    final colors = tester.widget<DiaryFindHighlight>(highlight).colors;
-    expect(
-      tester.renderObject(highlight),
-      paints
-        ..rrect(color: colors.current)
-        ..rrect(color: colors.currentBorder),
-    );
+    // 匹配处的文字换成搜索结果的高亮样式：第一处是当前（更深），其余同
+    // 搜索页；文字本身不变。
+    final styles = stylesOf(tester);
+    expect(highlighted(tester, styles.current), ['cat']);
+    expect(highlighted(tester, styles.match), ['cat']);
+    expect(texts(tester), ['a cat sat', 'no match', 'the cat']);
 
     await tester.tap(find.byKey(const ValueKey<String>('diary-find-next')));
     await settle(tester, 4);
     expect(count(tester), '2/2');
+    expect(highlighted(tester, styles.current), ['cat']);
 
     await tester.tap(
       find.byKey(const ValueKey<String>('diary-find-replace-toggle')),
@@ -304,7 +335,62 @@ void main() {
     expect(rects, isNotEmpty);
     final editorBox = tester.getRect(find.byType(DiaryEditor));
     expect(rects.first.top, greaterThanOrEqualTo(editorBox.top));
-    expect(rects.first.bottom, lessThanOrEqualTo(editorBox.bottom));
+    // 停在查找栏上方，没有被悬浮卡片盖住。
+    expect(
+      rects.first.bottom,
+      lessThanOrEqualTo(tester.getRect(find.byType(DiaryFindBar)).top),
+    );
+    await unmount(tester);
+  });
+
+  testWidgets('a search result opens with the terms found, no keyboard', (
+    tester,
+  ) async {
+    final id = await tester.runAsync(
+      () => seed([
+        for (var i = 0; i < 60; i++) 'Filler paragraph $i',
+        'here is the Needle',
+        'and a needle again',
+      ]),
+    );
+    await openPage(
+      tester,
+      EditDiaryPage(
+        diaryId: id!,
+        initialFind: DiaryFindQuery.fromSearchTerms(const ['needle']),
+      ),
+    );
+    await settle(tester, 6);
+    expect(find.byType(DiaryFindBar), findsOneWidget);
+    expect(count(tester), '1/2');
+    expect(
+      tester.widget<TextField>(field('diary-find-field')).focusNode!.hasFocus,
+      isFalse,
+    );
+    expect(highlighted(tester, stylesOf(tester).current), ['Needle']);
+    final rects = diaryFindMatchGlobalRects(body(tester).find.current!);
+    expect(rects, isNotEmpty);
+    expect(
+      rects.first.top,
+      greaterThanOrEqualTo(tester.getRect(find.byType(DiaryEditor)).top),
+    );
+    await unmount(tester);
+  });
+
+  testWidgets('a search hit outside the body leaves find closed', (
+    tester,
+  ) async {
+    final id = await tester.runAsync(() => seed(['nothing here']));
+    await openPage(
+      tester,
+      EditDiaryPage(
+        diaryId: id!,
+        initialFind: DiaryFindQuery.fromSearchTerms(const ['Probe']),
+      ),
+    );
+    await settle(tester, 6);
+    expect(find.byType(DiaryFindBar), findsNothing);
+    expect(body(tester).find.isOpen, isFalse);
     await unmount(tester);
   });
 }

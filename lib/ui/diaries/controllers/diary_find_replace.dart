@@ -8,15 +8,16 @@ import 'diary_editor_controller.dart';
 import 'diary_find_replace_writes.dart';
 import 'diary_toggle_state.dart';
 
-/// 正文的查找与替换会话（编辑页顶栏换成的查找栏驱动它，`DiaryEditor`
-/// 据它画高亮、滚到当前匹配）。挂在 [DiaryEditorController.find]，随编辑
-/// 会话释放。
+/// 正文的查找与替换会话（编辑页与预览页悬浮在底部的查找栏驱动它，
+/// `DiaryEditor` 据它标出高亮、滚到当前匹配）。挂在
+/// [DiaryEditorController.find]，随编辑会话释放；只读正文（预览页）同样
+/// 能查找，只是不能替换。
 ///
 /// 输入：查找条件（[setText] / [setOptions]）与替换文字（[replacement]）。
-/// 输出：匹配列表、当前第几处（[matches] / [currentIndex]）、按顶层块分组
-/// 的匹配（[matchesInBlock]，高亮用）与“滚到当前匹配”的请求
-/// （[revealRequests]）。副作用：替换写正文（每次一步撤销），跳到收起的
-/// 折叠块里的匹配时展开它（不进撤销栈）。
+/// 输出：匹配列表、当前第几处（[matches] / [currentIndex]）、查找的模式
+/// （[pattern]，高亮用）与“滚到当前匹配”的请求（[revealRequests]）。副作用：替换写正文（每次一步
+/// 撤销），跳到收起的折叠块里的匹配时展开它（编辑态不进撤销栈，只读时只
+/// 改本地显示状态）。
 ///
 /// 时序：
 /// - 输入查找文字经 [kDiaryFindDebounce] 防抖再查找（长日记里每敲一个字都
@@ -39,9 +40,11 @@ class DiaryFindReplace extends ChangeNotifier {
   bool _open = false;
   DiaryFindQuery _query = const DiaryFindQuery();
   RegExp? _pattern;
+
+  /// [_pattern] 是按哪个查找条件编译的（写错的正则同样记下，不反复编译）。
+  DiaryFindQuery? _patternQuery;
   bool _invalid = false;
   List<DiaryFindMatch> _matches = const [];
-  Map<af.Node, List<DiaryFindMatch>> _byBlock = const {};
   bool _truncated = false;
   int _current = -1;
   af.Position? _anchor;
@@ -62,8 +65,18 @@ class DiaryFindReplace extends ChangeNotifier {
   /// 每次需要把当前匹配滚进视野时加一（`DiaryFindRevealer` 监听）。
   final ValueNotifier<int> revealRequests = ValueNotifier<int>(0);
 
+  /// 查找栏此刻盖住正文底部的高度（查找栏自己量好写入，关着时为 0）：
+  /// 页面据此给正文末尾留白，`DiaryFindRevealer` 据此把当前匹配停在查找栏
+  /// 上方。
+  final ValueNotifier<double> barHeight = ValueNotifier<double>(0);
+
   bool get isOpen => _open;
   DiaryFindQuery get query => _query;
+
+  /// 正在查找的模式（高亮按它就地匹配，见 `DiaryFindHighlightScope`）；查找
+  /// 文字为空、正则写错或查找关着时为 null。查找条件不变时一直是同一个
+  /// 对象：正文改字后的重新查找不让整篇的高亮跟着重建。
+  RegExp? get pattern => _open ? _pattern : null;
 
   /// 正则写错（查找文字非空、开着正则、编译不过）。
   bool get invalid => _invalid;
@@ -78,21 +91,27 @@ class DiaryFindReplace extends ChangeNotifier {
       _current >= 0 && _current < _matches.length ? _matches[_current] : null;
   bool get replaceVisible => _replaceVisible;
 
-  /// [block]（顶层块）里的匹配，按阅读顺序；没有时为空。
-  List<DiaryFindMatch> matchesInBlock(af.Node block) =>
-      _byBlock[block] ?? const [];
-
   /// 打开查找；已开着时只更新传入的部分。[text] 非空时换成它（选中一段
-  /// 文字后打开时带进来），[replace] 为 true 时展开替换一行。
-  void open({String? text, bool replace = false}) {
+  /// 文字后打开时带进来），[query] 整个换掉查找条件（从搜索结果打开日记
+  /// 时带进搜索词），[replace] 为 true 时展开替换一行。
+  ///
+  /// 从插入点（只读正文为选区的开头）往下找；没有插入点或 [fromStart] 时
+  /// 从开头找。
+  void open({
+    String? text,
+    DiaryFindQuery? query,
+    bool replace = false,
+    bool fromStart = false,
+  }) {
     if (!_open) {
       _open = true;
-      final selection = _editor.selection?.normalized;
-      _anchor = selection?.start;
+      _anchor = fromStart ? null : _editor.selection?.normalized.start;
       _transactions = _state.transactionStream.listen(_onTransaction);
     }
     if (replace) _replaceVisible = true;
-    if (text != null && text.isNotEmpty) {
+    if (query != null) {
+      _query = query;
+    } else if (text != null && text.isNotEmpty) {
       _query = _query.copyWith(text: text);
     }
     _search(reveal: true);
@@ -107,10 +126,12 @@ class DiaryFindReplace extends ChangeNotifier {
     unawaited(_transactions?.cancel());
     _transactions = null;
     _matches = const [];
-    _byBlock = const {};
     _current = -1;
     _invalid = false;
     _truncated = false;
+    _pattern = null;
+    _patternQuery = null;
+    barHeight.value = 0;
     notifyListeners();
   }
 
@@ -248,17 +269,23 @@ class DiaryFindReplace extends ChangeNotifier {
   void _search({required bool reveal, bool strictlyAfter = false}) {
     _debounce?.cancel();
     RegExp? pattern;
-    try {
-      pattern = _open ? compileDiaryFindPattern(_query) : null;
-      _invalid = false;
-    } on FormatException {
-      pattern = null;
-      _invalid = true;
+    if (_open && _query == _patternQuery) {
+      // 查找条件没变（正文改字后的重新查找）：沿用同一个正则对象，高亮
+      // 按对象判断模式变没变（见 DiaryFindHighlightScope）。
+      pattern = _pattern;
+    } else {
+      try {
+        pattern = _open ? compileDiaryFindPattern(_query) : null;
+        _invalid = false;
+      } on FormatException {
+        pattern = null;
+        _invalid = true;
+      }
+      _patternQuery = _open ? _query : null;
     }
     _pattern = pattern;
     if (pattern == null) {
       _matches = const [];
-      _byBlock = const {};
       _truncated = false;
       _current = -1;
       return;
@@ -266,11 +293,6 @@ class DiaryFindReplace extends ChangeNotifier {
     final found = findDiaryMatches(_state.document.root, pattern);
     _matches = found.matches;
     _truncated = found.truncated;
-    final byBlock = <af.Node, List<DiaryFindMatch>>{};
-    for (final match in _matches) {
-      (byBlock[match.block] ??= <DiaryFindMatch>[]).add(match);
-    }
-    _byBlock = byBlock;
     _current = _indexFromAnchor(strictlyAfter: strictlyAfter);
     if (reveal) _revealCurrent();
   }
@@ -295,11 +317,13 @@ class DiaryFindReplace extends ChangeNotifier {
   }
 
   /// 当前匹配在收起的折叠块里时先展开（展开后路径不变，匹配仍有效），再
-  /// 请正文滚过去。
+  /// 请正文滚过去。只读正文（预览页）只展开本地的显示状态，不写文档。
   void _revealCurrent() {
     final match = current;
     if (match == null) return;
-    if (!_editor.readOnly) {
+    if (_editor.readOnly) {
+      expandDiaryToggleViewsAbove(match.node);
+    } else {
       _applying = true;
       try {
         expandDiaryTogglesAbove(_state, match.node);
@@ -316,6 +340,7 @@ class DiaryFindReplace extends ChangeNotifier {
     _debounce?.cancel();
     unawaited(_transactions?.cancel());
     revealRequests.dispose();
+    barHeight.dispose();
     super.dispose();
   }
 }

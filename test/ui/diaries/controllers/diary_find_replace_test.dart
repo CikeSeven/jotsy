@@ -4,11 +4,14 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_find_replace.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_toggle_state.dart';
+import 'package:node_diary/ui/diaries/models/diary_find_query.dart';
 
 /// 正文查找与替换会话：从插入点往下找、上一个 / 下一个循环、输入防抖、
 /// 替换保留行内格式并停到下一处、全部替换（含正则分组与零宽匹配）一步
-/// 撤销、跳进收起的折叠块时展开（不进撤销栈）、正文被别处改动后重新查找
-/// 但不滚动、正则写错、关闭后保留条件，以及替换后旧选区夹回文字长度。
+/// 撤销、跳进收起的折叠块时展开（不进撤销栈；只读正文只改显示状态）、
+/// 正文被别处改动后重新查找但不滚动（模式仍是同一个对象）、正则写错、
+/// 关闭后保留条件、带入整套条件从文首找，以及替换后旧选区夹回文字长度。
 
 Map<String, Object?> _p(String text, {List<Map<String, Object?>>? delta}) => {
   'type': 'paragraph',
@@ -24,6 +27,7 @@ Map<String, Object?> _p(String text, {List<Map<String, Object?>>? delta}) => {
 DiaryEditorController _controller(
   List<Map<String, Object?>> blocks, {
   af.Selection? selection,
+  bool readOnly = false,
 }) {
   final controller = DiaryEditorController(
     document: diaryEditorDocument(
@@ -32,6 +36,7 @@ DiaryEditorController _controller(
       }),
     ),
     selection: selection,
+    readOnly: readOnly,
   );
   addTearDown(controller.dispose);
   return controller;
@@ -157,16 +162,64 @@ void main() {
     expect(controller.hasUndo, isFalse);
   });
 
+  test('a read-only match inside a collapsed toggle only expands the view', () {
+    final controller = _controller([
+      _p('top'),
+      {
+        'type': 'toggle_list',
+        'data': {
+          'delta': [
+            {'insert': 'head'},
+          ],
+          'collapsed': true,
+        },
+        'children': [_p('hidden cat')],
+      },
+    ], readOnly: true);
+    final toggle = controller.document.root.children.last;
+    expect(diaryToggleViewCollapsed(toggle), isTrue);
+    controller.find.open(text: 'cat');
+    expect(controller.find.matches, hasLength(1));
+    // 文档不变，只是这次显示为展开。
+    expect(toggle.attributes['collapsed'], isTrue);
+    expect(diaryToggleViewCollapsed(toggle), isFalse);
+  });
+
   test('edits elsewhere refresh matches without a reveal', () async {
     final controller = _controller([_p('cat')]);
     final find = controller.find..open(text: 'cat');
     final requests = find.revealRequests.value;
+    final pattern = find.pattern;
+    expect(pattern, isNotNull);
     final node = controller.document.root.children.first;
     controller.apply(controller.state.transaction..insertText(node, 3, ' cat'));
     await _waitDebounce();
     expect(find.matches, hasLength(2));
     expect(find.currentIndex, 0);
     expect(find.revealRequests.value, requests);
+    // 查找条件没变：同一个正则对象，高亮不必整篇重建。
+    expect(identical(find.pattern, pattern), isTrue);
+    find.setOptions(caseSensitive: true);
+    expect(identical(find.pattern, pattern), isFalse);
+  });
+
+  test('a full query opens from the start regardless of the caret', () {
+    final controller = _controller([
+      _p('Cat one'),
+      _p('dog two'),
+      _p('cat three'),
+    ], selection: af.Selection.collapsed(af.Position(path: [2])));
+    final find = controller.find;
+    find.open(
+      query: DiaryFindQuery.fromSearchTerms(['cat', 'two']),
+      fromStart: true,
+    );
+    expect(find.query.regex, isTrue);
+    expect(find.matches.map((m) => m.match[0]), ['Cat', 'two', 'cat']);
+    expect(find.currentIndex, 0);
+    find.close();
+    expect(find.pattern, isNull);
+    expect(find.barHeight.value, 0);
   });
 
   test('an invalid regex reports instead of matching', () {
@@ -177,6 +230,11 @@ void main() {
     expect(find.invalid, isTrue);
     expect(find.matches, isEmpty);
     expect(find.replaceAll(), 0);
+    // 关上再打开同一个写错的正则，仍报错而不是“无结果”。
+    find
+      ..close()
+      ..open();
+    expect(find.invalid, isTrue);
   });
 
   test('closing clears matches but keeps the query', () {

@@ -39,6 +39,23 @@ class DiaryFindQuery {
 
   bool get isEmpty => text.isEmpty;
 
+  /// 从搜索结果打开日记时带进来的查找条件：搜索框里的词（`splitSearchTerms`
+  /// 拆好的）。只有一个词时原文查找；几个词时任一处都标出——写成转义后
+  /// 以 `|` 连接的正则（正则开关随之亮起，用户看得到是怎么找的）。都不分
+  /// 大小写，与搜索页的高亮同一口径。没有词时为 null。
+  static DiaryFindQuery? fromSearchTerms(List<String> terms) {
+    final words = [
+      for (final term in terms)
+        if (term.isNotEmpty) term,
+    ];
+    if (words.isEmpty) return null;
+    if (words.length == 1) return DiaryFindQuery(text: words.single);
+    return DiaryFindQuery(
+      text: words.map(RegExp.escape).join('|'),
+      regex: true,
+    );
+  }
+
   DiaryFindQuery copyWith({
     String? text,
     bool? regex,
@@ -97,15 +114,13 @@ RegExp? compileDiaryFindPattern(DiaryFindQuery query) {
 /// 文档里的一处匹配：[node] 文字里 [start]～[end] 这一段（[end] 可以等于
 /// [start]：`^`、`\b` 这类零宽匹配）。[match] 留着分组，替换时展开引用。
 ///
-/// [path] 与 [block]（[node] 所在的顶层块，高亮按它分组）是查找那一刻的
-/// 位置：遍历时顺手记下，不再逐个调用 `node.path`（它每层都要在兄弟里
-/// 查找下标，几千处匹配时很慢）。文档一改就要重新查找，见
-/// `DiaryFindReplace`。
+/// [path] 是查找那一刻的位置：遍历时顺手记下，不再逐个调用 `node.path`
+/// （它每层都要在兄弟里查找下标，几千处匹配时很慢）。文档一改就要重新
+/// 查找，见 `DiaryFindReplace`。
 @immutable
 class DiaryFindMatch {
   const DiaryFindMatch({
     required this.node,
-    required this.block,
     required this.path,
     required this.start,
     required this.end,
@@ -113,7 +128,6 @@ class DiaryFindMatch {
   });
 
   final af.Node node;
-  final af.Node block;
   final af.Path path;
   final int start;
   final int end;
@@ -136,7 +150,7 @@ class DiaryFindMatch {
   int? limit = kDiaryFindMaxMatches,
 }) {
   final matches = <DiaryFindMatch>[];
-  bool visit(af.Node node, af.Node block, af.Path path) {
+  bool visit(af.Node node, af.Path path) {
     final delta = node.delta;
     if (delta != null) {
       final text = delta.toPlainText();
@@ -149,7 +163,6 @@ class DiaryFindMatch {
         matches.add(
           DiaryFindMatch(
             node: node,
-            block: block,
             path: path,
             start: match.start,
             end: match.end,
@@ -160,14 +173,14 @@ class DiaryFindMatch {
     }
     final children = node.children;
     for (var i = 0; i < children.length; i++) {
-      if (!visit(children[i], block, [...path, i])) return false;
+      if (!visit(children[i], [...path, i])) return false;
     }
     return true;
   }
 
   final blocks = root.children;
   for (var i = 0; i < blocks.length; i++) {
-    if (!visit(blocks[i], blocks[i], [i])) {
+    if (!visit(blocks[i], [i])) {
       return (matches: matches, truncated: true);
     }
   }

@@ -13,7 +13,7 @@ import '../diary_search_chip.dart';
 
 /// 查找框行尾的计数（[DiaryFindBar] 的一部分）：第几处 / 共几处（超过
 /// 上限时总数带“+”），没有结果、正则写错时换成提示（写错为错误色）；
-/// 查找框为空时不占地方。读屏时随变化播报。
+/// 查找框为空或查找已关（收起的过渡里）时不占地方。读屏时随变化播报。
 class DiaryFindCount extends StatelessWidget {
   const DiaryFindCount({super.key, required this.find});
 
@@ -21,7 +21,7 @@ class DiaryFindCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (find.query.isEmpty) return const SizedBox.shrink();
+    if (find.query.isEmpty || !find.isOpen) return const SizedBox.shrink();
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -66,12 +66,17 @@ class DiaryFindCount extends StatelessWidget {
 
 /// 查找选项一排胶囊（与搜索页的筛选胶囊同一外观，[DiarySearchChip]）：
 /// 左侧是正则表达式、区分大小写、全词匹配三个开关（窄屏或长文案时横向
-/// 滚动），右端固定一个展开 / 收起替换一行的“替换”——它是另一种模式，
-/// 不能跟着开关一起被挤出屏幕。
+/// 滚动），[canReplace] 时右端固定一个展开 / 收起替换一行的“替换”——它是
+/// 另一种模式，不能跟着开关一起被挤出卡片。
 class DiaryFindOptionsRow extends StatelessWidget {
-  const DiaryFindOptionsRow({super.key, required this.find});
+  const DiaryFindOptionsRow({
+    super.key,
+    required this.find,
+    this.canReplace = true,
+  });
 
   final DiaryFindReplace find;
+  final bool canReplace;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +111,7 @@ class DiaryFindOptionsRow extends StatelessWidget {
           child: DesktopHorizontalScroll(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsetsDirectional.only(start: 16),
+              padding: const EdgeInsetsDirectional.only(start: 12),
               child: Row(
                 children: <Widget>[
                   for (var i = 0; i < options.length; i++) ...<Widget>[
@@ -120,16 +125,19 @@ class DiaryFindOptionsRow extends StatelessWidget {
         ),
         // 滚动区与固定的“替换”之间留一道空隙：被截断的胶囊不贴着它。
         const SizedBox(width: 8),
-        Padding(
-          padding: const EdgeInsetsDirectional.only(end: 16),
-          child: DiarySearchChip(
-            key: const ValueKey<String>('diary-find-replace-toggle'),
-            label: l10n.diaryFindOptionReplace,
-            active: find.replaceVisible,
-            leading: const FaIcon(FontAwesomeIcons.rightLeft),
-            onTap: () => find.setReplaceVisible(!find.replaceVisible),
-          ),
-        ),
+        if (canReplace)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 12),
+            child: DiarySearchChip(
+              key: const ValueKey<String>('diary-find-replace-toggle'),
+              label: l10n.diaryFindOptionReplace,
+              active: find.replaceVisible,
+              leading: const FaIcon(FontAwesomeIcons.rightLeft),
+              onTap: () => find.setReplaceVisible(!find.replaceVisible),
+            ),
+          )
+        else
+          const SizedBox(width: 4),
       ],
     );
   }
@@ -198,7 +206,7 @@ class DiaryFindReplaceRow extends StatelessWidget {
     // 窄屏、长文案（俄语）或放大字号时两个按钮会把替换框挤得太窄：按钮
     // 估计的宽度放不下就换到替换框下面一行、靠右。
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 4, 0),
       child: WidthLayoutBuilder(
         builder: (BuildContext context, double width) {
           final buttonsWidth = _buttonsWidth(context, <String>[

@@ -19583,6 +19583,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryFindReplace => 'Найти и заменить';
 
   @override
+  String get diaryFind => 'Найти';
+
+  @override
   String get diaryFindClose => 'Закрыть поиск';
 
   @override

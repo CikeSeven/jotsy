@@ -29620,11 +29620,17 @@ abstract class AppLocalizations {
   /// **'The AI didn\'t return any topics. Try rephrasing and generate again.'**
   String get mindMapAiEmpty;
 
-  /// Diary editor more menu: open the find bar that replaces the top bar.
+  /// Diary editor more menu: open the find bar that floats above the keyboard, with replace.
   ///
   /// In en, this message translates to:
   /// **'Find and replace'**
   String get diaryFindReplace;
+
+  /// Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get diaryFind;
 
   /// Find bar: tooltip of the back button that closes the find bar.
   ///

@@ -22138,7 +22138,11 @@
   },
   "diaryFindReplace": "検索と置換",
   "@diaryFindReplace": {
-    "description": "Diary editor more menu: open the find bar that replaces the top bar."
+    "description": "Diary editor more menu: open the find bar that floats above the keyboard, with replace."
+  },
+  "diaryFind": "検索",
+  "@diaryFind": {
+    "description": "Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page."
   },
   "diaryFindClose": "検索を閉じる",
   "@diaryFindClose": {

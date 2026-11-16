@@ -9,6 +9,7 @@ import '../../app_surface/widgets/app_page_background.dart';
 import '../../widgets/container_transform/container_transform_route.dart';
 import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../models/diary_find_query.dart';
 import '../models/time_capsule.dart';
 import '../pages/diary_preview_page.dart';
 import '../providers/diary_preview_style_provider.dart';
@@ -36,6 +37,10 @@ import 'diary_preview_edit_flow.dart';
 /// （Enter 与右栏的“编辑”照常进入编辑页）；导图日记不在右栏阅读，点按卡片
 /// 照样经过这里进编辑页。
 ///
+/// 入口给出 [findQuery]（搜索页：搜索框里的词）时，预览页 / 编辑页打开后
+/// 显示查找栏、标出这些词并跳到正文里的第一处（不弹键盘；正文里没有时
+/// 不打开查找）。
+///
 /// 入口给出 [origin]（点按的卡片，见 `ContainerTransformSource`）时预览页 /
 /// 编辑页从这张卡片展开成整页、返回时缩回去（[ContainerTransformPageRoute]）；
 /// 在里面删除了日记时不缩回（卡片随后会从列表里收起），原地淡出。没有
@@ -48,6 +53,7 @@ Future<DiaryPreviewResult?> openDiaryPage(
   ImageViewerHero? coverHero,
   DiaryPreviewSequence? sequence,
   ContainerTransformOrigin? origin,
+  DiaryFindQuery? findQuery,
 }) async {
   final detail = initialDetail ?? await _loadDetail(ref, diaryId);
   if (!context.mounted) {
@@ -65,6 +71,7 @@ Future<DiaryPreviewResult?> openDiaryPage(
       initialDetail: detail,
       coverHero: coverHero,
       origin: origin,
+      find: findQuery,
     );
     return deleted ? DiaryPreviewResult.deleted(diaryId) : null;
   }
@@ -73,6 +80,7 @@ Future<DiaryPreviewResult?> openDiaryPage(
     initialDetail: detail,
     coverHero: coverHero,
     sequence: sequence,
+    initialFind: findQuery,
   );
   return Navigator.of(context).push<DiaryPreviewResult?>(
     origin == null

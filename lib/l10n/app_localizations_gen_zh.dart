@@ -16527,6 +16527,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryFindReplace => '查找和替换';
 
   @override
+  String get diaryFind => '查找';
+
+  @override
   String get diaryFindClose => '关闭查找';
 
   @override

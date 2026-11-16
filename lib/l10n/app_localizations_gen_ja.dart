@@ -16797,6 +16797,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryFindReplace => '検索と置換';
 
   @override
+  String get diaryFind => '検索';
+
+  @override
   String get diaryFindClose => '検索を閉じる';
 
   @override

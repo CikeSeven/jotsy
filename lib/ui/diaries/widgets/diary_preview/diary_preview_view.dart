@@ -24,6 +24,7 @@ import '../../controllers/diary_preview_edit_flow.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../controllers/diary_tag_search_flow.dart';
 import '../../controllers/diary_todo_autosave_controller.dart';
+import '../../models/diary_find_query.dart';
 import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
 import '../../pages/locked_diary_page.dart';
@@ -34,6 +35,7 @@ import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
+import 'diary_preview_find.dart';
 import 'diary_preview_host.dart';
 import 'diary_preview_more_menu.dart';
 import 'diary_preview_neighbors.dart';
@@ -56,6 +58,10 @@ import '../../../app_surface/widgets/app_page_backdrop.dart';
 /// 元素的标签与占位画面的所有权由翻页器决定（见 [coverHeroTag]、
 /// [ownsCoverHero]）。
 ///
+/// 正文查找（只找不替换）见 [DiaryPreviewFindHost]：“更多 → 查找”、桌面
+/// Ctrl / ⌘ + F（路由层经 [DiaryPreviewFindShortcuts] 转交），从搜索结果打开
+/// 时带着搜索词（[initialFind]）。
+///
 /// 嵌在页面里（宽窗口日记页的右栏）时传入 [host]：顶栏没有返回按钮，头图
 /// 不建立共享元素（列表卡片与右栏同在一个路由，同名 Hero 会冲突），删除与
 /// “日记不见了”交给宿主而不是退出路由；未解封的胶囊同样内联显示封存页
@@ -71,6 +77,7 @@ class DiaryPreviewView extends ConsumerStatefulWidget {
     this.paging,
     this.onBusyChanged,
     this.host,
+    this.initialFind,
   });
 
   final String diaryId;
@@ -97,11 +104,16 @@ class DiaryPreviewView extends ConsumerStatefulWidget {
   /// 嵌在页面里时的宿主；独立路由时为 null。
   final DiaryPreviewHost? host;
 
+  /// 打开后带着的查找条件（从搜索结果打开）：查找栏显示、跳到第一处，不弹
+  /// 键盘；正文里没有匹配时不打开。
+  final DiaryFindQuery? initialFind;
+
   @override
   ConsumerState<DiaryPreviewView> createState() => _DiaryPreviewViewState();
 }
 
-class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
+class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
+    with DiaryPreviewFindHost<DiaryPreviewView> {
   final GlobalKey _shareCaptureKey = GlobalKey();
   final GlobalKey _commentsKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
@@ -147,6 +159,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     // 先于正文控制器释放：补写待办要读当下的文档。
     _todoAutoSave.dispose();
     _docChanges?.cancel();
+    detachFind();
     _controller?.dispose();
     _export
       ..removeListener(_handleExportChanged)
@@ -159,6 +172,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     if (!mounted) {
       return;
     }
+    // 截取分享长图时关掉查找：高亮不进图片。
+    if (_export.capturingLongImage) closeFind();
     setState(() {});
     final busy = _export.busy;
     if (busy != _reportedBusy) {
@@ -174,7 +189,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       return;
     }
     _docChanges?.cancel();
-    _controller?.dispose();
+    final previous = _controller;
     _boundContentRaw = contentRaw;
     final controller = DiaryEditorController(
       document: diaryEditorDocument(contentRaw),
@@ -182,6 +197,13 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       readOnly: true,
     );
     _controller = controller;
+    // 查找交接到新会话（开着的查找不消失）；首次绑定时按入口带的搜索词
+    // 打开。旧控制器在交接之后才释放。
+    attachFind(
+      controller,
+      initial: previous == null ? widget.initialFind : null,
+    );
+    previous?.dispose();
     _docChanges = controller.state.transactionStream.listen((
       af.EditorTransactionValue change,
     ) {
@@ -280,6 +302,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       body: body,
     );
   }
+
+  @override
+  String get findDiaryId => widget.diaryId;
 
   @override
   Widget build(BuildContext context) {
@@ -386,70 +411,79 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       onWrite: () => unawaited(_writeComment(detail.diary)),
       suppressed: capturing,
     );
-    return DiaryPreviewSurface(
-      resolved: resolved,
-      scrollController: _scrollController,
-      content: WidgetShotPlus(
-        key: _shareCaptureKey,
-        child: DiaryPreviewContent(
-          detail: detail,
-          viewData: viewData,
-          controller: _controller,
-          scrollController: _scrollController,
-          resolved: resolved,
-          behavior: behavior,
-          // 嵌入时不建立共享元素：列表卡片与右栏同在一个路由。
-          coverHeroTag: widget.host != null
-              ? null
-              : widget.coverHeroTag ?? diaryCoverHeroTag(widget.diaryId),
-          coverPlaceholder: widget.coverHero?.placeholder,
-          capturingLongImage: _export.capturingLongImage,
-          paging: widget.paging,
-          notebooks: notebooks,
-          comments: comments,
-          backlinks: DiaryPreviewExtras.backlinks(
-            ref,
-            detail.diary,
-            suppressed: capturing,
-          ),
-          aiRepliesFor: DiaryPreviewExtras.aiRepliesFor(
-            ref,
-            detail.diary,
-            suppressed: capturing,
-          ),
-          onAiContinueChat: DiaryPreviewExtras.aiContinueChat(context, ref),
-          onOpenNotebook: notebooksEnabled
-              ? (NotebookView notebook) =>
-                    unawaited(openNotebookFromAnywhere(context, ref, notebook))
-              : null,
-          onOpenTag: (int tagId) =>
-              unawaited(openDiaryTagSearch(context, tagId)),
-          onOpenImage: _openImageViewer,
-          actions: DiaryPreviewActions(
-            onEdit: _openEditor,
-            onEditAt: (Position caret) => unawaited(_openEditor(caret: caret)),
-            onShare: () => openDiaryPreviewShare(
-              context,
+    return wrapFindPopScope(
+      DiaryPreviewSurface(
+        resolved: resolved,
+        scrollController: _scrollController,
+        // 正文查找的悬浮卡片（见 DiaryPreviewFindHost）。
+        bottomBar: buildFindBar(context),
+        content: WidgetShotPlus(
+          key: _shareCaptureKey,
+          child: DiaryPreviewContent(
+            detail: detail,
+            viewData: viewData,
+            controller: _controller,
+            scrollController: _scrollController,
+            resolved: resolved,
+            behavior: behavior,
+            // 嵌入时不建立共享元素：列表卡片与右栏同在一个路由。
+            coverHeroTag: widget.host != null
+                ? null
+                : widget.coverHeroTag ?? diaryCoverHeroTag(widget.diaryId),
+            coverPlaceholder: widget.coverHero?.placeholder,
+            capturingLongImage: _export.capturingLongImage,
+            // 开着查找时最后几行也能滚到查找栏上方。
+            extraBottomPadding: findBottomPadding,
+            paging: widget.paging,
+            notebooks: notebooks,
+            comments: comments,
+            backlinks: DiaryPreviewExtras.backlinks(
               ref,
-              export: _export,
-              detail: detail,
-              background: resolved.background,
+              detail.diary,
+              suppressed: capturing,
             ),
-            moreItems: diaryPreviewMoreItems(
-              context,
+            aiRepliesFor: DiaryPreviewExtras.aiRepliesFor(
               ref,
-              export: _export,
-              detail: detail,
-              viewData: viewData,
-              onDelete: _deleteDiary,
-              notebooks: notebooks,
+              detail.diary,
+              suppressed: capturing,
+            ),
+            onAiContinueChat: DiaryPreviewExtras.aiContinueChat(context, ref),
+            onOpenNotebook: notebooksEnabled
+                ? (NotebookView notebook) => unawaited(
+                    openNotebookFromAnywhere(context, ref, notebook),
+                  )
+                : null,
+            onOpenTag: (int tagId) =>
+                unawaited(openDiaryTagSearch(context, tagId)),
+            onOpenImage: _openImageViewer,
+            actions: DiaryPreviewActions(
+              onEdit: _openEditor,
+              onEditAt: (Position caret) =>
+                  unawaited(_openEditor(caret: caret)),
+              onShare: () => openDiaryPreviewShare(
+                context,
+                ref,
+                export: _export,
+                detail: detail,
+                background: resolved.background,
+              ),
+              moreItems: diaryPreviewMoreItems(
+                context,
+                ref,
+                export: _export,
+                detail: detail,
+                viewData: viewData,
+                onDelete: _deleteDiary,
+                notebooks: notebooks,
+                onFind: _controller == null ? null : openFind,
+              ),
             ),
           ),
         ),
-      ),
-      overlay: ActionLoadingOverlay(
-        visible: _export.showLoading,
-        label: _export.loadingLabel,
+        overlay: ActionLoadingOverlay(
+          visible: _export.showLoading,
+          label: _export.loadingLabel,
+        ),
       ),
     );
   }

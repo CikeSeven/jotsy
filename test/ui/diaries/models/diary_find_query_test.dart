@@ -96,8 +96,25 @@ void main() {
     });
   });
 
+  group('fromSearchTerms', () {
+    test(
+      'one term is a plain query, several become an escaped alternation',
+      () {
+        expect(DiaryFindQuery.fromSearchTerms(const []), isNull);
+        expect(
+          DiaryFindQuery.fromSearchTerms(const ['猫']),
+          const DiaryFindQuery(text: '猫'),
+        );
+        final query = DiaryFindQuery.fromSearchTerms(const ['a.b', '(c)'])!;
+        expect(query.regex, isTrue);
+        expect(query.caseSensitive, isFalse);
+        expect(_found('xa.b aXb (C)', query), ['a.b', '(C)']);
+      },
+    );
+  });
+
   group('findDiaryMatches', () {
-    test('walks nested blocks in reading order with paths and blocks', () {
+    test('walks nested blocks in reading order with paths and nodes', () {
       final document = _doc([
         _p('cat one'),
         _block('bulleted_list', 'list cat', children: [_p('child cat')]),
@@ -114,12 +131,11 @@ void main() {
         ['[0]:0-3', '[1]:5-8', '[1, 0]:6-9', '[3]:0-3'],
       );
       final blocks = document.root.children.toList();
-      expect(identical(result.matches[2].block, blocks[1]), isTrue);
       expect(
         identical(result.matches[2].node, blocks[1].children.first),
         isTrue,
       );
-      expect(identical(result.matches[3].block, blocks[3]), isTrue);
+      expect(identical(result.matches[3].node, blocks[3]), isTrue);
     });
 
     test('searches table cell paragraphs', () {

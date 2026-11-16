@@ -21571,7 +21571,11 @@
   },
   "diaryFindReplace": "查找和替换",
   "@diaryFindReplace": {
-    "description": "编辑页“更多”菜单：打开查找栏（顶栏换成查找与替换）。"
+    "description": "Diary editor more menu: open the find bar that floats above the keyboard, with replace."
+  },
+  "diaryFind": "查找",
+  "@diaryFind": {
+    "description": "Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page."
   },
   "diaryFindClose": "关闭查找",
   "@diaryFindClose": {

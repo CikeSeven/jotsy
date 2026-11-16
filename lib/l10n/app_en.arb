@@ -21571,7 +21571,11 @@
   },
   "diaryFindReplace": "Find and replace",
   "@diaryFindReplace": {
-    "description": "Diary editor more menu: open the find bar that replaces the top bar."
+    "description": "Diary editor more menu: open the find bar that floats above the keyboard, with replace."
+  },
+  "diaryFind": "Find",
+  "@diaryFind": {
+    "description": "Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page."
   },
   "diaryFindClose": "Close find",
   "@diaryFindClose": {

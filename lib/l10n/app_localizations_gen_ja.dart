@@ -16792,4 +16792,59 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mindMapAiEmpty => 'AI から使えるトピックが返ってきませんでした。言い方を変えてもう一度お試しください。';
+
+  @override
+  String get diaryFindReplace => '検索と置換';
+
+  @override
+  String get diaryFindClose => '検索を閉じる';
+
+  @override
+  String get diaryFindHint => '本文を検索';
+
+  @override
+  String get diaryFindPrevious => '前の一致';
+
+  @override
+  String get diaryFindNext => '次の一致';
+
+  @override
+  String diaryFindPosition(String current, String total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get diaryFindNoResults => '一致なし';
+
+  @override
+  String get diaryFindInvalidRegex => '正規表現が無効';
+
+  @override
+  String get diaryFindOptionRegex => '正規表現';
+
+  @override
+  String get diaryFindOptionMatchCase => '大/小文字';
+
+  @override
+  String get diaryFindOptionWholeWord => '単語単位';
+
+  @override
+  String get diaryFindOptionReplace => '置換';
+
+  @override
+  String get diaryReplaceHint => '置換後の文字';
+
+  @override
+  String get diaryReplaceHintRegex => '置換後（\$1 で 1 番目のグループ）';
+
+  @override
+  String get diaryReplaceOne => '置換';
+
+  @override
+  String get diaryReplaceAll => 'すべて置換';
+
+  @override
+  String diaryReplaceAllDone(int count) {
+    return '$count 件置換しました';
+  }
 }

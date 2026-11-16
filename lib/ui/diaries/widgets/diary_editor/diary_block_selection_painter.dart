@@ -35,8 +35,13 @@ const Set<String> _kPlainTextBlocks = {
 
 /// [node] 连同子块里有没有自带底色 / 画面的块。
 bool diaryBlockPaintsOwnSurface(af.Node node) =>
-    !_kPlainTextBlocks.contains(node.type) ||
+    diaryBlockTypePaintsOwnSurface(node.type) ||
     node.children.any(diaryBlockPaintsOwnSurface);
+
+/// [type] 这种块自己有没有不透明的底或画面（衬在它下面的颜色看不见，要
+/// 盖在上面画）。查找高亮同一口径，见 `DiaryFindHighlight`。
+bool diaryBlockTypePaintsOwnSurface(String type) =>
+    !_kPlainTextBlocks.contains(type);
 
 /// 段落选择模式的绘制：选中的块铺一层半透明的选中色，整行宽（从页边距里
 /// 起，不随缩进收窄），上下相邻的选中块连成一组——组的外角大圆角、组内

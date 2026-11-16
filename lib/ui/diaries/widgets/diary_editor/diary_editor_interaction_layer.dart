@@ -9,6 +9,7 @@ import 'diary_editor_keyboard_reopen.dart';
 import 'diary_editor_selection_gestures.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
+import 'diary_find_revealer.dart';
 import 'diary_read_only_shortcuts.dart';
 
 /// 原生正文外围的交互层：手机选区菜单、软键盘扩选兼容、点回插入点重新弹出
@@ -136,7 +137,13 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
             focusNode: focusNode,
             coveredHeight: coveredHeight,
             revealPath: revealPath,
-            child: handles,
+            // 查找的当前匹配滚进视野（查找框有焦点时正文的视口不揭示光标）。
+            child: DiaryFindRevealer(
+              controller: controller,
+              coveredHeight: coveredHeight,
+              revealPath: revealPath,
+              child: handles,
+            ),
           );
   }
 }

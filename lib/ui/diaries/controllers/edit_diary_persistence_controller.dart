@@ -141,6 +141,11 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
       blocks.exit(DiaryBlockSelectionExit.dismiss);
       return;
     }
+    // 再关掉查找栏（顶栏换回原样）。
+    if (_state._findOpen) {
+      _state._closeFind();
+      return;
+    }
     if (_state._recordingPanelOpen) {
       _state._closeRecordingPanel();
       return;

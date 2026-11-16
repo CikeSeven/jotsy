@@ -32,6 +32,7 @@ import 'diary_block_select_target.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_editor_globals.dart';
 import 'diary_embed_keys.dart';
+import 'diary_find_highlight.dart';
 import 'diary_mention_menu.dart';
 import 'diary_multiline_input_interceptor.dart';
 import 'diary_slash_commands.dart';
@@ -683,14 +684,19 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       footer: _footerHost,
       editable: !controller.readOnly,
       // 段落选择模式里接管块上的点按与长按（见 DiaryBlockSelectTarget）；
-      // 只读正文没有这个模式。
+      // 查找的高亮按块画在块里（见 DiaryFindHighlight）。只读正文没有这两样。
       blockWrapper: controller.readOnly
           ? null
           : (context, {required node, required child}) =>
                 DiaryBlockSelectTarget(
                   controller: controller,
                   relay: _blockDragRelay,
-                  child: child,
+                  child: DiaryFindHighlight(
+                    find: controller.find,
+                    block: node,
+                    colors: DiaryFindHighlightColors.of(Theme.of(context)),
+                    child: child,
+                  ),
                 ),
       disableSelectionService: !widget.textSelection,
       disableKeyboardService: controller.readOnly,

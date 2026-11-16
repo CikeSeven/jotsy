@@ -14,6 +14,7 @@ import '../../../core/database/mind_map/mind_map_blocks.dart';
 import '../models/diary_link_candidate.dart';
 import 'diary_block_convert.dart';
 import 'diary_block_selection.dart';
+import 'diary_find_replace.dart';
 import 'diary_link_typing.dart';
 import 'diary_toggle_state.dart';
 
@@ -87,6 +88,9 @@ class DiaryEditorController extends ChangeNotifier {
 
   /// 段落选择模式（点段落把手进入，见 [DiaryBlockSelection]）。
   late final DiaryBlockSelection blockSelection = DiaryBlockSelection(state);
+
+  /// 正文的查找与替换（编辑页的查找栏，见 [DiaryFindReplace]）。
+  late final DiaryFindReplace find = DiaryFindReplace(this);
 
   /// 能否插入日记链接（`@`、卡片命令、链接对话框的日记 / 日记本页）；
   /// null 即不能（模板编辑页、只读正文）。见 [DiaryLinkSource]。
@@ -326,6 +330,28 @@ class DiaryEditorController extends ChangeNotifier {
     }
   }
 
+  /// 正文被改短之后（查找替换不动选区，见 [DiaryFindReplace]），把选区与
+  /// 记住的选区里越过文字末尾的偏移夹回文字长度之内：越界的选区在正文
+  /// 重新取得焦点、接着打字时会写到不存在的位置。
+  void clampSelectionToDocument() {
+    af.Position clampPosition(af.Position position) {
+      final length = document.nodeAtPath(position.path)?.delta?.length;
+      return length == null || position.offset <= length
+          ? position
+          : position.copyWith(offset: length);
+    }
+
+    af.Selection? clamp(af.Selection? selection) => selection?.copyWith(
+      start: clampPosition(selection.start),
+      end: clampPosition(selection.end),
+    );
+
+    final live = state.selection;
+    final fixed = clamp(live);
+    if (fixed != live) unawaited(state.updateSelectionWithReason(fixed));
+    _lastSelection = clamp(_lastSelection);
+  }
+
   void format(String key, Object? value) {
     final selection = this.selection;
     if (selection == null || readOnly) return;
@@ -447,6 +473,7 @@ class DiaryEditorController extends ChangeNotifier {
     _disposeRequested = true;
     linkTyping.end();
     blockSelection.dispose();
+    find.dispose();
     state.selectionNotifier.removeListener(_onSelection);
     state.toggledStyleNotifier.removeListener(_onToggledStyle);
     unawaited(_subscription.cancel());

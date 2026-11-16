@@ -29619,6 +29619,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The AI didn\'t return any topics. Try rephrasing and generate again.'**
   String get mindMapAiEmpty;
+
+  /// Diary editor more menu: open the find bar that replaces the top bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Find and replace'**
+  String get diaryFindReplace;
+
+  /// Find bar: tooltip of the back button that closes the find bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Close find'**
+  String get diaryFindClose;
+
+  /// Find bar: placeholder of the find field (searches the diary body).
+  ///
+  /// In en, this message translates to:
+  /// **'Find in text'**
+  String get diaryFindHint;
+
+  /// Find bar: tooltip of the button that jumps to the previous match.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get diaryFindPrevious;
+
+  /// Find bar: tooltip of the button that jumps to the next match.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get diaryFindNext;
+
+  /// Find bar: which match is current out of how many, shown at the end of the find field. total may end with + when there are too many to list.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total}'**
+  String diaryFindPosition(String current, String total);
+
+  /// Find bar: shown at the end of the find field when nothing matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get diaryFindNoResults;
+
+  /// Find bar: shown at the end of the find field when the regular expression can't be compiled.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid regex'**
+  String get diaryFindInvalidRegex;
+
+  /// Find bar option chip: interpret the find text as a regular expression.
+  ///
+  /// In en, this message translates to:
+  /// **'Regex'**
+  String get diaryFindOptionRegex;
+
+  /// Find bar option chip: case-sensitive matching.
+  ///
+  /// In en, this message translates to:
+  /// **'Match case'**
+  String get diaryFindOptionMatchCase;
+
+  /// Find bar option chip: only match whole words (not inside longer words).
+  ///
+  /// In en, this message translates to:
+  /// **'Whole word'**
+  String get diaryFindOptionWholeWord;
+
+  /// Find bar chip: show or hide the replace row.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get diaryFindOptionReplace;
+
+  /// Find bar: placeholder of the replace field.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace with'**
+  String get diaryReplaceHint;
+
+  /// Find bar: placeholder of the replace field when regex is on; $1 is literal replacement syntax that refers to the first capture group.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace with (\$1 = group 1)'**
+  String get diaryReplaceHintRegex;
+
+  /// Find bar button: replace the current match and go to the next one.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get diaryReplaceOne;
+
+  /// Find bar button: replace every match at once (one undo step).
+  ///
+  /// In en, this message translates to:
+  /// **'Replace all'**
+  String get diaryReplaceAll;
+
+  /// Snack bar after replace all: how many matches were replaced (with an undo action).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Replaced 1 match} other{Replaced {count} matches}}'**
+  String diaryReplaceAllDone(int count);
 }
 
 class _AppLocalizationsDelegate

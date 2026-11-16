@@ -240,6 +240,11 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
           : null,
       onSaveAsTemplate: menu.templates ? _controller.saveAsTemplate : null,
       tools: <Widget>[
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.magnifyingGlass,
+          l10n.diaryFindReplace,
+          busy ? null : () async => _openFind(),
+        ),
         if (_dayPhotos.library.isSupported && _dayPhotosDay != null)
           diaryMoreMenuEntry(
             FontAwesomeIcons.solidImages,

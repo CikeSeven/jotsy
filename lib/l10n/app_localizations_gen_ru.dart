@@ -19578,4 +19578,67 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get mindMapAiEmpty =>
       'ИИ не вернул ни одной темы. Попробуйте переформулировать и создать заново.';
+
+  @override
+  String get diaryFindReplace => 'Найти и заменить';
+
+  @override
+  String get diaryFindClose => 'Закрыть поиск';
+
+  @override
+  String get diaryFindHint => 'Найти в тексте';
+
+  @override
+  String get diaryFindPrevious => 'Предыдущее совпадение';
+
+  @override
+  String get diaryFindNext => 'Следующее совпадение';
+
+  @override
+  String diaryFindPosition(String current, String total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get diaryFindNoResults => 'Нет совпадений';
+
+  @override
+  String get diaryFindInvalidRegex => 'Ошибка в выражении';
+
+  @override
+  String get diaryFindOptionRegex => 'Рег. выражения';
+
+  @override
+  String get diaryFindOptionMatchCase => 'Регистр';
+
+  @override
+  String get diaryFindOptionWholeWord => 'Слово целиком';
+
+  @override
+  String get diaryFindOptionReplace => 'Замена';
+
+  @override
+  String get diaryReplaceHint => 'Заменить на';
+
+  @override
+  String get diaryReplaceHintRegex => 'Заменить на (\$1 — группа 1)';
+
+  @override
+  String get diaryReplaceOne => 'Заменить';
+
+  @override
+  String get diaryReplaceAll => 'Заменить все';
+
+  @override
+  String diaryReplaceAllDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Заменено $count совпадения',
+      many: 'Заменено $count совпадений',
+      few: 'Заменено $count совпадения',
+      one: 'Заменено $count совпадение',
+    );
+    return '$_temp0';
+  }
 }

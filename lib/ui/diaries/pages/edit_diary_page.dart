@@ -14,6 +14,7 @@ import '../controllers/diary_editor_controller.dart' as editor;
 import '../models/diary_link_candidate.dart';
 import '../models/diary_create_initial_action.dart';
 import '../widgets/diary_editor/diary_editor.dart';
+import '../widgets/diary_find_bar/diary_find_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -160,6 +161,7 @@ part '../controllers/edit_diary_ai_flow.dart';
 part '../controllers/edit_diary_reading_flow.dart';
 part '../controllers/edit_diary_reading_actions.dart';
 part '../controllers/edit_diary_mind_map_flow.dart';
+part '../controllers/edit_diary_find_flow.dart';
 
 /// 日记编辑页。
 ///
@@ -259,6 +261,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   // 悬浮工具栏「更多」面板的目标高度（收起为 0），驱动正文末尾的额外留白。
   final ValueNotifier<double> _toolbarPanelExtent = ValueNotifier<double>(0);
+  // 查找栏（见 edit_diary_find_flow）：页面经它把焦点交回查找框 / 替换框；
+  // 这一次打开时焦点先给替换框（替换的快捷键）。
+  final GlobalKey<DiaryFindBarState> _findBarKey =
+      GlobalKey<DiaryFindBarState>();
+  bool _findFocusReplace = false;
   // 悬浮工具栏面板最多占的高度，布局时按可用高度写入（见
   // DiaryToolbarPanelLimit），工具栏只在面板展开时跟随。
   final ValueNotifier<double> _toolbarMaxPanelExtent = ValueNotifier<double>(
@@ -1341,7 +1348,17 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 backgroundColor: reading == null
                     ? pageColor
                     : diaryPreviewScaffoldColor(context, reading.resolved),
-                appBar: reading != null
+                // 查找与替换开着时顶栏换成查找栏（见 edit_diary_find_flow）。
+                appBar: _findOpen
+                    ? _buildFindBar(
+                        background: reading == null
+                            ? null
+                            : diaryPreviewPageColors(
+                                context,
+                                reading.resolved,
+                              ).bar,
+                      )
+                    : reading != null
                     ? _buildReadingTopBar(context, frame: reading)
                     : AppTopBar(
                         contentMaxWidth: AppContentWidth.editor,
@@ -1441,6 +1458,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                   child: Text(context.l10n.aiSuggestMeta),
                                 ),
                               ],
+                              ExpressiveMenuItem(
+                                leadingIcon: const FaIcon(
+                                  FontAwesomeIcons.magnifyingGlass,
+                                ),
+                                onPressed: _saving ? null : _openFind,
+                                child: Text(context.l10n.diaryFindReplace),
+                              ),
                               if (templatesEnabled)
                                 ExpressiveMenuItem(
                                   leadingIcon: const FaIcon(
@@ -1629,7 +1653,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                     !_isEditEntry &&
                     !_bottomPanelOpen &&
                     !publishOnLeave &&
-                    !_contentController.blockSelection.isActive,
+                    !_contentController.blockSelection.isActive &&
+                    !_findOpen,
                 onPopInvokedWithResult: (didPop, result) {
                   if (!didPop) {
                     unawaited(_controller.attemptExit());
@@ -1639,20 +1664,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
                 },
                 // 桌面上 Esc 与顶栏返回按钮相同（补存、先收起面板与录音）；
-                // 手动保存时 Ctrl / ⌘ + S 与顶栏“保存”相同。
-                child: DesktopPageKeys(
-                  onEscape: () => unawaited(_controller.attemptExit()),
-                  child: AppPlatform.isDesktop
-                      ? CallbackShortcuts(
-                          bindings: <ShortcutActivator, VoidCallback>{
-                            if (_controller.manualEditSave)
-                              primaryShortcut(LogicalKeyboardKey.keyS): () =>
-                                  unawaited(_controller.saveEditManually()),
-                          },
+                // 手动保存时 Ctrl / ⌘ + S 与顶栏“保存”相同。页面快捷键包在
+                // DesktopPageKeys 外面：它自带一个 autofocus 的 Focus，正文
+                // 与输入框都没有焦点时按键从那里起冒泡，包在里面就收不到。
+                child: AppPlatform.isDesktop
+                    ? CallbackShortcuts(
+                        bindings: <ShortcutActivator, VoidCallback>{
+                          if (_controller.manualEditSave)
+                            primaryShortcut(LogicalKeyboardKey.keyS): () =>
+                                unawaited(_controller.saveEditManually()),
+                          // Ctrl / ⌘ + F 查找、Ctrl + H 替换（导图日记没有）。
+                          if (_mindMapSession == null) ..._findShortcuts,
+                        },
+                        child: DesktopPageKeys(
+                          onEscape: () => unawaited(_controller.attemptExit()),
                           child: scaffold,
-                        )
-                      : scaffold,
-                ),
+                        ),
+                      )
+                    : DesktopPageKeys(
+                        onEscape: () => unawaited(_controller.attemptExit()),
+                        child: scaffold,
+                      ),
               );
             },
           );

@@ -65,11 +65,22 @@ bool expandDiaryTogglesAroundSelection(af.EditorState state) {
       state.selectionUpdateReason == af.SelectionUpdateReason.selectAll) {
     return false;
   }
-  final toggles = <af.Node>{
+  return _expandDiaryToggles(state, {
     for (final position in {selection.start, selection.end})
       if (state.document.nodeAtPath(position.path) case final node?)
         ...collapsedDiaryTogglesAbove(node),
-  };
+  });
+}
+
+/// 把 [node] 外面每一层已收起的折叠块展开（正文查找跳到收起的内容里的
+/// 匹配时，见 `DiaryFindReplace`）；撤销口径同
+/// [expandDiaryTogglesAroundSelection]。不需要展开时返回 false。
+bool expandDiaryTogglesAbove(af.EditorState state, af.Node node) {
+  if (state.isDisposed || !state.editable) return false;
+  return _expandDiaryToggles(state, collapsedDiaryTogglesAbove(node).toSet());
+}
+
+bool _expandDiaryToggles(af.EditorState state, Set<af.Node> toggles) {
   if (toggles.isEmpty) return false;
   final transaction = state.transaction;
   for (final toggle in toggles) {

@@ -16,6 +16,11 @@ import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.
 /// 不模糊：搜索框所在的顶栏 / 面板已经是一层材质，同一区域不叠两层模糊。
 ///
 /// 文字与焦点由调用方持有（[controller] / [focusNode]）。
+///
+/// 正文查找栏（`DiaryFindBar`）另用三个可选项：换掉行首图标（[icon]，替换
+/// 框为 `rightLeft`）、清空按钮前的行尾内容（[trailing]，第几处 / 共几处）
+/// 与按下键盘的搜索键后保持焦点（[keepFocusOnSubmit]，连续跳下一处）。
+/// 不传时与原来一致。
 class SearchPillField extends StatelessWidget {
   const SearchPillField({
     super.key,
@@ -28,6 +33,10 @@ class SearchPillField extends StatelessWidget {
     this.onSubmitted,
     this.onClear,
     this.autofocus = false,
+    this.icon = FontAwesomeIcons.magnifyingGlass,
+    this.trailing,
+    this.keepFocusOnSubmit = false,
+    this.textInputAction = TextInputAction.search,
   });
 
   /// 与主题图标按钮的最小尺寸、模板面板的搜索框同高。
@@ -48,6 +57,16 @@ class SearchPillField extends StatelessWidget {
   /// 清空按钮；null 时清掉文字并以空串回调 [onChanged]。
   final VoidCallback? onClear;
   final bool autofocus;
+
+  /// 行首的 14px 图标。
+  final FaIconData icon;
+
+  /// 输入框与清空按钮之间的内容（如“3/12”）；null 时没有。
+  final Widget? trailing;
+
+  /// 按下键盘的确认键后不收起键盘、焦点留在框里（[onSubmitted] 照常调用）。
+  final bool keepFocusOnSubmit;
+  final TextInputAction textInputAction;
 
   @override
   Widget build(BuildContext context) {
@@ -83,11 +102,7 @@ class SearchPillField extends StatelessWidget {
           child: Row(
             children: <Widget>[
               const SizedBox(width: 16),
-              FaIcon(
-                FontAwesomeIcons.magnifyingGlass,
-                size: 14,
-                color: iconColor,
-              ),
+              FaIcon(icon, size: 14, color: iconColor),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
@@ -95,7 +110,7 @@ class SearchPillField extends StatelessWidget {
                   focusNode: focusNode,
                   autofocus: autofocus,
                   maxLines: 1,
-                  textInputAction: TextInputAction.search,
+                  textInputAction: textInputAction,
                   style: theme.textTheme.bodyMedium,
                   decoration: InputDecoration(
                     isDense: true,
@@ -112,10 +127,13 @@ class SearchPillField extends StatelessWidget {
                     ),
                   ),
                   onChanged: onChanged,
+                  // 给出 onEditingComplete 时框架不再在确认后收起焦点。
+                  onEditingComplete: keepFocusOnSubmit ? () {} : null,
                   onSubmitted: onSubmitted ?? (_) => focusNode.unfocus(),
                   contextMenuBuilder: appTextContextMenuBuilder,
                 ),
               ),
+              ?trailing,
               // 有字时才出现清空按钮；交叉缩放淡入，不推动输入框宽度以外的布局。
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: controller,

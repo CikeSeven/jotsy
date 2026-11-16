@@ -22,8 +22,8 @@ import '../../support/expressive_test_theme.dart';
 
 /// 导图日记在编辑页里：新建空白日记可以转成导图（草稿照常保存，中心主题
 /// 就是标题），空导图可以转回文字，功能关闭时没有按钮；编辑已有的导图
-/// 日记直接是画布，改动经日记的自动保存写库；导图日记没有预览页，“更多”
-/// 里留着分享、导出与写留言。
+/// 日记直接是画布，改动经日记的自动保存写库；导图日记的“更多”只有导图
+/// 自己的动作、分享、编辑器设置与删除。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -211,13 +211,15 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('a mind map diary has no preview page, so More keeps share, '
-      'export and writing a comment', (tester) async {
+  testWidgets('More on a mind map diary keeps only the map actions, share, '
+      'editor settings and delete', (tester) async {
+    // 纪念日、模板、留言都开着：文字日记的“更多”里会有对应条目，导图日记
+    // 不该有。
     await setUpStores(
       tester,
       prefs: <String, Object>{
         'app.settings.app_features': AppFeatures.defaults
-            .copyWith(comments: true)
+            .copyWith(comments: true, anniversaries: true, templates: true)
             .encode(),
       },
     );
@@ -239,11 +241,20 @@ void main() {
 
     await tester.tap(find.byTooltip(l10n.diaryEditorMoreActions));
     await tester.pumpAndSettle();
-    Finder item(String label) => find.widgetWithText(ExpressiveMenuItem, label);
-    expect(item(l10n.mindMapExport), findsOneWidget);
-    expect(item(l10n.previewShare), findsOneWidget);
-    expect(item(l10n.previewExport), findsOneWidget);
-    expect(item(l10n.diaryCommentSheetNew), findsOneWidget);
+    final labels = <String>[
+      for (final item in tester.widgetList<ExpressiveMenuItem>(
+        find.byType(ExpressiveMenuItem),
+      ))
+        (item.child as Text).data!,
+    ];
+    expect(labels, <String>[
+      l10n.mindMapStyleSheetTitle,
+      l10n.mindMapExport,
+      l10n.mindMapImport,
+      l10n.previewShare,
+      l10n.settingsEditorTitle,
+      l10n.commonDelete,
+    ]);
     await unmount(tester);
   });
 }

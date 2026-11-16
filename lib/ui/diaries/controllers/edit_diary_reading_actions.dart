@@ -188,8 +188,9 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   ///
   /// 分享在顶栏上；导出、写留言与 AI 回应平时在预览页（编辑页从预览页进入，
   /// 返回即是），菜单里不重复。只有用户不经过预览页时（“打开日记时直接
-  /// 编辑”开着，或导图日记，见 [_ReadingMenuOptions.skipsPreview]），分享、
-  /// 导出与写留言排在“编辑信息”之后，AI 回应进 AI 二级菜单。
+  /// 编辑”开着，见 [_ReadingMenuOptions.skipsPreview]），分享、导出与写留言
+  /// 排在“编辑信息”之后，AI 回应进 AI 二级菜单。导图日记不用这份菜单，见
+  /// [_mindMapDiaryMoreItems]。
   ///
   /// 在 build 里构建（开关来自这一帧的 [_ReadingFrame.menu]，不在这里订阅）。
   /// 分享、导出、AI 回应与删除先补存，手动保存时不写（见各动作）。
@@ -253,20 +254,34 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
             child: Text(l10n.diaryReadingAiMenu),
           ),
       ],
-      settings: <Widget>[
-        diaryMoreMenuEntry(
-          FontAwesomeIcons.penNib,
-          l10n.settingsEditorTitle,
-          () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) => const EditorSettingsPage(),
-            ),
-          ),
-        ),
-      ],
+      settings: <Widget>[_editorSettingsMenuEntry()],
       onDelete: _deleteFromReading,
     );
   }
+
+  /// 导图日记“更多”里接在导图自己的样式、导出导图与导入之后的条目：分享 |
+  /// 编辑器设置 | 删除。导图日记没有信息面板、导出（日记）、写留言、设为
+  /// 纪念日、存为模板、这天的照片与 AI 二级菜单——整页就是导图，这些都是
+  /// 文字日记的动作；导图自己的导出与 AI 在样式 / 导出导图与工作区里。
+  List<Widget> _mindMapDiaryMoreItems(_ReadingFrame frame) {
+    return diaryMoreMenuItems(
+      context.l10n,
+      onShare: () => _shareFromReading(frame.resolved),
+      settings: <Widget>[_editorSettingsMenuEntry()],
+      onDelete: _deleteFromReading,
+    );
+  }
+
+  /// “更多 → 编辑器设置”。
+  Widget _editorSettingsMenuEntry() => diaryMoreMenuEntry(
+    FontAwesomeIcons.penNib,
+    context.l10n.settingsEditorTitle,
+    () => Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const EditorSettingsPage(),
+      ),
+    ),
+  );
 
   /// “更多 → AI ›”二级菜单的条目：写作灵感、AI 生成标题、AI 推荐标签与心情
   /// （各按 AI 模块开关出现），不经过预览页时再加 AI 回应；一项

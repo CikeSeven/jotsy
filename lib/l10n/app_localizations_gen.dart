@@ -29062,6 +29062,18 @@ abstract class AppLocalizations {
   /// **'Strikethrough'**
   String get mindMapStrike;
 
+  /// Topic style panel and text format bar tooltip: underline the text (not the underline shape).
+  ///
+  /// In en, this message translates to:
+  /// **'Underline'**
+  String get mindMapUnderline;
+
+  /// Topic style panel section and text format bar button: background color behind the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight'**
+  String get mindMapHighlight;
+
   /// Topic text size option (very short).
   ///
   /// In en, this message translates to:

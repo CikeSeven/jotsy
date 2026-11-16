@@ -18,6 +18,7 @@ import '../viewmodels/mind_map_drop_planner.dart';
 import '../viewmodels/mind_map_frame.dart';
 import '../viewmodels/mind_map_hit_test.dart';
 import '../viewmodels/mind_map_look.dart';
+import 'mind_map_accessory_bars.dart';
 import 'mind_map_node_editor.dart';
 import 'mind_map_painter.dart';
 
@@ -223,14 +224,19 @@ class MindMapCanvasState extends State<MindMapCanvas>
     _layoutLook = look;
   }
 
+  /// 让节点露出来时四周留的白：键盘升起时底边让出键盘与其上两行的附件条
+  /// （[MindMapAccessoryBar.height]），正在编辑的节点不被盖住。
   EdgeInsets get _revealPadding {
     final keyboard = widget.keyboardInset?.value ?? 0;
     final base = widget.padding;
+    final accessory = keyboard > 0
+        ? keyboard + MindMapAccessoryBar.height + 12
+        : 0.0;
     return EdgeInsets.fromLTRB(
       base.left + 24,
       base.top + 24,
       base.right + 24,
-      math.max(base.bottom, keyboard + 72) + 24,
+      math.max(base.bottom, accessory) + 24,
     );
   }
 

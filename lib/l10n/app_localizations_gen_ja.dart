@@ -16491,6 +16491,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get mindMapStrike => '取り消し線';
 
   @override
+  String get mindMapUnderline => '下線';
+
+  @override
+  String get mindMapHighlight => 'ハイライト';
+
+  @override
   String get mindMapSizeSmall => '小';
 
   @override

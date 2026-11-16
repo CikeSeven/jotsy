@@ -18572,6 +18572,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mindMapStrike => 'Strikethrough';
 
   @override
+  String get mindMapUnderline => 'Underline';
+
+  @override
+  String get mindMapHighlight => 'Highlight';
+
+  @override
   String get mindMapSizeSmall => 'S';
 
   @override

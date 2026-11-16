@@ -6,20 +6,26 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_ops.dart';
+import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/mind_map_editing_controller.dart';
+import '../controllers/mind_map_rich_text_controller.dart';
 import '../models/mind_map_markers.dart';
 import '../viewmodels/mind_map_look.dart';
 import '../models/mind_map_themes.dart';
 import '../viewmodels/mind_map_palette.dart';
+import '../viewmodels/mind_map_visuals.dart';
+import 'mind_map_node_editor.dart' show mindMapFormatShortcut;
 
 /// 大纲视图：同一张导图的缩进列表，与画布编辑的是同一份文档、同一个
 /// 选中与编辑状态。
 ///
 /// - 点一行选中并编辑文字；行首圆点为分支色，有子主题时是可点的折叠箭头；
+///   字号按层级，主题的文字样式（整条的与局部的）照画，编辑框同样经
+///   [MindMapRichTextController] 设局部样式（格式条与快捷键与画布相同）；
 /// - 编辑中：Enter 在后面加同级（行首回车加在前面），空行退格删除这一行并
 ///   编辑上一行；桌面另有 Tab / Shift + Tab 缩进与取消缩进、Alt + ↑ / ↓
 ///   上移下移；手机上这些操作在键盘上方的附件条里（由工作区提供）；
@@ -104,6 +110,7 @@ class _MindMapOutlineViewState extends State<MindMapOutlineView> {
             return _OutlineRow(
               key: ValueKey<String>('outline-${node.id}'),
               controller: controller,
+              styles: styles,
               node: node,
               depth: depth,
               branchColor: depth == 0
@@ -125,6 +132,7 @@ class _OutlineRow extends StatefulWidget {
   const _OutlineRow({
     super.key,
     required this.controller,
+    required this.styles,
     required this.node,
     required this.depth,
     required this.branchColor,
@@ -135,6 +143,7 @@ class _OutlineRow extends StatefulWidget {
   });
 
   final MindMapEditingController controller;
+  final MindMapStyleResolver styles;
   final MindMapNode node;
   final int depth;
   final Color branchColor;
@@ -150,7 +159,7 @@ class _OutlineRow extends StatefulWidget {
 }
 
 class _OutlineRowState extends State<_OutlineRow> {
-  TextEditingController? _text;
+  MindMapRichTextController? _text;
   FocusNode? _focus;
 
   MindMapEditingController get _controller => widget.controller;
@@ -176,9 +185,12 @@ class _OutlineRowState extends State<_OutlineRow> {
 
   void _syncEditor() {
     if (_editing && _text == null) {
-      _text = TextEditingController(text: widget.node.text)
-        ..selection = TextSelection.collapsed(offset: widget.node.text.length)
-        ..addListener(_onText);
+      final text = MindMapRichTextController(
+        runs: mindMapRunsOf(widget.node),
+        onChanged: _onChanged,
+      )..selection = TextSelection.collapsed(offset: widget.node.text.length);
+      _text = text;
+      _controller.textSession.attach(text);
       _focus = FocusNode(onKeyEvent: _onKey);
       _focus!.addListener(_onFocus);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -197,7 +209,7 @@ class _OutlineRowState extends State<_OutlineRow> {
   }
 
   void _disposeEditor() {
-    _text?.removeListener(_onText);
+    if (_text case final text?) _controller.textSession.detach(text);
     _text?.dispose();
     _focus?.removeListener(_onFocus);
     _focus?.dispose();
@@ -205,11 +217,11 @@ class _OutlineRowState extends State<_OutlineRow> {
     _focus = null;
   }
 
-  void _onText() {
-    final text = _text?.text;
-    if (text == null || text == widget.node.text) return;
-    _controller.setText(widget.node.id, text);
-  }
+  void _onChanged(
+    String text,
+    List<MindMapTextRun> runs, {
+    bool format = false,
+  }) => _controller.setRichText(widget.node.id, text, runs, format: format);
 
   void _onFocus() {
     if (!(_focus?.hasFocus ?? true) && _editing) _controller.stopEditing();
@@ -222,6 +234,10 @@ class _OutlineRowState extends State<_OutlineRow> {
     final text = _text;
     if (text == null || text.value.composing.isValid) {
       return KeyEventResult.ignored;
+    }
+    if (mindMapFormatShortcut(event) case final mark?) {
+      text.toggle(mark);
+      return KeyEventResult.handled;
     }
     final keys = HardwareKeyboard.instance;
     final key = event.logicalKey;
@@ -286,21 +302,34 @@ class _OutlineRowState extends State<_OutlineRow> {
     final node = widget.node;
     final depth = widget.depth;
     final selected = _controller.selectedId == node.id;
-    final style =
-        switch (depth) {
-          0 => theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-          1 => theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-          _ => theme.textTheme.bodyLarge,
-        }?.copyWith(
-          decoration: node.taskDone ? TextDecoration.lineThrough : null,
-          color: node.taskDone
-              ? scheme.onSurface.withValues(alpha: 0.55)
-              : scheme.onSurface,
-        );
+    // 字号与粗细按层级，整条的文字样式（粗斜体、装饰线、颜色、高亮）
+    // 叠在上面，完成的待办再整体变淡并划掉；局部样式逐段叠在最上面。
+    var style = switch (depth) {
+      0 => theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+      1 => theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      _ => theme.textTheme.bodyLarge,
+    }?.copyWith(color: scheme.onSurface);
+    style = style?.merge(
+      widget.styles.runStyle(MindMapNodeStyle(node.style).textMarks),
+    );
+    if (node.taskDone) {
+      final color = style?.color ?? scheme.onSurface;
+      style = style?.copyWith(
+        decoration: TextDecoration.combine(<TextDecoration>[
+          style.decoration ?? TextDecoration.none,
+          TextDecoration.lineThrough,
+        ]),
+        color: color.withValues(alpha: color.a * 0.55),
+      );
+    }
+    TextStyle? runStyle(MindMapTextMarks marks) => widget.styles.runStyle(
+      marks,
+      base: style?.decoration,
+      taskDone: node.taskDone,
+    );
+    _text
+      ?..runStyle = runStyle
+      ..base = mindMapBaseMarksOf(style);
     final placeholder = depth == 0
         ? context.l10n.mindMapRootPlaceholder
         : context.l10n.mindMapNodePlaceholder;
@@ -368,12 +397,20 @@ class _OutlineRowState extends State<_OutlineRow> {
           )
         : Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Text(
-              node.text.trim().isEmpty ? placeholder : node.text,
-              style: node.text.trim().isEmpty
-                  ? style?.copyWith(color: scheme.onSurfaceVariant)
-                  : style,
-            ),
+            child: node.text.trim().isEmpty
+                ? Text(
+                    placeholder,
+                    style: style?.copyWith(color: scheme.onSurfaceVariant),
+                  )
+                : Text.rich(
+                    TextSpan(
+                      style: style,
+                      children: <InlineSpan>[
+                        for (final run in mindMapRunsOf(node))
+                          TextSpan(text: run.text, style: runStyle(run.marks)),
+                      ],
+                    ),
+                  ),
           );
     final href = node.href?.trim() ?? '';
     return Padding(

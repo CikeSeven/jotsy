@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_ops.dart';
+import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
+import 'mind_map_rich_text_controller.dart';
 
 /// 导图编辑会话：当前文档、选中与正在编辑的节点、撤销 / 重做。
 ///
@@ -52,6 +54,15 @@ class MindMapEditingController extends ChangeNotifier {
 
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
+
+  /// 正在编辑的主题文字输入框（画布或大纲的），格式条经它设样式。
+  final MindMapTextSession textSession = MindMapTextSession();
+
+  @override
+  void dispose() {
+    textSession.dispose();
+    super.dispose();
+  }
 
   /// 换成外部给的文档（重新载入），清空撤销栈，不回调 [onChanged]。
   void reset(MindMapDocument document) {
@@ -141,6 +152,19 @@ class MindMapEditingController extends ChangeNotifier {
   void setText(String id, String text) => commit(
     MindMapOps.setText(_document, id, text),
     coalesce: ('text', id),
+    animate: false,
+  );
+
+  /// 输入框里改字或设样式（局部样式随文字一起写）：打字时同一节点连续
+  /// 输入合并为一步撤销，设样式（[format]）各是一步。
+  void setRichText(
+    String id,
+    String text,
+    List<MindMapTextRun> runs, {
+    bool format = false,
+  }) => commit(
+    MindMapOps.setRichText(_document, id, text, runs),
+    coalesce: format ? null : ('text', id),
     animate: false,
   );
 

@@ -21729,6 +21729,14 @@
   "@mindMapStrike": {
     "description": "Topic style panel tooltip."
   },
+  "mindMapUnderline": "Подчёркнутый",
+  "@mindMapUnderline": {
+    "description": "Topic style panel and text format bar tooltip: underline the text (not the underline shape)."
+  },
+  "mindMapHighlight": "Выделение цветом",
+  "@mindMapHighlight": {
+    "description": "Topic style panel section and text format bar button: background color behind the text."
+  },
   "mindMapSizeSmall": "S",
   "@mindMapSizeSmall": {
     "description": "Topic text size option (very short)."

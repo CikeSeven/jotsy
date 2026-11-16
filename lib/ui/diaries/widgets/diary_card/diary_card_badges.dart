@@ -79,6 +79,7 @@ class DiaryCardMetaIndicators extends StatelessWidget {
     super.key,
     required this.moodEmoji,
     required this.weatherCode,
+    required this.weatherText,
     required this.compact,
     required this.fill,
     required this.border,
@@ -88,7 +89,13 @@ class DiaryCardMetaIndicators extends StatelessWidget {
   });
 
   final String? moodEmoji;
+
+  /// 自动获取天气时存下的和风图标编码；手动填写的天气没有编码。
   final String? weatherCode;
+
+  /// 天气文字。手动填写的天气只有文字，图标由 [QWeatherIcon] 按关键词推断
+  /// （认不出时用兜底图标），与预览页、日历同一口径（#289）。
+  final String? weatherText;
   final bool compact;
   final Color fill;
   final Color border;
@@ -98,7 +105,9 @@ class DiaryCardMetaIndicators extends StatelessWidget {
   final bool plain;
   final double scale;
 
-  bool get isEmpty => moodEmoji == null && weatherCode == null;
+  bool get hasWeather => weatherCode != null || weatherText != null;
+
+  bool get isEmpty => moodEmoji == null && !hasWeather;
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +118,10 @@ class DiaryCardMetaIndicators extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (weatherCode != null) ...[
+        if (hasWeather) ...[
           QWeatherIcon(
             iconCode: weatherCode,
+            weatherText: weatherText,
             size: (compact ? 11.5 : 13) * scale,
             fallbackColor: iconColor,
           ),

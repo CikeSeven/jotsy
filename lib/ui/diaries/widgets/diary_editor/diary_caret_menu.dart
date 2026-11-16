@@ -17,9 +17,9 @@ import '../../controllers/diary_editor_controller.dart';
 /// 正文；选中时经 [consumeTrigger] 删掉“触发字 + 筛选词”再执行。
 ///
 /// 会话边界：光标离开触发块、退到触发字之前、触发字被删掉、筛选词超过
-/// [maxQueryLength] 字，或筛选词以空格结尾且 [hasMatchesFor] 认为没有匹配
-/// 项时自动结束；返回键与点按菜单外也结束（见 [DiaryCaretMenuHost]），正文
-/// 里已输入的文字原样保留。
+/// [maxQueryLength] 字、[closesOn] 认为筛选词已不是检索词，或筛选词以空格
+/// 结尾且 [hasMatchesFor] 认为没有匹配项时自动结束；返回键与点按菜单外也
+/// 结束（见 [DiaryCaretMenuHost]），正文里已输入的文字原样保留。
 abstract class DiaryCaretMenuSession extends ChangeNotifier {
   DiaryCaretMenuSession(this.editor);
 
@@ -27,17 +27,25 @@ abstract class DiaryCaretMenuSession extends ChangeNotifier {
 
   af.Node? _node;
   int _trigger = 0;
+  String _triggerText = '';
   String _query = '';
   StreamSubscription<af.EditorTransactionValue>? _transactions;
 
-  /// 触发字（`/`、`@`）；会话期间它必须一直留在 [_trigger] 处。
+  /// 默认触发字（`/`、`@`）；会话期间它必须一直留在 [_trigger] 处。
+  /// [openAt] 可另给一串（如 `[[`）。
   String get triggerCharacter;
+
+  /// 这次会话的触发字（[openAt] 时确定）。
+  String get trigger => _triggerText;
 
   /// 筛选词的长度上限，超过即视为用户在写正文、结束会话。
   int get maxQueryLength => 24;
 
   /// 筛选词（已去掉结尾空格）是否还有匹配项：以空格结尾又没有匹配时结束。
   bool hasMatchesFor(String query);
+
+  /// 筛选词出现了不会是检索词的内容（如 `[[` 会话里打出了 `]`）时结束。
+  bool closesOn(String query) => false;
 
   /// 筛选词变化（含会话刚开启时的空词）后调用，子类据此更新候选。
   @protected
@@ -52,11 +60,13 @@ abstract class DiaryCaretMenuSession extends ChangeNotifier {
   /// 触发字之后、光标之前的文字。
   String get query => _query;
 
-  /// 开启会话：[node] 的 [triggerOffset] 处已写好触发字。
-  void openAt(af.Node node, int triggerOffset) {
+  /// 开启会话：[node] 的 [triggerOffset] 处已写好触发字（[trigger]，缺省为
+  /// [triggerCharacter]）。
+  void openAt(af.Node node, int triggerOffset, {String? trigger}) {
     close();
     _node = node;
     _trigger = triggerOffset;
+    _triggerText = trigger ?? triggerCharacter;
     _query = '';
     editor.state.selectionNotifier.addListener(_sync);
     _transactions = editor.state.transactionStream.listen((event) {
@@ -88,14 +98,18 @@ abstract class DiaryCaretMenuSession extends ChangeNotifier {
         selection == null ||
         !selection.isCollapsed ||
         !selection.end.path.equals(node.path) ||
-        selection.end.offset <= _trigger ||
-        _trigger >= text.length ||
-        text[_trigger] != triggerCharacter) {
+        selection.end.offset < _trigger + _triggerText.length ||
+        _trigger + _triggerText.length > text.length ||
+        !text.startsWith(_triggerText, _trigger)) {
       close();
       return;
     }
-    final query = text.substring(_trigger + 1, selection.end.offset);
+    final query = text.substring(
+      _trigger + _triggerText.length,
+      selection.end.offset,
+    );
     if (query.length > maxQueryLength ||
+        closesOn(query) ||
         (query.endsWith(' ') && !hasMatchesFor(query.trim()))) {
       close();
       return;

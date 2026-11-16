@@ -456,10 +456,15 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       key: ValueKey(controller.state),
       editorState: controller.state,
       characterShortcutEvents: [
-        // `@` 菜单开着时回车确认候选，先于一切回车规则。
+        // `@` 菜单开着时回车确认候选，先于一切回车规则；`[[` 开启同一会话。
         if (linking) ...[
           diaryMentionEnterCommand(_mentionMenu),
           diaryMentionCommand(
+            controller: controller,
+            menu: _mentionMenu,
+            kinds: _linkKinds,
+          ),
+          ...diaryWikiLinkCommands(
             controller: controller,
             menu: _mentionMenu,
             kinds: _linkKinds,

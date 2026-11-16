@@ -3,12 +3,18 @@ import 'package:markdown/markdown.dart' as md;
 
 import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
+import '../database/diary_blocks/diary_blocks_schema.dart';
 import '../database/diary_blocks/diary_blocks_walk.dart';
+import '../database/diary_blocks/diary_link_target.dart';
 import 'journal_import_block_writer.dart';
 import 'journal_import_blocks.dart';
 import 'journal_import_html_style.dart';
 import 'journal_import_markdown_references.dart';
 import 'journal_import_markdown_table.dart';
+
+/// 根据链接地址返回它指向的、同一次导入里的另一篇笔记导入后的日记；不是
+/// 笔记链接时为 null。
+typedef JournalNoteLinkResolver = DiaryLinkTarget? Function(String href);
 
 /// 把 Markdown 正文（Day One、旧版 Journey、笔记应用导出）写入
 /// [JournalBlockWriter]。
@@ -27,12 +33,15 @@ import 'journal_import_markdown_table.dart';
 /// 来源的阅读器会渲染 HTML，未知标签因此直接丢弃；Day One
 /// 等纯文本来源保持关闭，`<` 开头的文字原样保留。[resolveLink] 把指向本地
 /// 文件的链接（如 `[说明书.pdf](resources/…)`）转为附件嵌入，返回 null 时
-/// 保留链接文字。
+/// 保留链接文字。[resolveNoteLink] 认出指向导出里另一篇笔记的链接时，文字
+/// 写成日记链接、图片语法写成日记链接卡片（先于 [resolveLink]）；只做查找、
+/// 没有副作用，表格试写时照常使用。
 class JournalMarkdownConverter {
   JournalMarkdownConverter(
     this.writer, {
     this.resolveEmbed,
     this.resolveLink,
+    this.resolveNoteLink,
     this.inlineHtml = false,
   }) : _inlineParser = md.Document(
          encodeHtml: false,
@@ -47,6 +56,7 @@ class JournalMarkdownConverter {
   final JournalBlockWriter writer;
   final JournalEmbedResolver? resolveEmbed;
   final JournalEmbedResolver? resolveLink;
+  final JournalNoteLinkResolver? resolveNoteLink;
   final bool inlineHtml;
   final md.Document _inlineParser;
 
@@ -138,6 +148,7 @@ class JournalMarkdownConverter {
           sub,
           resolveEmbed: trap,
           resolveLink: trap,
+          resolveNoteLink: resolveNoteLink,
           inlineHtml: inlineHtml,
         );
         converter._inlineParser.linkReferences.addAll(
@@ -278,10 +289,13 @@ class JournalMarkdownConverter {
           writer.text(node.textContent, {..._withHtml(inline), 'code': true});
         case 'a':
           final href = node.attributes['href']?.trim() ?? '';
-          final file = href.isEmpty || _isWebLink(href)
+          final note = _noteLink(href);
+          final file = note != null || href.isEmpty || _isWebLink(href)
               ? null
               : resolveLink?.call(href);
-          if (file != null) {
+          if (note != null) {
+            _inline(children, {...inline, 'link': note.toHref()}, line);
+          } else if (file != null) {
             writer.embed(file, line);
           } else {
             _inline(
@@ -291,7 +305,21 @@ class JournalMarkdownConverter {
             );
           }
         case 'img':
-          _embedSource(node.attributes['src'] ?? '', line);
+          final src = node.attributes['src'] ?? '';
+          final note = _noteLink(src);
+          if (note != null) {
+            // 嵌入整篇笔记（Obsidian 的 `![[笔记]]`）：日记链接卡片，替代文字
+            // 是标题快照。卡片与图片一样独占一行。
+            writer.node(<String, Object?>{
+              kDiaryBlockTypeKey: kDiaryBlockLinkCard,
+              kDiaryBlockDataKey: diaryLinkCardData(
+                note,
+                node.attributes['alt'] ?? '',
+              ),
+            }, line);
+          } else {
+            _embedSource(src, line);
+          }
         case 'br':
           writer.endLine(line);
         case _HtmlTagSyntax.tag:
@@ -395,6 +423,12 @@ class JournalMarkdownConverter {
             ? <String, Object?>{'image': src}
             : null);
     if (data != null) writer.embed(data, line);
+  }
+
+  DiaryLinkTarget? _noteLink(String href) {
+    final value = href.trim();
+    if (value.isEmpty || _isWebLink(value)) return null;
+    return resolveNoteLink?.call(value);
   }
 
   static bool _isWebLink(String href) =>

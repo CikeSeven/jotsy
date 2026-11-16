@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/ui/explore/models/explore_view_data.dart';
 import 'package:node_diary/ui/explore/models/gallery_grid.dart';
 import 'package:node_diary/ui/explore/models/gallery_level.dart';
+import 'package:node_diary/ui/explore/models/gallery_morph_plan.dart';
 import 'package:node_diary/ui/explore/models/gallery_pinch.dart';
 import 'package:node_diary/ui/explore/models/gallery_scroll_index.dart';
 
@@ -88,13 +89,15 @@ void main() {
   });
 
   group('GalleryPinch', () {
-    test('progress is the log share of the way to the next cell size', () {
+    test('progress follows the fingers linearly toward the next cell size', () {
       expect(GalleryPinch.progress(1, 0.8), 0);
+      expect(GalleryPinch.progress(0.9, 0.8), closeTo(0.5, 1e-9));
       expect(GalleryPinch.progress(0.8, 0.8), closeTo(1, 1e-9));
-      expect(GalleryPinch.progress(0.5, 0.8), 1);
+      // 捏过了头：大于 1，由驱动接着换下一档。
+      expect(GalleryPinch.progress(0.6, 0.8), closeTo(2, 1e-9));
+      // 朝反方向捏：0。
       expect(GalleryPinch.progress(1.1, 0.8), 0);
       expect(GalleryPinch.progress(1.25, 1.25), closeTo(1, 1e-9));
-      expect(GalleryPinch.progress(0.9, 0.81), closeTo(0.5, 1e-9));
     });
 
     test('the end levels only give a little', () {
@@ -103,14 +106,61 @@ void main() {
       expect(GalleryPinch.rubberBand(0.5), greaterThan(0.89));
     });
 
-    test('fade and scale interpolation stay in range', () {
-      expect(GalleryPinch.fade(0), 0);
-      expect(GalleryPinch.fade(1), 1);
-      expect(GalleryPinch.fade(0.5), closeTo(0.5, 1e-9));
-      // 两头各留一段只有一层，重影只在中段。
-      expect(GalleryPinch.fade(0.15), 0);
-      expect(GalleryPinch.fade(0.85), 1);
-      expect(GalleryPinch.lerpScale(1, 0.25, 0.5), closeTo(0.5, 1e-9));
+    test('old headings fade out first, new ones fade in after', () {
+      expect(GalleryPinch.headerOpacity(0, fromLayer: true), 1);
+      expect(GalleryPinch.headerOpacity(0.5, fromLayer: true), 0);
+      expect(GalleryPinch.headerOpacity(0.5, fromLayer: false), 0);
+      expect(GalleryPinch.headerOpacity(0.75, fromLayer: false), 0.5);
+      expect(GalleryPinch.headerOpacity(1, fromLayer: false), 1);
+    });
+  });
+
+  group('GalleryMorphPlan', () {
+    test('every photo on screen in either level moves between its two '
+        'places; headings follow their first photo', () {
+      final days = gridOf(GalleryLevel.day, 4);
+      final years = gridOf(GalleryLevel.year, 8);
+      final plan = GalleryMorphPlan(
+        from: days,
+        fromOffset: 0,
+        to: years,
+        toOffset: 0,
+        viewportHeight: 300,
+      );
+      // 4 列时露出第 0–5 张，8 列时 10 张全在屏上：合起来 0–9。
+      expect(plan.first, 0);
+      expect(plan.count, 10);
+      // 第 7 张（2025 年那组第一张）：4 列时在屏幕下方，8 列时在第二行。
+      expect(plan.originAt(6, 0), const Offset(4, 426));
+      expect(plan.originAt(6, 1), const Offset(4, 131));
+      expect(plan.originAt(6, 0.5), const Offset(4, 278.5));
+      // 格子边长线性变化（等于当前边长 × 手指比例）。
+      expect(plan.cellAt(0), 100);
+      expect(plan.cellAt(1), 49);
+      expect(plan.cellAt(0.5), 74.5);
+      // 4 列的两行标题 + 8 列的两行标题。
+      expect(
+        plan.headers.map((header) => (header.fromLayer, header.origin.dy)),
+        <(bool, double)>[(true, 0), (true, 244), (false, 0), (false, 91)],
+      );
+      // 5 月 2 日那组的标题跟着它的第一张（第 6 张）往上走。
+      final header = plan.headers[1];
+      expect(header.topAt(0), 244);
+      expect(header.topAt(1), 244 + 40 - 284);
+    });
+
+    test('nothing but a heading on screen gives an empty plan', () {
+      final days = gridOf(GalleryLevel.day, 4);
+      final plan = GalleryMorphPlan(
+        from: days,
+        fromOffset: 0,
+        to: days,
+        toOffset: 0,
+        viewportHeight: 30,
+      );
+      // 视口里只有标题、两档都没有图：什么也不画，捏合照常结束。
+      expect(plan.count, 0);
+      expect(plan.headers, isEmpty);
     });
   });
 

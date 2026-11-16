@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
+import 'dart:ui' show Offset;
 
 import 'gallery_level.dart';
 
@@ -147,6 +148,42 @@ class GalleryGrid {
       }
     }
     return null;
+  }
+
+  /// 整体下标为 [index] 的格子左上角的内容坐标；越界时为 null。
+  Offset? itemOrigin(int index) {
+    final row = rowOfItem(index);
+    if (row == null) return null;
+    final column = index - _rowFirst[row];
+    return Offset(padding + column * rowStride, _rowTop[row]);
+  }
+
+  /// 内容坐标 [top]–[bottom] 之间（含部分露出）的格子的下标范围；其间
+  /// 只有标题或没有行时为 null。
+  ({int first, int last})? visibleItems(double top, double bottom) {
+    if (rowCount == 0 || bottom <= top) return null;
+    var first = rowAt(math.max(0, top));
+    var last = lastRowBefore(bottom);
+    while (first <= last && isHeader(first)) {
+      first++;
+    }
+    while (last >= first && isHeader(last)) {
+      last--;
+    }
+    if (first > last) return null;
+    return (
+      first: _rowFirst[first],
+      last: _rowFirst[last] + itemCountOfRow(last) - 1,
+    );
+  }
+
+  /// 内容坐标 [top]–[bottom] 之间（含部分露出）的标题行。
+  Iterable<int> headerRowsIn(double top, double bottom) sync* {
+    if (rowCount == 0 || bottom <= top) return;
+    final last = lastRowBefore(bottom);
+    for (var row = rowAt(math.max(0, top)); row <= last; row++) {
+      if (isHeader(row)) yield row;
+    }
   }
 
   /// 内容坐标 ([x], [y]) 处的图：落在格子行上取那一列（行末不满时取这行

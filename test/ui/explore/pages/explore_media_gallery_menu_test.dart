@@ -13,7 +13,9 @@ import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/calendar/providers/calendar_display_options_provider.dart';
 import 'package:node_diary/ui/explore/pages/explore_media_gallery_page.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_cell.dart';
+import 'package:node_diary/ui/explore/models/gallery_level.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_group_header.dart';
+import 'package:node_diary/ui/explore/widgets/gallery_morph_layer.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_rows_sliver.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_time_range_cells.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_time_range_picker.dart';
@@ -103,7 +105,7 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('a pinch scales the grid with the fingers, then settles on '
+  testWidgets('a pinch moves the photos with the fingers, then settles on '
       'a fixed level; Ctrl + wheel steps one level', (tester) async {
     // 手机宽度：各档就是它们的基本列数。
     tester.view.physicalSize = const Size(400, 800);
@@ -112,30 +114,36 @@ void main() {
     final (_, l10n) = await pump(tester);
     final grids = find.byType(GalleryRowsSliver);
     int columns() => tester.widget<GalleryRowsSliver>(grids.first).grid.columns;
-    // 缩放层包在滚动视图外面（滚动视图里面还有回弹指示器自己的
-    // Transform）：从滚动视图往上找最近的那一层。
     final views = find.byType(CustomScrollView);
-    T nearest<T extends Widget>(Finder of) =>
-        tester.widget<T>(find.ancestor(of: of, matching: find.byType(T)).first);
+    double gridOpacity() => tester
+        .widget<Opacity>(
+          find.ancestor(of: views.first, matching: find.byType(Opacity)).first,
+        )
+        .opacity;
     expect(columns(), 4);
     expect(grids, findsOneWidget);
 
-    // 捏近一点：正式网格跟着手指缩小，5 列的预览同时淡入，列数还没变。
+    // 捏近一点：页面不动，图片画在过渡画布上、跟着手指走向 5 列；正式
+    // 网格只是不画（不重建、还是 4 列），也没有第二个网格。
     final center = tester.getCenter(views.first);
     final a = await tester.startGesture(center - const Offset(60, 0));
     final b = await tester.startGesture(center + const Offset(60, 0));
     await a.moveBy(const Offset(3, 0));
     await b.moveBy(const Offset(-3, 0));
     await tester.pump();
-    expect(grids, findsNWidgets(2));
-    expect(tester.widget<GalleryRowsSliver>(grids.last).grid.columns, 5);
-    // 横向缩放比例即手指距离之比（z 轴不缩放）。
-    expect(
-      nearest<Transform>(views.first).transform.entry(0, 0),
-      closeTo(114 / 120, 0.001),
+    final layer = tester.widget<GalleryMorphLayer>(
+      find.byType(GalleryMorphLayer),
     );
-    expect(nearest<Opacity>(views.first).opacity, lessThan(1));
-    expect(nearest<Opacity>(views.last).opacity, greaterThan(0));
+    expect(layer.morph.from, GalleryZoom.day);
+    expect(layer.morph.to, GalleryZoom.dayDense);
+    // 格子边长 = 当前边长 × 手指比例。
+    expect(
+      layer.morph.plan.cellAt(layer.driver.progress),
+      closeTo(layer.morph.plan.fromCell * 114 / 120, 0.001),
+    );
+    expect(gridOpacity(), 0);
+    expect(grids, findsOneWidget);
+    expect(views, findsOneWidget);
     expect(columns(), 4);
 
     // 进度不够就松手：弹回 4 列，预览撤下；两指按下过，不算点按。
@@ -143,7 +151,8 @@ void main() {
     await b.up();
     await tester.pumpAndSettle();
     expect(columns(), 4);
-    expect(grids, findsOneWidget);
+    expect(find.byType(GalleryMorphLayer), findsNothing);
+    expect(gridOpacity(), 1);
     expect(find.byType(ImageViewerPage), findsNothing);
 
     // 一次捏合一路捏到底：途经 5、8 列，停在 16 列（按年）。
@@ -158,7 +167,7 @@ void main() {
     await d.up();
     await tester.pumpAndSettle();
     expect(columns(), 16);
-    expect(grids, findsOneWidget);
+    expect(find.byType(GalleryMorphLayer), findsNothing);
     final year = DateFormat.y(l10n.localeName);
     final now = DateTime.now();
     for (final date in <DateTime>[now, DateTime(now.year - 1)]) {

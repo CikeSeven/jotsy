@@ -1,5 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../app_surface/widgets/app_page_background.dart';
@@ -75,8 +77,14 @@ class GalleryGroupHeader extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  /// 标题行左侧（大字 + 小字）与行尾张数的文字，[build] 与换档过渡里画在
+  /// 画布上的 [GalleryHeaderLabel] 共用。
+  static ({InlineSpan title, InlineSpan count}) spansFor(
+    BuildContext context, {
+    required DateTime date,
+    required GalleryLevel level,
+    required int count,
+  }) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
@@ -91,11 +99,38 @@ class GalleryGroupHeader extends StatelessWidget {
       color: colorScheme.onSurfaceVariant,
     );
     final subtitle = labels.subtitle;
+    return (
+      title: TextSpan(
+        children: <InlineSpan>[
+          TextSpan(
+            text: labels.title,
+            style: AppPageBackdrop.onBackgroundTextStyle(context, titleStyle),
+          ),
+          if (subtitle != null)
+            TextSpan(
+              text: '  $subtitle',
+              style: AppPageBackdrop.onBackgroundTextStyle(context, mutedStyle),
+            ),
+        ],
+      ),
+      count: TextSpan(
+        text: l10n.exploreGalleryGroupCount(count),
+        style: AppPageBackdrop.onBackgroundTextStyle(
+          context,
+          textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final spans = spansFor(context, date: date, level: level, count: count);
     return SizedBox(
       height: extentFor(level),
       child: Padding(
         // 文字贴近下面的格子、与上一组拉开：标题属于它下面这组。
-        padding: EdgeInsetsDirectional.fromSTEB(inset, 0, inset, 6),
+        padding: EdgeInsetsDirectional.fromSTEB(inset, 0, inset, _bottomGap),
         child: Align(
           alignment: AlignmentDirectional.bottomStart,
           child: Row(
@@ -104,44 +139,123 @@ class GalleryGroupHeader extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text.rich(
-                  TextSpan(
-                    children: <InlineSpan>[
-                      TextSpan(
-                        text: labels.title,
-                        style: AppPageBackdrop.onBackgroundTextStyle(
-                          context,
-                          titleStyle,
-                        ),
-                      ),
-                      if (subtitle != null)
-                        TextSpan(
-                          text: '  $subtitle',
-                          style: AppPageBackdrop.onBackgroundTextStyle(
-                            context,
-                            mutedStyle,
-                          ),
-                        ),
-                    ],
-                  ),
+                  spans.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 12),
-              Text(
-                l10n.exploreGalleryGroupCount(count),
-                maxLines: 1,
-                style: AppPageBackdrop.onBackgroundTextStyle(
-                  context,
-                  textTheme.labelSmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
+              const SizedBox(width: _countGap),
+              Text.rich(spans.count, maxLines: 1),
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// 文字离下面格子的距离与张数前的最小间隔。
+  static const double _bottomGap = 6;
+  static const double _countGap = 12;
+}
+
+/// 换档过渡里画在画布上的日期标题：与 [GalleryGroupHeader] 同样的文字、
+/// 同样的摆放（基线对齐、压在行底、张数靠行尾），只是不建组件，每帧按
+/// 位置与不透明度直接画。用完须 [dispose]。
+class GalleryHeaderLabel {
+  GalleryHeaderLabel._({
+    required this._title,
+    required this._count,
+    required this.extent,
+    required this.inset,
+    required this.width,
+    required TextDirection textDirection,
+  }) : _rtl = textDirection == TextDirection.rtl;
+
+  factory GalleryHeaderLabel.of(
+    BuildContext context, {
+    required DateTime date,
+    required GalleryLevel level,
+    required int count,
+    required double inset,
+    required double width,
+  }) {
+    final spans = GalleryGroupHeader.spansFor(
+      context,
+      date: date,
+      level: level,
+      count: count,
+    );
+    final textDirection = Directionality.of(context);
+    final textScaler = MediaQuery.textScalerOf(context);
+    final countPainter = TextPainter(
+      text: spans.count,
+      textDirection: textDirection,
+      textScaler: textScaler,
+      maxLines: 1,
+    )..layout();
+    final titlePainter =
+        TextPainter(
+          text: spans.title,
+          textDirection: textDirection,
+          textScaler: textScaler,
+          maxLines: 1,
+          ellipsis: '…',
+        )..layout(
+          maxWidth: math.max(
+            0,
+            width -
+                inset * 2 -
+                GalleryGroupHeader._countGap -
+                countPainter.width,
+          ),
+        );
+    return GalleryHeaderLabel._(
+      title: titlePainter,
+      count: countPainter,
+      extent: GalleryGroupHeader.extentFor(level),
+      inset: inset,
+      width: width,
+      textDirection: textDirection,
+    );
+  }
+
+  final TextPainter _title;
+  final TextPainter _count;
+  final double extent;
+  final double inset;
+  final double width;
+  final bool _rtl;
+
+  /// 在标题行左上角 [origin] 处以不透明度 [opacity] 画出。
+  void paint(Canvas canvas, Offset origin, double opacity) {
+    if (opacity <= 0) return;
+    double baseline(TextPainter painter) =>
+        painter.computeDistanceToActualBaseline(TextBaseline.alphabetic);
+    // 基线对齐后整行压在行底（同 Row 的基线对齐：行高 = 最大基线以上 +
+    // 最大基线以下）。
+    final below = math.max(
+      _title.height - baseline(_title),
+      _count.height - baseline(_count),
+    );
+    final line = origin.dy + extent - GalleryGroupHeader._bottomGap - below;
+    final start = origin.dx + inset;
+    final end = origin.dx + width - inset;
+    final titleX = _rtl ? end - _title.width : start;
+    final countX = _rtl ? start : end - _count.width;
+    final translucent = opacity < 1;
+    if (translucent) {
+      canvas.saveLayer(
+        Rect.fromLTWH(origin.dx, origin.dy, width, extent),
+        Paint()..color = Color.fromRGBO(0, 0, 0, opacity),
+      );
+    }
+    _title.paint(canvas, Offset(titleX, line - baseline(_title)));
+    _count.paint(canvas, Offset(countX, line - baseline(_count)));
+    if (translucent) canvas.restore();
+  }
+
+  void dispose() {
+    _title.dispose();
+    _count.dispose();
   }
 }

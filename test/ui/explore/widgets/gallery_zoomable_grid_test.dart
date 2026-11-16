@@ -6,6 +6,7 @@ import 'package:node_diary/ui/explore/models/explore_view_data.dart';
 import 'package:node_diary/ui/explore/models/gallery_level.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_cell.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_group_header.dart';
+import 'package:node_diary/ui/explore/widgets/gallery_morph_layer.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_rows_sliver.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_zoomable_grid.dart';
 import 'package:node_diary/ui/widgets/fast_scroller/fast_scroller.dart';
@@ -96,28 +97,57 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('at the top of the list the photo under the fingers stays put '
-      'in both layers while pinching', (tester) async {
-    await pump(tester);
-    final first = find.byWidgetPredicate(
-      (widget) => widget is GalleryCell && widget.source == '/missing/0-0.jpg',
-    );
-    final focal = tester.getCenter(first);
-    final a = await tester.startGesture(focal - const Offset(40, 0));
-    final b = await tester.startGesture(focal + const Offset(40, 0));
-    await a.moveBy(const Offset(6, 0));
-    await b.moveBy(const Offset(-6, 0));
+  testWidgets('mid-list, the photo under the fingers stays under them while '
+      'every photo slides to the next level', (tester) async {
+    final controller = await pump(tester);
+    controller.jumpTo(20000);
     await tester.pump();
-    // 正式网格与 5 列预览里各有一格是这张图：对齐所需的偏移在顶部之上被
-    // 夹到 0，预览先平移补上，两层里它仍在同一高度、同样大小。
-    expect(first, findsNWidgets(2));
-    final main = tester.getRect(first.first);
-    final preview = tester.getRect(first.last);
-    expect(preview.top, closeTo(main.top, 0.5));
-    expect(preview.height, closeTo(main.height, 0.5));
+    // 视口中间那一格。
+    final cells = find.byType(GalleryCell);
+    final middle = tester
+        .widgetList<GalleryCell>(cells)
+        .map((cell) => (cell, tester.getRect(find.byWidget(cell))))
+        .firstWhere((entry) => entry.$2.contains(const Offset(150, 400)));
+    final name = middle.$1.source.split('/').last.split('.').first;
+    final parts = name.split('-').map(int.parse).toList();
+    final index = parts[0] * 3 + parts[1];
+    final focal = middle.$2.center;
+    final a = await tester.startGesture(focal - const Offset(80, 0));
+    final b = await tester.startGesture(focal + const Offset(80, 0));
+    // 捏到一半多：160 → 140，比例 0.875。
+    for (var step = 0; step < 5; step++) {
+      await a.moveBy(const Offset(2, 0));
+      await b.moveBy(const Offset(-2, 0));
+      await tester.pump();
+    }
+    final layer = tester.widget<GalleryMorphLayer>(
+      find.byType(GalleryMorphLayer),
+    );
+    final plan = layer.morph.plan;
+    final t = layer.driver.progress;
+    expect(t, greaterThan(0.3));
+    expect(t, lessThan(1));
+    final origin = plan.originAt(index - plan.first, t);
+    final cell = plan.cellAt(t);
+    // 竖直方向上手指仍落在这张图的中线（换到哪一列是另一回事）。
+    expect((focal.dy - origin.dy) / cell, closeTo(0.5, 0.02));
+    expect(cell, closeTo(middle.$2.height * 140 / 160, 0.01));
     await a.up();
     await b.up();
     await tester.pumpAndSettle();
+    expect(find.byType(GalleryMorphLayer), findsNothing);
+    expect(
+      tester
+          .widget<GalleryRowsSliver>(find.byType(GalleryRowsSliver))
+          .grid
+          .columns,
+      5,
+    );
+    // 换档后同一张图回到了手指附近。
+    final after = find.byWidgetPredicate(
+      (widget) => widget is GalleryCell && widget.source == middle.$1.source,
+    );
+    expect(tester.getRect(after).center.dy, closeTo(focal.dy, cell));
   });
 
   testWidgets('group headings follow the level', (tester) async {

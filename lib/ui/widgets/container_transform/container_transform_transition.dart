@@ -1,48 +1,39 @@
-import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
+import 'dart:ui' show ImageFilter, lerpDouble;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'container_transform_below_snapshot.dart';
 import 'container_transform_source.dart';
 
-/// 容器展开的起点 / 终点：卡片（带画面）或“无处可回”时的原地淡出。
+/// 容器展开的起点 / 终点：卡片的位置，或“无处可回”时的原地退场。
 ///
 /// 由路由持有：推入时是点按那一刻的卡片；返回时换成重新量出的卡片，找不到
 /// 时为 [fallback]。改动后通知绘制层重画，不重建页面。
 class ContainerTransformGeometry extends ChangeNotifier {
-  ContainerTransformGeometry(ContainerTransformShot? shot) : _closed = shot;
+  ContainerTransformGeometry(ContainerTransformBounds? bounds)
+    : _closed = bounds;
 
-  ContainerTransformShot? _closed;
-  ContainerTransformShot? get closed => _closed;
+  ContainerTransformBounds? _closed;
+  ContainerTransformBounds? get closed => _closed;
 
   /// 没有卡片可回（翻到了列表里看不到的一篇、日记已删除、卡片滑出了屏幕）：
   /// 整页原地缩小一点并淡出。
   bool get fallback => _closed == null;
 
-  /// 换成新的起点 / 终点；旧画面在这里释放（已录进上一帧的画面由引擎持有，
-  /// 释放句柄不影响那一帧）。
-  void replace(ContainerTransformShot? shot) {
-    final previous = _closed;
-    if (identical(previous, shot)) {
+  /// 换成新的起点 / 终点。
+  void replace(ContainerTransformBounds? bounds) {
+    if (bounds == _closed) {
       return;
     }
-    _closed = shot;
-    previous?.dispose();
+    _closed = bounds;
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _closed?.dispose();
-    _closed = null;
-    super.dispose();
   }
 }
 
 /// [ContainerTransformTransition] 的两个子节点。
 enum ContainerTransformSlot {
-  /// 容器的底：与页面自己的背景一样，与页面整体淡入淡出。
+  /// 容器的底：与页面自己的背景一样，垫在页面下面。
   backdrop,
 
   /// 页面本身。
@@ -51,29 +42,38 @@ enum ContainerTransformSlot {
 
 /// 按路由进度 [animation]（0 = 卡片，1 = 整页）把页面画成从卡片展开的容器。
 ///
-/// 只在绘制阶段逐帧变化：页面按整屏尺寸布局一次，之后每帧只改裁切、缩放与
-/// 透明度，页面本身既不重建也不重新布局（它在路由的 RepaintBoundary 里，连
-/// 重绘都不需要，只是按原尺寸合成进离屏纹理、再整张位图缩放，文字不随缩放
-/// 重新栅格化）。进度为 1 时原样绘制页面，不留任何额外图层，[backdrop] 也
-/// 不再绘制。
+/// 只在绘制阶段逐帧变化：页面按整屏尺寸布局一次，之后每帧只改裁切与缩放，
+/// 页面本身既不重建也不重新布局（它在路由的 RepaintBoundary 里，连重绘都
+/// 不需要，只是按原尺寸合成进离屏纹理、再整张位图缩放，文字不随缩放重新
+/// 栅格化）。进度为 1 时原样绘制页面，不留任何额外图层，[backdrop] 也不再
+/// 绘制。
 ///
 /// 每帧自下而上：
 /// 1. 下层页面上的遮罩（`scrim`），随进度加深；
-/// 2. 容器：圆角矩形从卡片插值到整屏，圆角从卡片圆角过渡到 [pageRadius]
-///    （屏幕自带的圆角，落位时与屏幕的物理圆角重合），里面依次是
+/// 2. 容器：圆角矩形，左上角与宽度从卡片插值到整屏，圆角从卡片圆角过渡到
+///    [pageRadius]（屏幕自带的圆角，落位时与屏幕的物理圆角重合）；高度见
+///    下文“容器形状”。里面依次是
 ///    - 底（[backdrop]）：按整屏布局、与页面同样缩放贴顶；
-///    - 页面：按整屏布局，宽度缩放到容器宽、顶边对齐容器顶边；底与页面
-///      在同一透明度层里随进度淡入，返回末段一起淡去；
-///    - 卡片画面：同样按容器宽度缩放、顶边对齐，随进度淡出。
+///    - 页面：按整屏布局，宽度缩放到容器宽、顶边对齐容器顶边；
+///    - 卡片：从下层快照（[belowSnapshot]）里裁出卡片那一块，同样按容器
+///      宽度缩放、贴顶，只在 [_cardFade] 区间里与页面互相渐变。
 ///
-/// 底与页面必须一起消退：卡片画面只按宽度缩放，容器高度却独立插值，返回
-/// 最后一段容器仍比卡片高。单独淡去页面而保持底不透明，就会在卡片下方拖
-/// 出一截白底（有背景图时是一截背景图），直到路由卸载才突然消失。一起淡去
-/// 后，这一段直接露出列表，最后只剩卡片画面落回来源。
+/// 容器全程不透明，后面的列表与背景从不透出来：底与页面始终完全不透明，
+/// 渐变只发生在容器里面（页面 ↔ 卡片）。进度在 [_cardFade] 之下时容器里
+/// 完全是卡片的样子，起点 / 终点与屏上的原卡片逐像素一致，所以原卡片不必
+/// 隐藏，落位后路由卸载也不跳。快照里的卡片连同它背后的背景一起裁下，
+/// 玻璃卡片的模糊也在里面；拍不到快照时（含平台视图）没有这层，起步与
+/// 落位直接在卡片与页面之间切换。
+///
+/// 容器形状：卡片只按宽度等比缩放，若高度照常从卡片高插值到整屏，卡片显出
+/// 的那段容器会比卡片高一截、在卡片下方拖出一截页面。所以高度在
+/// [_shapeBlend] 区间里从“整屏插值”过渡到“此刻宽度下的卡片比例”，卡片
+/// 完全显出（进度到 [_cardFade] 下沿）时容器正好是缩放后的卡片。
 ///
 /// 透明度只按进度取值（不按时间），返回途中再点进入、进入途中返回都不会
 /// 跳变。无处可回时（[ContainerTransformGeometry.fallback]）终点是屏幕中央
-/// 缩小一点的矩形，底与页面作为一整层一起淡出。
+/// 缩小一点的矩形，底与页面作为一整层按进度淡出——没有卡片可落，只能原地
+/// 退场。
 class ContainerTransformTransition
     extends
         SlottedMultiChildRenderObjectWidget<ContainerTransformSlot, RenderBox> {
@@ -85,11 +85,15 @@ class ContainerTransformTransition
     required this.backdrop,
     required this.child,
     this.pageRadius = BorderRadius.zero,
+    this.belowSnapshot,
   });
 
   final Animation<double> animation;
   final ContainerTransformGeometry geometry;
   final Color scrimColor;
+
+  /// 下层页面的快照：卡片的样子从这里裁。null 或还没拍时不画卡片。
+  final ContainerTransformBelowSnapshotController? belowSnapshot;
 
   /// 整页（进度 1）时容器的圆角，应取屏幕自带的圆角（`DisplayCorners`）：
   /// 展开落位时容器的角与屏幕的物理圆角重合，停稳后不再裁切也看不出变化；
@@ -118,6 +122,7 @@ class ContainerTransformTransition
       geometry: geometry,
       scrimColor: scrimColor,
       pageRadius: pageRadius,
+      belowSnapshot: belowSnapshot,
     );
   }
 
@@ -130,11 +135,12 @@ class ContainerTransformTransition
       ..animation = animation
       ..geometry = geometry
       ..scrimColor = scrimColor
-      ..pageRadius = pageRadius;
+      ..pageRadius = pageRadius
+      ..belowSnapshot = belowSnapshot;
   }
 }
 
-/// 某一帧的容器几何与各层透明度（见 [ContainerTransformTransition]）。
+/// 某一帧的容器几何、遮罩与透明度（见 [ContainerTransformTransition]）。
 @immutable
 class _Frame {
   const _Frame({
@@ -143,8 +149,7 @@ class _Frame {
     required this.transform,
     required this.scrimAlpha,
     required this.groupAlpha,
-    required this.imageAlpha,
-    required this.imageRect,
+    required this.cardAlpha,
   });
 
   final Rect rect;
@@ -154,12 +159,11 @@ class _Frame {
   final Matrix4 transform;
   final double scrimAlpha;
 
-  /// 底 + 页面整体的透明度，卡片画面另外叠在上方。
+  /// 底 + 页面整体的透明度：有卡片可落时恒为 1，只有原地退场时随进度变化。
   final double groupAlpha;
-  final double imageAlpha;
 
-  /// 卡片画面此刻画在哪；没有画面时为 null。
-  final Rect? imageRect;
+  /// 容器里卡片的透明度（盖在不透明的页面上）。
+  final double cardAlpha;
 }
 
 /// 布局与页面相同（页面按父级约束布局，底按页面尺寸铺满）；点按、读屏与
@@ -171,18 +175,29 @@ class RenderContainerTransform extends RenderBox
     required this._geometry,
     required this._scrimColor,
     this._pageRadius = BorderRadius.zero,
+    this._belowSnapshot,
   });
 
   /// 下层页面上遮罩的最大不透明度（M3 的遮罩约 32%，这里略轻：容器本身已
   /// 足够醒目，只需把下层压下去一点）。
   static const double _maxScrim = 0.28;
 
-  /// 页面连同底一起显隐。返回末段进度小于 0.05 时必须几乎透明，不能让
-  /// 比卡片高的容器底停留到动画结束。区间仍只依赖进度，途中反向不跳变。
-  static const Interval _contentFade = Interval(0.05, 0.75);
+  /// 进度达到这里之后容器里的点按交给页面：展开末段长长的减速里就能开始
+  /// 滑动；更早时页面还小，点按一律由容器接住，不会误点到页面或下层列表。
+  static const double _interactiveFrom = 0.75;
 
-  /// 卡片画面淡出的进度区间：比页面淡入早开始、早结束。
-  static const Interval _imageFade = Interval(0, 0.55);
+  /// 容器里卡片 ↔ 页面渐变的进度区间：下沿以下完全是卡片，上沿以上完全是
+  /// 页面。返回时约在第 60–120ms、打开时约在第 50–100ms（弹簧曲线前段
+  /// 走得快），都发生在容器移动最快的时候。
+  static const Interval _cardFade = Interval(0.25, 0.6);
+
+  /// 容器高度从“卡片比例”过渡到“整屏插值”的进度区间：下沿与 [_cardFade]
+  /// 对齐（卡片完全显出时正好是卡片的形状），之后平滑长回整屏。
+  static const Interval _shapeBlend = Interval(
+    0.25,
+    1,
+    curve: Curves.easeInOut,
+  );
 
   /// 无处可回时终点矩形相对整屏的比例与圆角。
   static const double _fallbackScale = 0.9;
@@ -232,6 +247,16 @@ class RenderContainerTransform extends RenderBox
     markNeedsPaint();
   }
 
+  // 不监听：快照在下层绘制时更新，转场在动画的每一帧都会重画。
+  ContainerTransformBelowSnapshotController? _belowSnapshot;
+  set belowSnapshot(ContainerTransformBelowSnapshotController? value) {
+    if (identical(value, _belowSnapshot)) {
+      return;
+    }
+    _belowSnapshot = value;
+    markNeedsPaint();
+  }
+
   RenderBox? get _backdrop => childForSlot(ContainerTransformSlot.backdrop);
   RenderBox? get _page => childForSlot(ContainerTransformSlot.page);
 
@@ -242,6 +267,10 @@ class RenderContainerTransform extends RenderBox
 
   /// 进度到 1（整页）时与普通页面完全相同。
   bool get _settled => _animation.value >= 1;
+
+  /// 测试用：此刻容器的位置与尺寸（本地坐标）。
+  @visibleForTesting
+  Rect get debugContainerRect => _frame().rect;
 
   @override
   void performLayout() {
@@ -332,26 +361,21 @@ class RenderContainerTransform extends RenderBox
       closedRect = closed.rect;
       closedRadius = closed.radius;
     }
-    final rect = Rect.lerp(closedRect, full, p)!;
+    final fallback = closed == null || closed.rect.isEmpty;
+    var rect = Rect.lerp(closedRect, full, p)!;
+    if (!fallback) {
+      // 容器形状（见类注释）：卡片比例的高度与整屏插值的高度之间过渡。
+      final cardShaped = rect.width * closedRect.height / closedRect.width;
+      rect = Rect.fromLTWH(
+        rect.left,
+        rect.top,
+        rect.width,
+        lerpDouble(cardShaped, rect.height, _shapeBlend.transform(p))!,
+      );
+    }
     final scale = full.width <= 0 ? 1.0 : rect.width / full.width;
     final transform = Matrix4.diagonal3Values(scale, scale, 1)
       ..setTranslationRaw(rect.left, rect.top, 0);
-
-    Rect? imageRect;
-    var imageAlpha = 0.0;
-    if (closed != null && !closedRect.isEmpty) {
-      imageAlpha = 1 - _imageFade.transform(p);
-      // 卡片画面与容器同步：按容器宽度等比缩放，左上角跟着容器走。
-      final s = rect.width / closedRect.width;
-      final source = closed.imageRect;
-      imageRect = Rect.fromLTWH(
-        rect.left + (source.left - closedRect.left) * s,
-        rect.top + (source.top - closedRect.top) * s,
-        source.width * s,
-        source.height * s,
-      );
-    }
-    final fallback = closed == null;
     return _Frame(
       rect: rect,
       // 圆角与位置尺寸同一条进度：从卡片的角一路长成屏幕的角，途中不会
@@ -363,12 +387,8 @@ class RenderContainerTransform extends RenderBox
       )!,
       transform: transform,
       scrimAlpha: _maxScrim * p,
-      // 保留 1/255 的预绘制层：起步等待帧里页面就完成首次绘制与栅格化，
-      // 起点处被不透明卡片截图盖住。淡去时同样只剩这一不可感知的余量，
-      // 不再把不透明的容器底拖到收回结束。
-      groupAlpha: fallback ? p : math.max(_contentFade.transform(p), 1 / 255),
-      imageAlpha: imageAlpha,
-      imageRect: imageRect,
+      groupAlpha: fallback ? p : 1,
+      cardAlpha: fallback ? 0 : 1 - _cardFade.transform(p),
     );
   }
 
@@ -417,15 +437,16 @@ class RenderContainerTransform extends RenderBox
       // 页面先按原尺寸画进一张离屏纹理，再整张缩放贴进容器。直接变换画布
       // 时文字每帧换一个字号，Impeller 要逐帧重建字形图集（真机上每帧
       // 6ms 上下，转场一路掉帧）；按原尺寸画则每帧都命中缓存。底与页面
-      // 同在这一层里，外侧的透明度可以直接施加在这张纹理上，页内玻璃仍能
-      // 采到先画好的页面背景。
+      // 同在这一层里，页内玻璃仍能采到先画好的页面背景；原地退场时外侧
+      // 的透明度直接施加在这张纹理上。
       final matrix = Matrix4.translationValues(offset.dx, offset.dy, 0)
         ..multiply(frame.transform)
         ..translateByDouble(-offset.dx, -offset.dy, 0, 1);
       final layer = _scaleLayer.layer ??= ImageFilterLayer();
       layer.imageFilter = ImageFilter.matrix(
         matrix.storage,
-        // 双线性即可：缩到很小时页面还几乎透明，末段接近原尺寸。
+        // 双线性即可：缩放比例在 0.9 上下（卡片宽到整屏宽），末段接近原
+        // 尺寸。
         filterQuality: FilterQuality.low,
       );
       context.pushLayer(layer, (PaintingContext context, Offset offset) {
@@ -451,20 +472,51 @@ class RenderContainerTransform extends RenderBox
       _groupLayer.layer = null;
       _scaleLayer.layer = null;
     }
-
-    final image = _geometry.closed?.image;
-    final imageRect = frame.imageRect;
-    if (image != null && imageRect != null && frame.imageAlpha > 0) {
+    if (frame.cardAlpha > 0) {
       // 推过图层之后要重新取画布：PaintingContext 已经换了一段新的录制。
-      context.canvas.drawImageRect(
-        image,
-        Offset.zero & Size(image.width.toDouble(), image.height.toDouble()),
-        imageRect.shift(offset),
-        Paint()
-          ..color = Color.fromRGBO(0, 0, 0, frame.imageAlpha)
-          ..filterQuality = FilterQuality.medium,
-      );
+      _paintCard(context.canvas, offset, frame);
     }
+  }
+
+  /// 从下层快照里裁出卡片，按容器宽度缩放、贴顶画在页面上面。卡片一部分
+  /// 在快照之外（滑出屏幕）时只画露出的那块，位置照常对齐。
+  void _paintCard(Canvas canvas, Offset offset, _Frame frame) {
+    final card = _geometry.closed?.rect;
+    final snapshot = _belowSnapshot?.image;
+    final snapshotGlobal = _belowSnapshot?.imageRect;
+    if (card == null || card.isEmpty || snapshot == null) {
+      return;
+    }
+    if (snapshotGlobal == null || snapshotGlobal.isEmpty) {
+      return;
+    }
+    final origin = globalToLocal(snapshotGlobal.topLeft);
+    final visible = card.intersect(origin & snapshotGlobal.size);
+    if (visible.isEmpty) {
+      return;
+    }
+    final ratio = snapshot.width / snapshotGlobal.width;
+    final source = Rect.fromLTWH(
+      (visible.left - origin.dx) * ratio,
+      (visible.top - origin.dy) * ratio,
+      visible.width * ratio,
+      visible.height * ratio,
+    );
+    final s = frame.rect.width / card.width;
+    final target = Rect.fromLTWH(
+      frame.rect.left + (visible.left - card.left) * s,
+      frame.rect.top + (visible.top - card.top) * s,
+      visible.width * s,
+      visible.height * s,
+    );
+    canvas.drawImageRect(
+      snapshot,
+      source,
+      target.shift(offset),
+      Paint()
+        ..color = Color.fromRGBO(0, 0, 0, frame.cardAlpha)
+        ..filterQuality = FilterQuality.medium,
+    );
   }
 
   @override
@@ -483,10 +535,12 @@ class RenderContainerTransform extends RenderBox
       return false;
     }
     // 转场途中整屏都由这里接住：展开、收回的途中不会又点开下层列表的另一
-    // 篇。页面已完全显出时，容器内的点按照常交给页面（展开末段长长的减速
-    // 里就能开始滑动）。
+    // 篇。容器长到 [_interactiveFrom] 之后，容器内的点按照常交给页面（展开
+    // 末段长长的减速里就能开始滑动）；原地退场时页面不再接点按。
     final frame = _frame();
-    if (frame.groupAlpha >= 1 && frame.rect.contains(position)) {
+    final interactive =
+        !_geometry.fallback && _animation.value >= _interactiveFrom;
+    if (interactive && frame.rect.contains(position)) {
       result.addWithPaintTransform(
         transform: frame.transform,
         position: position,

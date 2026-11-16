@@ -148,9 +148,8 @@ void main() {
           body: CalendarTimelineSection(
             selectedDay: now,
             diaries: <DiaryWithTags>[diary],
-            onOpenDiary: (_, hero, origin) {
+            onOpenDiary: (_, hero, _) {
               received = hero;
-              origin?.dispose();
             },
           ),
         ),

@@ -9,9 +9,10 @@ import '../../widgets/form_width.dart';
 import '../../widgets/reorder_handle.dart';
 
 /// 目录页的日记行：日期眉线（13sp w600 `onSurfaceVariant`，归档的带
-/// `boxArchive` 小图标）、标题（`bodyLarge` w600，未写为“无标题”；未解封的
-/// 胶囊只显示标题并带锁）。普通模式右侧是拖动手柄（[dragHandle]），多选模式
-/// 左侧是勾选框、点按切换勾选。
+/// `boxArchive` 小图标）、标题（`bodyLarge` w600；没写标题时为正文第一行，
+/// 见 `notebookContentsTitle`，用常规字重与 `onSurfaceVariant` 与真标题区分；
+/// 正文也没有文字时为“无标题”；未解封的胶囊只显示标题并带锁）。普通模式
+/// 右侧是拖动手柄（[dragHandle]），多选模式左侧是勾选框、点按切换勾选。
 class NotebookContentsEntryTile extends StatelessWidget {
   const NotebookContentsEntryTile({
     super.key,
@@ -22,11 +23,15 @@ class NotebookContentsEntryTile extends StatelessWidget {
     required this.selecting,
     required this.selected,
     required this.onTap,
+    this.titleFromContent = false,
     this.dragHandle,
   });
 
   final String dateLabel;
   final String title;
+
+  /// [title] 是顶替标题的正文第一行（日记没写标题）。
+  final bool titleFromContent;
   final bool archived;
   final bool sealed;
   final bool selecting;
@@ -123,7 +128,12 @@ class NotebookContentsEntryTile extends StatelessWidget {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: titleFromContent
+                                      ? FontWeight.w400
+                                      : FontWeight.w600,
+                                  color: titleFromContent
+                                      ? scheme.onSurfaceVariant
+                                      : null,
                                 ),
                               ),
                             ),

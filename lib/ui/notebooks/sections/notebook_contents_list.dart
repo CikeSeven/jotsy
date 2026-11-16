@@ -12,6 +12,7 @@ import '../../diaries/viewmodels/diary_card_date_formatter.dart';
 import '../../widgets/list_item_presence.dart';
 import '../../widgets/reorder_handle.dart';
 import '../viewmodels/notebook_book_layout.dart';
+import '../viewmodels/notebook_contents_entry_title.dart';
 import 'notebook_contents_chapter_header.dart';
 import 'notebook_contents_rows.dart';
 
@@ -128,6 +129,11 @@ class NotebookContentsListSliver extends StatelessWidget {
               unlockAt: entry.capsuleUnlockAt,
               now: now,
             ).isLocked;
+            final title = notebookContentsTitle(
+              entry,
+              sealed: sealed,
+              untitled: untitled,
+            );
             return ListItemPresence(
               key: ValueKey<String>(item.key),
               visible: !rowHidden,
@@ -143,7 +149,8 @@ class NotebookContentsListSliver extends StatelessWidget {
                     updatedAt: entry.updatedAt,
                     now: now,
                   ),
-                  title: entry.title.trim().isEmpty ? untitled : entry.title,
+                  title: title.text,
+                  titleFromContent: title.fromContent,
                   archived: entry.isArchived,
                   sealed: sealed,
                   selecting: selecting,

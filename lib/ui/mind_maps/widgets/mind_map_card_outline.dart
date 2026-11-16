@@ -22,12 +22,11 @@ class MindMapCardOutline extends StatelessWidget {
     this.centered = false,
   });
 
-  /// 卡片上大纲的行数：一行只放得下一个主题，要放得下一级和二级主题，
-  /// 比文字摘要多八行，列表默认 10 行；随卡片样式的摘要行数增减，夹在
-  /// 4–14。瀑布流（[compact]）默认摘要行数本来就多一行、列又窄，多加六行
-  /// （默认 9 行）。
+  /// 卡片上大纲的行数：一行只放得下一个主题，比文字摘要多几行，列表默认
+  /// 6 行（摘要行数 + 4），瀑布流（[compact]）列窄、默认 5 行（摘要行数
+  /// + 2）；随卡片样式的摘要行数增减，夹在 3–12。
   static int lineBudget(int previewMaxLines, {required bool compact}) =>
-      (previewMaxLines + (compact ? 6 : 8)).clamp(4, 14);
+      (previewMaxLines + (compact ? 2 : 4)).clamp(3, 12);
 
   final List<MindMapOutlineLine> lines;
   final TextStyle? textStyle;

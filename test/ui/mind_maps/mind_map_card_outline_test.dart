@@ -112,8 +112,8 @@ void main() {
 
     expect(find.byType(MindMapThumbnail), findsNothing);
     expect(find.byType(MindMapCardOutline), findsOneWidget);
-    // 默认列表样式摘要 2 行 → 大纲 10 行：按大纲顺序展示到二级，三级（Visa）
-    // 不出现，行数用完后面的分支截断（Camera）。
+    // 默认列表样式摘要 2 行 → 大纲 6 行：按大纲顺序展示到二级，三级（Visa）
+    // 不出现，行数用完后面的分支截断（Budget 起）。
     expect(find.text('Trip'), findsOneWidget);
     for (final topic in <String>[
       'Packing',
@@ -122,15 +122,12 @@ void main() {
       'Route',
       'Day 1',
       'Day 2',
-      'Budget',
-      'Hotel',
-      'Food',
-      'Photos',
     ]) {
       expect(find.text(topic), findsOneWidget);
     }
-    expect(find.text('Visa'), findsNothing);
-    expect(find.text('Camera'), findsNothing);
+    for (final hidden in <String>['Visa', 'Budget', 'Hotel', 'Camera']) {
+      expect(find.text(hidden), findsNothing);
+    }
     // 子主题缩进在一级主题的文字起点上。
     final packing = tester.getTopLeft(find.text('Packing'));
     final passport = tester.getTopLeft(find.text('Passport'));
@@ -139,6 +136,22 @@ void main() {
       tester.getTopLeft(find.text('Route')).dx,
       moreOrLessEquals(packing.dx),
     );
+  });
+
+  testWidgets('the waterfall layout shows five outline lines by default', (
+    tester,
+  ) async {
+    await pumpCard(
+      tester,
+      mindMapDiary('Map\n  A\n    a1\n    a2\n  B\n    b1\n  C'),
+      mode: DiaryCardMode.waterfall,
+      width: 190,
+    );
+
+    for (final topic in <String>['A', 'a1', 'a2', 'B', 'b1']) {
+      expect(find.text(topic), findsOneWidget);
+    }
+    expect(find.text('C'), findsNothing);
   });
 
   testWidgets('a mind map without a central topic text is titled Untitled, '

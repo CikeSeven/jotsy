@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/database/app_database.dart';
-import '../../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../../core/database/mind_map/mind_map_blocks.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -50,10 +49,7 @@ List<Widget> diaryPreviewMoreItems(
   final aiWriting = ref.watch(aiModuleAvailableProvider(AiModule.writing));
   // 导图日记：导出导图（图片、XMind 等）、AI 总结；有文字的普通日记：转为
   // 思维导图、AI 生成思维导图。
-  final content = detail.diary.content;
-  final map = storedContentMayHaveMindMap(content)
-      ? diaryMindMapPage(decodeStoredDiaryBlocks(content))
-      : null;
+  final map = storedDiaryMindMapPage(detail.diary.content);
   return diaryMoreMenuItems(
     l10n,
     onExport: () => export.exportDiary(context, ref, detail: detail),

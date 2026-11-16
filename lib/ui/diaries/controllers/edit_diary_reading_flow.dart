@@ -20,10 +20,11 @@ typedef _ReadingFrame = ({
 });
 
 /// 顶栏“更多”菜单的开关：功能管理（纪念日、日记模板）、AI 模块（写作灵感、
-/// 生成标题与推荐信息），以及“打开日记时直接编辑”——开着时用户不经过
-/// 预览页，分享、导出、写留言与 AI 回应留在菜单里。
+/// 生成标题与推荐信息），以及用户是否不经过预览页（[skipsPreview]：“打开
+/// 日记时直接编辑”开着，或这篇是导图日记——导图日记没有预览页），这时
+/// 分享、导出、写留言与 AI 回应留在菜单里。
 typedef _ReadingMenuOptions = ({
-  bool openInEditor,
+  bool skipsPreview,
   bool anniversaries,
   bool templates,
   bool aiPrompts,
@@ -73,9 +74,11 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
   _ReadingMenuOptions _readingMenuOptions() {
     final features = ref.watch(appFeaturesProvider);
     return (
-      openInEditor: ref.watch(
-        diaryPreviewBehaviorProvider.select((b) => b.openInEditor),
-      ),
+      skipsPreview:
+          ref.watch(
+            diaryPreviewBehaviorProvider.select((b) => b.openInEditor),
+          ) ||
+          _mindMapSession != null,
       anniversaries: features.anniversariesEnabled,
       templates: features.templates,
       aiPrompts: ref.watch(aiModuleAvailableProvider(AiModule.prompts)),

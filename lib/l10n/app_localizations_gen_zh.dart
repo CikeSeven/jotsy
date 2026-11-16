@@ -13858,6 +13858,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageMgmtBusyUndo => '请等撤销提示消失后再试';
 
   @override
+  String get storageMgmtBusyMediaWrites => '正在同步或处理图片，请稍后再试';
+
+  @override
   String get storageMgmtCannotDelete => '它被日记的其他数据引用着，不能在这里删除';
 
   @override
@@ -13868,6 +13871,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String storageMgmtDeleteBody(String size) {
     return '将释放 $size，并从以下位置移除：';
+  }
+
+  @override
+  String storageMgmtDeleteUnusedBody(String size) {
+    return '将释放 $size。这些文件没有任何地方在用。';
   }
 
   @override
@@ -14050,6 +14058,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageMgmtFilterTrash => '仅回收站';
 
   @override
+  String get storageMgmtFilterUnused => '未使用';
+
+  @override
   String get storageMgmtSort => '排序';
 
   @override
@@ -14147,6 +14158,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String storageMgmtUsedIn(int count) {
     return '用在 $count 处';
   }
+
+  @override
+  String get storageMgmtUnusedNote =>
+      '没有日记、留言、草稿、日记本封面或 AI 对话在用这个文件，删除它不影响其他内容。';
 
   @override
   String get diaryTagFilterMultiSelectSemanticHint => '同时选中多个标签';

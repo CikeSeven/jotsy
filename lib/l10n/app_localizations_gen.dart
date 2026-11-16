@@ -25020,6 +25020,12 @@ abstract class AppLocalizations {
   /// **'Wait for the undo prompt to disappear, then try again.'**
   String get storageMgmtBusyUndo;
 
+  /// Shown when LAN sync or HEIC repair is still placing files, so delete and clean up must wait.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing or converting images. Try again in a moment.'**
+  String get storageMgmtBusyMediaWrites;
+
   /// Shown for files the storage page cannot remove references to.
   ///
   /// In en, this message translates to:
@@ -25037,6 +25043,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Frees {size}. They will be removed from:'**
   String storageMgmtDeleteBody(String size);
+
+  /// Delete confirmation first line when every selected file is unused.
+  ///
+  /// In en, this message translates to:
+  /// **'Frees {size}. Nothing uses these files.'**
+  String storageMgmtDeleteUnusedBody(String size);
 
   /// Delete confirmation: entries affected.
   ///
@@ -25312,6 +25324,12 @@ abstract class AppLocalizations {
   /// **'Trash only'**
   String get storageMgmtFilterTrash;
 
+  /// Media filter chip: files nothing uses (deleted entries, comments, drafts, AI chats).
+  ///
+  /// In en, this message translates to:
+  /// **'Unused'**
+  String get storageMgmtFilterUnused;
+
   /// Tooltip of the sort menu.
   ///
   /// In en, this message translates to:
@@ -25473,6 +25491,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Used in 1 place} other{Used in {count} places}}'**
   String storageMgmtUsedIn(int count);
+
+  /// Detail sheet text for an unused file, shown instead of the list of places.
+  ///
+  /// In en, this message translates to:
+  /// **'No entry, comment, draft, notebook cover or AI chat uses this file. Deleting it changes nothing else.'**
+  String get storageMgmtUnusedNote;
 
   /// Screen reader long-press hint on a home tag filter chip: long-pressing adds or removes the tag while keeping the others selected.
   ///

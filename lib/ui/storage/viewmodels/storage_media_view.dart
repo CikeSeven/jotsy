@@ -16,9 +16,9 @@ class StorageCompressContext {
   final StorageVideoPreset videoPreset;
 
   /// [entry] 按当前档位压缩后的预计字节数；不支持、引用不可改写、不值得压
-  /// 时为 null。
+  /// 时为 null。未使用的文件（没有引用）不压：该做的是删掉。
   int? estimate(StorageMediaEntry entry, StorageUsageReport report) {
-    if (!supported || !entry.isEditable) return null;
+    if (!supported || !entry.isEditable || entry.refs.isEmpty) return null;
     return switch (entry.kind) {
       DiaryBlockMediaKind.image => estimateImageCompression(entry, imagePreset),
       DiaryBlockMediaKind.video => estimateVideoCompression(
@@ -87,7 +87,7 @@ class StorageMediaListView {
     var total = 0;
     var maskedPrivate = 0;
     var needsVerification = false;
-    for (final entry in report.media) {
+    for (final entry in filter.unusedOnly ? report.unused : report.media) {
       if (filter.category != null && entry.category != filter.category) {
         continue;
       }

@@ -11,6 +11,7 @@ import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/widgets/diary_color_panel/diary_color_host.dart';
 import '../../diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import '../controllers/mind_map_editing_controller.dart';
+import '../../widgets/rich_text/inline_format_button.dart';
 import '../../widgets/rich_text/inline_rich_text_controller.dart';
 import '../controllers/mind_map_text_session.dart';
 import '../viewmodels/mind_map_text_colors.dart';
@@ -186,23 +187,26 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
   Widget _buttons(InlineRichTextController? text) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    Widget toggle(FaIconData icon, String label, InlineMark mark) =>
-        _FormatButton(
-          icon: icon,
-          label: label,
-          selected: text?.isActive(mark) ?? false,
-          onTap: text == null ? null : () => text.toggle(mark),
-        );
+    Widget toggle(FaIconData icon, String label, InlineMark mark) => Expanded(
+      child: InlineFormatButton(
+        icon: icon,
+        label: label,
+        selected: text?.isActive(mark) ?? false,
+        onTap: text == null ? null : () => text.toggle(mark),
+      ),
+    );
     Widget color(FaIconData icon, String label, DiaryColorTarget target) {
       final value = parseDiaryColorValue(
         text?.colorOf(mindMapColorMarkOf(target)),
       );
-      return _FormatButton(
-        icon: icon,
-        label: label,
-        selected: _target == target,
-        indicator: value ?? scheme.outlineVariant,
-        onTap: text == null ? null : () => _toggle(target),
+      return Expanded(
+        child: InlineFormatButton(
+          icon: icon,
+          label: label,
+          selected: _target == target,
+          indicator: value ?? scheme.outlineVariant,
+          onTap: text == null ? null : () => _toggle(target),
+        ),
       );
     }
 
@@ -280,85 +284,4 @@ final class _RichTextColorHost implements DiaryColorHost {
 
   @override
   int get hashCode => identityHashCode(text);
-}
-
-/// 格式条上的一格：开着的开关（或展开着面板的颜色按钮）铺次要容器色；
-/// 颜色按钮在图标下画一条当前颜色 [indicator]。
-class _FormatButton extends StatelessWidget {
-  const _FormatButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.selected = false,
-    this.indicator,
-  });
-
-  final FaIconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  final bool selected;
-  final Color? indicator;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final enabled = onTap != null;
-    final ink = !enabled
-        ? scheme.onSurface.withValues(alpha: 0.38)
-        : selected
-        ? scheme.onSecondaryContainer
-        : scheme.onSurface;
-    return Expanded(
-      child: Tooltip(
-        message: label,
-        child: Semantics(
-          button: true,
-          toggled: indicator == null ? selected : null,
-          selected: indicator == null ? null : selected,
-          label: label,
-          excludeSemantics: true,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Center(
-              child: AnimatedContainer(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  ExpressiveMotion.fast,
-                ),
-                curve: ExpressiveMotion.effects,
-                width: 36,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? scheme.secondaryContainer
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    FaIcon(icon, size: 15, color: ink),
-                    if (indicator case final color?) ...<Widget>[
-                      const SizedBox(height: 3),
-                      Container(
-                        width: 16,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: enabled
-                              ? color
-                              : color.withValues(alpha: 0.38),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

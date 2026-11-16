@@ -15,21 +15,37 @@ import 'rich_text/inline_rich_text.dart';
 /// - 没有任何格式时不存（NULL），与加格式之前的留言逐字节相同。
 
 /// 一条留言的文字与格式（写库前经 [normalizeDiaryCommentText] 规整）。
-typedef DiaryCommentText = ({String content, String? delta});
+typedef DiaryCommentStoredText = ({String content, String? delta});
 
 /// 规整留言文字：去掉首尾空白（与 `content` 同一口径），格式随文字一起
 /// 裁剪；[runs] 为输入框里的文字与格式，拼起来不等于 [raw] 时不带格式。
-DiaryCommentText normalizeDiaryCommentText(
+DiaryCommentStoredText normalizeDiaryCommentText(
+  String raw, {
+  List<InlineTextRun>? runs,
+}) {
+  final trimmed = trimDiaryCommentText(raw, runs: runs);
+  final kept = trimmed.runs;
+  return (
+    content: trimmed.content,
+    delta: kept == null ? null : encodeDiaryCommentDelta(kept),
+  );
+}
+
+/// 去掉首尾空白后的文字与随之裁剪的格式；[runs] 拼起来不等于 [raw]（或
+/// 文字为空）时格式为 null。
+({String content, List<InlineTextRun>? runs}) trimDiaryCommentText(
   String raw, {
   List<InlineTextRun>? runs,
 }) {
   final content = raw.trim();
   if (runs == null || content.isEmpty || inlineRunsText(runs) != raw) {
-    return (content: content, delta: null);
+    return (content: content, runs: null);
   }
   final leading = raw.length - raw.trimLeft().length;
-  final trimmed = sliceInlineRuns(runs, leading, leading + content.length);
-  return (content: content, delta: encodeDiaryCommentDelta(trimmed));
+  return (
+    content: content,
+    runs: sliceInlineRuns(runs, leading, leading + content.length),
+  );
 }
 
 /// 把格式编码成列值：只留留言用得到的属性；没有格式时为 null。

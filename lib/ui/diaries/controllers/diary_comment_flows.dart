@@ -1,4 +1,5 @@
-/// 预览页留言的写入流程：写、改（文字、心情与图片）、复制、删除（可撤销）。
+/// 预览页留言的写入流程：写、改（文字与格式、心情与图片）、复制、删除
+/// （可撤销）与点按留言里的链接。
 ///
 /// 职责边界：输入为日记与留言行，读写经 [appDatabaseProvider]，反馈一律经
 /// [HomeHintVisibilityScope.showTrackedSnackBar]（带撤销的提示
@@ -19,13 +20,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_link_target.dart';
+import '../../../core/database/rich_text/inline_rich_text.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/editing_session_registry.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../settings/widgets/external_link.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../viewmodels/diary_comment_timeline.dart';
 import 'diary_comment_images_controller.dart';
+import 'diary_link_open_flow.dart';
 import '../widgets/diary_comments/diary_comment_sheet.dart';
 
 /// 撤销提示的时长，与日记页、归档页一致。
@@ -65,6 +70,7 @@ Future<bool> writeDiaryComment(
       context,
       title: '${l10n.diaryCommentSheetNew} · $relative',
       moodOptions: moodOptions,
+      diaryId: diary.diaryId,
       initialDraft: DiaryCommentDraft(content: initialContent),
     );
     if (draft == null) return null;
@@ -72,6 +78,7 @@ Future<bool> writeDiaryComment(
       await db.addDiaryComment(
         diaryId: diary.diaryId,
         content: draft.content,
+        runs: draft.runs,
         mood: draft.mood,
         images: draft.images,
       );
@@ -91,8 +98,8 @@ Future<bool> writeDiaryComment(
   return true;
 }
 
-/// 编辑一条留言：面板里带入原来的文字、心情与图片，有改动才写库（记下编辑
-/// 时间）。去掉的原有图片不在这里删文件，由媒体回收按引用处理。
+/// 编辑一条留言：面板里带入原来的文字、格式、心情与图片，有改动才写库
+/// （记下编辑时间）。去掉的原有图片不在这里删文件，由媒体回收按引用处理。
 Future<void> editDiaryComment(
   BuildContext context,
   WidgetRef ref, {
@@ -106,6 +113,7 @@ Future<void> editDiaryComment(
       context,
       title: l10n.diaryCommentSheetEdit,
       moodOptions: moodOptions,
+      diaryId: comment.diaryId,
       initial: comment,
     );
     if (draft == null) return null;
@@ -113,6 +121,8 @@ Future<void> editDiaryComment(
       final changed = await db.updateDiaryComment(
         comment.commentId,
         content: draft.content,
+        // 面板给出的就是全部格式：没有格式时传空表，清掉原来的。
+        runs: draft.runs ?? const <InlineTextRun>[],
         mood: draft.mood,
         images: draft.images,
       );
@@ -128,7 +138,26 @@ Future<void> editDiaryComment(
   }
 }
 
-/// 把留言文字复制到剪贴板并提示（只有图片的留言没有“复制”）。
+/// 点按留言里的链接：日记 / 日记本链接经 [openDiaryLinkTarget]（[fromEditor]
+/// 为阅读式编辑页：不打开日记本，回到首页会关掉正在写的这篇），网址经
+/// [openExternalLink]（打不开时复制并提示）；认不出的地址不打开。
+Future<void> openDiaryCommentLink(
+  BuildContext context,
+  WidgetRef ref,
+  String href, {
+  bool fromEditor = false,
+}) async {
+  final target = DiaryLinkTarget.tryParse(href);
+  if (target != null) {
+    await openDiaryLinkTarget(context, ref, target, fromEditor: fromEditor);
+    return;
+  }
+  if (!isDiaryCommentLink(href)) return;
+  await openExternalLink(context, href.trim());
+}
+
+/// 把留言文字复制到剪贴板并提示（只有图片的留言没有“复制”）。复制的是
+/// 纯文字，格式与链接地址不带。
 Future<void> copyDiaryComment(
   BuildContext context,
   DiaryCommentRow comment,

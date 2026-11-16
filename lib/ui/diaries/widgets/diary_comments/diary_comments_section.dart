@@ -15,12 +15,16 @@ class DiaryCommentActions {
     required this.onEdit,
     required this.onCopy,
     required this.onDelete,
+    this.onOpenLink,
   });
 
   final VoidCallback onWrite;
   final ValueChanged<DiaryCommentRow> onEdit;
   final ValueChanged<DiaryCommentRow> onCopy;
   final ValueChanged<DiaryCommentRow> onDelete;
+
+  /// 点按留言里的链接（设了链接的字与直接写出的网址）；null 时不可点。
+  final ValueChanged<String>? onOpenLink;
 }
 
 /// 预览页留言区的数据与动作（`DiaryPreviewContent.comments`）；为 null 时
@@ -32,6 +36,7 @@ class DiaryPreviewComments {
     required this.comments,
     this.actions,
     this.sectionKey,
+    this.notebookLinks = true,
   });
 
   /// 日记写下的时间：每条留言的“写下后 N 天”从它算起。
@@ -46,6 +51,9 @@ class DiaryPreviewComments {
 
   /// 挂在留言区上：信息栏的留言数与“更多 → 写留言”据此滚到这里。
   final GlobalKey? sectionKey;
+
+  /// 日记本功能是否开着：关着时留言里的日记本链接按普通文字绘制、不可点。
+  final bool notebookLinks;
 }
 
 /// 预览页正文末尾的留言区：标题“留言 · N”、批注时间线与“写留言…”。
@@ -112,6 +120,7 @@ class _DiaryCommentsSectionState extends State<DiaryCommentsSection> {
         comment: comment,
         diaryCreatedAt: data.diaryCreatedAt,
         actions: data.actions,
+        notebookLinks: data.notebookLinks,
         textColor: widget.textColor,
         appearing: appearing,
       );

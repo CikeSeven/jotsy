@@ -9,6 +9,7 @@ import '../../ai/models/ai_preference_parts.dart';
 import '../../ai/pages/ai_chat_page.dart';
 import '../../ai/providers/ai_providers.dart';
 import '../../ai/providers/ai_records_providers.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../providers/diary_comments_provider.dart';
 import '../providers/diary_link_providers.dart';
 import '../widgets/diary_comments/diary_comments_section.dart';
@@ -26,7 +27,8 @@ abstract final class DiaryPreviewExtras {
   /// null（不显示留言区）。[suppressed]（截取分享长图期间）同样为 null：
   /// 分享不带留言，但仍然订阅，截完立刻原样回来、不必重新读取。
   ///
-  /// [onWrite] 为留言区末尾“写留言…”的动作。
+  /// [onWrite] 为留言区末尾“写留言…”的动作；[fromEditor] 为阅读式编辑页
+  /// （留言里的日记本链接不打开，见 [openDiaryCommentLink]）。
   static DiaryPreviewComments? comments(
     BuildContext context,
     WidgetRef ref, {
@@ -34,6 +36,7 @@ abstract final class DiaryPreviewExtras {
     required GlobalKey sectionKey,
     required VoidCallback onWrite,
     bool suppressed = false,
+    bool fromEditor = false,
   }) {
     if (!ref.watch(diaryCommentsEnabledProvider) || diary.isDeleted) {
       return null;
@@ -44,6 +47,7 @@ abstract final class DiaryPreviewExtras {
       diaryCreatedAt: diary.createdAt,
       comments: rows,
       sectionKey: sectionKey,
+      notebookLinks: ref.watch(appFeaturesProvider.select((f) => f.notebooks)),
       actions: DiaryCommentActions(
         onWrite: onWrite,
         onEdit: (comment) =>
@@ -51,6 +55,9 @@ abstract final class DiaryPreviewExtras {
         onCopy: (comment) => unawaited(copyDiaryComment(context, comment)),
         onDelete: (comment) =>
             unawaited(deleteDiaryComment(context, ref, comment: comment)),
+        onOpenLink: (href) => unawaited(
+          openDiaryCommentLink(context, ref, href, fromEditor: fromEditor),
+        ),
       ),
     );
   }

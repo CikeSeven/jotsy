@@ -8,7 +8,7 @@ import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_link_editing.dart';
 import '../../controllers/diary_link_search.dart';
 import '../../models/diary_link_candidate.dart';
-import '../diary_link/diary_link_candidate_item.dart';
+import '../diary_link/diary_link_candidate_list.dart';
 import 'diary_caret_menu.dart';
 
 /// `@` 会话插入的是什么：行内链接（打字触发）或卡片（`/` 菜单的
@@ -23,7 +23,8 @@ enum DiaryMentionMode { inline, card }
 /// 候选经 [DiaryLinkSearchController] 防抖查询；[highlighted] 是键盘选中的
 /// 一项（桌面 ↑ / ↓，Enter / Tab 与软键盘回车确认），候选变化时回到第一项。
 /// 选中后删掉 `@检索词`，按 [mode] 写入行内链接或卡片（一步撤销）。
-class DiaryMentionMenuController extends DiaryCaretMenuSession {
+class DiaryMentionMenuController extends DiaryCaretMenuSession
+    implements DiaryLinkCandidateSource {
   DiaryMentionMenuController(super.editor, {required DiaryLinkSearch search})
     : _search = DiaryLinkSearchController(search, kinds: const {}) {
     _search.addListener(_onResults);
@@ -53,7 +54,9 @@ class DiaryMentionMenuController extends DiaryCaretMenuSession {
   Set<DiaryLinkKind> get kinds => _search.kinds;
 
   /// 候选；首次结果回来之前为 null。
+  @override
   List<DiaryLinkCandidate>? get results => _search.results;
+  @override
   int get highlighted => _highlighted;
 
   /// 开启会话：[node] 的 [offset] 处已写好 [trigger]（缺省为 `@`）。
@@ -117,6 +120,7 @@ class DiaryMentionMenuController extends DiaryCaretMenuSession {
   }
 
   /// 删掉 `@检索词`，按模式写入 [candidate]。
+  @override
   void pick(DiaryLinkCandidate candidate) {
     final mode = _mode;
     final at = consumeTrigger();
@@ -266,107 +270,14 @@ class DiaryMentionMenuHost extends StatelessWidget {
   Widget build(BuildContext context) => DiaryCaretMenuHost(
     session: menu,
     coveredHeight: coveredHeight,
-    menu: (_) => _MentionMenuList(menu: menu),
+    menu: (context) => DiaryLinkCandidateList(
+      menu: menu,
+      cardCaption: menu.mode != DiaryMentionMode.card
+          ? null
+          : menu.kinds.contains(DiaryLinkKind.notebook)
+          ? context.l10n.diaryEditorNotebookCard
+          : context.l10n.diaryEditorDiaryCard,
+    ),
     child: child,
   );
-}
-
-class _MentionMenuList extends StatefulWidget {
-  const _MentionMenuList({required this.menu});
-
-  final DiaryMentionMenuController menu;
-
-  @override
-  State<_MentionMenuList> createState() => _MentionMenuListState();
-}
-
-class _MentionMenuListState extends State<_MentionMenuList> {
-  final GlobalKey _highlightedKey = GlobalKey();
-  int? _revealed;
-
-  /// 键盘移动高亮后，把那一行滚进可见范围（列表比菜单高时）。
-  void _revealHighlighted(int index) {
-    if (_revealed == index) return;
-    _revealed = index;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final row = _highlightedKey.currentContext;
-      if (!mounted || row == null) return;
-      Scrollable.ensureVisible(
-        row,
-        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
-      );
-      Scrollable.ensureVisible(
-        row,
-        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final menu = widget.menu;
-    final results = menu.results;
-    final card = menu.mode == DiaryMentionMode.card;
-    final hint = Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-      child: Text(
-        l10n.diaryLinkMenuHint,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      ),
-    );
-    final children = <Widget>[
-      if (card)
-        DiaryCaretMenuCaption(
-          menu.kinds.contains(DiaryLinkKind.notebook)
-              ? l10n.diaryEditorNotebookCard
-              : l10n.diaryEditorDiaryCard,
-          first: true,
-        ),
-    ];
-    if (results == null) {
-      children.add(hint);
-    } else if (results.isEmpty) {
-      children.add(DiaryCaretMenuEmpty(l10n.diaryLinkEmpty));
-    } else {
-      DiaryLinkKind? group;
-      for (final (index, candidate) in results.indexed) {
-        // 卡片模式只有一种，不再分组。
-        if (!card && candidate.kind != group) {
-          group = candidate.kind;
-          children.add(
-            DiaryCaretMenuCaption(
-              group == DiaryLinkKind.notebook
-                  ? l10n.diaryLinkGroupNotebooks
-                  : l10n.diaryLinkGroupDiaries,
-              first: children.isEmpty,
-            ),
-          );
-        }
-        final highlighted = index == menu.highlighted;
-        children.add(
-          DiaryLinkCandidateItem(
-            key: highlighted ? _highlightedKey : null,
-            candidate: candidate,
-            highlighted: highlighted,
-            onTap: () => menu.pick(candidate),
-          ),
-        );
-      }
-      _revealHighlighted(menu.highlighted);
-      if (menu.query.isEmpty) children.add(hint);
-    }
-    return Semantics(
-      label: l10n.diaryLinkMenuLabel,
-      explicitChildNodes: true,
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(8),
-        children: children,
-      ),
-    );
-  }
 }

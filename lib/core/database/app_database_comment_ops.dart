@@ -321,7 +321,7 @@ WHERE d.is_deleted = 0
 
   /// 去掉首尾空白、规整格式（[normalizeDiaryCommentText]）；只有图片的
   /// 留言文字可以为空，文字与图片都没有时拒绝。
-  DiaryCommentText _normalizeDiaryComment(
+  DiaryCommentStoredText _normalizeDiaryComment(
     String raw, {
     required List<InlineTextRun>? runs,
     required bool hasImages,

@@ -21,7 +21,7 @@ void insertDiaryInlineLink(
   if (controller.readOnly || controller.isDisposed) return;
   final node = controller.document.nodeAtPath(at.path);
   final delta = node?.delta;
-  final text = _singleLine(label);
+  final text = diaryLinkSingleLine(label);
   if (node == null || delta == null || text.isEmpty) return;
   final offset = at.offset.clamp(0, delta.length);
   final transaction = controller.state.transaction
@@ -82,7 +82,8 @@ void convertDiaryLinkCardToInline(
   if (controller.readOnly || controller.isDisposed) return;
   final target = diaryLinkCardTarget(card.attributes);
   if (target == null || card.parent == null) return;
-  final text = diaryLinkCardTitle(card.attributes) ?? _singleLine(fallback);
+  final text =
+      diaryLinkCardTitle(card.attributes) ?? diaryLinkSingleLine(fallback);
   if (text.isEmpty) return;
   final paragraph = af.paragraphNode(
     delta: af.Delta()
@@ -184,5 +185,7 @@ DiaryLinkTarget? diaryLinkTargetAtSelection(DiaryEditorController controller) {
   );
 }
 
-String _singleLine(String value) =>
+/// 链接文字压成一行：换行连同两侧空白压成一个空格，去掉首尾空白（正文
+/// 与留言写入日记链接时共用）。
+String diaryLinkSingleLine(String value) =>
     value.replaceAll(RegExp(r'\s*[\r\n]+\s*'), ' ').trim();

@@ -1,5 +1,6 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
-import 'package:flutter/gestures.dart' show kLongPressTimeout;
+import 'package:flutter/gestures.dart'
+    show PointerDeviceKind, kLongPressTimeout;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -438,6 +439,150 @@ void main() {
     expect(_order(controller), 'one,two,three,');
     expect(controller.state.selection!.end.path, [3]);
     await _dispose(tester, controller, focus);
+  });
+
+  group('desktop mouse (#293)', () {
+    final linux = TargetPlatformVariant.only(TargetPlatform.linux);
+
+    Future<void> click(WidgetTester tester, Offset at) =>
+        tester.tapAt(at, kind: PointerDeviceKind.mouse);
+
+    testWidgets(
+      'clicking the text leaves the mode and puts the caret where it was '
+      'clicked, ready to type',
+      (tester) async {
+        final focus = FocusNode();
+        final controller = DiaryEditorController.fromContent('one\ntwo\nthree');
+        await _pump(tester, controller, focus);
+        await _enterAt(tester, controller, focus, 1);
+        expect(controller.blockSelection.isActive, isTrue);
+
+        // 点在第三段的第二个字后面（Ahem 每字 16dp 宽）。
+        await click(
+          tester,
+          tester.getTopLeft(_blocks.at(2)) + const Offset(30, 8),
+        );
+        await _frames(tester);
+        expect(controller.blockSelection.isActive, isFalse);
+        expect(find.byType(DiaryBlockActionBar), findsNothing);
+        expect(
+          controller.state.selection,
+          af.Selection.collapsed(af.Position(path: [2], offset: 2)),
+        );
+        expect(focus.hasFocus, isTrue);
+
+        final state = tester.testTextInput.editingState!;
+        final value = state['text'] as String;
+        final caret = state['selectionBase'] as int;
+        tester.testTextInput.updateEditingValue(
+          TextEditingValue(
+            text: '${value.substring(0, caret)}X${value.substring(caret)}',
+            selection: TextSelection.collapsed(offset: caret + 1),
+          ),
+        );
+        await _frames(tester, 2);
+        expect(_order(controller), 'one,two,thXree');
+        await _dispose(tester, controller, focus);
+      },
+      variant: linux,
+    );
+
+    testWidgets('dragging over the text leaves the mode and selects text', (
+      tester,
+    ) async {
+      final focus = FocusNode();
+      final controller = DiaryEditorController.fromContent('one\ntwo\nthree');
+      await _pump(tester, controller, focus);
+      await _enterAt(tester, controller, focus, 1);
+
+      final start = tester.getTopLeft(_blocks.at(0)) + const Offset(2, 8);
+      final gesture = await tester.startGesture(
+        start,
+        kind: PointerDeviceKind.mouse,
+      );
+      for (var step = 1; step <= 5; step++) {
+        await gesture.moveTo(start + Offset(step * 10.0, 0));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await gesture.up();
+      await _frames(tester);
+      expect(controller.blockSelection.isActive, isFalse);
+      final selection = controller.state.selection!.normalized;
+      expect(selection.isCollapsed, isFalse);
+      expect(selection.start, af.Position(path: [0]));
+      expect(selection.end.path, [0]);
+      await _dispose(tester, controller, focus);
+    }, variant: linux);
+
+    testWidgets('Ctrl + click toggles a block and Shift + click extends; '
+        'the left margin still toggles on a plain click', (tester) async {
+      final focus = FocusNode();
+      final controller = DiaryEditorController.fromContent('a\nb\nc\nd\ne');
+      await _pump(tester, controller, focus);
+      await _enterAt(tester, controller, focus, 0);
+      final selection = controller.blockSelection;
+      List<String> picked() => [
+        for (final node in selection.roots) node.delta!.toPlainText(),
+      ];
+      Offset text(int index) =>
+          tester.getTopLeft(_blocks.at(index)) + const Offset(40, 8);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await click(tester, text(2));
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await _frames(tester, 2);
+      expect(picked(), ['a', 'c']);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await click(tester, text(4));
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await _frames(tester, 2);
+      expect(picked(), ['a', 'c', 'd', 'e']);
+
+      // 再按 Ctrl 点一次取消；正文选区一直为空。
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await click(tester, text(0));
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await _frames(tester, 2);
+      expect(picked(), ['c', 'd', 'e']);
+
+      await click(tester, Offset(8, tester.getCenter(_blocks.at(1)).dy));
+      await _frames(tester, 2);
+      expect(picked(), ['b', 'c', 'd', 'e']);
+      expect(selection.isActive, isTrue);
+      expect(controller.state.selection, isNull);
+      await _dispose(tester, controller, focus);
+    }, variant: linux);
+
+    testWidgets(
+      'the handle stops at the left edge of the text, so clicking the first '
+      'character puts the caret there instead of selecting the paragraph',
+      (tester) async {
+        final focus = FocusNode();
+        final controller = DiaryEditorController.fromContent('one\ntwo');
+        await _pump(tester, controller, focus);
+        controller.select(
+          af.Selection.collapsed(af.Position(path: [1], offset: 2)),
+        );
+        focus.requestFocus();
+        await _frames(tester, 4);
+        final left = tester.getTopLeft(_blocks.at(1)).dx;
+        expect(tester.getRect(find.byType(DiaryBlockHandle)).right, left);
+
+        await click(
+          tester,
+          Offset(left + 1, tester.getCenter(_blocks.at(1)).dy),
+        );
+        await _frames(tester);
+        expect(controller.blockSelection.isActive, isFalse);
+        expect(
+          controller.state.selection,
+          af.Selection.collapsed(af.Position(path: [1])),
+        );
+        await _dispose(tester, controller, focus);
+      },
+      variant: linux,
+    );
   });
 
   testWidgets('tapping the blank space below the last block finishes', (

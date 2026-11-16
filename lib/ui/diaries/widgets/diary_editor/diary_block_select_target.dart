@@ -1,7 +1,9 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/services/app_platform.dart';
 import '../../controllers/diary_block_selection.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_block_drop_targets.dart';
@@ -30,6 +32,12 @@ class DiaryBlockDragRelay {
 /// 上游的选区手势（点按落光标、长按选词）同样会收到这次点按，它写下的选区
 /// 由编辑控制器在模式里挡掉。这里的识别器比上游的更深，点按与长按都先归
 /// 这里。
+///
+/// 桌面上的鼠标不归这里（识别器的 `supportedDevices` 去掉鼠标）：鼠标在
+/// 正文上按下由段落选择层处理（普通按下即退出模式、交还上游放光标或拖选，
+/// Ctrl / ⌘ / Shift 按下切换或连选，见 `DiaryBlockSelectionLayer`）。这里
+/// 若仍参与竞技场，抬起时它排在上游前面、赢下点按，上游就放不下光标。
+/// 块里的控件照样挡掉：退出模式的这一下不该同时打开链接或勾选待办。
 class DiaryBlockSelectTarget extends StatefulWidget {
   const DiaryBlockSelectTarget({
     super.key,
@@ -45,6 +53,12 @@ class DiaryBlockSelectTarget extends StatefulWidget {
   @override
   State<DiaryBlockSelectTarget> createState() => _DiaryBlockSelectTargetState();
 }
+
+/// 桌面上块上的点按与长按只认这些设备（触摸屏、手写笔），鼠标见类说明。
+final Set<PointerDeviceKind> _nonMouseDevices = {
+  for (final kind in PointerDeviceKind.values)
+    if (kind != PointerDeviceKind.mouse) kind,
+};
 
 class _DiaryBlockSelectTargetState extends State<DiaryBlockSelectTarget> {
   int? _pointer;
@@ -87,6 +101,7 @@ class _DiaryBlockSelectTargetState extends State<DiaryBlockSelectTarget> {
         behavior: active
             ? HitTestBehavior.opaque
             : HitTestBehavior.deferToChild,
+        supportedDevices: AppPlatform.isDesktop ? _nonMouseDevices : null,
         onTapUp: active ? _tap : null,
         onLongPressStart: active ? _longPress : null,
         child: AbsorbPointer(absorbing: active, child: child),

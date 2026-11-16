@@ -115,28 +115,67 @@ ORDER BY d.updated_at DESC, d.id DESC
     ).watch().map(_mapExploreOverviewRows);
   }
 
-  /// 分页读取“未删除日记”候选集（含归档）。
+  /// 分页读取媒体画廊的候选日记（含归档，不含回收站、未解封的时间胶囊与
+  /// 私密日记），按发表时间排序，只取封面、正文原文与发表时间。
   ///
-  /// 用于探索页媒体画廊按批提取图片来源，避免一次性加载全量日记导致
-  /// 首屏等待时间过长或内存抖动。私密日记的图片不进画廊。
-  Future<List<Diary>> getActiveDiariesPage({
+  /// 只取可能带图的行（有封面，或正文含 `"image"` 片段，与日记本统计页的
+  /// [watchScopedMediaContents] 同一口径）：纯文字日记在数据库线程就排除，
+  /// 画廊建全量图片索引时不必逐篇解析它们的正文。画廊按发表日期分组，必须
+  /// 按发表时间分页，后来的一页才只会接在已有分组的末尾。[scope] 为“日记本
+  /// 图片”筛选（全部 / 未收录 / 某本，经 [_writeDiaryScopeFilter]，私密口径
+  /// 与首页列表一致）；[from] / [to] 为发表时间范围（含两端），为 null 时
+  /// 不限；[newestFirst] 为 false 时从最早的一篇起。
+  Future<List<DiaryMediaContent>> getGalleryMediaPage({
     required int limit,
     required int offset,
+    DiaryListScope scope = DiaryListScope.all,
+    bool newestFirst = true,
+    DateTime? from,
+    DateTime? to,
   }) {
-    final query = select(diaries)
-      ..where(
-        (tbl) =>
-            tbl.isDeleted.equals(false) &
-            (tbl.capsuleUnlockAt.isNull() |
-                tbl.capsuleUnlockAt.isSmallerOrEqualValue(DateTime.now())) &
-            CustomExpression<bool>(_privateDiaryExclusionSql('diaries.id')),
+    final variables = <Variable<Object>>[Variable<DateTime>(DateTime.now())];
+    final sql = StringBuffer()
+      ..writeln('SELECT d.diary_id, d.cover, d.content, d.created_at')
+      ..writeln('FROM diaries d')
+      ..write(_diaryScopeJoinSql(scope))
+      ..writeln('WHERE d.is_deleted = 0')
+      ..writeln(
+        '  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)',
       )
-      ..orderBy(<OrderingTerm Function(Diaries)>[
-        (tbl) => OrderingTerm.desc(tbl.updatedAt),
-        (tbl) => OrderingTerm.desc(tbl.id),
-      ])
-      ..limit(limit, offset: offset);
-    return query.get();
+      ..writeln(
+        '''  AND ((d.cover IS NOT NULL AND trim(d.cover) <> '') OR d.content LIKE '%"image"%')''',
+      );
+    _writeDiaryScopeFilter(sql, variables, scope);
+    if (from != null) {
+      sql.writeln('  AND d.created_at >= ?');
+      variables.add(Variable<DateTime>(from));
+    }
+    if (to != null) {
+      sql.writeln('  AND d.created_at <= ?');
+      variables.add(Variable<DateTime>(to));
+    }
+    final direction = newestFirst ? 'DESC' : 'ASC';
+    sql
+      ..writeln('ORDER BY d.created_at $direction, d.id $direction')
+      ..writeln('LIMIT ? OFFSET ?');
+    variables
+      ..add(Variable<int>(limit < 0 ? 0 : limit))
+      ..add(Variable<int>(offset < 0 ? 0 : offset));
+    return customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries]),
+    ).get().then(
+      (rows) => List<DiaryMediaContent>.unmodifiable(<DiaryMediaContent>[
+        for (final row in rows)
+          DiaryMediaContent(
+            diaryId: row.read<String>('diary_id'),
+            cover: row.readNullable<String>('cover'),
+            content: row.read<String>('content'),
+            createdAt: _readDateTime(row, 'created_at'),
+          ),
+      ]),
+    );
   }
 
   /// 监听已归档日记列表（仅归档且未删除，不含私密日记）。
@@ -167,7 +206,8 @@ SELECT
       END
     ),
     '[]'
-  ) AS tags_json
+  ) AS tags_json,
+  ${_diaryNotebooksJsonColumn('d.id')}
 FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
@@ -229,8 +269,8 @@ ORDER BY d.deleted_at DESC, d.updated_at DESC
   }
 
   /// 日历按日期范围查询日记时共用的列与标签聚合（含归档，不含已删除与私密
-  /// 日记）。用到它的查询 `readsFrom` 须为 [_calendarReadsFrom]。
-  static final String _calendarDiaryWithTagsSelect =
+  /// 日记，带所在日记本）。用到它的查询 `readsFrom` 须为 [_calendarReadsFrom]。
+  String get _calendarDiaryWithTagsSelect =>
       '''
 SELECT
   d.id,
@@ -256,7 +296,8 @@ SELECT
       END
     ),
     '[]'
-  ) AS tags_json
+  ) AS tags_json,
+  ${_diaryNotebooksJsonColumn('d.id')}
 FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
@@ -568,9 +609,13 @@ ORDER BY updated_at DESC
   List<DiaryWithTags> _mapDiaryWithTagsRows(List<QueryRow> rows) {
     return rows
         .map((row) {
+          final notebooksJson = row.readNullable<String>('notebooks_json');
           return DiaryWithTags(
             diary: _mapDiaryFromRow(row),
             tags: _parseTagsJson(row.read<String>('tags_json')),
+            notebooks: notebooksJson == null
+                ? const <DiaryNotebookRef>[]
+                : _parseDiaryNotebooksJson(notebooksJson),
           );
         })
         .toList(growable: false);
@@ -592,6 +637,63 @@ ORDER BY updated_at DESC
           );
         })
         .toList(growable: false);
+  }
+
+  /// 列表行里“这篇在哪些日记本里”的一列 `notebooks_json`（给日记卡片的
+  /// “显示所属日记本”）：手动日记本的成员行连上日记本，按书架的置顶与手动
+  /// 顺序排，每本只带业务 id、名称与 payload 里的图标、强调色。
+  ///
+  /// 相关子查询走 `diary_notebooks` 的复合主键前缀（`diary_id`），每行一次
+  /// 索引查找。调用方的 `readsFrom` 须含 `notebooks` 与 `diary_notebooks`
+  /// （[_diaryScopeReadsFrom] 已带上），改名、换色或移入移出时列表随之刷新。
+  /// 私密日记本里的日记在全局列表里已被排除，只有进了那本才会看到它的名字。
+  String _diaryNotebooksJsonColumn(String diaryIdColumn) =>
+      '''
+COALESCE((
+    SELECT json_group_array(json_object(
+      'id', nb.notebook_id,
+      'name', nb.name,
+      'icon', json_extract(nb.payload, '\$.icon'),
+      'color', json_extract(nb.payload, '\$.color')
+    ))
+    FROM (
+      SELECT n.notebook_id, n.name, n.payload
+      FROM diary_notebooks dnb
+      JOIN notebooks n ON n.id = dnb.notebook_id
+      WHERE dnb.diary_id = $diaryIdColumn
+      ORDER BY n.is_pinned DESC, n.sort_order ASC, n.id ASC
+    ) nb
+  ), '[]') AS notebooks_json''';
+
+  /// 解析 [_diaryNotebooksJsonColumn] 的结果；损坏或缺字段的项跳过，整列
+  /// 损坏时按没有日记本处理（卡片少画胶囊，不影响列表）。
+  List<DiaryNotebookRef> _parseDiaryNotebooksJson(String rawJson) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! List<dynamic>) {
+        return const <DiaryNotebookRef>[];
+      }
+      final refs = <DiaryNotebookRef>[];
+      for (final entry in decoded) {
+        if (entry is! Map<String, dynamic>) continue;
+        final id = entry['id'];
+        final name = entry['name'];
+        if (id is! String || name is! String) continue;
+        final icon = entry['icon'];
+        final color = entry['color'];
+        refs.add(
+          DiaryNotebookRef(
+            id: id,
+            name: name,
+            icon: icon is String && icon.isNotEmpty ? icon : null,
+            color: color is num ? color.toInt() : null,
+          ),
+        );
+      }
+      return List<DiaryNotebookRef>.unmodifiable(refs);
+    } catch (_) {
+      return const <DiaryNotebookRef>[];
+    }
   }
 
   /// 解析 SQL 聚合得到的标签 JSON 字符串。

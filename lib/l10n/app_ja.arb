@@ -1231,6 +1231,75 @@
   "@autoT0054": {
     "description": "Auto-generated metadata for autoT0054."
   },
+  "exploreGalleryMenuTooltip": "絞り込みと並べ替え",
+  "@exploreGalleryMenuTooltip": {
+    "description": "Media gallery: tooltip of the top bar more menu (notebook, date range and sort)."
+  },
+  "exploreGalleryNotebookFilter": "日記帳の写真",
+  "@exploreGalleryNotebookFilter": {
+    "description": "Media gallery menu: submenu that limits photos to one notebook."
+  },
+  "exploreGalleryNotebookAll": "すべての日記の写真",
+  "@exploreGalleryNotebookAll": {
+    "description": "Media gallery notebook filter: show photos from all entries."
+  },
+  "exploreGalleryNotebookUnfiled": "未分類の日記の写真",
+  "@exploreGalleryNotebookUnfiled": {
+    "description": "Media gallery notebook filter: only photos from entries that are in no notebook."
+  },
+  "exploreGalleryTimeRange": "期間",
+  "@exploreGalleryTimeRange": {
+    "description": "Media gallery menu: submenu with an inline calendar to pick a date range."
+  },
+  "exploreGalleryTimeAllMonths": "すべて（{month}）",
+  "@exploreGalleryTimeAllMonths": {
+    "description": "Media gallery date picker: month chip when all twelve months are selected; month is the month currently shown.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "Nov"
+      }
+    }
+  },
+  "exploreGalleryTimeSpan": "{start}～{end}",
+  "@exploreGalleryTimeSpan": {
+    "description": "Media gallery date picker: a range of months or years in the header chips.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Mar"
+      },
+      "end": {
+        "type": "String",
+        "example": "Jun"
+      }
+    }
+  },
+  "exploreGalleryTimeClear": "クリア",
+  "@exploreGalleryTimeClear": {
+    "description": "Media gallery date picker: remove the applied date range."
+  },
+  "exploreGallerySort": "並べ替え",
+  "@exploreGallerySort": {
+    "description": "Media gallery menu: submenu to choose the date order."
+  },
+  "exploreGallerySortNewest": "新しい順",
+  "@exploreGallerySortNewest": {
+    "description": "Media gallery sort: newest entries first (default)."
+  },
+  "exploreGallerySortOldest": "古い順",
+  "@exploreGallerySortOldest": {
+    "description": "Media gallery sort: oldest entries first."
+  },
+  "exploreGalleryGroupCount": "{count}枚",
+  "@exploreGalleryGroupCount": {
+    "description": "Media gallery: number of photos in a date group, shown at the end of the group heading.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoT0055": "表示できる画像はまだありません",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."
@@ -4773,6 +4842,14 @@
   "@diaryCardStyleShowPreview": {
     "description": "Diary card style settings: whether to show the text excerpt."
   },
+  "diaryCardStyleShowNotebooks": "所属する日記帳を表示",
+  "@diaryCardStyleShowNotebooks": {
+    "description": "Diary card style settings: whether to show the notebooks an entry is in, after its tags."
+  },
+  "diaryCardStyleShowNotebooksSubtitle": "タグの後ろに、この日記が入っている日記帳を表示します",
+  "@diaryCardStyleShowNotebooksSubtitle": {
+    "description": "Caption under the show notebooks toggle on the diary card style settings."
+  },
   "diaryCardStyleTitleLines": "タイトルの最大行数",
   "@diaryCardStyleTitleLines": {
     "description": "Diary card style settings: maximum lines for the title."
@@ -5266,6 +5343,10 @@
   "diaryCardStyleSampleLocation": "海辺の遊歩道",
   "@diaryCardStyleSampleLocation": {
     "description": "Diary card style settings: location of a preview sample entry."
+  },
+  "diaryCardStyleSampleNotebook": "旅行記",
+  "@diaryCardStyleSampleNotebook": {
+    "description": "Diary card style preview: name of the sample notebook shown on sample cards."
   },
   "diaryCardStyleValueDp": "{value}dp",
   "@diaryCardStyleValueDp": {

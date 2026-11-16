@@ -47,6 +47,22 @@ abstract final class ExploreMediaStats {
     return List<ExploreMediaItem>.unmodifiable(items);
   }
 
+  /// 媒体画廊一批候选日记里的图片（带所在日记与发表时间），批内按来源
+  /// 去重、保持日记与正文顺序；批与批之间的去重由画廊控制器负责。正文
+  /// 合计较大时在 worker 里解码，画廊建索引期间滚动与捏合不被挤占。
+  static Future<List<ExploreMediaItem>> galleryItems(
+    List<DiaryMediaContent> rows,
+  ) {
+    var units = 0;
+    for (final row in rows) {
+      units += row.content.length;
+      if (units >= 64 * 1024) {
+        return compute(_galleryItems, rows, debugLabel: 'explore.gallery');
+      }
+    }
+    return SynchronousFuture(_galleryItems(rows));
+  }
+
   static Future<Map<String, int>> photoCounts(List<DiaryMediaContent> rows) =>
       rows.isEmpty
       ? SynchronousFuture(const <String, int>{})
@@ -55,6 +71,24 @@ abstract final class ExploreMediaStats {
 
 List<ExploreMediaItem> _recentMedia((List<DiaryMediaContent>, int) input) =>
     ExploreMediaStats.recent(input.$1, limit: input.$2);
+
+List<ExploreMediaItem> _galleryItems(List<DiaryMediaContent> rows) {
+  const extractor = ExploreContentExtractor();
+  final seen = <String>{};
+  return List<ExploreMediaItem>.unmodifiable(<ExploreMediaItem>[
+    for (final row in rows)
+      for (final source in extractor.resolveMediaSourcesFrom(
+        cover: row.cover,
+        content: row.content,
+      ))
+        if (seen.add(source))
+          ExploreMediaItem(
+            source: source,
+            diaryId: row.diaryId,
+            date: row.createdAt,
+          ),
+  ]);
+}
 
 Map<String, int> _countPhotos(List<DiaryMediaContent> rows) {
   const extractor = ExploreContentExtractor();

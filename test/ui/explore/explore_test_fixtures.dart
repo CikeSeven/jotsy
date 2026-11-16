@@ -21,3 +21,19 @@ Diary createExploreTestDiary({
     isDeleted: false,
   );
 }
+
+/// 媒体画廊分页查询的一行（`getGalleryMediaPage`），日期与
+/// [createExploreTestDiary] 同一算法。
+DiaryMediaContent createExploreTestMediaRow({
+  int id = 1,
+  String content = '[]',
+  String? cover,
+}) {
+  final diary = createExploreTestDiary(id: id, content: content, cover: cover);
+  return DiaryMediaContent(
+    diaryId: diary.diaryId,
+    cover: diary.cover,
+    content: diary.content,
+    createdAt: diary.createdAt,
+  );
+}

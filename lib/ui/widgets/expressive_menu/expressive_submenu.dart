@@ -22,6 +22,7 @@ class ExpressiveSubmenuItem extends StatefulWidget {
     required this.child,
     required this.menuChildren,
     this.leadingIcon,
+    this.onCollapseRequest,
   });
 
   /// 条目文字；二级菜单顶部的标题行也用它。
@@ -32,6 +33,11 @@ class ExpressiveSubmenuItem extends StatefulWidget {
 
   /// 二级菜单的内容，通常是若干 [ExpressiveMenuItem]。
   final List<Widget> menuChildren;
+
+  /// 收回二级菜单的请求（点外部、点遮罩、标题行、Esc、系统返回）先问这一项：
+  /// 返回 true 表示内容自己退了一级（如二级菜单里的日历从选月面板退回日期），
+  /// 这次先不收回；为 null 或返回 false 时照常收回。
+  final bool Function()? onCollapseRequest;
 
   @override
   State<ExpressiveSubmenuItem> createState() => _ExpressiveSubmenuItemState();

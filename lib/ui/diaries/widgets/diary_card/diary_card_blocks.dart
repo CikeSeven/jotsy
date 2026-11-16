@@ -232,12 +232,16 @@ class DiaryCardBlocks extends StatelessWidget {
   }
 
   Widget? _tags() {
-    if (diary.tags.isEmpty || maxVisibleTags <= 0) {
+    final notebooks = resolved.style.content.showNotebooks
+        ? diary.notebooks
+        : const <DiaryNotebookRef>[];
+    if ((diary.tags.isEmpty || maxVisibleTags <= 0) && notebooks.isEmpty) {
       return null;
     }
     final inverted = appearance.inverted;
     return DiaryItemTagRow(
       tags: diary.tags,
+      notebooks: notebooks,
       maxVisibleTags: maxVisibleTags,
       style: resolved.style.content.tagStyle,
       scale: resolved.metaScale,

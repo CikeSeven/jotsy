@@ -61,8 +61,15 @@ class ExploreTagUsage {
 
 /// 媒体画廊项。
 class ExploreMediaItem {
-  const ExploreMediaItem({required this.source, required this.diaryId});
+  const ExploreMediaItem({
+    required this.source,
+    required this.diaryId,
+    this.date,
+  });
 
   final String source;
   final String diaryId;
+
+  /// 所在日记的发表时间：媒体画廊页按它分组；探索页卡片用不到，为 null。
+  final DateTime? date;
 }

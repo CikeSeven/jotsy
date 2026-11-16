@@ -918,6 +918,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0054 => 'Media gallery';
 
   @override
+  String get exploreGalleryMenuTooltip => 'Filter and sort';
+
+  @override
+  String get exploreGalleryNotebookFilter => 'Notebook photos';
+
+  @override
+  String get exploreGalleryNotebookAll => 'Photos from all entries';
+
+  @override
+  String get exploreGalleryNotebookUnfiled =>
+      'Photos from entries not in a notebook';
+
+  @override
+  String get exploreGalleryTimeRange => 'Date range';
+
+  @override
+  String exploreGalleryTimeAllMonths(String month) {
+    return 'All ($month)';
+  }
+
+  @override
+  String exploreGalleryTimeSpan(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get exploreGalleryTimeClear => 'Clear';
+
+  @override
+  String get exploreGallerySort => 'Sort';
+
+  @override
+  String get exploreGallerySortNewest => 'Newest first';
+
+  @override
+  String get exploreGallerySortOldest => 'Oldest first';
+
+  @override
+  String exploreGalleryGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get autoT0055 => 'No images to show yet';
 
   @override
@@ -3720,6 +3769,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleShowPreview => 'Show excerpt';
 
   @override
+  String get diaryCardStyleShowNotebooks => 'Show notebooks';
+
+  @override
+  String get diaryCardStyleShowNotebooksSubtitle =>
+      'Show the notebooks this entry is in, after its tags';
+
+  @override
   String get diaryCardStyleTitleLines => 'Title lines';
 
   @override
@@ -4105,6 +4161,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleLocation => 'Seaside boardwalk';
+
+  @override
+  String get diaryCardStyleSampleNotebook => 'Travel journal';
 
   @override
   String diaryCardStyleValueDp(String value) {

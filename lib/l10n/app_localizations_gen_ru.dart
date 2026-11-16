@@ -944,6 +944,56 @@ class AppLocalizationsRu extends AppLocalizations {
   String get autoT0054 => 'Галерея медиафайлов';
 
   @override
+  String get exploreGalleryMenuTooltip => 'Фильтр и сортировка';
+
+  @override
+  String get exploreGalleryNotebookFilter => 'Фото из блокнотов';
+
+  @override
+  String get exploreGalleryNotebookAll => 'Фото из всех записей';
+
+  @override
+  String get exploreGalleryNotebookUnfiled => 'Фото из записей без блокнота';
+
+  @override
+  String get exploreGalleryTimeRange => 'Период';
+
+  @override
+  String exploreGalleryTimeAllMonths(String month) {
+    return 'Все ($month)';
+  }
+
+  @override
+  String exploreGalleryTimeSpan(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get exploreGalleryTimeClear => 'Сбросить';
+
+  @override
+  String get exploreGallerySort => 'Сортировка';
+
+  @override
+  String get exploreGallerySortNewest => 'Сначала новые';
+
+  @override
+  String get exploreGallerySortOldest => 'Сначала старые';
+
+  @override
+  String exploreGalleryGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count фото',
+      many: '$count фото',
+      few: '$count фото',
+      one: '$count фото',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get autoT0055 => 'Изображений пока нет';
 
   @override
@@ -3830,6 +3880,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryCardStyleShowPreview => 'Показывать отрывок';
 
   @override
+  String get diaryCardStyleShowNotebooks => 'Показывать блокноты';
+
+  @override
+  String get diaryCardStyleShowNotebooksSubtitle =>
+      'Показывать после меток блокноты, в которых лежит запись';
+
+  @override
   String get diaryCardStyleTitleLines => 'Строк в заголовке';
 
   @override
@@ -4218,6 +4275,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleLocation => 'Набережная у моря';
+
+  @override
+  String get diaryCardStyleSampleNotebook => 'Путевой дневник';
 
   @override
   String diaryCardStyleValueDp(String value) {

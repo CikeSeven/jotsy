@@ -13,6 +13,10 @@ import 'ai_tools_organize.dart';
 import 'ai_tools_organize_writes.dart';
 import 'ai_tools_preferences.dart';
 import 'ai_tools_settings.dart';
+import 'ai_tools_template_removals.dart';
+import 'ai_tools_template_use.dart';
+import 'ai_tools_template_writes.dart';
+import 'ai_tools_templates.dart';
 import 'ai_tools_todo_list_writes.dart';
 import 'ai_tools_todo_status_writes.dart';
 import 'ai_tools_todo_writes.dart';
@@ -33,6 +37,8 @@ const List<AiTool> aiTools = <AiTool>[
   ListAnniversariesTool(),
   ListTagsTool(),
   ListNotebooksTool(),
+  ListTemplatesTool(),
+  GetTemplateTool(),
   GetSettingsTool(),
   OpenPageTool(),
   // 日记。
@@ -53,6 +59,16 @@ const List<AiTool> aiTools = <AiTool>[
   RenameNotebookTool(),
   AddToNotebookTool(),
   RemoveFromNotebookTool(),
+  // 日记模板。
+  CreateTemplateTool(),
+  UpdateTemplateTool(),
+  DeleteTemplateTool(),
+  ResetTemplateTool(),
+  RestoreTemplatesTool(),
+  ReorderTemplatesTool(),
+  SetTemplateAutoApplyTool(),
+  SetNotebookTemplateTool(),
+  CreateDiaryFromTemplateTool(),
   // 待办与待办清单。
   CreateTodoTool(),
   UpdateTodosTool(),

@@ -16194,6 +16194,122 @@
   "@aiToolDone": {
     "description": "AI 步骤卡片：改动已完成。"
   },
+  "aiToolListTemplates": "查看日记模板",
+  "@aiToolListTemplates": {
+    "description": "AI 工具卡片：查看日记模板列表。"
+  },
+  "aiToolTemplateCount": "{count} 个模板",
+  "@aiToolTemplateCount": {
+    "description": "AI 工具卡片结果：模板个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetTemplates": "查看模板内容",
+  "@aiToolGetTemplates": {
+    "description": "AI 工具卡片：查看模板的全部内容。"
+  },
+  "aiToolGetTemplate": "查看模板「{name}」",
+  "@aiToolGetTemplate": {
+    "description": "AI 工具卡片：查看一个模板。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTemplate": "新建模板",
+  "@aiToolCreateTemplate": {
+    "description": "AI 工具卡片：新建模板（还不知道名称时）。"
+  },
+  "aiToolCreateTemplateNamed": "新建模板：{name}",
+  "@aiToolCreateTemplateNamed": {
+    "description": "AI 工具卡片：新建这个名称的模板。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTemplate": "修改模板",
+  "@aiToolUpdateTemplate": {
+    "description": "AI 工具卡片：修改模板。"
+  },
+  "aiToolUpdateTemplateNamed": "修改模板：{name}",
+  "@aiToolUpdateTemplateNamed": {
+    "description": "AI 工具卡片：修改这个模板。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTemplate": "删除模板",
+  "@aiToolDeleteTemplate": {
+    "description": "AI 工具卡片：删除模板。"
+  },
+  "aiToolDeleteTemplateNamed": "删除模板「{name}」",
+  "@aiToolDeleteTemplateNamed": {
+    "description": "AI 工具卡片与确认面板：删除这个模板。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTemplateAuto": "自动套用里指向它的设置会一并去掉",
+  "@aiToolDeleteTemplateAuto": {
+    "description": "AI 删除模板的确认面板：这个模板用在自动套用里。"
+  },
+  "aiToolResetTemplate": "恢复模板的默认内容",
+  "@aiToolResetTemplate": {
+    "description": "AI 工具卡片：把改过的内置模板恢复默认。"
+  },
+  "aiToolResetTemplateNamed": "恢复「{name}」的默认内容",
+  "@aiToolResetTemplateNamed": {
+    "description": "AI 工具卡片与确认面板：把这个内置模板恢复默认。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRestoreTemplates": "恢复 {count} 个已删除的内置模板",
+  "@aiToolRestoreTemplates": {
+    "description": "AI 工具卡片：恢复已删除的内置模板。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReorderTemplates": "调整模板顺序",
+  "@aiToolReorderTemplates": {
+    "description": "AI 工具卡片：调整我的模板的顺序。"
+  },
+  "aiToolSetTemplateAutoApply": "设置新建日记自动套用的模板",
+  "@aiToolSetTemplateAutoApply": {
+    "description": "AI 工具卡片：修改模板的自动套用设置。"
+  },
+  "aiToolSetNotebookTemplate": "设置日记本的默认模板",
+  "@aiToolSetNotebookTemplate": {
+    "description": "AI 工具卡片：设置在日记本里新建日记时套用的模板。"
+  },
+  "aiToolWriteWithTemplate": "用「{name}」写日记",
+  "@aiToolWriteWithTemplate": {
+    "description": "AI 工具卡片与前往卡片：用这个模板写一篇日记。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiDestinationNewDiary": "写日记",
+  "@aiDestinationNewDiary": {
+    "description": "AI 前往卡片：打开新建日记的编辑页。"
+  },
   "aiToolListTodoLists": "查看待办清单",
   "@aiToolListTodoLists": {
     "description": "AI 步骤卡片：查看待办清单。"
@@ -19473,7 +19589,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} arg_images{图片} arg_attachments{对话里的图片} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} arg_images{图片} arg_attachments{对话里的图片} arg_kind_template{模板} arg_add_rules{添加时间段} arg_remove_rules{删除时间段} arg_clear_rules{清除全部时间段} arg_default_template_id{默认模板} other{}}",
   "@aiToolArgName": {
     "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
     "placeholders": {

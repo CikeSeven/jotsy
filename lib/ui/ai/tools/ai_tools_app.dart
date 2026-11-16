@@ -14,6 +14,7 @@ import '../models/ai_tool_subject.dart';
 import '../viewmodels/ai_tool_facts.dart';
 import 'ai_destinations.dart';
 import 'ai_tool.dart';
+import 'ai_tool_template_parts.dart';
 
 /// 今天的日期（含农历、节气、法定节假日）、平台、界面语言、开启的功能与
 /// 用户的心情选项。模型安排日期、判断某功能能不能用之前调用。
@@ -124,8 +125,11 @@ class OpenPageTool extends AiTool {
       'page: it then opens after your reply. Destinations: '
       'tab_* = main tabs (tab_settings is the settings home page); diary '
       '(needs diary_id); notebook (needs '
-      'notebook_id); todo (needs todo_id); search (optional query); '
-      'settings_* = settings pages; the rest are named after their page.';
+      'notebook_id); todo (needs todo_id); template (a diary template\'s '
+      'editor, needs template_id); new_diary (the new-entry editor, with the '
+      'template template_id applied if given, for the user to write); search '
+      '(optional query); settings_* = settings pages; the rest are named '
+      'after their page.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'diary_id'};
@@ -139,6 +143,7 @@ class OpenPageTool extends AiTool {
       'diary_id': const AiStringSchema(),
       'notebook_id': const AiStringSchema(),
       'todo_id': const AiStringSchema(),
+      'template_id': const AiStringSchema(),
       'query': const AiStringSchema(description: 'Keywords for `search`.'),
       'now': const AiBooleanSchema(),
     },
@@ -182,7 +187,13 @@ class OpenPageTool extends AiTool {
       );
     }
     final params = <String, Object?>{
-      for (final key in const ['diary_id', 'notebook_id', 'todo_id', 'query'])
+      for (final key in const [
+        'diary_id',
+        'notebook_id',
+        'todo_id',
+        'template_id',
+        'query',
+      ])
         if (args[key] case final String value) key: value,
     };
     final missing = destination.requires.difference(params.keys.toSet());
@@ -256,6 +267,16 @@ class OpenPageTool extends AiTool {
           row.title,
           due: row.dueDate == null ? null : DateTime.tryParse(row.dueDate!),
         );
+      case AiDestinationKind.template || AiDestinationKind.newDiary:
+        final id = params['template_id'] as String?;
+        if (id == null) return null;
+        if (!context.env.features.templates) {
+          throw const AiToolFailure('Diary templates are turned off.');
+        }
+        final template = aiFindTemplate(await aiTemplateLibrary(context), id);
+        // 模型给的可能是名称：换成 id，前往时按 id 打开。
+        params['template_id'] = template.id;
+        return aiTemplateSubject(context.l10n, template, input: true);
       case AiDestinationKind.tab ||
           AiDestinationKind.search ||
           AiDestinationKind.page:

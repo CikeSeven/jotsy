@@ -123,7 +123,15 @@ List<AiToolFact> aiToolFacts(AppLocalizations l10n, AiAgentCallRecord call) {
         tool?.argLabel(l10n, nameKey) ?? aiToolArgLabel(l10n, nameKey);
     final custom = tool?.describeArg(l10n, key, value);
     if (custom != null) {
-      if (custom.isNotEmpty) facts.add(AiToolFact(label, custom));
+      if (custom.isNotEmpty) {
+        facts.add(
+          AiToolFact(
+            label,
+            custom,
+            long: _longKeys.contains(key) || custom.length > 60,
+          ),
+        );
+      }
       continue;
     }
     if (key == 'id' || key == 'ids' || key.endsWith('_id')) {

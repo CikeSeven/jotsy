@@ -61,7 +61,8 @@ Future<void> openAiNavigation(
 }
 
 /// 打开一个对象胶囊：日记打开预览，日记本与前往卡片同一开法，标签按标签
-/// 搜索，待办打开详情，待办清单打开清单管理，纪念日打开列表；某一天不可点。
+/// 搜索，待办打开详情，待办清单打开清单管理，纪念日打开列表，模板打开编辑
+/// 页；某一天不可点。
 Future<void> openAiSubject(
   BuildContext context,
   WidgetRef ref,
@@ -96,6 +97,8 @@ Future<void> openAiSubject(
       await openTodoListsManage(context);
     case AiSubjectKind.anniversary:
       await openAnniversaryList(context);
+    case AiSubjectKind.template:
+      await openAiTemplate(context, ref, subject.id);
     case AiSubjectKind.day:
       return;
   }

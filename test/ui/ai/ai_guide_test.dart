@@ -42,7 +42,7 @@ void main() {
   };
   const platformNames = <String>{'android', 'ios', 'windows', 'linux', 'macos'};
   // 需要具体 id 的目标不能写进文章。
-  const idDestinations = <String>{'diary', 'notebook', 'todo'};
+  const idDestinations = <String>{'diary', 'notebook', 'todo', 'template'};
   // 设置首页能进的各页：每个都要有文章讲到。
   const settingsDestinations = <String>{
     'settings_appearance',

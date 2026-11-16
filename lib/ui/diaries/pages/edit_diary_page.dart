@@ -1608,11 +1608,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 ),
               );
               final scaffold = _mindMapSession != null
-                  ? _buildMindMapScaffold(
-                      context,
-                      reading: reading,
-                      showEditMetaPanel: showEditMetaPanel,
-                    )
+                  ? _buildMindMapScaffold(context, reading: reading)
                   : reading == null
                   ? buildScaffold(context)
                   : Theme(

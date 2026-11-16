@@ -40,6 +40,13 @@ Map<String, Object?> mindMapDiaryDocument(MindMapDocument map) =>
       },
     };
 
+/// 导图日记的标题：中心主题的文字压成一行，最长 200 字（标题列上限）。
+/// 编辑页随导图改动同步标题、直接存成导图日记时都按这个口径。
+String mindMapDiaryTitle(MindMapDocument map) {
+  final title = map.root.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();
+  return title.length > 200 ? title.substring(0, 200) : title;
+}
+
 bool isMindMapBlock(Map<String, Object?> node) =>
     node[kDiaryBlockTypeKey] == kDiaryBlockMindMap;
 

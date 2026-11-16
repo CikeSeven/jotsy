@@ -21,7 +21,6 @@ class MindMapPageScaffold extends StatelessWidget {
     required this.body,
     this.controller,
     this.actions = const <Widget>[],
-    this.overlay,
     this.paintBackground = true,
   });
 
@@ -32,9 +31,6 @@ class MindMapPageScaffold extends StatelessWidget {
   final MindMapEditingController? controller;
   final List<Widget> actions;
   final Widget Function(BuildContext context, double topInset) body;
-
-  /// 盖在整页之上的一层（信息面板、加载遮罩等）。
-  final Widget? overlay;
 
   /// 是否自己画编辑区背景；宿主外面已经画了（日记编辑页）时传 false。
   final bool paintBackground;
@@ -87,10 +83,7 @@ class MindMapPageScaffold extends StatelessWidget {
               ...actions,
             ],
           ),
-          body: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[body(context, topInset), ?overlay],
-          ),
+          body: SizedBox.expand(child: body(context, topInset)),
         );
       },
     );

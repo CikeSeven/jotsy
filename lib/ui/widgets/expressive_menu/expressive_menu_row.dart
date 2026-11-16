@@ -31,6 +31,10 @@ abstract final class ExpressiveMenuRowMetrics {
   static const double checkCell = 18;
   static const double checkSize = 14;
 
+  /// 行尾独立小按钮（如展开 / 收起）左右的点按外扩，也是它与文字、对勾格
+  /// 之间的间距。
+  static const double secondaryPadding = 10;
+
   /// 二级菜单入口行尾 › 的格子（9 × 14）。
   static const Size chevronCell = Size(9, 14);
 
@@ -50,6 +54,8 @@ abstract final class ExpressiveMenuRowMetrics {
 ///   动作与 Enter / 空格（ActivateIntent）。悬停与键盘聚焦报给面板，用同一块
 ///   胶囊高亮。不在面板里时（单独使用）退回普通的点按。
 /// - 语义：一个按钮节点（合并行内文字），带选中 / 展开状态。
+/// - 行里可放一个独立小按钮（[ExpressiveMenuRowSecondary]，点按为
+///   [onSecondaryTap]），读屏为这一行上的自定义动作 [secondaryLabel]。
 class ExpressiveMenuRowInk extends StatefulWidget {
   const ExpressiveMenuRowInk({
     super.key,
@@ -59,10 +65,17 @@ class ExpressiveMenuRowInk extends StatefulWidget {
     this.highlighted = false,
     this.selected,
     this.expanded,
+    this.onSecondaryTap,
+    this.secondaryLabel,
   });
 
   /// 为 null 时整行禁用（不参与命中、不可聚焦）。
   final VoidCallback? onTap;
+
+  /// 行里独立小按钮（[ExpressiveMenuRowSecondary]）的点按；读屏经名为
+  /// [secondaryLabel] 的自定义动作触发。
+  final VoidCallback? onSecondaryTap;
+  final String? secondaryLabel;
   final Widget child;
   final FocusNode? focusNode;
 
@@ -118,9 +131,12 @@ class _ExpressiveMenuRowInkState extends State<ExpressiveMenuRowInk> {
   Widget build(BuildContext context) {
     final onTap = widget.onTap;
     final enabled = onTap != null;
+    final secondary = widget.onSecondaryTap;
+    final secondaryLabel = widget.secondaryLabel;
     _handle
       ..enabled = enabled
-      ..activate = onTap;
+      ..activate = onTap
+      ..secondaryActivate = secondary;
     final selection = _selection;
     Widget row = _RowBox(
       handle: _handle,
@@ -128,7 +144,11 @@ class _ExpressiveMenuRowInkState extends State<ExpressiveMenuRowInk> {
         padding: const EdgeInsets.symmetric(
           horizontal: ExpressiveMenuRowMetrics.inset,
         ),
-        child: widget.child,
+        child: _RowHandleScope(
+          handle: _handle,
+          standalone: selection == null,
+          child: widget.child,
+        ),
       ),
     );
     if (selection == null) {
@@ -145,6 +165,11 @@ class _ExpressiveMenuRowInkState extends State<ExpressiveMenuRowInk> {
         selected: widget.selected,
         expanded: widget.expanded,
         onTap: selection == null ? null : onTap,
+        customSemanticsActions: secondary == null || secondaryLabel == null
+            ? null
+            : <CustomSemanticsAction, VoidCallback>{
+                CustomSemanticsAction(label: secondaryLabel): secondary,
+              },
         child: FocusableActionDetector(
           focusNode: widget.focusNode,
           enabled: enabled,
@@ -165,6 +190,93 @@ class _ExpressiveMenuRowInkState extends State<ExpressiveMenuRowInk> {
         ),
       ),
     );
+  }
+}
+
+/// 行的登记项，交给行里的 [ExpressiveMenuRowSecondary]。
+class _RowHandleScope extends InheritedWidget {
+  const _RowHandleScope({
+    required this.handle,
+    required this.standalone,
+    required super.child,
+  });
+
+  final ExpressiveMenuRowHandle handle;
+
+  /// 不在面板里（没有统一的点按手势层）：小按钮自己接点按。
+  final bool standalone;
+
+  @override
+  bool updateShouldNotify(_RowHandleScope oldWidget) =>
+      !identical(handle, oldWidget.handle) ||
+      standalone != oldWidget.standalone;
+}
+
+/// 菜单行里的一个独立小按钮（如树形列表的展开 / 收起），点按执行所在行的
+/// `onSecondaryTap`，不执行这一行、不关菜单。
+///
+/// 面板里的点按都由面板的手势层统一处理（见 [ExpressiveMenuSelection]）：
+/// 这里只把按钮的 render box 交给行的登记项，松手落在它的横向范围里时面板
+/// 改为执行小按钮。按钮格就是 [child] 的范围，触控区要宽些时由 [child]
+/// 自带内边距。不在面板里时自己接点按。
+class ExpressiveMenuRowSecondary extends StatelessWidget {
+  const ExpressiveMenuRowSecondary({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<_RowHandleScope>();
+    if (scope == null) return child;
+    final box = _SecondaryBox(handle: scope.handle, child: child);
+    if (!scope.standalone) return box;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => scope.handle.secondaryActivate?.call(),
+      child: box,
+    );
+  }
+}
+
+class _SecondaryBox extends SingleChildRenderObjectWidget {
+  const _SecondaryBox({required this.handle, super.child});
+
+  final ExpressiveMenuRowHandle handle;
+
+  @override
+  _RenderSecondaryBox createRenderObject(BuildContext context) =>
+      _RenderSecondaryBox(handle);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderSecondaryBox renderObject,
+  ) {
+    renderObject.handle = handle;
+  }
+}
+
+class _RenderSecondaryBox extends RenderProxyBox {
+  _RenderSecondaryBox(this._handle);
+
+  ExpressiveMenuRowHandle _handle;
+  set handle(ExpressiveMenuRowHandle value) {
+    if (identical(value, _handle)) return;
+    if (identical(_handle.secondaryBox, this)) _handle.secondaryBox = null;
+    _handle = value;
+    if (attached) _handle.secondaryBox = this;
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _handle.secondaryBox = this;
+  }
+
+  @override
+  void detach() {
+    if (identical(_handle.secondaryBox, this)) _handle.secondaryBox = null;
+    super.detach();
   }
 }
 

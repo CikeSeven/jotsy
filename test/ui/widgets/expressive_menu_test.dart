@@ -9,6 +9,7 @@ import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_layout.dar
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_panel.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_selection.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_submenu.dart';
+import 'package:node_diary/ui/widgets/list_item_presence.dart';
 
 import '../../support/expressive_test_theme.dart';
 
@@ -429,6 +430,96 @@ void main() {
   });
 
   group('items', () {
+    testWidgets('a secondary button runs on its own and keeps the menu open', (
+      tester,
+    ) async {
+      final log = <String>[];
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _app(
+          home: _topBarPage(
+            items: <Widget>[
+              ExpressiveMenuItem(
+                closeOnActivate: false,
+                selected: false,
+                onPressed: () => log.add('row'),
+                secondary: const FaIcon(FontAwesomeIcons.angleDown),
+                onSecondaryPressed: () => log.add('secondary'),
+                secondaryLabel: 'Expand',
+                child: const Text('Parent'),
+              ),
+              ExpressiveMenuItem(
+                onPressed: () => log.add('other'),
+                child: const Text('Other'),
+              ),
+            ],
+          ),
+        ),
+      );
+      await openMenu(tester);
+      // 小按钮在文字与对勾格之间，读屏为这一行上的自定义动作。
+      final chevron = _faIcon(FontAwesomeIcons.angleDown);
+      expect(
+        tester.getCenter(chevron).dx,
+        greaterThan(tester.getRect(find.text('Parent')).right),
+      );
+      expect(
+        tester.getSemantics(find.text('Parent')),
+        isSemantics(
+          customActions: <CustomSemanticsAction>[
+            const CustomSemanticsAction(label: 'Expand'),
+          ],
+        ),
+      );
+
+      await tester.tap(chevron);
+      await tester.pumpAndSettle();
+      expect(log, <String>['secondary']);
+      expect(_items0, findsWidgets);
+
+      // 小按钮左右外扩的那一段也算它的。
+      await tester.tapAt(tester.getCenter(chevron) - const Offset(14, 0));
+      await tester.pumpAndSettle();
+      expect(log, <String>['secondary', 'secondary']);
+
+      await tester.tap(find.text('Parent'));
+      await tester.pumpAndSettle();
+      expect(log, <String>['secondary', 'secondary', 'row']);
+      semantics.dispose();
+    });
+
+    testWidgets('rows folded to zero height leave taps to the rows below', (
+      tester,
+    ) async {
+      final log = <String>[];
+      Widget item(String label) => ExpressiveMenuItem(
+        onPressed: () => log.add(label),
+        child: Text(label),
+      );
+      await tester.pumpWidget(
+        _app(
+          home: _topBarPage(
+            items: <Widget>[
+              item('One'),
+              // 收起的行仍按原高布局、只被裁掉：不能盖住下面那一行。
+              ListItemPresence(
+                visible: false,
+                appearing: false,
+                duration: Duration.zero,
+                child: item('Folded'),
+              ),
+              item('Two'),
+            ],
+          ),
+        ),
+      );
+      await openMenu(tester);
+      expect(tester.getSize(find.byType(ListItemPresence)).height, 0);
+      await tester.tap(find.text('Two'));
+      await tester.pumpAndSettle();
+      expect(log, <String>['Two']);
+    });
+
     testWidgets('tapping an item closes the menu and runs it once', (
       tester,
     ) async {

@@ -257,22 +257,7 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
       triggerFocus: triggerFocus,
       serial: ++_submenuSerial,
     );
-    final route = ModalRoute.of(context);
-    if (route != null) {
-      late final LocalHistoryEntry entry;
-      entry = LocalHistoryEntry(
-        // 不让 AppBar 因此把返回键换成关闭键。
-        impliesAppBarDismissal: false,
-        onRemove: () {
-          // 主动收回时已先解除关联；只有被系统返回弹出时才收回。
-          if (submenu.history != entry) return;
-          submenu.history = null;
-          if (identical(_submenu, submenu)) _collapseSubmenu();
-        },
-      );
-      submenu.history = entry;
-      route.addLocalHistoryEntry(entry);
-    }
+    _registerSubmenuHistory(submenu);
     setState(() => _submenu = submenu);
     _motion.expandSecondary(reduced: _reduced);
     if (!_menuFocus.hasFocus) return;
@@ -286,9 +271,39 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
     });
   }
 
-  /// 收回二级菜单；没有展开时什么也不做。
+  /// 给二级菜单登记一条局部返回记录，系统返回键先收回二级菜单。
+  ///
+  /// 被系统返回弹出时先问 [ExpressiveSubmenuItem.onCollapseRequest]：内容自己
+  /// 退了一级就重新登记一条，下一次返回继续先交给它；否则收回二级菜单。
+  void _registerSubmenuHistory(_OpenSubmenu submenu) {
+    final route = ModalRoute.of(context);
+    if (route == null) return;
+    late final LocalHistoryEntry entry;
+    entry = LocalHistoryEntry(
+      // 不让 AppBar 因此把返回键换成关闭键。
+      impliesAppBarDismissal: false,
+      onRemove: () {
+        // 主动收回时已先解除关联；只有被系统返回弹出时才走到这里。
+        if (submenu.history != entry) return;
+        submenu.history = null;
+        if (!identical(_submenu, submenu)) return;
+        if (submenu.item.onCollapseRequest?.call() ?? false) {
+          _registerSubmenuHistory(submenu);
+        } else {
+          _collapseSubmenu();
+        }
+      },
+    );
+    submenu.history = entry;
+    route.addLocalHistoryEntry(entry);
+  }
+
+  /// 收回二级菜单；没有展开时什么也不做。内容经
+  /// [ExpressiveSubmenuItem.onCollapseRequest] 拦下（返回 true）时这次不收回，
+  /// 由内容自己退一级。
   void closeSubmenu() {
     if (!interactive || !submenuOpen) return;
+    if (_submenu?.item.onCollapseRequest?.call() ?? false) return;
     _collapseSubmenu();
   }
 

@@ -1231,6 +1231,75 @@
   "@autoT0054": {
     "description": "Auto-generated metadata for autoT0054."
   },
+  "exploreGalleryMenuTooltip": "Фильтр и сортировка",
+  "@exploreGalleryMenuTooltip": {
+    "description": "Media gallery: tooltip of the top bar more menu (notebook, date range and sort)."
+  },
+  "exploreGalleryNotebookFilter": "Фото из блокнотов",
+  "@exploreGalleryNotebookFilter": {
+    "description": "Media gallery menu: submenu that limits photos to one notebook."
+  },
+  "exploreGalleryNotebookAll": "Фото из всех записей",
+  "@exploreGalleryNotebookAll": {
+    "description": "Media gallery notebook filter: show photos from all entries."
+  },
+  "exploreGalleryNotebookUnfiled": "Фото из записей без блокнота",
+  "@exploreGalleryNotebookUnfiled": {
+    "description": "Media gallery notebook filter: only photos from entries that are in no notebook."
+  },
+  "exploreGalleryTimeRange": "Период",
+  "@exploreGalleryTimeRange": {
+    "description": "Media gallery menu: submenu with an inline calendar to pick a date range."
+  },
+  "exploreGalleryTimeAllMonths": "Все ({month})",
+  "@exploreGalleryTimeAllMonths": {
+    "description": "Media gallery date picker: month chip when all twelve months are selected; month is the month currently shown.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "Nov"
+      }
+    }
+  },
+  "exploreGalleryTimeSpan": "{start}–{end}",
+  "@exploreGalleryTimeSpan": {
+    "description": "Media gallery date picker: a range of months or years in the header chips.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Mar"
+      },
+      "end": {
+        "type": "String",
+        "example": "Jun"
+      }
+    }
+  },
+  "exploreGalleryTimeClear": "Сбросить",
+  "@exploreGalleryTimeClear": {
+    "description": "Media gallery date picker: remove the applied date range."
+  },
+  "exploreGallerySort": "Сортировка",
+  "@exploreGallerySort": {
+    "description": "Media gallery menu: submenu to choose the date order."
+  },
+  "exploreGallerySortNewest": "Сначала новые",
+  "@exploreGallerySortNewest": {
+    "description": "Media gallery sort: newest entries first (default)."
+  },
+  "exploreGallerySortOldest": "Сначала старые",
+  "@exploreGallerySortOldest": {
+    "description": "Media gallery sort: oldest entries first."
+  },
+  "exploreGalleryGroupCount": "{count, plural, one{{count} фото} few{{count} фото} many{{count} фото} other{{count} фото}}",
+  "@exploreGalleryGroupCount": {
+    "description": "Media gallery: number of photos in a date group, shown at the end of the group heading.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoT0055": "Изображений пока нет",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."
@@ -4773,6 +4842,14 @@
   "@diaryCardStyleShowPreview": {
     "description": "Diary card style settings: whether to show the text excerpt."
   },
+  "diaryCardStyleShowNotebooks": "Показывать блокноты",
+  "@diaryCardStyleShowNotebooks": {
+    "description": "Diary card style settings: whether to show the notebooks an entry is in, after its tags."
+  },
+  "diaryCardStyleShowNotebooksSubtitle": "Показывать после меток блокноты, в которых лежит запись",
+  "@diaryCardStyleShowNotebooksSubtitle": {
+    "description": "Caption under the show notebooks toggle on the diary card style settings."
+  },
   "diaryCardStyleTitleLines": "Строк в заголовке",
   "@diaryCardStyleTitleLines": {
     "description": "Diary card style settings: maximum lines for the title."
@@ -5266,6 +5343,10 @@
   "diaryCardStyleSampleLocation": "Набережная у моря",
   "@diaryCardStyleSampleLocation": {
     "description": "Diary card style settings: location of a preview sample entry."
+  },
+  "diaryCardStyleSampleNotebook": "Путевой дневник",
+  "@diaryCardStyleSampleNotebook": {
+    "description": "Diary card style preview: name of the sample notebook shown on sample cards."
   },
   "diaryCardStyleValueDp": "{value}dp",
   "@diaryCardStyleValueDp": {

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../../widgets/desktop_horizontal_scroll.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../controllers/explore_module_actions.dart';
 import '../models/explore_module_config.dart';
@@ -12,7 +11,7 @@ import '../models/explore_view_data.dart';
 import '../providers/explore_providers.dart';
 import '../widgets/explore_shared_widgets.dart';
 
-/// 媒体画廊卡：日记里的图片，横条、宫格或拼贴（一大几小）。
+/// 媒体画廊卡：日记里的图片，横条（一行排完）、宫格或拼贴（一大几小）。
 ///
 /// 默认只用概览里的封面（不读正文）；开了“包括正文里的图片”时改读最近几篇
 /// 带图日记的正文（[exploreRecentMediaProvider]，限量）。点按缩略图以共享
@@ -116,17 +115,22 @@ class ExploreMediaCard extends ConsumerWidget {
             ExploreInlineHint(message: l10n.autoT0062)
           else
             switch (style) {
-              ExploreMediaStyle.strip => SizedBox(
-                height: 108,
-                child: DesktopHorizontalScroll(
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: items.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (BuildContext context, int index) =>
-                        thumb(index, width: 140, height: 108),
-                  ),
-                ),
+              // 横条：所选的几张在一行里等宽排完，不用横向拖动；张数少时
+              // 每格不超过宫格的格子大小，不会撑成一张大图。
+              ExploreMediaStyle.strip => LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final width = constraints.maxWidth;
+                  final count = items.length;
+                  final even = (width - _gap * (count - 1)) / count;
+                  final cap = _cellSide(width);
+                  return _cells(
+                    start: 0,
+                    count: count,
+                    columns: count,
+                    side: even < cap ? even : cap,
+                    thumb: thumb,
+                  );
+                },
               ),
               ExploreMediaStyle.grid => LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) =>

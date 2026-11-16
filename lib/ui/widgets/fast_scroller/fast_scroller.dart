@@ -47,6 +47,7 @@ class FastScroller extends StatefulWidget {
     this.pinnedExtent = 0,
     this.padding = EdgeInsets.zero,
     this.enabled = true,
+    this.maxSeekItemsPerFrame = FastScrollSeek.defaultMaxItemsPerFrame,
   });
 
   final Widget child;
@@ -69,6 +70,11 @@ class FastScroller extends StatefulWidget {
   final double pinnedExtent;
   final EdgeInsets padding;
   final bool enabled;
+
+  /// 远距离跳转时每帧最多跨过的项数（见 [FastScrollSeek]）。默认按
+  /// SliverList 逐项布局的代价限步；行高预先已知、按位置直接定位的列表
+  /// （媒体画廊）可传 `double.infinity` 一步到位。
+  final double maxSeekItemsPerFrame;
 
   @override
   State<FastScroller> createState() => _FastScrollerState();
@@ -108,6 +114,7 @@ class _FastScrollerState extends State<FastScroller>
     reduceMotion: () => mounted && ExpressiveMotion.reduceMotion(context),
     onNeedItems: (int count) => widget.onNeedItems?.call(count),
     onSettled: _scheduleHide,
+    maxItemsPerFrame: () => widget.maxSeekItemsPerFrame,
   );
 
   /// 最近一次滚动通知的 context（在滚动视图内部），每次用时经它取当前的

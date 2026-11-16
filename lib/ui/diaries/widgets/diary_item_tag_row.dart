@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../notebooks/models/notebook_icon.dart';
+import '../../notebooks/widgets/notebook_cover_parts.dart';
 import '../models/diary_card_style/diary_card_style_enums.dart';
 
 /// 日记卡片内的标签展示区，仅负责展示，不处理标签交互。
@@ -10,11 +13,14 @@ import '../models/diary_card_style/diary_card_style_enums.dart';
 /// - 超出部分使用 `+N` 汇总；
 /// - 每个标签保持单行省略，标签集合则根据卡片可用宽度自动换行；
 /// - [style] 决定单个标签的形态（彩色 `#` 微胶囊 / 纯文字 / 圆点），[scale]
-///   缩放字号与内边距；默认值即改版前的外观。
+///   缩放字号与内边距；默认值即改版前的外观；
+/// - [notebooks] 非空时排在标签（与 `+N`）之后，每本一个日记本胶囊，不计入
+///   标签数量上限；标签上限为 0 时只显示日记本。
 class DiaryItemTagRow extends StatelessWidget {
   const DiaryItemTagRow({
     super.key,
     required this.tags,
+    this.notebooks = const <DiaryNotebookRef>[],
     this.maxVisibleTags = 2,
     this.style = DiaryCardTagStyle.chip,
     this.scale = 1,
@@ -25,6 +31,9 @@ class DiaryItemTagRow extends StatelessWidget {
   });
 
   final List<Tag> tags;
+
+  /// 这篇所在的日记本（卡片样式开启“显示所属日记本”时由调用方传入）。
+  final List<DiaryNotebookRef> notebooks;
   final int maxVisibleTags;
   final DiaryCardTagStyle style;
   final double scale;
@@ -44,7 +53,7 @@ class DiaryItemTagRow extends StatelessWidget {
         : maxVisibleTags > tags.length
         ? tags.length
         : maxVisibleTags;
-    if (tags.isEmpty || effectiveLimit == 0) {
+    if ((tags.isEmpty || effectiveLimit == 0) && notebooks.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -98,7 +107,57 @@ class DiaryItemTagRow extends StatelessWidget {
               ),
             ),
           ),
+        for (final notebook in notebooks)
+          _DiaryNotebookChip(notebook: notebook, scale: scale),
       ],
+    );
+  }
+}
+
+/// 卡片里的日记本胶囊：日记本图标 + 名称，尺寸与标签微胶囊一致（随
+/// [scale] 缩放）。颜色与 `NotebookCapsule` 同一套（[notebookAccentColors]：
+/// 设了强调色用它换算的容器色，跟随主题时用主题容器色），胶囊自带底色，
+/// 卡片底色与主题相反时同样可读。只展示，不可点。
+class _DiaryNotebookChip extends StatelessWidget {
+  const _DiaryNotebookChip({required this.notebook, required this.scale});
+
+  final DiaryNotebookRef notebook;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = notebookAccentColors(notebook.color, theme.colorScheme);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7 * scale, vertical: 2 * scale),
+      decoration: BoxDecoration(
+        color: accent.container,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          FaIcon(
+            NotebookIcon.fromName(notebook.icon).data,
+            size: 9 * scale,
+            color: accent.onContainer,
+          ),
+          SizedBox(width: 4 * scale),
+          // 名称最长 60 字：Wrap 给出的最大宽度内省略，不撑破卡片。
+          Flexible(
+            child: Text(
+              notebook.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: accent.onContainer,
+                fontWeight: FontWeight.w600,
+                fontSize: 11 * scale,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

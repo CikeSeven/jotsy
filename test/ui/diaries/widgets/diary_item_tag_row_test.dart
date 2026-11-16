@@ -6,6 +6,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_item_tag_row.dart';
 const _narrowCardKey = Key('narrow-diary-tag-card');
 
 void main() {
+  _notebookTests();
   testWidgets('uses two visible tags by default and summarizes the remainder', (
     tester,
   ) async {
@@ -107,6 +108,69 @@ void main() {
       expect(find.textContaining(RegExp(r'^\+\d+$')), findsNothing);
     },
   );
+}
+
+void _notebookTests() {
+  testWidgets('notebooks follow the tags and stay when tags are hidden', (
+    tester,
+  ) async {
+    const notebook = DiaryNotebookRef(
+      id: 'book',
+      name: 'Travel journal',
+      icon: 'plane',
+    );
+    await tester.pumpWidget(
+      _buildTestApp(
+        DiaryItemTagRow(
+          tags: _createTags(1),
+          notebooks: const <DiaryNotebookRef>[notebook],
+        ),
+      ),
+    );
+    final tag = tester.getRect(_tagLabel('Tag 1'));
+    final book = tester.getRect(find.text('Travel journal'));
+    expect(book.left, greaterThan(tag.right));
+
+    // 标签数量设为 0 时只剩日记本。
+    await tester.pumpWidget(
+      _buildTestApp(
+        const DiaryItemTagRow(
+          tags: <Tag>[],
+          maxVisibleTags: 0,
+          notebooks: <DiaryNotebookRef>[notebook],
+        ),
+      ),
+    );
+    expect(find.text('Travel journal'), findsOneWidget);
+  });
+
+  testWidgets('a long notebook name ellipsizes inside a narrow card', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        const SizedBox(
+          key: _narrowCardKey,
+          width: 120,
+          child: DiaryItemTagRow(
+            tags: <Tag>[],
+            notebooks: <DiaryNotebookRef>[
+              DiaryNotebookRef(
+                id: 'long',
+                name: 'A notebook with a very long name that cannot fit',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    final card = tester.getRect(find.byKey(_narrowCardKey));
+    final name = tester.getRect(
+      find.text('A notebook with a very long name that cannot fit'),
+    );
+    expect(name.right, lessThanOrEqualTo(card.right + 0.01));
+  });
 }
 
 List<Tag> _createTags(int count, {String Function(int index)? nameForIndex}) {

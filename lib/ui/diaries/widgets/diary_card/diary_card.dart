@@ -116,7 +116,8 @@ class DiaryCard extends StatefulWidget {
   bool _sameInputs(DiaryCard other) =>
       (identical(diary, other.diary) ||
           (diary.diary == other.diary.diary &&
-              listEquals(diary.tags, other.diary.tags))) &&
+              listEquals(diary.tags, other.diary.tags) &&
+              listEquals(diary.notebooks, other.diary.notebooks))) &&
       identical(resolved, other.resolved) &&
       selected == other.selected &&
       isSelectionMode == other.isSelectionMode &&

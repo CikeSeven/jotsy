@@ -95,7 +95,8 @@ SELECT
       END
     ),
     '[]'
-  ) AS tags_json
+  ) AS tags_json,
+  ${_diaryNotebooksJsonColumn('d.id')}
 FROM diary_page page
 JOIN diaries d ON d.id = page.id
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id

@@ -247,10 +247,13 @@ abstract final class ExploreOptions {
     values: ExploreMediaStyle.values,
     fallback: ExploreMediaStyle.strip,
   );
+
+  /// 1–12 张任选（滑块）；以前只能选 5 / 9 / 12，存下的值照旧有效。
   static const mediaCount = ExploreCountOption(
     'count',
-    values: <int>[5, 9, 12],
+    values: <int>[1, 12],
     fallback: 5,
+    slider: true,
   );
   static const mediaInline = ExploreToggleOption('inline', fallback: false);
 

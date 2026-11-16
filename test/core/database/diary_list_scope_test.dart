@@ -276,7 +276,7 @@ void main() {
         'export': (await db.watchAllActiveDiaries().first)
             .map((row) => row.diary.diaryId)
             .toSet(),
-        'media': (await db.getActiveDiariesPage(
+        'media': (await db.getGalleryMediaPage(
           limit: 50,
           offset: 0,
         )).map((row) => row.diaryId).toSet(),

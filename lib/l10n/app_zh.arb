@@ -1231,6 +1231,75 @@
   "@autoT0054": {
     "description": "Auto-generated metadata for autoT0054."
   },
+  "exploreGalleryMenuTooltip": "筛选与排序",
+  "@exploreGalleryMenuTooltip": {
+    "description": "媒体画廊：顶栏 ⋮ 菜单（日记本、时间与排序）的提示。"
+  },
+  "exploreGalleryNotebookFilter": "日记本图片",
+  "@exploreGalleryNotebookFilter": {
+    "description": "媒体画廊菜单：按日记本筛选图片的二级菜单。"
+  },
+  "exploreGalleryNotebookAll": "全部日记图片",
+  "@exploreGalleryNotebookAll": {
+    "description": "媒体画廊日记本筛选：显示全部日记的图片。"
+  },
+  "exploreGalleryNotebookUnfiled": "未收录日记图片",
+  "@exploreGalleryNotebookUnfiled": {
+    "description": "媒体画廊日记本筛选：只显示不在任何日记本里的日记的图片。"
+  },
+  "exploreGalleryTimeRange": "时间选择",
+  "@exploreGalleryTimeRange": {
+    "description": "媒体画廊菜单：内联日历选择发表时间范围的二级菜单。"
+  },
+  "exploreGalleryTimeAllMonths": "全部（{month}）",
+  "@exploreGalleryTimeAllMonths": {
+    "description": "媒体画廊时间选择：选中全年 12 个月时的月份胶囊；month 为日历当前显示的月份。",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "Nov"
+      }
+    }
+  },
+  "exploreGalleryTimeSpan": "{start}–{end}",
+  "@exploreGalleryTimeSpan": {
+    "description": "媒体画廊时间选择：标题胶囊里的月份或年份区间。",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Mar"
+      },
+      "end": {
+        "type": "String",
+        "example": "Jun"
+      }
+    }
+  },
+  "exploreGalleryTimeClear": "清除",
+  "@exploreGalleryTimeClear": {
+    "description": "媒体画廊时间选择：去掉已应用的时间范围。"
+  },
+  "exploreGallerySort": "排序",
+  "@exploreGallerySort": {
+    "description": "媒体画廊菜单：选择时间顺序的二级菜单。"
+  },
+  "exploreGallerySortNewest": "最新在前",
+  "@exploreGallerySortNewest": {
+    "description": "媒体画廊排序：最新的在前（默认）。"
+  },
+  "exploreGallerySortOldest": "最早在前",
+  "@exploreGallerySortOldest": {
+    "description": "媒体画廊排序：最早的在前。"
+  },
+  "exploreGalleryGroupCount": "{count} 张",
+  "@exploreGalleryGroupCount": {
+    "description": "媒体画廊：日期分组标题行尾的图片张数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoT0055": "还没有可展示的图片",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."
@@ -4720,6 +4789,14 @@
   "@diaryCardStyleShowPreview": {
     "description": "日记卡片样式设置页：是否显示正文摘要。"
   },
+  "diaryCardStyleShowNotebooks": "显示所属日记本",
+  "@diaryCardStyleShowNotebooks": {
+    "description": "日记卡片样式设置页：是否在标签后显示日记所在的日记本。"
+  },
+  "diaryCardStyleShowNotebooksSubtitle": "在标签后显示这篇所在的日记本",
+  "@diaryCardStyleShowNotebooksSubtitle": {
+    "description": "“显示所属日记本”开关的说明。"
+  },
   "diaryCardStyleTitleLines": "标题最多行数",
   "@diaryCardStyleTitleLines": {
     "description": "日记卡片样式设置页：标题最多显示几行。"
@@ -5213,6 +5290,10 @@
   "diaryCardStyleSampleLocation": "海边栈道",
   "@diaryCardStyleSampleLocation": {
     "description": "日记卡片样式设置页：预览示例日记的地点。"
+  },
+  "diaryCardStyleSampleNotebook": "旅行手账",
+  "@diaryCardStyleSampleNotebook": {
+    "description": "日记卡片样式预览：示例卡片上的示例日记本名称。"
   },
   "diaryCardStyleValueDp": "{value}dp",
   "@diaryCardStyleValueDp": {

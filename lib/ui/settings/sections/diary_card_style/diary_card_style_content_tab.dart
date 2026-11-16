@@ -6,6 +6,7 @@ import '../../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../../diaries/providers/diary_comments_provider.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
+import '../../providers/app_features_provider.dart';
 import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
 import '../settings_diary_card_section.dart';
@@ -16,7 +17,8 @@ import '../../widgets/style_editor/style_editor_common.dart';
 /// 旧设置）、置顶标记、心情天气与底栏附加信息。“无标题”占位只在显示标题时
 /// 才有意义，标题关闭时随之收起。
 ///
-/// “留言数”只在开启留言功能时列出（功能关闭时隐藏它的全部选项）。
+/// “留言数”只在开启留言功能时列出、“显示所属日记本”只在开启日记本功能时
+/// 列出（功能关闭时隐藏它的全部选项）。
 class DiaryCardStyleContentTab extends ConsumerWidget {
   const DiaryCardStyleContentTab({super.key, required this.controller});
 
@@ -29,6 +31,9 @@ class DiaryCardStyleContentTab extends ConsumerWidget {
     final content = style.content;
     final meta = style.meta;
     final commentsEnabled = ref.watch(diaryCommentsEnabledProvider);
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
     final m = controller.modeStyle;
 
     void commitContent(DiaryCardContentStyle next) =>
@@ -81,6 +86,14 @@ class DiaryCardStyleContentTab extends ConsumerWidget {
               onChanged: (bool v) =>
                   commitContent(content.copyWith(showPreview: v)),
             ),
+            if (notebooksEnabled)
+              SettingsSwitchTile(
+                title: l10n.diaryCardStyleShowNotebooks,
+                subtitle: l10n.diaryCardStyleShowNotebooksSubtitle,
+                value: content.showNotebooks,
+                onChanged: (bool v) =>
+                    commitContent(content.copyWith(showNotebooks: v)),
+              ),
             SettingsDiaryCardSection(
               settingsAsync: AsyncData(controller.settingsService),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../models/diary_card_style/diary_card_style_settings.dart';
 
@@ -43,10 +44,19 @@ class DiaryCardStyleSettingsNotifier extends Notifier<DiaryCardStyleSettings> {
 
 /// 列表实际使用的当前卡片样式；只在当前样式变化时通知（保存/删除“我的
 /// 样式”不会让日记列表重建）。
+///
+/// 功能管理关闭日记本时不显示所属日记本（存下的开关保留，重新开启后照旧）。
 final diaryCardStyleProvider = Provider<DiaryCardStyle>((Ref ref) {
-  return ref.watch(
+  final style = ref.watch(
     diaryCardStyleSettingsProvider.select((settings) => settings.current),
   );
+  final notebooksEnabled = ref.watch(
+    appFeaturesProvider.select((features) => features.notebooks),
+  );
+  if (notebooksEnabled || !style.content.showNotebooks) {
+    return style;
+  }
+  return style.copyWith(content: style.content.copyWith(showNotebooks: false));
 });
 
 /// 当前的心情符号配置；与心情颜色合成心情色板（`diaryMoodPaletteProvider`），

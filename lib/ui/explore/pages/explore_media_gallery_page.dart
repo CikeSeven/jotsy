@@ -1,40 +1,51 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show SliverConstraints;
-import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_open_flow.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 
-import '../../app_surface/widgets/app_glass_field.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
+import '../../notebooks/models/notebook_scope_resolver.dart';
+import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/viewmodels/notebook_tree.dart';
+import '../../notebooks/viewmodels/notebook_tree_rows.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
+import '../../settings/providers/app_features_provider.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../controllers/explore_media_gallery_controller.dart';
+import '../models/explore_media_gallery_filter.dart';
 import '../models/explore_view_data.dart';
-import '../widgets/explore_shared_widgets.dart';
-import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
-import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
+import '../widgets/gallery_filter_menu.dart';
+import '../widgets/gallery_time_range_picker.dart';
+import '../widgets/gallery_zoomable_grid.dart';
 
 /// 探索页“媒体画廊”全量浏览页。
 ///
-/// 职责边界：
-/// - 监听页面控制器的分页结果，滚动触底时请求续载；
-/// - 负责三列网格渲染与图片查看页跳转；看图页长按“打开日记”打开图片所在
-///   的日记（叠在看图页之上，返回时回到刚才那张图）；
+/// 职责边界（页面只做装配）：
+/// - 订阅 [ExploreMediaGalleryController]：打开后在后台分批建好全部图片的
+///   索引（来源 + 日期，不解码图片），首批到了即显示，之后的批次接在末尾；
+/// - 网格、按档位分组、捏合换档与快速滚动条在 [GalleryZoomableGrid]；
+/// - 顶栏 ⋮ 菜单：日记本图片（不列上锁的本子；日记本功能关闭时不出现）、
+///   时间选择（内联日历，见 [GalleryTimeRangePicker]）与排序，换了就经
+///   [ExploreMediaGalleryController.configure] 从头重查并回到顶部；
+/// - 点按缩略图打开看图页（看图页长按“打开日记”），长按缩略图直接打开
+///   所在日记；
 /// - 不负责日记聚合统计（保持与 ExplorePageController 解耦）。
 class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
   const ExploreMediaGalleryPage({super.key});
-
-  /// 网格列数：页面宽 [width] 每 160 一列，至少 3 列（手机上恒为 3 列）。
-  static int galleryColumns(double width) => math.max(3, width ~/ 160);
 
   @override
   ConsumerState<ExploreMediaGalleryPage> createState() =>
@@ -43,10 +54,17 @@ class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
 
 class _ExploreMediaGalleryPageState
     extends ConsumerState<ExploreMediaGalleryPage> {
-  static const double _prefetchExtent = 720;
-
   final ScrollController _scrollController = ScrollController();
   late final ExploreMediaGalleryController _controller;
+  final GalleryTimePickerBackHandle _timePickerBack =
+      GalleryTimePickerBackHandle();
+
+  GalleryNotebookChoice _notebookChoice = GalleryNotebookChoice.all;
+
+  /// 首批结果到达（或确认没有结果）前用整页的加载 / 出错；之后换筛选也
+  /// 一直留在网格里（空态与加载画在网格内），AnimatedSwitcher 不会同时
+  /// 挂着新旧两个用同一个 [_scrollController] 的滚动视图。
+  bool _loadedOnce = false;
 
   List<ExploreMediaItem> get _mediaItems => _controller.items;
   bool get _isLoading => _controller.isLoading;
@@ -60,7 +78,6 @@ class _ExploreMediaGalleryPageState
     _controller = ExploreMediaGalleryController(
       database: ref.read(appDatabaseProvider),
     )..addListener(_handleGalleryChanged);
-    _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _controller.loadMore();
@@ -73,9 +90,7 @@ class _ExploreMediaGalleryPageState
     _controller
       ..removeListener(_handleGalleryChanged)
       ..dispose();
-    _scrollController
-      ..removeListener(_handleScroll)
-      ..dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -91,13 +106,21 @@ class _ExploreMediaGalleryPageState
             centerTitle: true,
             title: Text(l10n.autoT0054),
             leading: IconButton(
-              tooltip: context.l10n.commonBack,
+              tooltip: l10n.commonBack,
               onPressed: () => Navigator.of(context).pop(),
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
+            actions: <Widget>[
+              ExpressiveMenuButton(
+                tooltip: l10n.exploreGalleryMenuTooltip,
+                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+                items: _buildMenuItems(context),
+              ),
+              const SizedBox(width: 4),
+            ],
           ),
           // 首次加载 → 网格 / 空态 / 错误之间交叉淡入，而不是硬切；网格内追加
-          // 分页时 key 不变，不会重复淡入。
+          // 分页、换筛选时 key 不变，不会重复淡入。
           body: AnimatedSwitcher(
             duration: ExpressiveMotion.duration(
               context,
@@ -112,176 +135,189 @@ class _ExploreMediaGalleryPageState
     );
   }
 
+  // ---- 顶栏菜单 ----
+
+  List<Widget> _buildMenuItems(BuildContext context) {
+    final l10n = context.l10n;
+    final filter = _controller.filter;
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final tree = ref.watch(notebookTreeProvider);
+    return <Widget>[
+      if (notebooksEnabled)
+        ExpressiveSubmenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.book),
+          menuChildren: <Widget>[
+            GalleryNotebookFilterMenu(
+              // 上锁的本子要先验证才能进，这里不列（隐藏的本子从书架可直接
+              // 进入，照常列出）。
+              rows: tree == null
+                  ? const <NotebookTreeRow>[]
+                  : notebookTreeRows(
+                      tree,
+                      include: (NotebookView notebook) =>
+                          notebook.effectiveVisibility !=
+                          NotebookVisibility.locked,
+                    ),
+              selected: _notebookChoice,
+              onSelected: _applyNotebook,
+            ),
+          ],
+          child: Text(l10n.exploreGalleryNotebookFilter),
+        ),
+      ExpressiveSubmenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.calendarDays),
+        onCollapseRequest: _timePickerBack.handle,
+        menuChildren: <Widget>[
+          GalleryTimeRangePicker(
+            initialRange: filter.range,
+            backHandle: _timePickerBack,
+            // 回调触发时再取当前筛选：同一次打开菜单里可能先改了排序。
+            onApply: (DateTimeRange range) =>
+                _configure(_controller.filter.copyWith(range: () => range)),
+            onClear: () =>
+                _configure(_controller.filter.copyWith(range: () => null)),
+          ),
+        ],
+        child: Text(l10n.exploreGalleryTimeRange),
+      ),
+      ExpressiveSubmenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.arrowDownWideShort),
+        menuChildren: <Widget>[
+          GallerySortMenu(
+            newestFirst: filter.newestFirst,
+            onChanged: (bool newestFirst) => _configure(
+              _controller.filter.copyWith(newestFirst: newestFirst),
+            ),
+          ),
+        ],
+        child: Text(l10n.exploreGallerySort),
+      ),
+    ];
+  }
+
+  void _configure(ExploreMediaGalleryFilter filter) {
+    if (filter == _controller.filter) return;
+    _controller.configure(filter);
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  void _applyNotebook(GalleryNotebookChoice choice) {
+    _notebookChoice = choice;
+    final scope = _scopeFor(
+      choice,
+      ref.read(notebooksProvider).value ?? const <NotebookView>[],
+      ref.read(notebookTreeProvider),
+    );
+    _configure(_controller.filter.copyWith(scope: scope));
+  }
+
+  /// 选中项对应的查询范围；那本已被删除时退回全部日记。
+  static DiaryListScope _scopeFor(
+    GalleryNotebookChoice choice,
+    List<NotebookView> notebooks,
+    NotebookTree? tree,
+  ) {
+    if (choice == GalleryNotebookChoice.unfiled) return DiaryListScope.unfiled;
+    if (choice is! GalleryNotebookOf) return DiaryListScope.all;
+    for (final notebook in notebooks) {
+      if (notebook.id == choice.notebookId) {
+        return resolveNotebookScope(notebook, tree: tree);
+      }
+    }
+    return DiaryListScope.all;
+  }
+
+  // ---- 内容 ----
+
   Widget _buildBody(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    // 首次加载在首帧之后才发起，此前 isLoading 仍为 false：把“还没加载过”也
-    // 当作加载中，避免先闪一帧“暂无媒体”。本地查询通常很快，指示器延迟出现。
-    final neverLoaded = _hasMore && _errorMessage == null;
-    if (_mediaItems.isEmpty && (_isLoading || neverLoaded)) {
-      return const DelayedLoadingIndicator(key: ValueKey<String>('loading'));
-    }
-    if (_mediaItems.isEmpty && _errorMessage != null) {
-      return Center(
-        key: const ValueKey<String>('error'),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                // 空状态与出错提示直接画在页面背景上，有背景图时加可读性兜底。
-                style: AppPageBackdrop.onBackgroundTextStyle(
-                  context,
-                  Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              FilledButton.tonal(
-                style: AppGlassField.tonalButtonStyle(context),
-                onPressed: _loadMore,
-                child: Text(l10n.commonRetry),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    if (_mediaItems.isEmpty) {
-      return Center(
-        key: const ValueKey<String>('empty'),
-        child: Text(
-          l10n.autoT0055,
-          style: AppPageBackdrop.onBackgroundTextStyle(
-            context,
-            Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return CustomScrollView(
-      key: const ValueKey<String>('grid'),
-      controller: _scrollController,
-      slivers: <Widget>[
-        // 列数随页面宽度增加（见 [ExploreMediaGalleryPage.galleryColumns]），缩略图大小保持在手机上
-        // 的体感，不会在宽窗口里被放大成几张大图。
-        SliverLayoutBuilder(
-          builder: (BuildContext context, SliverConstraints constraints) =>
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.m,
-                  AppSpacing.m,
-                  AppSpacing.m,
-                  0,
-                ),
-                sliver: SliverGrid(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final item = _mediaItems[index];
-                    // 缩略图本身不透明，水波纹需画在叠于其上的透明 Material 上。
-                    // Builder 提供格子自己的 context：点按时从这里抓取已绘制的缩略图
-                    // 作为看图页的飞入画面（delegate 的 context 是整个网格）。
-                    return Builder(
-                      builder: (cellContext) => Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          ImageViewerHeroSource(
-                            tag: _heroTag(item.source),
-                            borderRadius: BorderRadius.circular(_thumbRadius),
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final side = constraints.biggest.shortestSide;
-                                return ExploreMediaThumb(
-                                  source: item.source,
-                                  width: side,
-                                  height: side,
-                                  radius: _thumbRadius,
-                                );
-                              },
-                            ),
-                          ),
-                          Material(
-                            type: MaterialType.transparency,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(_thumbRadius),
-                              onTap: () => _openViewer(index, cellContext),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }, childCount: _mediaItems.length),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: ExploreMediaGalleryPage.galleryColumns(
-                      constraints.crossAxisExtent,
-                    ),
-                    mainAxisSpacing: 6,
-                    crossAxisSpacing: 6,
-                    childAspectRatio: 1,
-                  ),
-                ),
-              ),
-        ),
-        SliverToBoxAdapter(
+    if (!_loadedOnce) {
+      // 首次加载在首帧之后才发起，此前 isLoading 仍为 false：把“还没加载
+      // 过”也当作加载中，避免先闪一帧“暂无媒体”。本地查询通常很快，指示器
+      // 延迟出现。
+      final neverLoaded = _hasMore && _errorMessage == null;
+      if (_mediaItems.isEmpty && (_isLoading || neverLoaded)) {
+        return const DelayedLoadingIndicator(key: ValueKey<String>('loading'));
+      }
+      if (_mediaItems.isEmpty && _errorMessage != null) {
+        return Center(
+          key: const ValueKey<String>('error'),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.m,
-              12,
-              AppSpacing.m,
-              AppSpacing.xl,
-            ),
-            child: _GalleryFooter(
-              isLoading: _isLoading,
-              hasMore: _hasMore,
-              errorMessage: _errorMessage,
-              onRetry: _loadMore,
+            padding: const EdgeInsets.all(AppSpacing.l),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  // 空状态与出错提示直接画在页面背景上，有背景图时加可读性兜底。
+                  style: AppPageBackdrop.onBackgroundTextStyle(
+                    context,
+                    Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.tonal(
+                  style: AppGlassField.tonalButtonStyle(context),
+                  onPressed: _loadMore,
+                  child: Text(l10n.autoT0056),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        );
+      }
+    }
+    return GalleryZoomableGrid(
+      key: const ValueKey<String>('grid'),
+      items: _mediaItems,
+      generation: _controller.generation,
+      scrollController: _scrollController,
+      empty: _mediaItems.isEmpty && !_isLoading && _errorMessage == null
+          ? const _EmptyHint()
+          : null,
+      footer: _GalleryFooter(
+        isLoading: _isLoading,
+        // 空结果时由空态说明，不再写“已到底”。
+        hasMore: _hasMore || _mediaItems.isEmpty,
+        errorMessage: _errorMessage,
+        onRetry: _loadMore,
+      ),
+      heroTagOf: _heroTag,
+      onOpen: _openViewer,
+      onLongPress: (int index) =>
+          unawaited(_openDiary(_mediaItems[index].diaryId)),
     );
-  }
-
-  void _handleScroll() {
-    if (!_scrollController.hasClients || _isLoading || !_hasMore) {
-      return;
-    }
-    if (_scrollController.position.extentAfter < _prefetchExtent) {
-      _loadMore();
-    }
   }
 
   void _handleGalleryChanged() {
     if (!mounted) {
       return;
     }
-    setState(() {});
-    // 宽窗口一行放得多，一页结果可能填不满屏幕：没有可滚动的距离就不会
-    // 触发滚动预取，这里在布局后补查一次，填满为止（或没有更多）。
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted &&
-          _scrollController.hasClients &&
-          _scrollController.position.maxScrollExtent <= 0) {
-        _handleScroll();
+    setState(() {
+      // 分批加载：第一批到了就进网格，后面的批次接在网格末尾。
+      if (_controller.items.isNotEmpty ||
+          (!_controller.isLoading && !_controller.hasMore)) {
+        _loadedOnce = true;
       }
     });
   }
 
   Future<void> _loadMore() => _controller.loadMore();
 
-  static const double _thumbRadius = 12;
-
   static Object _heroTag(String source) =>
       ImageViewerHeroTag('explore_gallery', source);
 
-  /// 打开看图页：缩略图以共享元素展开成原图，返回时飞回原格子。每张图带上
-  /// 所在日记，长按面板可直接打开它。
+  /// 打开看图页：缩略图以共享元素展开成原图，返回时飞回原格子。分组沿用
+  /// 列表顺序，网格里第几张就是列表里第几张。每张图带上所在日记，长按
+  /// 面板可直接打开它。
   void _openViewer(int initialIndex, BuildContext cellContext) {
     final source = _mediaItems[initialIndex].source;
     openImageViewer(
@@ -298,10 +334,10 @@ class _ExploreMediaGalleryPageState
     );
   }
 
-  /// 看图页长按“打开日记”：预览页（“打开日记时直接编辑”开启时为编辑页，
-  /// 见 [openDiaryPage]）压在看图页之上（单篇入口，不左右翻），返回时回到
-  /// 刚才那张图。在里面删除日记时给 4 秒撤销，撤销即从回收站恢复；提示落在
-  /// 返回后的看图页上。
+  /// 打开所在日记（看图页长按“打开日记”、长按缩略图）：预览页（“打开日记
+  /// 时直接编辑”开启时为编辑页，见 [openDiaryPage]）压在当前页之上（单篇
+  /// 入口，不左右翻），返回时回到原处。在里面删除日记时给 4 秒撤销，撤销即
+  /// 从回收站恢复。
   Future<void> _openDiary(String diaryId) async {
     final database = ref.read(appDatabaseProvider);
     final result = await openDiaryPage(context, ref, diaryId: diaryId);
@@ -322,6 +358,30 @@ class _ExploreMediaGalleryPageState
     if (reason == SnackBarClosedReason.action) {
       await database.restoreDiary(deletedId, touchUpdatedAt: false);
     }
+  }
+}
+
+/// “暂无媒体”：画在页面背景上，有背景图时加可读性兜底。
+class _EmptyHint extends StatelessWidget {
+  const _EmptyHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        child: Text(
+          context.l10n.autoT0055,
+          textAlign: TextAlign.center,
+          style: AppPageBackdrop.onBackgroundTextStyle(
+            context,
+            Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

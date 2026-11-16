@@ -76,16 +76,22 @@ final class ExploreToggleOption extends ExploreOptionSpec {
   }
 }
 
-/// 数量：只能取 [values] 之一；0 表示“全部”。
+/// 数量：只能取 [values] 之一；0 表示“全部”。[slider] 为 true 时改为
+/// [values] 首尾之间的任意整数（编辑页画成滑块），超出时夹到两端。
 final class ExploreCountOption extends ExploreOptionSpec {
   const ExploreCountOption(
     super.key, {
     required this.values,
     required this.fallback,
+    this.slider = false,
   });
 
   final List<int> values;
   final int fallback;
+  final bool slider;
+
+  int get min => values.first;
+  int get max => values.last;
 
   @override
   Object get defaultRaw => fallback;
@@ -94,11 +100,13 @@ final class ExploreCountOption extends ExploreOptionSpec {
   Object? normalize(Object? raw) {
     if (raw is! num || !raw.isFinite) return null;
     final value = raw.round();
+    if (slider) return value.clamp(min, max);
     return values.contains(value) ? value : null;
   }
 
   int read(Map<String, Object> options) {
     final raw = options[key];
+    if (slider) return raw is int ? raw.clamp(min, max) : fallback;
     return raw is int && values.contains(raw) ? raw : fallback;
   }
 }

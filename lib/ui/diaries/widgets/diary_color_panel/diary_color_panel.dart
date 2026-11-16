@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
-    as editor;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
@@ -12,6 +10,7 @@ import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_custom_picker.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_host.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_material_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_saved_strip.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch.dart';
@@ -49,11 +48,12 @@ double diaryColorPanelNaturalHeight(
 /// 悬浮工具栏卡片内的颜色面板：表头（目标标题 + 色板 / 色系 / 自定义页签）与
 /// 当前页。
 ///
-/// - 输入：正文控制器、当前目标与页签、网格排布、我的颜色 [savedColors]
+/// - 输入：作用对象 [host]（正文编辑器的选区，或导图主题，见 [DiaryColorHost]）、
+///   当前目标与页签、网格排布、我的颜色 [savedColors]
 ///   （当前目标的，随保存实时更新）、本篇用过的颜色 [documentColors]（由
 ///   工具栏在面板打开、切换目标与回到色板时整理，这里不扫描文档）与色系页
 ///   上次看的色系 [materialFamily]；
-/// - 输出：色块经 `controller.formatSelection` 写入 `#AARRGGBB` 或清除属性；
+/// - 输出：色块经 [DiaryColorHost.applyColor] 写入 `#AARRGGBB` 或清除；
 ///   色系页看的色系变了经 [onMaterialFamilyChanged] 交给工具栏记住；
 ///   我的颜色的增删（自定义页写入后保存、色板里移除或收藏）一律经
 ///   [onEditSavedColors] 交给 provider 在最新记录上执行；切换页签经
@@ -66,7 +66,7 @@ double diaryColorPanelNaturalHeight(
 class DiaryColorPanel extends StatelessWidget {
   const DiaryColorPanel({
     super.key,
-    required this.controller,
+    required this.host,
     required this.target,
     required this.mode,
     required this.onModeChanged,
@@ -78,9 +78,10 @@ class DiaryColorPanel extends StatelessWidget {
     required this.onEditSavedColors,
     this.materialFamily = DiaryMaterialFamily.red,
     this.onMaterialFamilyChanged,
+    this.title,
   });
 
-  final editor.DiaryEditorController controller;
+  final DiaryColorHost host;
   final DiaryColorTarget target;
   final DiaryColorPanelMode mode;
   final ValueChanged<DiaryColorPanelMode> onModeChanged;
@@ -104,10 +105,13 @@ class DiaryColorPanel extends StatelessWidget {
   final DiaryMaterialFamily materialFamily;
   final ValueChanged<DiaryMaterialFamily>? onMaterialFamilyChanged;
 
+  /// 表头的目标标题；缺省沿用工具栏按钮名（文字颜色 / 背景颜色）。
+  final String? title;
+
   /// 点色块：写入颜色（null 为清除）；与选区当前值相同则不动正文。
   void _applySwatch(Color? color, DiaryColorValue current) {
     if (color == null ? current.isNone : current.matches(color)) return;
-    controller.formatSelection(target.attributeFor(color));
+    host.applyColor(target, color);
   }
 
   @override
@@ -121,6 +125,7 @@ class DiaryColorPanel extends StatelessWidget {
           height: kDiaryColorPanelHeaderHeight,
           child: _DiaryColorPanelHeader(
             target: target,
+            title: title,
             mode: mode,
             columns: grid.columns,
             onModeChanged: onModeChanged,
@@ -128,11 +133,9 @@ class DiaryColorPanel extends StatelessWidget {
         ),
         const SizedBox(height: kDiaryColorPanelHeaderGap),
         ListenableBuilder(
-          listenable: controller,
-          builder: (BuildContext context, Widget? child) => _buildPage(
-            context,
-            DiaryColorValue.of(controller.selectionAttributes, target),
-          ),
+          listenable: host,
+          builder: (BuildContext context, Widget? child) =>
+              _buildPage(context, host.colorValue(target)),
         ),
       ],
     );
@@ -182,7 +185,7 @@ class DiaryColorPanel extends StatelessWidget {
         ),
         DiaryColorPanelMode.custom => DiaryColorCustomPicker(
           key: const ValueKey<DiaryColorPanelMode>(DiaryColorPanelMode.custom),
-          controller: controller,
+          host: host,
           target: target,
           current: current,
           active: active,

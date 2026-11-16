@@ -238,7 +238,8 @@ List<List<List<ExportInline>>> _tableRows(DiaryTableGrid table) {
 }
 
 /// 导图块的大纲：中心主题（整篇导图日记时省略，它就是标题）+ 逐级缩进的
-/// 无序列表，空主题跳过；节点里的换行压成空格。
+/// 无序列表，空主题跳过；节点里的换行压成空格。主题的文字样式（整条的与
+/// 局部的，见 [_mindMapInlines]）一并写出。
 List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
   final page = isMindMapPageData(data);
   final out = <ExportBlock>[];
@@ -249,7 +250,7 @@ List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
       out.add(
         ExportBlock._(
           kind: ExportBlockKind.paragraph,
-          inlines: <ExportInline>[ExportInline(line.text, bold: true)],
+          inlines: _mindMapInlines(line.node, bold: true),
           indent: depth,
           standIn: true,
         ),
@@ -259,10 +260,34 @@ List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
     out.add(
       ExportBlock._(
         kind: ExportBlockKind.bullet,
-        inlines: <ExportInline>[ExportInline(line.text)],
+        inlines: _mindMapInlines(line.node),
         indent: depth + line.depth - 1,
       ),
     );
   }
   return out;
+}
+
+/// 一个主题压成一行后的各段：局部样式优先，没设的随整条样式（`style`）；
+/// [bold] 为这一行默认加粗（嵌入导图的中心主题）。文字颜色与高亮与正文
+/// 同一套、按原色写出（半透明的高亮由各写出器叠在纸面上，同正文）。
+List<ExportInline> _mindMapInlines(MindMapNode node, {bool bold = false}) {
+  final style = MindMapNodeStyle(node.style);
+  ExportInline inline(MindMapTextRun run) {
+    final marks = run.marks;
+    return ExportInline(
+      run.text,
+      bold: marks.bold ?? (bold || style.bold == true),
+      italic: marks.italic ?? style.italic ?? false,
+      underline: marks.underline ?? style.underline ?? false,
+      strike: marks.strike ?? style.strike ?? false,
+      color: MindMapNodeStyle.parseColor(marks.color) ?? style.color,
+      background:
+          MindMapNodeStyle.parseColor(marks.highlight) ?? style.highlight,
+    );
+  }
+
+  return <ExportInline>[
+    for (final run in oneLineMindMapRuns(mindMapRunsOf(node))) inline(run),
+  ];
 }

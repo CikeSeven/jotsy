@@ -21737,6 +21737,14 @@
   "@mindMapStrike": {
     "description": "Topic style panel tooltip."
   },
+  "mindMapUnderline": "下線",
+  "@mindMapUnderline": {
+    "description": "Topic style panel and text format bar tooltip: underline the text (not the underline shape)."
+  },
+  "mindMapHighlight": "ハイライト",
+  "@mindMapHighlight": {
+    "description": "Topic style panel section and text format bar button: background color behind the text."
+  },
   "mindMapSizeSmall": "小",
   "@mindMapSizeSmall": {
     "description": "Topic text size option (very short)."

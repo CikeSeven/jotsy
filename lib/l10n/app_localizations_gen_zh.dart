@@ -16240,6 +16240,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mindMapStrike => '删除线';
 
   @override
+  String get mindMapUnderline => '文字下划线';
+
+  @override
+  String get mindMapHighlight => '文字高亮';
+
+  @override
   String get mindMapSizeSmall => '小';
 
   @override

@@ -19289,6 +19289,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get mindMapStrike => 'Зачёркнутый';
 
   @override
+  String get mindMapUnderline => 'Подчёркнутый';
+
+  @override
+  String get mindMapHighlight => 'Выделение цветом';
+
+  @override
   String get mindMapSizeSmall => 'S';
 
   @override

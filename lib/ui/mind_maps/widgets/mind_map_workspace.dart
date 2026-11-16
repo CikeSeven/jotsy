@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/database/diary_blocks/diary_link_target.dart';
-import '../../../core/database/mind_map/mind_map_document.dart';
-import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../core/database/mind_map/mind_map_text.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
@@ -34,8 +32,10 @@ import '../sections/mind_map_node_sheets.dart';
 import '../sections/mind_map_style_sheet.dart';
 import '../viewmodels/mind_map_hit_test.dart';
 import '../viewmodels/mind_map_look.dart';
+import 'mind_map_accessory_bars.dart';
 import 'mind_map_canvas.dart';
 import 'mind_map_dock.dart';
+import 'mind_map_format_bar.dart';
 import 'mind_map_outline_view.dart';
 import 'mind_map_starter_card.dart';
 
@@ -52,7 +52,9 @@ import 'mind_map_starter_card.dart';
 /// Backspace 删除、F2 / 空格编辑、方向键在节点间移动、Ctrl / ⌘ + Z / Y /
 /// Shift + Z 撤销重做、Ctrl / ⌘ + 0 适应屏幕、+ / − 缩放、Ctrl / ⌘ + 1 实际
 /// 大小、Ctrl / ⌘ + / 收起或展开、Ctrl / ⌘ + C / X / V 复制剪切粘贴、Esc
-/// 取消选中（没选中时交给页面返回）。
+/// 取消选中（没选中时交给页面返回）。编辑文字时底部的工具坞换成格式条
+/// [MindMapFormatBar]，Ctrl / ⌘ + B / I / U、Ctrl / ⌘ + Shift + S 设局部
+/// 样式（由输入框处理，见 `mindMapFormatShortcut`）。
 ///
 /// 节点里的备注与链接标记：点备注打开备注面板（只读时只能看），点链接打开
 /// 网址或日记（日记链接经 `openDiaryLinkTarget`）。
@@ -440,7 +442,10 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
     final onlyRoot = mindMapHasOnlyRoot(controller.document);
     final aiReady = _aiReady(context);
     final showStarter = !widget.readOnly && onlyRoot && !editing && !keyboardUp;
-    final showDock = !widget.readOnly && !(editing && !AppPlatform.isDesktop);
+    // 编辑文字时：手机上工具坞让位给键盘上方的附件条，桌面上换成格式条
+    // （增删主题仍用 Enter / Tab / Esc）。
+    final showDock = !widget.readOnly && !editing;
+    final showFormatBar = !widget.readOnly && editing && AppPlatform.isDesktop;
     final bottomSafe = MediaQuery.paddingOf(context).bottom;
     final padding = EdgeInsets.only(
       top: widget.topInset,
@@ -500,7 +505,7 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                 onZoomOut: () => _canvas.currentState?.zoomBy(0.8),
               ),
             ),
-          if (showDock || showStarter)
+          if (showDock || showStarter || showFormatBar)
             Positioned(
               left: 12,
               right: 12,
@@ -526,6 +531,18 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                           ),
                           const SizedBox(height: 10),
                         ],
+                        if (showFormatBar)
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 380),
+                            child: DiaryFloatingToolbarSurface(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: MindMapFormatBar(controller: controller),
+                              ),
+                            ),
+                          ),
                         if (showDock)
                           MindMapDock(
                             controller: controller,
@@ -562,8 +579,8 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
               bottom: 0,
               child: KeyboardInsetPadding(
                 child: _outline
-                    ? _OutlineAccessoryBar(controller: controller)
-                    : _EditingAccessoryBar(controller: controller),
+                    ? MindMapOutlineAccessoryBar(controller: controller)
+                    : MindMapEditingAccessoryBar(controller: controller),
               ),
             ),
           Positioned(
@@ -596,96 +613,6 @@ class _KeyboardInsetProbe extends StatelessWidget {
       });
     }
     return const SizedBox.shrink();
-  }
-}
-
-/// 手机上编辑文字时，键盘上方的附件条：子主题、同级、换行、完成。
-class _EditingAccessoryBar extends StatelessWidget {
-  const _EditingAccessoryBar({required this.controller});
-
-  final MindMapEditingController controller;
-
-  void _insertNewLine() {
-    final primary = FocusManager.instance.primaryFocus?.context;
-    final editable = primary?.findAncestorStateOfType<EditableTextState>();
-    if (editable == null) return;
-    final value = editable.textEditingValue;
-    final selection = value.selection;
-    if (!selection.isValid) return;
-    final text = value.text.replaceRange(selection.start, selection.end, '\n');
-    editable.userUpdateTextEditingValue(
-      TextEditingValue(
-        text: text,
-        selection: TextSelection.collapsed(offset: selection.start + 1),
-      ),
-      SelectionChangedCause.keyboard,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final color = theme.colorScheme.onSurface;
-    Widget action(FaIconData icon, String label, VoidCallback onTap) =>
-        Expanded(
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(14),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                FaIcon(icon, size: 15, color: color),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: DiaryFloatingToolbarSurface(
-        child: SizedBox(
-          height: 52,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: <Widget>[
-                action(
-                  FontAwesomeIcons.diagramSuccessor,
-                  l10n.mindMapAddChild,
-                  () => controller.addChild(),
-                ),
-                action(
-                  FontAwesomeIcons.diagramNext,
-                  l10n.mindMapAddSibling,
-                  () => controller.addSibling(),
-                ),
-                action(
-                  FontAwesomeIcons.turnDown,
-                  l10n.mindMapNewLine,
-                  _insertNewLine,
-                ),
-                action(
-                  FontAwesomeIcons.check,
-                  l10n.mindMapDone,
-                  controller.stopEditing,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -822,95 +749,6 @@ class _ViewSwitch extends StatelessWidget {
           ],
           selected: <bool>{outline},
           onSelectionChanged: (value) => onChanged(value.first),
-        ),
-      ),
-    );
-  }
-}
-
-/// 大纲里编辑文字时键盘上方的附件条：缩进、取消缩进、上移、下移、完成。
-class _OutlineAccessoryBar extends StatelessWidget {
-  const _OutlineAccessoryBar({required this.controller});
-
-  final MindMapEditingController controller;
-
-  void _apply(MindMapDocument Function(MindMapDocument, String) op) {
-    final id = controller.editingId;
-    if (id == null) return;
-    controller.commit(op(controller.document, id), select: id);
-    controller.startEditing(id);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final color = theme.colorScheme.onSurface;
-    Widget action(FaIconData icon, String label, VoidCallback onTap) =>
-        Expanded(
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(14),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                FaIcon(icon, size: 15, color: color),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: DiaryFloatingToolbarSurface(
-        child: SizedBox(
-          height: 52,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: <Widget>[
-                action(
-                  FontAwesomeIcons.outdent,
-                  l10n.mindMapOutdent,
-                  () => _apply(MindMapOps.outdent),
-                ),
-                action(
-                  FontAwesomeIcons.indent,
-                  l10n.mindMapIndent,
-                  () => _apply(MindMapOps.indent),
-                ),
-                action(
-                  FontAwesomeIcons.arrowUp,
-                  l10n.mindMapMoveUp,
-                  () => _apply(
-                    (document, id) => MindMapOps.shift(document, id, up: true),
-                  ),
-                ),
-                action(
-                  FontAwesomeIcons.arrowDown,
-                  l10n.mindMapMoveDown,
-                  () => _apply(
-                    (document, id) => MindMapOps.shift(document, id, up: false),
-                  ),
-                ),
-                action(
-                  FontAwesomeIcons.check,
-                  l10n.mindMapDone,
-                  controller.stopEditing,
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

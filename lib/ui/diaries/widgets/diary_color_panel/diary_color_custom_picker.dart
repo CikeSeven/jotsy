@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
-    as editor;
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_host.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_preview.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_spectrum.dart';
@@ -25,8 +24,8 @@ const double _kDefaultBackgroundAlpha = 0x4D / 0xFF;
 /// 颜色面板的「自定义」页：饱和度 / 亮度面 + 色相条（背景色另有不透明度条）
 /// + 所见即所得预览 + 颜色代码输入框。
 ///
-/// - 输入：正文控制器、目标、选区当前颜色 [current]（由面板随选区刷新）；
-/// - 输出：拖动中只改面板里的预览，松手才经 `formatSelection` 写入正文
+/// - 输入：作用对象 [host]、目标、选区当前颜色 [current]（由面板随选区刷新）；
+/// - 输出：拖动中只改面板里的预览，松手才经 [DiaryColorHost.applyColor] 写入
 ///   （每次松手一步撤销），随后经 [onSave] 存进我的颜色；
 /// - 保存按“一次调色”合并：在同一个选区上接连松手 / 应用代码，后一次替换
 ///   前一次存下的颜色（`replacing`），调色途中的中间色不会一个个堆进我的
@@ -46,7 +45,7 @@ const double _kDefaultBackgroundAlpha = 0x4D / 0xFF;
 class DiaryColorCustomPicker extends StatefulWidget {
   const DiaryColorCustomPicker({
     super.key,
-    required this.controller,
+    required this.host,
     required this.target,
     required this.current,
     required this.active,
@@ -54,7 +53,7 @@ class DiaryColorCustomPicker extends StatefulWidget {
     required this.onSave,
   });
 
-  final editor.DiaryEditorController controller;
+  final DiaryColorHost host;
   final DiaryColorTarget target;
   final DiaryColorValue current;
 
@@ -92,7 +91,7 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
   /// 这次调色新存进我的颜色的那一个，以及当时的选区：再在同一选区上写入时
   /// 替换它。新的一次调色（选区变化、换目标）不替换。
   Color? _sessionColor;
-  editor.Selection? _sessionSelection;
+  Object? _sessionSelection;
 
   bool get _isBackground => widget.target == DiaryColorTarget.background;
 
@@ -172,13 +171,13 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
   void _apply(Color color) {
     if (widget.current.matches(color)) return;
     _syncedArgb = color.toARGB32();
-    widget.controller.formatSelection(widget.target.attributeFor(color));
+    widget.host.applyColor(widget.target, color);
     _save(color);
   }
 
   /// 存进我的颜色，同一次调色替换先前存下的那一个（见类注释）。
   void _save(Color color) {
-    final selection = widget.controller.selection;
+    final selection = widget.host.selectionToken;
     final previous = _sessionColor;
     final replacing = previous != null && selection == _sessionSelection
         ? previous

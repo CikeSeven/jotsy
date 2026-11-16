@@ -21170,6 +21170,14 @@
   "@mindMapStrike": {
     "description": "主题样式面板按钮提示。"
   },
+  "mindMapUnderline": "文字下划线",
+  "@mindMapUnderline": {
+    "description": "主题样式面板与文字格式条的按钮提示：给文字加下划线（不是形状里的“下划线”）。"
+  },
+  "mindMapHighlight": "文字高亮",
+  "@mindMapHighlight": {
+    "description": "主题样式面板的分组标题与文字格式条的按钮：文字后面的底色。"
+  },
   "mindMapSizeSmall": "小",
   "@mindMapSizeSmall": {
     "description": "主题字号选项（很短）。"

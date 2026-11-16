@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_ops.dart';
+import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
+import 'mind_map_rich_text_controller.dart';
 
 /// 导图编辑会话：当前文档、选中与正在编辑的节点、撤销 / 重做。
 ///
@@ -52,6 +54,15 @@ class MindMapEditingController extends ChangeNotifier {
 
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
+
+  /// 正在编辑的主题文字输入框（画布或大纲的），格式条经它设样式。
+  final MindMapTextSession textSession = MindMapTextSession();
+
+  @override
+  void dispose() {
+    textSession.dispose();
+    super.dispose();
+  }
 
   /// 换成外部给的文档（重新载入），清空撤销栈，不回调 [onChanged]。
   void reset(MindMapDocument document) {
@@ -144,6 +155,19 @@ class MindMapEditingController extends ChangeNotifier {
     animate: false,
   );
 
+  /// 输入框里改字或设样式（局部样式随文字一起写）：打字时同一节点连续
+  /// 输入合并为一步撤销，设样式（[format]）各是一步。
+  void setRichText(
+    String id,
+    String text,
+    List<MindMapTextRun> runs, {
+    bool format = false,
+  }) => commit(
+    MindMapOps.setRichText(_document, id, text, runs),
+    coalesce: format ? null : ('text', id),
+    animate: false,
+  );
+
   /// 给 [parentId]（缺省为选中的节点，没有选中时为根）加子节点，选中它并
   /// 进入编辑。返回新节点 id。
   String? addChild({String? parentId, bool edit = true}) {
@@ -167,8 +191,10 @@ class MindMapEditingController extends ChangeNotifier {
     return id;
   }
 
-  /// 删除选中的节点（根不删），选中改到相邻的同级或父节点。
-  void deleteSelected() {
+  /// 删除选中的节点（根不删），选中改到相邻的同级或父节点。[keepEditing]
+  /// 时接着编辑新选中的主题（键盘弹着时从附件条删除：不结束编辑，键盘就
+  /// 不收起）。
+  void deleteSelected({bool keepEditing = false}) {
     final id = selectedId;
     if (id == null) return;
     final index = _document.index;
@@ -181,7 +207,8 @@ class MindMapEditingController extends ChangeNotifier {
         : position > 0
         ? siblings[position - 1].id
         : parent;
-    _editingId = null;
+    _editingId = keepEditing ? nextSelection : null;
+    _lastCoalesceKey = null;
     commit(
       MindMapOps.removeNodes(_document, <String>[id]),
       select: nextSelection,

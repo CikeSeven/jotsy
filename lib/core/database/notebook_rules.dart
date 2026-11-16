@@ -349,8 +349,9 @@ final class NotebookDateRule extends NotebookRule {
   int get hashCode => Object.hash(type, kind, from, to, days, month);
 }
 
-/// 正文嵌入的种类。
-enum NotebookMediaKind { image, audio, video, attachment }
+/// 正文嵌入的种类。[mindMap] 命中导图日记与含嵌入导图的日记；只能追加，
+/// 旧版本读到认不出的取值时整条规则按 [NotebookUnknownRule] 原样保留。
+enum NotebookMediaKind { image, audio, video, attachment, mindMap }
 
 final class NotebookMediaRule extends NotebookRule {
   const NotebookMediaRule(this.kind);
@@ -596,6 +597,7 @@ List<String> _mediaPatterns(NotebookMediaKind kind) => switch (kind) {
     '%"type":"attachment"%',
     '%"type":"file"%',
   ],
+  NotebookMediaKind.mindMap => const <String>['%"type":"mind_map"%'],
 };
 
 String _placeholders(int count) => List<String>.filled(count, '?').join(', ');

@@ -3,6 +3,8 @@ import 'dart:convert';
 import '../audio_embed_codec.dart';
 import '../divider_embed_codec.dart';
 import '../file_embed_codec.dart';
+import '../mind_map/mind_map_blocks.dart';
+import '../mind_map/mind_map_text.dart';
 import 'diary_blocks_schema.dart';
 import 'diary_blocks_walk.dart';
 import 'diary_link_target.dart';
@@ -110,6 +112,20 @@ void _appendNode(
       final title = diaryLinkCardTitle(data);
       if (title == null) return;
       _insert(ops, title, const <String, Object?>{});
+    case kDiaryBlockMindMap:
+      // 导图写成大纲：中心主题一行（整篇导图日记时省略，它就是标题），
+      // 其余主题为逐级缩进的无序列表。
+      final page = isMindMapPageData(data);
+      for (final line in mindMapOutlineLines(mindMapOfBlockData(data))) {
+        if (line.text.isEmpty || (page && line.depth == 0)) continue;
+        _insert(ops, line.text, const <String, Object?>{});
+        final indent = line.depth - 1;
+        _insert(ops, '\n', <String, Object?>{
+          if (line.depth > 0) 'list': 'bullet',
+          if (indent > 0) 'indent': indent,
+        });
+      }
+      return;
     default:
       // 认不出的块类型（更新版本写入的新块）没有可投影的内容，略过。
       return;

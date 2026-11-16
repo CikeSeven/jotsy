@@ -48,6 +48,11 @@ Map<String, Object?> _embed(String type) => {
     'image' => {'url': '/missing/photo.jpg'},
     'video' => {'path': '/missing/clip.mp4', 'name': 'clip.mp4'},
     'link_card' => {'target': 'jotsy://diary/d1', 'title': 'Linked'},
+    'mind_map' => {
+      'map': {
+        'root': {'id': 'root', 'text': 'Plan'},
+      },
+    },
     _ => <String, Object?>{},
   },
 };

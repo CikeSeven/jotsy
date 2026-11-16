@@ -28335,6 +28335,474 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mom\'s birthday'**
   String get homeWidgetSampleAnniversary2;
+
+  /// Mind map: placeholder text of the central (root) topic before anything is typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Central topic'**
+  String get mindMapRootPlaceholder;
+
+  /// Mind map: placeholder text of a topic before anything is typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get mindMapNodePlaceholder;
+
+  /// Mind map dock button (nothing selected): add a main topic under the central topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Add topic'**
+  String get mindMapAddTopic;
+
+  /// Mind map: add a subtopic under the selected topic (dock button and menu item).
+  ///
+  /// In en, this message translates to:
+  /// **'Subtopic'**
+  String get mindMapAddChild;
+
+  /// Mind map: add a topic at the same level next to the selected one (dock button and menu item).
+  ///
+  /// In en, this message translates to:
+  /// **'Sibling'**
+  String get mindMapAddSibling;
+
+  /// Mind map: start editing the text of the selected topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get mindMapEditText;
+
+  /// Mind map: hide the subtopics of the selected topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get mindMapCollapse;
+
+  /// Mind map: show the hidden subtopics of the selected topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get mindMapExpand;
+
+  /// Mind map: delete the selected topic and its subtopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get mindMapDelete;
+
+  /// Mind map dock button: open the structure and color theme panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get mindMapStyle;
+
+  /// Mind map: zoom so the whole map fits on screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit'**
+  String get mindMapFit;
+
+  /// Mind map zoom menu: show at 100%.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual size'**
+  String get mindMapZoomActual;
+
+  /// Mind map zoom menu: zoom in.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get mindMapZoomIn;
+
+  /// Mind map zoom menu: zoom out.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get mindMapZoomOut;
+
+  /// Mind map editor top bar: undo the last change.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get mindMapUndo;
+
+  /// Mind map editor top bar: redo.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get mindMapRedo;
+
+  /// Mind map: button above the soft keyboard that inserts a line break in the topic being edited.
+  ///
+  /// In en, this message translates to:
+  /// **'New line'**
+  String get mindMapNewLine;
+
+  /// Mind map: button above the soft keyboard that finishes editing the topic text.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get mindMapDone;
+
+  /// Title of the mind map structure and color theme panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind map style'**
+  String get mindMapStyleSheetTitle;
+
+  /// Mind map style panel: section title for the layout structure.
+  ///
+  /// In en, this message translates to:
+  /// **'Structure'**
+  String get mindMapStructureTitle;
+
+  /// Mind map structure: central topic in the middle, branches on both sides.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind map'**
+  String get mindMapStructureMindMap;
+
+  /// Mind map structure: branches grow to the right.
+  ///
+  /// In en, this message translates to:
+  /// **'Logic chart'**
+  String get mindMapStructureLogicRight;
+
+  /// Mind map structure: branches grow to the left.
+  ///
+  /// In en, this message translates to:
+  /// **'Left logic chart'**
+  String get mindMapStructureLogicLeft;
+
+  /// Mind map structure: branches grow downwards.
+  ///
+  /// In en, this message translates to:
+  /// **'Org chart'**
+  String get mindMapStructureOrgDown;
+
+  /// Mind map structure: an indented tree like a table of contents.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree'**
+  String get mindMapStructureTreeRight;
+
+  /// Mind map structure: main topics on a horizontal time axis.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get mindMapStructureTimeline;
+
+  /// Mind map structure: cause-and-effect fishbone diagram with the head on the right.
+  ///
+  /// In en, this message translates to:
+  /// **'Fishbone'**
+  String get mindMapStructureFishbone;
+
+  /// Mind map style panel: section title for the color theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Color theme'**
+  String get mindMapThemeTitle;
+
+  /// Mind map color theme that follows the app color.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow app'**
+  String get mindMapThemeFollow;
+
+  /// Mind map color theme name.
+  ///
+  /// In en, this message translates to:
+  /// **'Rainbow'**
+  String get mindMapThemeRainbow;
+
+  /// Mind map color theme name.
+  ///
+  /// In en, this message translates to:
+  /// **'Ocean'**
+  String get mindMapThemeOcean;
+
+  /// Mind map color theme name.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest'**
+  String get mindMapThemeForest;
+
+  /// Mind map color theme name.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get mindMapThemeSunset;
+
+  /// Mind map color theme name.
+  ///
+  /// In en, this message translates to:
+  /// **'Sakura'**
+  String get mindMapThemeSakura;
+
+  /// Mind map color theme name (black and white).
+  ///
+  /// In en, this message translates to:
+  /// **'Ink'**
+  String get mindMapThemeInk;
+
+  /// Mind map color theme name (minimal, underlined topics).
+  ///
+  /// In en, this message translates to:
+  /// **'Paper'**
+  String get mindMapThemePaper;
+
+  /// Mind map color theme name.
+  ///
+  /// In en, this message translates to:
+  /// **'Neon'**
+  String get mindMapThemeNeon;
+
+  /// Mind map color theme name (pastel).
+  ///
+  /// In en, this message translates to:
+  /// **'Macaron'**
+  String get mindMapThemeMacaron;
+
+  /// Mind map style panel: section title for the connector line style.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines'**
+  String get mindMapLineTitle;
+
+  /// Mind map line style.
+  ///
+  /// In en, this message translates to:
+  /// **'Curved'**
+  String get mindMapLineCurve;
+
+  /// Mind map line style.
+  ///
+  /// In en, this message translates to:
+  /// **'Straight'**
+  String get mindMapLineStraight;
+
+  /// Mind map line style (right-angle connectors).
+  ///
+  /// In en, this message translates to:
+  /// **'Elbow'**
+  String get mindMapLineElbow;
+
+  /// Mind map line style (rounded right-angle connectors).
+  ///
+  /// In en, this message translates to:
+  /// **'Rounded'**
+  String get mindMapLineRounded;
+
+  /// Mind map style panel: section title for topic spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Spacing'**
+  String get mindMapSpacingTitle;
+
+  /// Mind map spacing option.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get mindMapSpacingCompact;
+
+  /// Mind map spacing option.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get mindMapSpacingStandard;
+
+  /// Mind map spacing option.
+  ///
+  /// In en, this message translates to:
+  /// **'Loose'**
+  String get mindMapSpacingLoose;
+
+  /// Mind map style panel switch: give each main branch its own color.
+  ///
+  /// In en, this message translates to:
+  /// **'Rainbow branches'**
+  String get mindMapRainbow;
+
+  /// Mind map style panel switch: show a dot grid behind the map.
+  ///
+  /// In en, this message translates to:
+  /// **'Dot grid'**
+  String get mindMapGrid;
+
+  /// New diary page: small button shown while the body is empty that turns this diary into a mind map.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind map'**
+  String get mindMapCreateChip;
+
+  /// Tooltip of the mind map button on the new diary page.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn this diary into a mind map'**
+  String get mindMapCreateChipTooltip;
+
+  /// Mind map: title of the card shown on an empty map with templates to start from.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a template'**
+  String get mindMapStarterTitle;
+
+  /// Mind map: turn an empty mind map diary back into a normal text diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to text'**
+  String get mindMapConvertBack;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Brainstorm'**
+  String get mindMapTemplateBrainstorm;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'SWOT'**
+  String get mindMapTemplateSwot;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Book notes'**
+  String get mindMapTemplateBook;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Project plan'**
+  String get mindMapTemplateProject;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly plan'**
+  String get mindMapTemplateWeek;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision'**
+  String get mindMapTemplateDecision;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip plan'**
+  String get mindMapTemplateTrip;
+
+  /// Mind map template name.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly goals'**
+  String get mindMapTemplateGoals;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Brainstorm\n  The problem\n    Background\n    Goal\n  Ideas\n    Idea A\n    Idea B\n    Idea C\n  Next steps\n    To validate\n    Help needed'**
+  String get mindMapTemplateBrainstormOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'SWOT analysis\n  Strengths\n    What we do well\n  Weaknesses\n    What to improve\n  Opportunities\n    Favorable outside factors\n  Threats\n    Outside risks'**
+  String get mindMapTemplateSwotOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Book title\n  Author and context\n  Key ideas\n    Idea one\n    Idea two\n  Favorite quotes\n  My thoughts\n  What I will do'**
+  String get mindMapTemplateBookOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Project\n  Goal\n    Desired result\n    How to measure\n  Milestones\n    Phase 1\n    Phase 2\n    Phase 3\n  Resources\n    People\n    Budget\n  Risks\n    What could go wrong\n    How to respond'**
+  String get mindMapTemplateProjectOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\n  Monday\n  Tuesday\n  Wednesday\n  Thursday\n  Friday\n  Weekend'**
+  String get mindMapTemplateWeekOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'The decision\n  Option A\n    Benefits\n    Costs\n  Option B\n    Benefits\n    Costs\n  What matters most\n  Final choice'**
+  String get mindMapTemplateDecisionOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip\n  Itinerary\n    Transport\n    Stays\n  Packing\n    Documents\n    Clothes\n    Electronics\n  Budget\n  Must-see places'**
+  String get mindMapTemplateTripOutline;
+
+  /// Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals this year\n  Health\n  Learning\n  Work\n  Family and friends\n  Hobbies\n  Money'**
+  String get mindMapTemplateGoalsOutline;
+
+  /// Mind map: number of topics in a map (card and preview footer).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 topic} other{{count} topics}}'**
+  String mindMapTopicCount(int count);
+
+  /// Mind map preview: open the map full screen to pan and zoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get mindMapViewFull;
+
+  /// Mind map viewer / embedded card: open the map for editing.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit mind map'**
+  String get mindMapEditMap;
+
+  /// Mind map whose central topic has no text (titles of viewer pages and cards).
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled mind map'**
+  String get mindMapUntitled;
+
+  /// Mind map diary editor menu: open the panel with date, mood, tags and notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary info'**
+  String get mindMapDiaryInfo;
+
+  /// Accessibility label of the mind map canvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind map canvas'**
+  String get mindMapCanvasLabel;
+
+  /// Smart notebook / search filter rule: diaries that are or contain a mind map.
+  ///
+  /// In en, this message translates to:
+  /// **'Has mind maps'**
+  String get notebookRuleMediaMindMap;
+
+  /// Features page: switch for mind maps.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind maps'**
+  String get settingsFeaturesMindMaps;
+
+  /// Features page: subtitle of the mind maps switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn a new diary into a mind map, or insert one into the body'**
+  String get settingsFeaturesMindMapsSubtitle;
 }
 
 class _AppLocalizationsDelegate

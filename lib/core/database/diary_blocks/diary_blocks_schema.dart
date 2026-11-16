@@ -14,7 +14,7 @@
 /// `href` / `font_color` / `bg_color`），编辑器自带的格式命令与 Markdown
 /// 快捷输入写出的就是这些键；表格沿用上游的 `table` / `table/cell` 结构。
 /// 日记特有的块（代码块语言、录音、附件、视频、标注、折叠列表、表头行、
-/// 日记链接卡片）与行内字号档位 `size` 为本应用自定义；`href` 除网址外还可以
+/// 日记链接卡片、思维导图）与行内字号档位 `size` 为本应用自定义；`href` 除网址外还可以
 /// 是日记链接的内部地址（diary_link_target.dart）。颜色值一律为大写 `#AARRGGBB`。
 library;
 
@@ -83,6 +83,11 @@ const String kDiaryBlockUnknownEmbed = 'quill_embed';
 /// 快照只在导出、分享文字与目标已不存在时使用。从不挂子块。
 const String kDiaryBlockLinkCard = 'link_card';
 
+/// 思维导图：`data.map` 为导图文档（见 mind_map/mind_map_schema.dart），
+/// `data.mode` 为 `page` 时整篇日记就是这张导图，缺省为嵌入的导图卡片。
+/// 节点树存在 data 里，从不挂子块。
+const String kDiaryBlockMindMap = 'mind_map';
+
 /// 带行内文字（`data.delta`）的块类型。
 const Set<String> kDiaryTextBlockTypes = <String>{
   kDiaryBlockParagraph,
@@ -110,7 +115,7 @@ const Set<String> kDiaryContainerBlockTypes = <String>{
   kDiaryBlockToggleList,
 };
 
-/// 独占一行、没有文字的块（媒体、分隔线与日记链接卡片）。
+/// 独占一行、没有行内文字的块（媒体、分隔线、日记链接卡片与思维导图）。
 const Set<String> kDiaryEmbedBlockTypes = <String>{
   kDiaryBlockDivider,
   kDiaryBlockImage,
@@ -119,6 +124,7 @@ const Set<String> kDiaryEmbedBlockTypes = <String>{
   kDiaryBlockAttachment,
   kDiaryBlockUnknownEmbed,
   kDiaryBlockLinkCard,
+  kDiaryBlockMindMap,
 };
 
 // ---- 节点键 ----

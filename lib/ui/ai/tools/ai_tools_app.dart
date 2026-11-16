@@ -80,6 +80,7 @@ class GetAppContextTool extends AiTool {
           'templates': features.templates,
           'time_capsules': features.timeCapsules,
           'comments': features.comments,
+          'mind_maps': features.mindMaps,
         },
         'mood_options': settings.moodOptions,
         'diary_words_left_this_turn': context.allowance.remaining,
@@ -367,6 +368,7 @@ class ReadGuideTool extends AiTool {
     'swipeArchive' => features.swipeArchive,
     'comments' => features.comments,
     'ai' => features.ai,
+    'mindMaps' => features.mindMaps,
     _ => true,
   };
 }

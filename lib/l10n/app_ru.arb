@@ -21199,5 +21199,322 @@
   "homeWidgetSampleAnniversary2": "День рождения мамы",
   "@homeWidgetSampleAnniversary2": {
     "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "mindMapRootPlaceholder": "Центральная тема",
+  "@mindMapRootPlaceholder": {
+    "description": "Mind map: placeholder text of the central (root) topic before anything is typed."
+  },
+  "mindMapNodePlaceholder": "Тема",
+  "@mindMapNodePlaceholder": {
+    "description": "Mind map: placeholder text of a topic before anything is typed."
+  },
+  "mindMapAddTopic": "Добавить",
+  "@mindMapAddTopic": {
+    "description": "Mind map dock button (nothing selected): add a main topic under the central topic."
+  },
+  "mindMapAddChild": "Подтема",
+  "@mindMapAddChild": {
+    "description": "Mind map: add a subtopic under the selected topic (dock button and menu item)."
+  },
+  "mindMapAddSibling": "Рядом",
+  "@mindMapAddSibling": {
+    "description": "Mind map: add a topic at the same level next to the selected one (dock button and menu item)."
+  },
+  "mindMapEditText": "Изменить",
+  "@mindMapEditText": {
+    "description": "Mind map: start editing the text of the selected topic."
+  },
+  "mindMapCollapse": "Свернуть",
+  "@mindMapCollapse": {
+    "description": "Mind map: hide the subtopics of the selected topic."
+  },
+  "mindMapExpand": "Развернуть",
+  "@mindMapExpand": {
+    "description": "Mind map: show the hidden subtopics of the selected topic."
+  },
+  "mindMapDelete": "Удалить",
+  "@mindMapDelete": {
+    "description": "Mind map: delete the selected topic and its subtopics."
+  },
+  "mindMapStyle": "Стиль",
+  "@mindMapStyle": {
+    "description": "Mind map dock button: open the structure and color theme panel."
+  },
+  "mindMapFit": "Вместить",
+  "@mindMapFit": {
+    "description": "Mind map: zoom so the whole map fits on screen."
+  },
+  "mindMapZoomActual": "Реальный размер",
+  "@mindMapZoomActual": {
+    "description": "Mind map zoom menu: show at 100%."
+  },
+  "mindMapZoomIn": "Увеличить",
+  "@mindMapZoomIn": {
+    "description": "Mind map zoom menu: zoom in."
+  },
+  "mindMapZoomOut": "Уменьшить",
+  "@mindMapZoomOut": {
+    "description": "Mind map zoom menu: zoom out."
+  },
+  "mindMapUndo": "Отменить",
+  "@mindMapUndo": {
+    "description": "Mind map editor top bar: undo the last change."
+  },
+  "mindMapRedo": "Повторить",
+  "@mindMapRedo": {
+    "description": "Mind map editor top bar: redo."
+  },
+  "mindMapNewLine": "Новая строка",
+  "@mindMapNewLine": {
+    "description": "Mind map: button above the soft keyboard that inserts a line break in the topic being edited."
+  },
+  "mindMapDone": "Готово",
+  "@mindMapDone": {
+    "description": "Mind map: button above the soft keyboard that finishes editing the topic text."
+  },
+  "mindMapStyleSheetTitle": "Стиль карты",
+  "@mindMapStyleSheetTitle": {
+    "description": "Title of the mind map structure and color theme panel."
+  },
+  "mindMapStructureTitle": "Структура",
+  "@mindMapStructureTitle": {
+    "description": "Mind map style panel: section title for the layout structure."
+  },
+  "mindMapStructureMindMap": "Интеллект-карта",
+  "@mindMapStructureMindMap": {
+    "description": "Mind map structure: central topic in the middle, branches on both sides."
+  },
+  "mindMapStructureLogicRight": "Логическая схема",
+  "@mindMapStructureLogicRight": {
+    "description": "Mind map structure: branches grow to the right."
+  },
+  "mindMapStructureLogicLeft": "Схема влево",
+  "@mindMapStructureLogicLeft": {
+    "description": "Mind map structure: branches grow to the left."
+  },
+  "mindMapStructureOrgDown": "Оргструктура",
+  "@mindMapStructureOrgDown": {
+    "description": "Mind map structure: branches grow downwards."
+  },
+  "mindMapStructureTreeRight": "Дерево",
+  "@mindMapStructureTreeRight": {
+    "description": "Mind map structure: an indented tree like a table of contents."
+  },
+  "mindMapStructureTimeline": "Хронология",
+  "@mindMapStructureTimeline": {
+    "description": "Mind map structure: main topics on a horizontal time axis."
+  },
+  "mindMapStructureFishbone": "Рыбья кость",
+  "@mindMapStructureFishbone": {
+    "description": "Mind map structure: cause-and-effect fishbone diagram with the head on the right."
+  },
+  "mindMapThemeTitle": "Цветовая тема",
+  "@mindMapThemeTitle": {
+    "description": "Mind map style panel: section title for the color theme."
+  },
+  "mindMapThemeFollow": "Как в приложении",
+  "@mindMapThemeFollow": {
+    "description": "Mind map color theme that follows the app color."
+  },
+  "mindMapThemeRainbow": "Радуга",
+  "@mindMapThemeRainbow": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeOcean": "Океан",
+  "@mindMapThemeOcean": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeForest": "Лес",
+  "@mindMapThemeForest": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeSunset": "Закат",
+  "@mindMapThemeSunset": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeSakura": "Сакура",
+  "@mindMapThemeSakura": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeInk": "Тушь",
+  "@mindMapThemeInk": {
+    "description": "Mind map color theme name (black and white)."
+  },
+  "mindMapThemePaper": "Бумага",
+  "@mindMapThemePaper": {
+    "description": "Mind map color theme name (minimal, underlined topics)."
+  },
+  "mindMapThemeNeon": "Неон",
+  "@mindMapThemeNeon": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeMacaron": "Макарон",
+  "@mindMapThemeMacaron": {
+    "description": "Mind map color theme name (pastel)."
+  },
+  "mindMapLineTitle": "Линии",
+  "@mindMapLineTitle": {
+    "description": "Mind map style panel: section title for the connector line style."
+  },
+  "mindMapLineCurve": "Кривые",
+  "@mindMapLineCurve": {
+    "description": "Mind map line style."
+  },
+  "mindMapLineStraight": "Прямые",
+  "@mindMapLineStraight": {
+    "description": "Mind map line style."
+  },
+  "mindMapLineElbow": "Ломаные",
+  "@mindMapLineElbow": {
+    "description": "Mind map line style (right-angle connectors)."
+  },
+  "mindMapLineRounded": "Скруглённые",
+  "@mindMapLineRounded": {
+    "description": "Mind map line style (rounded right-angle connectors)."
+  },
+  "mindMapSpacingTitle": "Интервалы",
+  "@mindMapSpacingTitle": {
+    "description": "Mind map style panel: section title for topic spacing."
+  },
+  "mindMapSpacingCompact": "Плотно",
+  "@mindMapSpacingCompact": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapSpacingStandard": "Стандарт",
+  "@mindMapSpacingStandard": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapSpacingLoose": "Свободно",
+  "@mindMapSpacingLoose": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapRainbow": "Цветные ветви",
+  "@mindMapRainbow": {
+    "description": "Mind map style panel switch: give each main branch its own color."
+  },
+  "mindMapGrid": "Точечная сетка",
+  "@mindMapGrid": {
+    "description": "Mind map style panel switch: show a dot grid behind the map."
+  },
+  "mindMapCreateChip": "Интеллект-карта",
+  "@mindMapCreateChip": {
+    "description": "New diary page: small button shown while the body is empty that turns this diary into a mind map."
+  },
+  "mindMapCreateChipTooltip": "Превратить запись в интеллект-карту",
+  "@mindMapCreateChipTooltip": {
+    "description": "Tooltip of the mind map button on the new diary page."
+  },
+  "mindMapStarterTitle": "Начать с шаблона",
+  "@mindMapStarterTitle": {
+    "description": "Mind map: title of the card shown on an empty map with templates to start from."
+  },
+  "mindMapConvertBack": "Обратно в текст",
+  "@mindMapConvertBack": {
+    "description": "Mind map: turn an empty mind map diary back into a normal text diary."
+  },
+  "mindMapTemplateBrainstorm": "Мозговой штурм",
+  "@mindMapTemplateBrainstorm": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateSwot": "SWOT-анализ",
+  "@mindMapTemplateSwot": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateBook": "О книге",
+  "@mindMapTemplateBook": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateProject": "План проекта",
+  "@mindMapTemplateProject": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateWeek": "План недели",
+  "@mindMapTemplateWeek": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateDecision": "Решение",
+  "@mindMapTemplateDecision": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateTrip": "Поездка",
+  "@mindMapTemplateTrip": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateGoals": "Цели на год",
+  "@mindMapTemplateGoals": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateBrainstormOutline": "Мозговой штурм\n  Проблема\n    Контекст\n    Цель\n  Идеи\n    Идея A\n    Идея B\n    Идея C\n  Дальше\n    Проверить\n    Нужна помощь",
+  "@mindMapTemplateBrainstormOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateSwotOutline": "SWOT-анализ\n  Сильные стороны\n    Что получается хорошо\n  Слабые стороны\n    Что улучшить\n  Возможности\n    Благоприятные факторы\n  Угрозы\n    Внешние риски",
+  "@mindMapTemplateSwotOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateBookOutline": "Название книги\n  Автор и контекст\n  Главные идеи\n    Идея первая\n    Идея вторая\n  Цитаты\n  Мои мысли\n  Что сделаю",
+  "@mindMapTemplateBookOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateProjectOutline": "Проект\n  Цель\n    Желаемый результат\n    Как измерить\n  Этапы\n    Этап 1\n    Этап 2\n    Этап 3\n  Ресурсы\n    Люди\n    Бюджет\n  Риски\n    Что может пойти не так\n    Как реагировать",
+  "@mindMapTemplateProjectOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateWeekOutline": "Эта неделя\n  Понедельник\n  Вторник\n  Среда\n  Четверг\n  Пятница\n  Выходные",
+  "@mindMapTemplateWeekOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateDecisionOutline": "Решение\n  Вариант A\n    Плюсы\n    Цена\n  Вариант B\n    Плюсы\n    Цена\n  Что важнее всего\n  Итоговый выбор",
+  "@mindMapTemplateDecisionOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateTripOutline": "Поездка\n  Маршрут\n    Транспорт\n    Жильё\n  Вещи\n    Документы\n    Одежда\n    Техника\n  Бюджет\n  Обязательно посетить",
+  "@mindMapTemplateTripOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateGoalsOutline": "Цели на год\n  Здоровье\n  Учёба\n  Работа\n  Семья и друзья\n  Хобби\n  Финансы",
+  "@mindMapTemplateGoalsOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTopicCount": "{count, plural, one{{count} тема} few{{count} темы} many{{count} тем} other{{count} темы}}",
+  "@mindMapTopicCount": {
+    "description": "Mind map: number of topics in a map (card and preview footer).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mindMapViewFull": "Во весь экран",
+  "@mindMapViewFull": {
+    "description": "Mind map preview: open the map full screen to pan and zoom."
+  },
+  "mindMapEditMap": "Изменить карту",
+  "@mindMapEditMap": {
+    "description": "Mind map viewer / embedded card: open the map for editing."
+  },
+  "mindMapUntitled": "Карта без названия",
+  "@mindMapUntitled": {
+    "description": "Mind map whose central topic has no text (titles of viewer pages and cards)."
+  },
+  "mindMapDiaryInfo": "Сведения о записи",
+  "@mindMapDiaryInfo": {
+    "description": "Mind map diary editor menu: open the panel with date, mood, tags and notebooks."
+  },
+  "mindMapCanvasLabel": "Холст интеллект-карты",
+  "@mindMapCanvasLabel": {
+    "description": "Accessibility label of the mind map canvas."
+  },
+  "notebookRuleMediaMindMap": "Есть интеллект-карты",
+  "@notebookRuleMediaMindMap": {
+    "description": "Smart notebook / search filter rule: diaries that are or contain a mind map."
+  },
+  "settingsFeaturesMindMaps": "Интеллект-карты",
+  "@settingsFeaturesMindMaps": {
+    "description": "Features page: switch for mind maps."
+  },
+  "settingsFeaturesMindMapsSubtitle": "Превращайте запись в карту или вставляйте карту в текст",
+  "@settingsFeaturesMindMapsSubtitle": {
+    "description": "Features page: subtitle of the mind maps switch."
   }
 }

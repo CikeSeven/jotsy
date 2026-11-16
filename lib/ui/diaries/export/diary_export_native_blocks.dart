@@ -9,6 +9,9 @@ part of 'diary_export_blocks.dart';
 ///   成块；结构无效的表格（读取时本已展开，只有手改数据才会遇到）按普通
 ///   块往下读，格子里的段落照常导出。
 /// - 日记链接卡片按一段快照标题导出（[diaryLinkCardTitle]）。
+/// - 思维导图按大纲导出（[_mindMapBlocks]）：嵌入的导图先写加粗的中心主题，
+///   其余主题写成逐级缩进的无序列表；整篇导图日记的中心主题就是标题，只写
+///   下面的主题。
 /// - 顶层连续的小图按应用的分排（[diaryThumbnailRowsBy]）标上所在那一排
 ///   （[ExportBlock.thumbnailRow]）：分排按顶层块本身算，而不是按导出的块
 ///   列表——导出时略过的块（没有快照的链接卡片、认不出又没有文字的块）在
@@ -38,6 +41,11 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
     final type = node['type'];
     final data = diaryBlockData(node);
     final align = _exportAlign(data['align']);
+    if (type == kDiaryBlockMindMap) {
+      counters.removeWhere((key, _) => key >= depth);
+      blocks.addAll(_mindMapBlocks(data, depth));
+      continue;
+    }
     final table = DiaryTableGrid.of(node);
     final kind = switch (type) {
       'paragraph' => ExportBlockKind.paragraph,
@@ -227,4 +235,34 @@ List<List<List<ExportInline>>> _tableRows(DiaryTableGrid table) {
           ]),
       ]),
   ]);
+}
+
+/// 导图块的大纲：中心主题（整篇导图日记时省略，它就是标题）+ 逐级缩进的
+/// 无序列表，空主题跳过；节点里的换行压成空格。
+List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
+  final page = isMindMapPageData(data);
+  final out = <ExportBlock>[];
+  for (final line in mindMapOutlineLines(mindMapOfBlockData(data))) {
+    if (line.text.isEmpty) continue;
+    if (line.depth == 0) {
+      if (page) continue;
+      out.add(
+        ExportBlock._(
+          kind: ExportBlockKind.paragraph,
+          inlines: <ExportInline>[ExportInline(line.text, bold: true)],
+          indent: depth,
+          standIn: true,
+        ),
+      );
+      continue;
+    }
+    out.add(
+      ExportBlock._(
+        kind: ExportBlockKind.bullet,
+        inlines: <ExportInline>[ExportInline(line.text)],
+        indent: depth + line.depth - 1,
+      ),
+    );
+  }
+  return out;
 }

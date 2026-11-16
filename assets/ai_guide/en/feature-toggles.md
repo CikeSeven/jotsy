@@ -2,10 +2,10 @@
 id: feature-toggles
 title: Turning features on or off
 summary: Which pages and features can be turned off in Features, which are on by default, and whether turning them off loses data
-features: [calendar, todos, explore, notebooks, anniversaries, templates, timeCapsules, swipeArchive, comments, ai]
+features: [calendar, todos, explore, notebooks, anniversaries, templates, timeCapsules, swipeArchive, comments, ai, mindMaps]
 platforms: []
 destinations: [settings_features]
-keywords: [features, feature switches, turn off, turn on, hide, simplify, calendar, to-dos, explore, notebooks, anniversaries, diary templates, time capsules, comments, AI assistant, swipe to archive, off by default, missing feature]
+keywords: [features, feature switches, turn off, turn on, hide, simplify, calendar, to-dos, explore, notebooks, anniversaries, diary templates, time capsules, comments, AI assistant, mind maps, swipe to archive, off by default, missing feature]
 ---
 The Features page lets you choose which pages and features you use. Turning a feature off only hides all of its entries, options and automatic behavior in the app; your data is always kept, and turning it back on brings everything back as it was.
 
@@ -25,6 +25,7 @@ Controls which tabs appear in the bottom navigation. Diaries always stays and ca
 - **Time capsules** (on by default): write to the future; opens only when it's due. When off you can't create new capsules, but existing ones still show and still open when due.
 - **Comments** (off by default): leave notes at the end of a diary when you reread it; the entry stays as written. When off, the comment section on the preview page and comment counts on cards are hidden; your comments are kept.
 - **AI assistant** (off by default): write, reflect, recap and chat with your own AI API. After turning it on you also need to set up a provider in Settings → AI assistant before its entries appear.
+- **Mind maps** (on by default): turn a new diary into a mind map, or insert one with "/" in the text. Turning it off hides these ways to create maps; existing maps still show and can still be edited.
 - **Swipe to archive** (on by default, phones only): swipe a diary card left to archive it, or left in Archive to restore it. When off you can still long-press a card to multi-select and tap the archive button in the top bar. Computers don't have this switch; use the card's right-click menu instead.
 
 ## Notes

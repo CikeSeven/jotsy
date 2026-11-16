@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/content_codec.dart';
+import '../../../core/database/mind_map/mind_map_blocks.dart';
 import '../models/diary_link_candidate.dart';
 import 'diary_block_convert.dart';
 import 'diary_block_selection.dart';
@@ -231,6 +232,11 @@ class DiaryEditorController extends ChangeNotifier {
   /// 整篇序列化会让打字发卡；有字的日记通常在第一块就能返回。
   bool get hasContent {
     bool visit(af.Node node) {
+      // 空导图（只有一个没写字的根节点）不算内容：新建页转成导图后什么都
+      // 没写就离开，不留草稿。
+      if (node.type == kDiaryBlockMindMap) {
+        return !mindMapBlockIsBlank(node.attributes);
+      }
       if (kDiaryEmbedBlockTypes.contains(node.type)) return true;
       final delta = node.delta;
       if (delta != null && delta.toPlainText().trim().isNotEmpty) return true;

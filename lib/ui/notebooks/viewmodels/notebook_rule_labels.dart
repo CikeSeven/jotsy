@@ -96,6 +96,7 @@ String notebookMediaKindLabel(AppLocalizations l10n, NotebookMediaKind kind) =>
       NotebookMediaKind.audio => l10n.notebookRuleMediaAudio,
       NotebookMediaKind.video => l10n.notebookRuleMediaVideo,
       NotebookMediaKind.attachment => l10n.notebookRuleMediaAttachment,
+      NotebookMediaKind.mindMap => l10n.notebookRuleMediaMindMap,
     };
 
 String notebookFlagKindLabel(AppLocalizations l10n, NotebookFlagKind kind) =>

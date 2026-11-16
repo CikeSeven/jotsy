@@ -20632,5 +20632,322 @@
   "homeWidgetSampleAnniversary2": "Mom's birthday",
   "@homeWidgetSampleAnniversary2": {
     "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "mindMapRootPlaceholder": "Central topic",
+  "@mindMapRootPlaceholder": {
+    "description": "Mind map: placeholder text of the central (root) topic before anything is typed."
+  },
+  "mindMapNodePlaceholder": "Topic",
+  "@mindMapNodePlaceholder": {
+    "description": "Mind map: placeholder text of a topic before anything is typed."
+  },
+  "mindMapAddTopic": "Add topic",
+  "@mindMapAddTopic": {
+    "description": "Mind map dock button (nothing selected): add a main topic under the central topic."
+  },
+  "mindMapAddChild": "Subtopic",
+  "@mindMapAddChild": {
+    "description": "Mind map: add a subtopic under the selected topic (dock button and menu item)."
+  },
+  "mindMapAddSibling": "Sibling",
+  "@mindMapAddSibling": {
+    "description": "Mind map: add a topic at the same level next to the selected one (dock button and menu item)."
+  },
+  "mindMapEditText": "Edit",
+  "@mindMapEditText": {
+    "description": "Mind map: start editing the text of the selected topic."
+  },
+  "mindMapCollapse": "Collapse",
+  "@mindMapCollapse": {
+    "description": "Mind map: hide the subtopics of the selected topic."
+  },
+  "mindMapExpand": "Expand",
+  "@mindMapExpand": {
+    "description": "Mind map: show the hidden subtopics of the selected topic."
+  },
+  "mindMapDelete": "Delete",
+  "@mindMapDelete": {
+    "description": "Mind map: delete the selected topic and its subtopics."
+  },
+  "mindMapStyle": "Style",
+  "@mindMapStyle": {
+    "description": "Mind map dock button: open the structure and color theme panel."
+  },
+  "mindMapFit": "Fit",
+  "@mindMapFit": {
+    "description": "Mind map: zoom so the whole map fits on screen."
+  },
+  "mindMapZoomActual": "Actual size",
+  "@mindMapZoomActual": {
+    "description": "Mind map zoom menu: show at 100%."
+  },
+  "mindMapZoomIn": "Zoom in",
+  "@mindMapZoomIn": {
+    "description": "Mind map zoom menu: zoom in."
+  },
+  "mindMapZoomOut": "Zoom out",
+  "@mindMapZoomOut": {
+    "description": "Mind map zoom menu: zoom out."
+  },
+  "mindMapUndo": "Undo",
+  "@mindMapUndo": {
+    "description": "Mind map editor top bar: undo the last change."
+  },
+  "mindMapRedo": "Redo",
+  "@mindMapRedo": {
+    "description": "Mind map editor top bar: redo."
+  },
+  "mindMapNewLine": "New line",
+  "@mindMapNewLine": {
+    "description": "Mind map: button above the soft keyboard that inserts a line break in the topic being edited."
+  },
+  "mindMapDone": "Done",
+  "@mindMapDone": {
+    "description": "Mind map: button above the soft keyboard that finishes editing the topic text."
+  },
+  "mindMapStyleSheetTitle": "Mind map style",
+  "@mindMapStyleSheetTitle": {
+    "description": "Title of the mind map structure and color theme panel."
+  },
+  "mindMapStructureTitle": "Structure",
+  "@mindMapStructureTitle": {
+    "description": "Mind map style panel: section title for the layout structure."
+  },
+  "mindMapStructureMindMap": "Mind map",
+  "@mindMapStructureMindMap": {
+    "description": "Mind map structure: central topic in the middle, branches on both sides."
+  },
+  "mindMapStructureLogicRight": "Logic chart",
+  "@mindMapStructureLogicRight": {
+    "description": "Mind map structure: branches grow to the right."
+  },
+  "mindMapStructureLogicLeft": "Left logic chart",
+  "@mindMapStructureLogicLeft": {
+    "description": "Mind map structure: branches grow to the left."
+  },
+  "mindMapStructureOrgDown": "Org chart",
+  "@mindMapStructureOrgDown": {
+    "description": "Mind map structure: branches grow downwards."
+  },
+  "mindMapStructureTreeRight": "Tree",
+  "@mindMapStructureTreeRight": {
+    "description": "Mind map structure: an indented tree like a table of contents."
+  },
+  "mindMapStructureTimeline": "Timeline",
+  "@mindMapStructureTimeline": {
+    "description": "Mind map structure: main topics on a horizontal time axis."
+  },
+  "mindMapStructureFishbone": "Fishbone",
+  "@mindMapStructureFishbone": {
+    "description": "Mind map structure: cause-and-effect fishbone diagram with the head on the right."
+  },
+  "mindMapThemeTitle": "Color theme",
+  "@mindMapThemeTitle": {
+    "description": "Mind map style panel: section title for the color theme."
+  },
+  "mindMapThemeFollow": "Follow app",
+  "@mindMapThemeFollow": {
+    "description": "Mind map color theme that follows the app color."
+  },
+  "mindMapThemeRainbow": "Rainbow",
+  "@mindMapThemeRainbow": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeOcean": "Ocean",
+  "@mindMapThemeOcean": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeForest": "Forest",
+  "@mindMapThemeForest": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeSunset": "Sunset",
+  "@mindMapThemeSunset": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeSakura": "Sakura",
+  "@mindMapThemeSakura": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeInk": "Ink",
+  "@mindMapThemeInk": {
+    "description": "Mind map color theme name (black and white)."
+  },
+  "mindMapThemePaper": "Paper",
+  "@mindMapThemePaper": {
+    "description": "Mind map color theme name (minimal, underlined topics)."
+  },
+  "mindMapThemeNeon": "Neon",
+  "@mindMapThemeNeon": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeMacaron": "Macaron",
+  "@mindMapThemeMacaron": {
+    "description": "Mind map color theme name (pastel)."
+  },
+  "mindMapLineTitle": "Lines",
+  "@mindMapLineTitle": {
+    "description": "Mind map style panel: section title for the connector line style."
+  },
+  "mindMapLineCurve": "Curved",
+  "@mindMapLineCurve": {
+    "description": "Mind map line style."
+  },
+  "mindMapLineStraight": "Straight",
+  "@mindMapLineStraight": {
+    "description": "Mind map line style."
+  },
+  "mindMapLineElbow": "Elbow",
+  "@mindMapLineElbow": {
+    "description": "Mind map line style (right-angle connectors)."
+  },
+  "mindMapLineRounded": "Rounded",
+  "@mindMapLineRounded": {
+    "description": "Mind map line style (rounded right-angle connectors)."
+  },
+  "mindMapSpacingTitle": "Spacing",
+  "@mindMapSpacingTitle": {
+    "description": "Mind map style panel: section title for topic spacing."
+  },
+  "mindMapSpacingCompact": "Compact",
+  "@mindMapSpacingCompact": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapSpacingStandard": "Standard",
+  "@mindMapSpacingStandard": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapSpacingLoose": "Loose",
+  "@mindMapSpacingLoose": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapRainbow": "Rainbow branches",
+  "@mindMapRainbow": {
+    "description": "Mind map style panel switch: give each main branch its own color."
+  },
+  "mindMapGrid": "Dot grid",
+  "@mindMapGrid": {
+    "description": "Mind map style panel switch: show a dot grid behind the map."
+  },
+  "mindMapCreateChip": "Mind map",
+  "@mindMapCreateChip": {
+    "description": "New diary page: small button shown while the body is empty that turns this diary into a mind map."
+  },
+  "mindMapCreateChipTooltip": "Turn this diary into a mind map",
+  "@mindMapCreateChipTooltip": {
+    "description": "Tooltip of the mind map button on the new diary page."
+  },
+  "mindMapStarterTitle": "Start from a template",
+  "@mindMapStarterTitle": {
+    "description": "Mind map: title of the card shown on an empty map with templates to start from."
+  },
+  "mindMapConvertBack": "Back to text",
+  "@mindMapConvertBack": {
+    "description": "Mind map: turn an empty mind map diary back into a normal text diary."
+  },
+  "mindMapTemplateBrainstorm": "Brainstorm",
+  "@mindMapTemplateBrainstorm": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateSwot": "SWOT",
+  "@mindMapTemplateSwot": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateBook": "Book notes",
+  "@mindMapTemplateBook": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateProject": "Project plan",
+  "@mindMapTemplateProject": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateWeek": "Weekly plan",
+  "@mindMapTemplateWeek": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateDecision": "Decision",
+  "@mindMapTemplateDecision": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateTrip": "Trip plan",
+  "@mindMapTemplateTrip": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateGoals": "Yearly goals",
+  "@mindMapTemplateGoals": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateBrainstormOutline": "Brainstorm\n  The problem\n    Background\n    Goal\n  Ideas\n    Idea A\n    Idea B\n    Idea C\n  Next steps\n    To validate\n    Help needed",
+  "@mindMapTemplateBrainstormOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateSwotOutline": "SWOT analysis\n  Strengths\n    What we do well\n  Weaknesses\n    What to improve\n  Opportunities\n    Favorable outside factors\n  Threats\n    Outside risks",
+  "@mindMapTemplateSwotOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateBookOutline": "Book title\n  Author and context\n  Key ideas\n    Idea one\n    Idea two\n  Favorite quotes\n  My thoughts\n  What I will do",
+  "@mindMapTemplateBookOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateProjectOutline": "Project\n  Goal\n    Desired result\n    How to measure\n  Milestones\n    Phase 1\n    Phase 2\n    Phase 3\n  Resources\n    People\n    Budget\n  Risks\n    What could go wrong\n    How to respond",
+  "@mindMapTemplateProjectOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateWeekOutline": "This week\n  Monday\n  Tuesday\n  Wednesday\n  Thursday\n  Friday\n  Weekend",
+  "@mindMapTemplateWeekOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateDecisionOutline": "The decision\n  Option A\n    Benefits\n    Costs\n  Option B\n    Benefits\n    Costs\n  What matters most\n  Final choice",
+  "@mindMapTemplateDecisionOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateTripOutline": "Trip\n  Itinerary\n    Transport\n    Stays\n  Packing\n    Documents\n    Clothes\n    Electronics\n  Budget\n  Must-see places",
+  "@mindMapTemplateTripOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateGoalsOutline": "Goals this year\n  Health\n  Learning\n  Work\n  Family and friends\n  Hobbies\n  Money",
+  "@mindMapTemplateGoalsOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTopicCount": "{count, plural, =1{1 topic} other{{count} topics}}",
+  "@mindMapTopicCount": {
+    "description": "Mind map: number of topics in a map (card and preview footer).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mindMapViewFull": "Full screen",
+  "@mindMapViewFull": {
+    "description": "Mind map preview: open the map full screen to pan and zoom."
+  },
+  "mindMapEditMap": "Edit mind map",
+  "@mindMapEditMap": {
+    "description": "Mind map viewer / embedded card: open the map for editing."
+  },
+  "mindMapUntitled": "Untitled mind map",
+  "@mindMapUntitled": {
+    "description": "Mind map whose central topic has no text (titles of viewer pages and cards)."
+  },
+  "mindMapDiaryInfo": "Diary info",
+  "@mindMapDiaryInfo": {
+    "description": "Mind map diary editor menu: open the panel with date, mood, tags and notebooks."
+  },
+  "mindMapCanvasLabel": "Mind map canvas",
+  "@mindMapCanvasLabel": {
+    "description": "Accessibility label of the mind map canvas."
+  },
+  "notebookRuleMediaMindMap": "Has mind maps",
+  "@notebookRuleMediaMindMap": {
+    "description": "Smart notebook / search filter rule: diaries that are or contain a mind map."
+  },
+  "settingsFeaturesMindMaps": "Mind maps",
+  "@settingsFeaturesMindMaps": {
+    "description": "Features page: switch for mind maps."
+  },
+  "settingsFeaturesMindMapsSubtitle": "Turn a new diary into a mind map, or insert one into the body",
+  "@settingsFeaturesMindMapsSubtitle": {
+    "description": "Features page: subtitle of the mind maps switch."
   }
 }

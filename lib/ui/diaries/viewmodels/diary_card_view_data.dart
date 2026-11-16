@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_media.dart';
+import '../../../core/database/mind_map/mind_map_blocks.dart';
+import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../utils/text_stats.dart';
 import 'diary_card_media_summary.dart';
 import 'diary_leading_line.dart';
@@ -149,6 +152,14 @@ class DiaryCardViewData {
   late final DiaryCardMediaSummary media = DiaryCardMediaSummary.scan(
     _contentJson,
   );
+
+  /// 导图日记的导图（正文就是一张导图时），卡片画它的缩略图；不是导图日记
+  /// 时为 null。懒计算，先在原文里找 `mind_map` 块的片段，普通日记不解析
+  /// 整篇正文。
+  late final MindMapDocument? mindMap =
+      storedContentMayHaveMindMap(_contentJson)
+      ? diaryMindMapPage(decodeStoredDiaryBlocks(_contentJson))
+      : null;
 
   /// 多图拼贴使用的图片：预览封面在前，再接正文中其余的图片，最多三张。
   late final List<String> collageImages = _resolveCollageImages();

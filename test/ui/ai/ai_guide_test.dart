@@ -38,6 +38,7 @@ void main() {
     'swipeArchive',
     'comments',
     'ai',
+    'mindMaps',
   };
   const platformNames = <String>{'android', 'ios', 'windows', 'linux', 'macos'};
   // 需要具体 id 的目标不能写进文章。

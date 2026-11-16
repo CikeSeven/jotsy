@@ -21199,5 +21199,322 @@
   "homeWidgetSampleAnniversary2": "母の誕生日",
   "@homeWidgetSampleAnniversary2": {
     "description": "Sample content in widget previews (launcher widget picker): anniversary name."
+  },
+  "mindMapRootPlaceholder": "中心トピック",
+  "@mindMapRootPlaceholder": {
+    "description": "Mind map: placeholder text of the central (root) topic before anything is typed."
+  },
+  "mindMapNodePlaceholder": "トピック",
+  "@mindMapNodePlaceholder": {
+    "description": "Mind map: placeholder text of a topic before anything is typed."
+  },
+  "mindMapAddTopic": "追加",
+  "@mindMapAddTopic": {
+    "description": "Mind map dock button (nothing selected): add a main topic under the central topic."
+  },
+  "mindMapAddChild": "子トピック",
+  "@mindMapAddChild": {
+    "description": "Mind map: add a subtopic under the selected topic (dock button and menu item)."
+  },
+  "mindMapAddSibling": "同レベル",
+  "@mindMapAddSibling": {
+    "description": "Mind map: add a topic at the same level next to the selected one (dock button and menu item)."
+  },
+  "mindMapEditText": "編集",
+  "@mindMapEditText": {
+    "description": "Mind map: start editing the text of the selected topic."
+  },
+  "mindMapCollapse": "折りたたむ",
+  "@mindMapCollapse": {
+    "description": "Mind map: hide the subtopics of the selected topic."
+  },
+  "mindMapExpand": "展開",
+  "@mindMapExpand": {
+    "description": "Mind map: show the hidden subtopics of the selected topic."
+  },
+  "mindMapDelete": "削除",
+  "@mindMapDelete": {
+    "description": "Mind map: delete the selected topic and its subtopics."
+  },
+  "mindMapStyle": "スタイル",
+  "@mindMapStyle": {
+    "description": "Mind map dock button: open the structure and color theme panel."
+  },
+  "mindMapFit": "全体表示",
+  "@mindMapFit": {
+    "description": "Mind map: zoom so the whole map fits on screen."
+  },
+  "mindMapZoomActual": "実寸",
+  "@mindMapZoomActual": {
+    "description": "Mind map zoom menu: show at 100%."
+  },
+  "mindMapZoomIn": "拡大",
+  "@mindMapZoomIn": {
+    "description": "Mind map zoom menu: zoom in."
+  },
+  "mindMapZoomOut": "縮小",
+  "@mindMapZoomOut": {
+    "description": "Mind map zoom menu: zoom out."
+  },
+  "mindMapUndo": "元に戻す",
+  "@mindMapUndo": {
+    "description": "Mind map editor top bar: undo the last change."
+  },
+  "mindMapRedo": "やり直す",
+  "@mindMapRedo": {
+    "description": "Mind map editor top bar: redo."
+  },
+  "mindMapNewLine": "改行",
+  "@mindMapNewLine": {
+    "description": "Mind map: button above the soft keyboard that inserts a line break in the topic being edited."
+  },
+  "mindMapDone": "完了",
+  "@mindMapDone": {
+    "description": "Mind map: button above the soft keyboard that finishes editing the topic text."
+  },
+  "mindMapStyleSheetTitle": "マップのスタイル",
+  "@mindMapStyleSheetTitle": {
+    "description": "Title of the mind map structure and color theme panel."
+  },
+  "mindMapStructureTitle": "構造",
+  "@mindMapStructureTitle": {
+    "description": "Mind map style panel: section title for the layout structure."
+  },
+  "mindMapStructureMindMap": "マインドマップ",
+  "@mindMapStructureMindMap": {
+    "description": "Mind map structure: central topic in the middle, branches on both sides."
+  },
+  "mindMapStructureLogicRight": "ロジック図",
+  "@mindMapStructureLogicRight": {
+    "description": "Mind map structure: branches grow to the right."
+  },
+  "mindMapStructureLogicLeft": "左向きロジック図",
+  "@mindMapStructureLogicLeft": {
+    "description": "Mind map structure: branches grow to the left."
+  },
+  "mindMapStructureOrgDown": "組織図",
+  "@mindMapStructureOrgDown": {
+    "description": "Mind map structure: branches grow downwards."
+  },
+  "mindMapStructureTreeRight": "ツリー",
+  "@mindMapStructureTreeRight": {
+    "description": "Mind map structure: an indented tree like a table of contents."
+  },
+  "mindMapStructureTimeline": "タイムライン",
+  "@mindMapStructureTimeline": {
+    "description": "Mind map structure: main topics on a horizontal time axis."
+  },
+  "mindMapStructureFishbone": "フィッシュボーン",
+  "@mindMapStructureFishbone": {
+    "description": "Mind map structure: cause-and-effect fishbone diagram with the head on the right."
+  },
+  "mindMapThemeTitle": "配色テーマ",
+  "@mindMapThemeTitle": {
+    "description": "Mind map style panel: section title for the color theme."
+  },
+  "mindMapThemeFollow": "アプリに合わせる",
+  "@mindMapThemeFollow": {
+    "description": "Mind map color theme that follows the app color."
+  },
+  "mindMapThemeRainbow": "レインボー",
+  "@mindMapThemeRainbow": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeOcean": "オーシャン",
+  "@mindMapThemeOcean": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeForest": "フォレスト",
+  "@mindMapThemeForest": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeSunset": "夕焼け",
+  "@mindMapThemeSunset": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeSakura": "桜",
+  "@mindMapThemeSakura": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeInk": "墨",
+  "@mindMapThemeInk": {
+    "description": "Mind map color theme name (black and white)."
+  },
+  "mindMapThemePaper": "ペーパー",
+  "@mindMapThemePaper": {
+    "description": "Mind map color theme name (minimal, underlined topics)."
+  },
+  "mindMapThemeNeon": "ネオン",
+  "@mindMapThemeNeon": {
+    "description": "Mind map color theme name."
+  },
+  "mindMapThemeMacaron": "マカロン",
+  "@mindMapThemeMacaron": {
+    "description": "Mind map color theme name (pastel)."
+  },
+  "mindMapLineTitle": "線",
+  "@mindMapLineTitle": {
+    "description": "Mind map style panel: section title for the connector line style."
+  },
+  "mindMapLineCurve": "曲線",
+  "@mindMapLineCurve": {
+    "description": "Mind map line style."
+  },
+  "mindMapLineStraight": "直線",
+  "@mindMapLineStraight": {
+    "description": "Mind map line style."
+  },
+  "mindMapLineElbow": "直角",
+  "@mindMapLineElbow": {
+    "description": "Mind map line style (right-angle connectors)."
+  },
+  "mindMapLineRounded": "角丸",
+  "@mindMapLineRounded": {
+    "description": "Mind map line style (rounded right-angle connectors)."
+  },
+  "mindMapSpacingTitle": "間隔",
+  "@mindMapSpacingTitle": {
+    "description": "Mind map style panel: section title for topic spacing."
+  },
+  "mindMapSpacingCompact": "狭い",
+  "@mindMapSpacingCompact": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapSpacingStandard": "標準",
+  "@mindMapSpacingStandard": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapSpacingLoose": "広い",
+  "@mindMapSpacingLoose": {
+    "description": "Mind map spacing option."
+  },
+  "mindMapRainbow": "ブランチを色分け",
+  "@mindMapRainbow": {
+    "description": "Mind map style panel switch: give each main branch its own color."
+  },
+  "mindMapGrid": "ドットグリッド",
+  "@mindMapGrid": {
+    "description": "Mind map style panel switch: show a dot grid behind the map."
+  },
+  "mindMapCreateChip": "マインドマップ",
+  "@mindMapCreateChip": {
+    "description": "New diary page: small button shown while the body is empty that turns this diary into a mind map."
+  },
+  "mindMapCreateChipTooltip": "この日記をマインドマップにする",
+  "@mindMapCreateChipTooltip": {
+    "description": "Tooltip of the mind map button on the new diary page."
+  },
+  "mindMapStarterTitle": "テンプレートから始める",
+  "@mindMapStarterTitle": {
+    "description": "Mind map: title of the card shown on an empty map with templates to start from."
+  },
+  "mindMapConvertBack": "文章に戻す",
+  "@mindMapConvertBack": {
+    "description": "Mind map: turn an empty mind map diary back into a normal text diary."
+  },
+  "mindMapTemplateBrainstorm": "ブレスト",
+  "@mindMapTemplateBrainstorm": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateSwot": "SWOT分析",
+  "@mindMapTemplateSwot": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateBook": "読書ノート",
+  "@mindMapTemplateBook": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateProject": "プロジェクト計画",
+  "@mindMapTemplateProject": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateWeek": "週間計画",
+  "@mindMapTemplateWeek": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateDecision": "意思決定",
+  "@mindMapTemplateDecision": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateTrip": "旅行プラン",
+  "@mindMapTemplateTrip": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateGoals": "年間目標",
+  "@mindMapTemplateGoals": {
+    "description": "Mind map template name."
+  },
+  "mindMapTemplateBrainstormOutline": "ブレスト\n  課題\n    背景\n    目標\n  アイデア\n    案 A\n    案 B\n    案 C\n  次のステップ\n    検証すること\n    必要な助け",
+  "@mindMapTemplateBrainstormOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateSwotOutline": "SWOT分析\n  強み\n    得意なこと\n  弱み\n    改善したいこと\n  機会\n    外部の追い風\n  脅威\n    外部のリスク",
+  "@mindMapTemplateSwotOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateBookOutline": "書名\n  著者と背景\n  主な主張\n    主張その一\n    主張その二\n  印象に残った一節\n  自分の考え\n  やってみること",
+  "@mindMapTemplateBookOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateProjectOutline": "プロジェクト\n  目標\n    達成したい結果\n    評価の基準\n  マイルストーン\n    第1段階\n    第2段階\n    第3段階\n  リソース\n    メンバー\n    予算\n  リスク\n    起こりうる問題\n    対応策",
+  "@mindMapTemplateProjectOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateWeekOutline": "今週の計画\n  月曜日\n  火曜日\n  水曜日\n  木曜日\n  金曜日\n  週末",
+  "@mindMapTemplateWeekOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateDecisionOutline": "決めること\n  選択肢 A\n    メリット\n    コスト\n  選択肢 B\n    メリット\n    コスト\n  判断の基準\n  最終的な選択",
+  "@mindMapTemplateDecisionOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateTripOutline": "旅行\n  日程\n    交通\n    宿泊\n  持ち物\n    書類\n    服\n    電子機器\n  予算\n  行きたい場所",
+  "@mindMapTemplateTripOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTemplateGoalsOutline": "今年の目標\n  健康\n  学び\n  仕事\n  家族と友人\n  趣味\n  お金",
+  "@mindMapTemplateGoalsOutline": {
+    "description": "Mind map template content: an indented outline, first line is the central topic, two spaces per level. Keep the indentation."
+  },
+  "mindMapTopicCount": "{count} 個のトピック",
+  "@mindMapTopicCount": {
+    "description": "Mind map: number of topics in a map (card and preview footer).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mindMapViewFull": "全画面で見る",
+  "@mindMapViewFull": {
+    "description": "Mind map preview: open the map full screen to pan and zoom."
+  },
+  "mindMapEditMap": "マップを編集",
+  "@mindMapEditMap": {
+    "description": "Mind map viewer / embedded card: open the map for editing."
+  },
+  "mindMapUntitled": "無題のマップ",
+  "@mindMapUntitled": {
+    "description": "Mind map whose central topic has no text (titles of viewer pages and cards)."
+  },
+  "mindMapDiaryInfo": "日記の情報",
+  "@mindMapDiaryInfo": {
+    "description": "Mind map diary editor menu: open the panel with date, mood, tags and notebooks."
+  },
+  "mindMapCanvasLabel": "マインドマップのキャンバス",
+  "@mindMapCanvasLabel": {
+    "description": "Accessibility label of the mind map canvas."
+  },
+  "notebookRuleMediaMindMap": "マインドマップあり",
+  "@notebookRuleMediaMindMap": {
+    "description": "Smart notebook / search filter rule: diaries that are or contain a mind map."
+  },
+  "settingsFeaturesMindMaps": "マインドマップ",
+  "@settingsFeaturesMindMaps": {
+    "description": "Features page: switch for mind maps."
+  },
+  "settingsFeaturesMindMapsSubtitle": "新しい日記をマップにしたり、本文にマップを挿入したりできます",
+  "@settingsFeaturesMindMapsSubtitle": {
+    "description": "Features page: subtitle of the mind maps switch."
   }
 }

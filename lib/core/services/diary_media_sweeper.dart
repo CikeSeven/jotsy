@@ -16,6 +16,7 @@ class DiaryMediaSweepRequest {
     required this.referenceSources,
     required this.now,
     required this.gracePeriod,
+    this.includeCaches = true,
   });
 
   final String documentsPath;
@@ -23,6 +24,10 @@ class DiaryMediaSweepRequest {
   final List<String?> referenceSources;
   final DateTime now;
   final Duration gracePeriod;
+
+  /// 是否连选择器缓存与长图分片一起回收。存储管理清理未使用的文件时为
+  /// false：那里的缓存按自己的规则（一小时内没动过）另行清理。
+  final bool includeCaches;
 }
 
 class DiaryMediaSweepReport {
@@ -55,18 +60,20 @@ DiaryMediaSweepReport sweepDiaryMediaFiles(DiaryMediaSweepRequest request) {
       ),
     );
   }
-  // 选择器缓存只是导入中转，没有任何正文会引用，过了宽限期即可回收。
-  for (final name in DiaryMediaStorageService.pickerCacheDirectoryNames) {
-    sweep.run(
-      Directory(p.join(request.temporaryPath, name)),
-      isReferenced: (_) => false,
+  if (request.includeCaches) {
+    // 选择器缓存只是导入中转，没有任何正文会引用，过了宽限期即可回收。
+    for (final name in DiaryMediaStorageService.pickerCacheDirectoryNames) {
+      sweep.run(
+        Directory(p.join(request.temporaryPath, name)),
+        isReferenced: (_) => false,
+      );
+    }
+    sweep.runLongImageTiles(
+      Directory(
+        p.join(request.temporaryPath, LongImageTileService.directoryName),
+      ),
     );
   }
-  sweep.runLongImageTiles(
-    Directory(
-      p.join(request.temporaryPath, LongImageTileService.directoryName),
-    ),
-  );
   return DiaryMediaSweepReport(
     deletedFiles: sweep.deletedFiles,
     freedBytes: sweep.freedBytes,

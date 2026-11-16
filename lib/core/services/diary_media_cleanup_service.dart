@@ -65,16 +65,27 @@ class DiaryMediaCleanupService {
 
   /// 排队执行一轮回收；失败返回 null，不向调用方抛出。
   ///
-  /// [gracePeriod] 默认取构造时的宽限期；存储管理里用户主动清理时传更短的
-  /// 宽限期（仍不为零：局域网同步会在写库前先把收到的文件放进媒体目录，
-  /// 刚放进来、还没有记录引用的文件不能被抢先删掉）。
-  Future<DiaryMediaSweepReport?> sweep({Duration? gracePeriod}) =>
-      _tail = _tail.then((_) => _sweepSafely(gracePeriod ?? this.gracePeriod));
+  /// [gracePeriod] 默认取构造时的宽限期。存储管理里用户主动清理时传零、
+  /// [includeCaches] 为 false（只清托管媒体目录）：那条路径先确认没有编辑
+  /// 页、撤销提示已关闭，并独占托管媒体写入闸门（`ManagedMediaWriteGate`，
+  /// 局域网同步、HEIC 修复这些先放文件后写库的流程都在闸门里），刚放进来
+  /// 还没写库的文件不会被抢先删掉。其他调用方不经闸门，必须留宽限期。
+  Future<DiaryMediaSweepReport?> sweep({
+    Duration? gracePeriod,
+    bool includeCaches = true,
+  }) => _tail = _tail.then(
+    (_) => _sweepSafely(gracePeriod ?? this.gracePeriod, includeCaches),
+  );
 
-  Future<DiaryMediaSweepReport?> _sweepSafely(Duration gracePeriod) async {
+  Future<DiaryMediaSweepReport?> _sweepSafely(
+    Duration gracePeriod,
+    bool includeCaches,
+  ) async {
     if (_disposed) return null;
     try {
-      final report = await _runInBackground(await _buildRequest(gracePeriod));
+      final report = await _runInBackground(
+        await _buildRequest(gracePeriod, includeCaches),
+      );
       if (report.deletedFiles > 0) {
         debugPrint(
           'Diary media cleanup removed ${report.deletedFiles} files '
@@ -88,7 +99,10 @@ class DiaryMediaCleanupService {
     }
   }
 
-  Future<DiaryMediaSweepRequest> _buildRequest(Duration gracePeriod) async {
+  Future<DiaryMediaSweepRequest> _buildRequest(
+    Duration gracePeriod,
+    bool includeCaches,
+  ) async {
     final diaries = _database.diaries;
     final rows = await (_database.selectOnly(
       diaries,
@@ -132,6 +146,7 @@ class DiaryMediaCleanupService {
       ],
       now: _clock(),
       gracePeriod: gracePeriod,
+      includeCaches: includeCaches,
     );
   }
 

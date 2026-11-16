@@ -95,10 +95,15 @@ class _StoragePageState extends ConsumerState<StoragePage>
   void _openCategory(StorageCategory category) {
     if (StorageMediaFilter.categories.contains(category)) {
       _openMedia(StorageMediaFilter(category: category));
+    } else if (category == StorageCategory.unused) {
+      _openUnused();
     } else if (category == StorageCategory.backgrounds) {
       _openBackgrounds();
     }
   }
+
+  /// 未使用的文件：媒体页的“未使用”列表，可查看、多选删除。
+  void _openUnused() => _openMedia(const StorageMediaFilter(unusedOnly: true));
 
   /// “占用最多”里的一项：与媒体页同一个详情面板，压缩、删除与打开日记
   /// 都经同一套流程；结束后（含从日记回来）重新扫描。
@@ -131,6 +136,7 @@ class _StoragePageState extends ConsumerState<StoragePage>
 
   bool _canOpenCategory(StorageCategory category) =>
       StorageMediaFilter.categories.contains(category) ||
+      category == StorageCategory.unused ||
       category == StorageCategory.backgrounds;
 
   @override
@@ -251,6 +257,7 @@ class _StoragePageState extends ConsumerState<StoragePage>
                         database: false,
                       ),
                     ),
+              onOpenUnused: _openUnused,
               onCompactDatabase: _busy
                   ? null
                   : () => run(

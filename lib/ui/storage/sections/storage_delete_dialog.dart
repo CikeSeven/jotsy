@@ -6,7 +6,8 @@ import '../../../core/services/storage/storage_usage_models.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 
 /// 删除媒体前的确认：写明删几个文件、释放多少，会从哪些日记 / 日记本封面
-/// / 留言 / 草稿 / AI 对话消息里移除，删除后无法恢复。左灰“取消”，右 error 色“删除”。
+/// / 留言 / 草稿 / AI 对话消息里移除（全是未使用的文件时只说没有地方在用），
+/// 删除后无法恢复。左灰“取消”，右 error 色“删除”。
 Future<bool> confirmStorageDelete(
   BuildContext context,
   List<StorageMediaEntry> entries,
@@ -68,7 +69,13 @@ Future<bool> confirmStorageDelete(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(l10n.storageMgmtDeleteBody(l10n.formatByteSize(bytes))),
+              Text(
+                places.isEmpty
+                    ? l10n.storageMgmtDeleteUnusedBody(
+                        l10n.formatByteSize(bytes),
+                      )
+                    : l10n.storageMgmtDeleteBody(l10n.formatByteSize(bytes)),
+              ),
               for (final place in places)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),

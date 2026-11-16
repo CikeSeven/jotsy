@@ -6,6 +6,7 @@ import '../../../database/app_database.dart';
 import '../../backup_settings.dart';
 import '../../data_archive_service.dart';
 import '../../editing_session_registry.dart';
+import '../../managed_media_write_gate.dart';
 import '../../settings_service.dart';
 import 'sync_canonical_diary.dart';
 import 'sync_canonical_misc.dart';
@@ -92,66 +93,76 @@ class SyncApplier {
       final ready = await registry.waitForUndoWindows(timeout: undoWaitTimeout);
       if (!ready) return SyncApplyResult.deferred();
 
-      // 2. 媒体在事务之前就位：记录写进库的那一刻文件必须已经在（界面随时
-      //    可能读到新记录）。同键不同文件的来件换了键，本次要写的记录里的
-      //    引用跟着改；改过的分面不再是另一侧的原值，不继承历史时间。
-      final placement = await staging?.place() ?? const SyncMediaPlacement();
-      final rekeys = placement.rekeyMap;
-      final rewrittenFacets = <SyncKey, Set<String>>{};
-      final writes = <SyncWrite>[];
-      for (final write in plan.writes) {
-        final record = write.record;
-        final rewritten = record == null
-            ? null
-            : syncRewriteRecordMedia(record, rekeys);
-        if (rewritten == null || identical(rewritten, record)) {
-          writes.add(write);
-          continue;
-        }
-        rewrittenFacets[write.key] = <String>{
-          for (final facet in rewritten.facets.keys)
-            if (rewritten.hashes[facet] != record!.hashes[facet]) facet,
-        };
-        writes.add(
-          SyncWrite(
-            key: write.key,
-            expected: write.expected,
-            record: rewritten,
-          ),
-        );
-      }
-
-      final withSettings =
-          includeSettings ??
-          writes.any((write) => write.key.entity == SyncEntity.settings);
-      final touchesSettings =
-          withSettings ||
-          writes.any((write) => write.key.entity == SyncEntity.prefs);
-      if (touchesSettings && settings == null) {
-        throw StateError('同步设置需要在构造 SyncApplier 时传入 SettingsService');
-      }
-
-      final result = await DataArchiveService.runSerialized(
-        () => _applyLocked(
-          plan,
-          writes,
-          withSettings: withSettings,
-          rewrittenFacets: rewrittenFacets,
-        ),
-      );
-      return SyncApplyResult(
-        status: SyncApplyStatus.applied,
-        skipped: result.skipped,
-        rekeys: placement.rekeys,
-        manifest: result.manifest,
-        counts: result.counts,
-        summary: result.summary,
-        mediaFiles: placement.placedFiles,
-        mediaBytes: placement.placedBytes,
+      // 2–3 经托管媒体写入闸门：媒体就位之后、写库提交之前，这些文件在库里
+      //    还没有引用；存储管理的立即删除与清理要等这一段结束才动手
+      //    （ManagedMediaWriteGate），不会把刚就位的文件当成未使用删掉。
+      return await ManagedMediaWriteGate.write(
+        () => _placeAndApply(plan, staging, includeSettings),
       );
     } finally {
       await staging?.dispose();
     }
+  }
+
+  /// [apply] 的第 2–3 步：媒体就位、改写引用，再在串行队列里一次写库。
+  Future<SyncApplyResult> _placeAndApply(
+    SyncSidePlan plan,
+    SyncMediaStaging? staging,
+    bool? includeSettings,
+  ) async {
+    // 2. 媒体在事务之前就位：记录写进库的那一刻文件必须已经在（界面随时
+    //    可能读到新记录）。同键不同文件的来件换了键，本次要写的记录里的
+    //    引用跟着改；改过的分面不再是另一侧的原值，不继承历史时间。
+    final placement = await staging?.place() ?? const SyncMediaPlacement();
+    final rekeys = placement.rekeyMap;
+    final rewrittenFacets = <SyncKey, Set<String>>{};
+    final writes = <SyncWrite>[];
+    for (final write in plan.writes) {
+      final record = write.record;
+      final rewritten = record == null
+          ? null
+          : syncRewriteRecordMedia(record, rekeys);
+      if (rewritten == null || identical(rewritten, record)) {
+        writes.add(write);
+        continue;
+      }
+      rewrittenFacets[write.key] = <String>{
+        for (final facet in rewritten.facets.keys)
+          if (rewritten.hashes[facet] != record!.hashes[facet]) facet,
+      };
+      writes.add(
+        SyncWrite(key: write.key, expected: write.expected, record: rewritten),
+      );
+    }
+
+    final withSettings =
+        includeSettings ??
+        writes.any((write) => write.key.entity == SyncEntity.settings);
+    final touchesSettings =
+        withSettings ||
+        writes.any((write) => write.key.entity == SyncEntity.prefs);
+    if (touchesSettings && settings == null) {
+      throw StateError('同步设置需要在构造 SyncApplier 时传入 SettingsService');
+    }
+
+    final result = await DataArchiveService.runSerialized(
+      () => _applyLocked(
+        plan,
+        writes,
+        withSettings: withSettings,
+        rewrittenFacets: rewrittenFacets,
+      ),
+    );
+    return SyncApplyResult(
+      status: SyncApplyStatus.applied,
+      skipped: result.skipped,
+      rekeys: placement.rekeys,
+      manifest: result.manifest,
+      counts: result.counts,
+      summary: result.summary,
+      mediaFiles: placement.placedFiles,
+      mediaBytes: placement.placedBytes,
+    );
   }
 
   /// 来源一侧照做对方报告的改键（[SyncApplyResult.rekeys]）：把本机 `oldKey`
@@ -162,9 +173,19 @@ class SyncApplier {
   /// 进同步状态），所以必须在本机自己的 [apply] 之后调用：那时本机收到的
   /// 记录已在库里，引用 `oldKey` 的都是本机这份文件。本机 `oldKey` 已不是
   /// 对方收到的那份文件时跳过这一条（文件在此期间被换掉）。
+  ///
+  /// 拷出 `newKey` 到改写提交之间新文件还没有引用，整段经托管媒体写入闸门
+  /// （其中的 [apply] 嵌套进入，直接执行）。
   Future<SyncApplyResult> adoptMediaRekeys(
     List<SyncMediaRekey> rekeys, {
     bool includeSettings = false,
+  }) => ManagedMediaWriteGate.write(
+    () => _adoptMediaRekeys(rekeys, includeSettings: includeSettings),
+  );
+
+  Future<SyncApplyResult> _adoptMediaRekeys(
+    List<SyncMediaRekey> rekeys, {
+    required bool includeSettings,
   }) async {
     final adoptable = await media.copyForAdoption(rekeys);
     if (adoptable.isEmpty) {

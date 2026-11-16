@@ -13,6 +13,7 @@ import '../diary_font_storage_service.dart';
 import '../diary_media_cleanup_service.dart';
 import '../editing_session_registry.dart';
 import '../managed_file_paths.dart';
+import '../managed_media_write_gate.dart';
 import '../settings_service.dart';
 import '../video_poster_cache.dart';
 import 'media_compressor.dart';
@@ -27,7 +28,9 @@ import 'storage_usage_scanner.dart';
 ///
 /// 删除与压缩都遵守同一条链路，任何一步都不覆盖、不预先删除被引用的文件：
 /// 1. 守卫：有编辑页这类握着整份内存副本的阻塞者时拒绝（它们之后整份写回
-///    会把旧路径写回来）；等撤销窗口关闭（撤销会写回旧行）；
+///    会把旧路径写回来）；等撤销窗口关闭（撤销会写回旧行）；删除与清理再
+///    独占托管媒体写入闸门（[ManagedMediaWriteGate]），等局域网同步、HEIC
+///    修复这类“先放文件、后写库”的流程结束，压缩自己则登记为写入者；
 /// 2. 压缩时先把新文件写到原文件旁的新路径（[freshSiblingPath]），可取消；
 /// 3. 在 [DataArchiveService.runSerialized] 里（与备份导入、局域网同步写入、
 ///    网盘备份扫描串行）重新读取全部引用来源、换算改写、一次事务按前置
@@ -47,6 +50,7 @@ class StorageMediaService {
     Future<Directory> Function()? temporaryDirectory,
     Future<String?> Function()? fontsPath,
     DateTime Function()? clock,
+    this.mediaWritesTimeout = const Duration(seconds: 8),
   }) : compressor = compressor ?? createPlatformMediaCompressor(),
        _registry = registry ?? EditingSessionRegistry.instance,
        _dataRoot = dataRoot ?? appDataRootDirectory,
@@ -77,6 +81,9 @@ class StorageMediaService {
   /// 等撤销窗口关闭的上限；超时视为忙，提示用户稍后再试。
   static const Duration undoWindowTimeout = Duration(seconds: 8);
 
+  /// 等同步、HEIC 修复放完文件并写完库的上限；超时视为忙。
+  final Duration mediaWritesTimeout;
+
   static Future<String?> _defaultFontsPath() async => p.join(
     (await getApplicationSupportDirectory()).path,
     DiaryFontStorageService.directoryName,
@@ -98,7 +105,7 @@ class StorageMediaService {
     return report
         .copyWith(
           databaseFreeBytes: stats.freeBytes,
-          videoInfo: await _probeVideos(report.media),
+          videoInfo: await _probeVideos([...report.media, ...report.unused]),
         )
         .withDeviceSpace(await compressor.deviceSpace());
   }
@@ -161,20 +168,23 @@ class StorageMediaService {
   );
 
   /// 删除 [keys] 指向的文件：先从全部引用里移除，再删已无引用的文件。
+  /// 未使用的文件（没有引用）直接删除，不看写入时间。
   Future<StorageDeleteResult> deleteMedia(Set<String> keys) async {
     await _guard();
-    return DataArchiveService.runSerialized(() async {
-      final sources = await _database.getStorageReferenceSources();
-      final plan = await planStorageMediaRemoval(sources, keys);
-      final written = await _database.applyStorageMediaEdits(plan.edits);
-      final freed = await _deleteUnreferenced(keys);
-      if (written.applied > 0) _registry.notifyDataReplaced();
-      return StorageDeleteResult(
-        deletedFiles: freed.files,
-        freedBytes: freed.bytes,
-        skippedRows: written.skipped,
-      );
-    });
+    return _exclusive(
+      () => DataArchiveService.runSerialized(() async {
+        final sources = await _database.getStorageReferenceSources();
+        final plan = await planStorageMediaRemoval(sources, keys);
+        final written = await _database.applyStorageMediaEdits(plan.edits);
+        final freed = await _deleteUnreferenced(keys);
+        if (written.applied > 0) _registry.notifyDataReplaced();
+        return StorageDeleteResult(
+          deletedFiles: freed.files,
+          freedBytes: freed.bytes,
+          skippedRows: written.skipped,
+        );
+      }),
+    );
   }
 
   /// 压缩 [entries]：逐个写出新文件（可取消，已完成的照样提交），再一次
@@ -187,6 +197,25 @@ class StorageMediaService {
     StorageCancelToken? cancel,
   }) async {
     await _guard();
+    // 写出新文件到改写引用提交之间，新文件还没有引用：登记为写入者。
+    return ManagedMediaWriteGate.write(
+      () => _compressMedia(
+        entries,
+        imagePreset: imagePreset,
+        videoPreset: videoPreset,
+        onProgress: onProgress,
+        cancel: cancel,
+      ),
+    );
+  }
+
+  Future<StorageCompressResult> _compressMedia(
+    List<StorageMediaEntry> entries, {
+    required StorageImagePreset imagePreset,
+    required StorageVideoPreset videoPreset,
+    void Function(StorageCompressProgress progress)? onProgress,
+    StorageCancelToken? cancel,
+  }) async {
     final outputs = <String, String>{};
     final outputBytes = <String, int>{};
     var unchanged = 0;
@@ -285,19 +314,24 @@ class StorageMediaService {
     });
   }
 
-  /// 一键清理：缓存（一小时内没动过的）、未使用的文件（[kStorageOrphanGrace]
-  /// 之前写入的）与数据库空闲页。从不碰被引用的媒体。
+  /// 一键清理：缓存（一小时内没动过的）、未使用的文件（全部，不看写入
+  /// 时间）与数据库空闲页。从不碰被引用的媒体。
+  ///
+  /// 未使用的文件不留宽限期：守卫已确认没有编辑页、撤销提示已关闭，再独占
+  /// 托管媒体写入闸门，同步与 HEIC 修复刚放进来、还没写库的文件不在其中；
+  /// 删除前在串行队列里重新读取全部引用（与媒体回收同一口径）。
   Future<int> cleanUp({
     bool cache = true,
     bool orphans = true,
     bool database = true,
   }) async {
     await _guard();
-    return DataArchiveService.runSerialized(() async {
+    Future<int> run() => DataArchiveService.runSerialized(() async {
       var freed = 0;
       if (orphans) {
         final report = await _mediaCleanup.sweep(
-          gracePeriod: kStorageOrphanGrace,
+          gracePeriod: Duration.zero,
+          includeCaches: false,
         );
         freed += report?.freedBytes ?? 0;
       }
@@ -317,6 +351,20 @@ class StorageMediaService {
       }
       return freed;
     });
+    return orphans ? _exclusive(run) : run();
+  }
+
+  /// 独占托管媒体写入闸门再执行（删除与清理未使用的文件）；等不到同步、
+  /// HEIC 修复这类写入者结束时视为忙，什么都不做。
+  Future<T> _exclusive<T>(Future<T> Function() action) async {
+    try {
+      return await ManagedMediaWriteGate.exclusive(
+        action,
+        timeout: mediaWritesTimeout,
+      );
+    } on ManagedMediaWritesPending {
+      throw const StorageBusyException(StorageBusyReason.mediaWrites);
+    }
   }
 
   static Future<int> _clearCache(String temporaryPath, DateTime now) =>
@@ -401,7 +449,13 @@ class StorageMediaService {
 }
 
 /// 为什么现在不能删除 / 压缩 / 清理。
-enum StorageBusyReason { editing, undoWindow }
+enum StorageBusyReason {
+  editing,
+  undoWindow,
+
+  /// 局域网同步或 HEIC 修复正在放文件、写库。
+  mediaWrites,
+}
 
 class StorageBusyException implements Exception {
   const StorageBusyException(this.reason);

@@ -14,6 +14,7 @@ import 'app_data_directory.dart';
 import 'diary_media_storage_service.dart';
 import 'editing_session_registry.dart';
 import 'heif_image_converter.dart';
+import 'managed_media_write_gate.dart';
 import 'settings_service.dart';
 
 /// 一轮修复的结果（诊断与测试用）。
@@ -53,7 +54,8 @@ class HeifMediaRepairReport {
 ///   引用经 `applyMediaPathRepairs` 一次事务改写（前置条件不符的行跳过）；
 /// - 原 HEIC 不删，只把修改时间刷新为现在：此刻打开着的编辑页、撤销提示
 ///   可能还握着旧路径，之后写回时文件得还在；没有引用后由媒体回收在宽限期
-///   （24 小时）之后删除。下次启动仍被引用的会再转一次（新文件名不覆盖已有
+///   （24 小时）之后删除，或由用户在存储管理里清掉（那里先确认没有编辑页、
+///   撤销提示已关闭）。下次启动仍被引用的会再转一次（新文件名不覆盖已有
 ///   的 JPEG）；
 /// - 触发：冷启动后延迟一次（[scheduleStartupRepair]），有编辑页开着时等它们
 ///   关闭再开始，避免整份写回的页面立刻把改写盖掉。请求串行执行，任何一步
@@ -112,7 +114,9 @@ class HeifMediaRepairService {
     try {
       await _waitUntilNoEditors();
       if (_disposed) return null;
-      final report = await _repair();
+      // 写出 JPEG 到改写引用提交之间，新文件还没有引用：整段经托管媒体
+      // 写入闸门，存储管理的立即清理等它结束（ManagedMediaWriteGate）。
+      final report = await ManagedMediaWriteGate.write(_repair);
       if (report.convertedFiles > 0) {
         debugPrint(
           'HEIF repair converted ${report.convertedFiles} images, '

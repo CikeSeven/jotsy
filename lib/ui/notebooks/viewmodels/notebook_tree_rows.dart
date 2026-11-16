@@ -4,8 +4,8 @@ import '../../../core/database/app_database.dart';
 import 'notebook_tree.dart';
 import 'notebook_view.dart';
 
-/// 树形列表（管理页、选本面板、上级选择面板）的一行：日记本与它在列表里的
-/// 缩进级数（0 为不缩进）。纯数据，层级口径只来自 [NotebookTree]。
+/// 树形列表（管理页、选本面板、上级选择面板、画廊筛选等）的一行：日记本与
+/// 它在列表里的缩进级数（0 为不缩进）。纯数据，层级口径只来自 [NotebookTree]。
 @immutable
 class NotebookTreeRow {
   const NotebookTreeRow(this.notebook, this.indent);
@@ -58,6 +58,55 @@ List<NotebookTreeRow> notebookSubtreeRows(
       NotebookTreeRow(descendant, descendant.depth - root.depth),
   ],
 ];
+
+/// 可收起的树形列表（选本面板、上级选择面板、画廊筛选等，见
+/// `NotebookFoldableRows`）这一帧的折叠情况，只看列出来的行：
+///
+/// - [parents]：下面有列出来的子孙的行，行尾给展开 / 收起；
+/// - [folded]：列出来的上级里有一本在 [collapsed] 里的行，收到 0 高度。
+///
+/// 只按缩进推算：[notebookTreeRows] 按树序列出、缩进按列出来的上级计数，
+/// 所以一行列出来的上级就是它前面缩进依次变浅的那几行，紧跟在一行后面、
+/// 缩进比它深的连续几行正好是它列出来的子孙。上级没列出（被排除）而往外
+/// 提了一级的子本跟着列出来的那一级走。
+({Set<String> parents, Set<String> folded}) notebookRowsFold(
+  List<NotebookTreeRow> rows,
+  Set<String> collapsed,
+) {
+  final parents = <String>{};
+  final folded = <String>{};
+  final chain = <NotebookTreeRow>[];
+  for (var i = 0; i < rows.length; i++) {
+    final row = rows[i];
+    while (chain.isNotEmpty && chain.last.indent >= row.indent) {
+      chain.removeLast();
+    }
+    if (chain.any((ancestor) => collapsed.contains(ancestor.notebook.id))) {
+      folded.add(row.notebook.id);
+    }
+    if (i + 1 < rows.length && rows[i + 1].indent > row.indent) {
+      parents.add(row.notebook.id);
+    }
+    chain.add(row);
+  }
+  return (parents: parents, folded: folded);
+}
+
+/// [id] 在列出来的行里的上级（从顶层往下，口径同 [notebookRowsFold]）；
+/// 不在列表里或在顶层时为空。
+List<String> notebookRowAncestors(List<NotebookTreeRow> rows, String id) {
+  final chain = <NotebookTreeRow>[];
+  for (final row in rows) {
+    while (chain.isNotEmpty && chain.last.indent >= row.indent) {
+      chain.removeLast();
+    }
+    if (row.notebook.id == id) {
+      return <String>[for (final ancestor in chain) ancestor.notebook.id];
+    }
+    chain.add(row);
+  }
+  return const <String>[];
+}
 
 /// 管理页里收起后藏起来的本子：上级（任一层）在 [collapsed] 里的。被收起的
 /// 那本自己照常显示，只藏它下面的子孙。
@@ -120,5 +169,5 @@ notebookInheritedPrivacy(
   return (source: parent, visibility: inherited);
 }
 
-/// 树形列表每深一层的缩进（管理页、选本面板、上级选择面板共用）。
+/// 树形列表每深一层的缩进（管理页、选本面板、上级选择面板等共用）。
 const double notebookTreeIndentStep = 20;

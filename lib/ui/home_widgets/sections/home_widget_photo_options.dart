@@ -5,13 +5,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/services/home_widgets/home_widget_content.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/sections/notebook_choice_sheet.dart';
+import '../../notebooks/viewmodels/notebook_tree.dart';
+import '../../notebooks/viewmodels/notebook_tree_rows.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_nav_tile.dart';
 import '../../settings/widgets/settings_option_tiles.dart';
 import '../../widgets/expressive_button_group.dart';
-import 'home_widget_choice_sheet.dart';
 import 'home_widget_privacy_note.dart';
 
 /// 照片回忆的内容选项：照片来自（全部 / 那年今日 / 某个日记本），是否在照片上显示
@@ -98,22 +100,17 @@ class HomeWidgetPhotoOptions extends ConsumerWidget {
                 title: l10n.homeWidgetRecentNotebook,
                 value: (notebook ?? notebooks.first).name,
                 onTap: () async {
-                  final picked = await showHomeWidgetChoiceSheet<String>(
+                  final picked = await showNotebookChoiceSheet(
                     context,
                     title: l10n.homeWidgetRecentNotebook,
-                    selected: notebook?.id,
-                    choices: <HomeWidgetChoice<String>>[
-                      for (final item in notebooks)
-                        HomeWidgetChoice<String>(
-                          value: item.id,
-                          label: item.name,
-                          icon: FontAwesomeIcons.book,
-                          depth: item.depth,
-                        ),
-                    ],
+                    // 树序缩进、可收起；私密的不列（上级私密的子本同样不列）。
+                    rows: notebookTreeRows(NotebookTree.fromViews(notebooks)),
+                    selectedId: (notebook ?? notebooks.first).id,
+                    iconOf: (_) => FontAwesomeIcons.book,
                   );
-                  if (picked != null) {
-                    onChanged(content.copyWith(notebookId: () => picked));
+                  final id = picked?.notebookId;
+                  if (id != null) {
+                    onChanged(content.copyWith(notebookId: () => id));
                   }
                 },
               ),

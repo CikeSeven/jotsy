@@ -13,6 +13,7 @@ import '../models/notebook_pick_selection.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
+import '../widgets/notebook_foldable_rows.dart';
 import '../widgets/notebook_pick_row.dart';
 
 /// 上级选择面板的结果：[parentId] 为 null 表示“无（放在书架上）”。关掉面板
@@ -61,7 +62,8 @@ Future<NotebookParentChoice?> showNotebookParentPickerSheet(
 }
 
 /// 上级选择面板的内容：标题、“无”与候选上级。高度随内容，最高约屏高的
-/// 75%，列表在其中滚动。合上的候选照常可选，整行变淡。
+/// 75%，列表在其中滚动。合上的候选照常可选，整行变淡。有子本的候选可收起 /
+/// 展开（[NotebookFoldableRows]），当前上级所在的那几级打开时按展开排。
 class NotebookParentPickerSheet extends ConsumerWidget {
   const NotebookParentPickerSheet({
     super.key,
@@ -123,20 +125,30 @@ class NotebookParentPickerSheet extends ConsumerWidget {
                 ),
               ),
             ),
-          for (final NotebookTreeRow(:notebook, :indent) in rows)
-            Opacity(
-              key: ValueKey<String>('notebook_parent_${notebook.id}'),
-              opacity: notebook.isClosed ? 0.6 : 1,
-              child: NotebookPickRow(
-                notebook: notebook,
-                indent: indent,
-                count: watchNotebookDisplayCount(ref, notebook, counts),
-                state: notebook.id == selectedParentId
-                    ? NotebookPickState.all
-                    : NotebookPickState.none,
-                onTap: () => choose(notebook.id),
-              ),
-            ),
+          NotebookFoldableRows(
+            rows: rows,
+            reveal: <String>{?selectedParentId},
+            itemBuilder: (context, row, toggle) {
+              final notebook = row.notebook;
+              return Opacity(
+                key: ValueKey<String>('notebook_parent_${notebook.id}'),
+                opacity: notebook.isClosed ? 0.6 : 1,
+                // 汇总篇数只让这一行订阅（行在列表自己的构建里画出）。
+                child: Consumer(
+                  builder: (context, ref, _) => NotebookPickRow(
+                    notebook: notebook,
+                    indent: row.indent,
+                    count: watchNotebookDisplayCount(ref, notebook, counts),
+                    state: notebook.id == selectedParentId
+                        ? NotebookPickState.all
+                        : NotebookPickState.none,
+                    toggle: toggle,
+                    onTap: () => choose(notebook.id),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       );
     }

@@ -10,6 +10,7 @@ import '../models/notebook_pick_selection.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_parts.dart';
+import 'notebook_tree_toggle.dart';
 
 /// 收录选择器的一行（底部面板与发布面板的日记本子页共用），外观沿用发布
 /// 面板的标签行：32dp 图标圆（日记本的容器色）、名称（bodyLarge w600）、
@@ -20,6 +21,8 @@ import 'notebook_cover_parts.dart';
 /// - [showCheck] 为 false 时行尾不显示勾选（“移动到…”点一下就选定）；
 /// - [indent] 为树形列表里的缩进级数（子本缩在上级下面，见
 ///   `notebookTreeRows`）；私密图标看生效可见性（上级私密的子本同样标出）；
+/// - [toggle] 不为 null 时（下面有列出来的子本）勾选前多一个展开 / 收起按钮
+///   （40 × 40，见 `NotebookFoldableRows`），点它不改勾选；
 /// - 画在玻璃面板上时（[OnGlass]）未选中的行底换成半透明凹槽色（与发布
 ///   面板里的标签行同一口径），选中的本子容器色不变。
 class NotebookPickRow extends StatelessWidget {
@@ -31,6 +34,7 @@ class NotebookPickRow extends StatelessWidget {
     this.count,
     this.showCheck = true,
     this.indent = 0,
+    this.toggle,
   });
 
   final NotebookView notebook;
@@ -44,6 +48,9 @@ class NotebookPickRow extends StatelessWidget {
   /// 缩进级数，每级 [notebookTreeIndentStep]。
   final int indent;
 
+  /// 子本的展开 / 收起；没有列出来的子本时为 null。
+  final NotebookRowToggle? toggle;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -53,6 +60,7 @@ class NotebookPickRow extends StatelessWidget {
     final accent = notebookAccentColors(notebook.color, scheme);
     final active = state != NotebookPickState.none;
     final count = this.count;
+    final toggle = this.toggle;
     final privateIcon = switch (notebook.effectiveVisibility) {
       NotebookVisibility.locked => FontAwesomeIcons.lock,
       NotebookVisibility.hidden => FontAwesomeIcons.eyeSlash,
@@ -156,8 +164,19 @@ class NotebookPickRow extends StatelessWidget {
                         ],
                       ),
                     ),
+                    if (toggle != null)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 4),
+                        child: NotebookTreeToggleButton(
+                          key: ValueKey<String>(
+                            'notebook_pick_toggle_${notebook.id}',
+                          ),
+                          toggle: toggle,
+                          compact: true,
+                        ),
+                      ),
                     if (showCheck) ...<Widget>[
-                      const SizedBox(width: 8),
+                      SizedBox(width: toggle == null ? 8 : 4),
                       ExpressiveIconSwap(
                         switchKey: state,
                         child: FaIcon(checkIcon, size: 18, color: checkColor),

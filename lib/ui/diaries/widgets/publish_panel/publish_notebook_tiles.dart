@@ -14,6 +14,7 @@ import 'package:node_diary/ui/notebooks/viewmodels/notebook_tree.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_tree_rows.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_capsule.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_foldable_rows.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_pick_row.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
@@ -98,11 +99,14 @@ class PublishNotebookTile extends StatelessWidget {
 }
 
 /// 面板的日记本子页：顶部“＋ 新建日记本”，下面是可收进的日记本（没合上的
-/// 普通日记本，按书架顺序）的勾选列表；已选中的合上的本子也列出来，可以
+/// 普通日记本，按树序缩进）的勾选列表；已选中的合上的本子也列出来，可以
 /// 取消。勾选直接写进草稿。
 ///
 /// 三态：加载中 / 列表 / 没有日记本时的说明（仍可新建）。篇数在这里订阅：
 /// 子页只在打开时构建，面板主页不随日记写入重查篇数。
+///
+/// 有子本的行可收起 / 展开（[NotebookFoldableRows]，与管理页共用收起状态）；
+/// 选中的本子所在的上级在第一次列出时按展开排，打开就看得到选了哪几本。
 class PublishNotebookPickerPage extends ConsumerWidget {
   const PublishNotebookPickerPage({
     super.key,
@@ -165,20 +169,27 @@ class PublishNotebookPickerPage extends ConsumerWidget {
                   ),
                 )
               else
-                for (final NotebookTreeRow(:notebook, :indent) in rows)
-                  NotebookPickRow(
-                    key: ValueKey<String>('publish_notebook_${notebook.id}'),
-                    notebook: notebook,
-                    indent: indent,
-                    count: counts[notebook.id] ?? 0,
-                    state: selectedIds.contains(notebook.id)
-                        ? NotebookPickState.all
-                        : NotebookPickState.none,
-                    onTap: () => draft.setNotebookSelected(
-                      notebook.id,
-                      !selectedIds.contains(notebook.id),
-                    ),
-                  ),
+                NotebookFoldableRows(
+                  rows: rows,
+                  reveal: selectedIds,
+                  itemBuilder: (context, row, toggle) {
+                    final id = row.notebook.id;
+                    return NotebookPickRow(
+                      key: ValueKey<String>('publish_notebook_$id'),
+                      notebook: row.notebook,
+                      indent: row.indent,
+                      count: counts[id] ?? 0,
+                      state: selectedIds.contains(id)
+                          ? NotebookPickState.all
+                          : NotebookPickState.none,
+                      toggle: toggle,
+                      onTap: () => draft.setNotebookSelected(
+                        id,
+                        !selectedIds.contains(id),
+                      ),
+                    );
+                  },
+                ),
             ],
           );
         },

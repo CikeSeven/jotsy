@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,11 @@ class ExpressiveMenuRowHandle {
   RenderBox? box;
   bool enabled = false;
   VoidCallback? activate;
+
+  /// 行里独立小按钮（见 `ExpressiveMenuRowSecondary`）的 render box 与点按：
+  /// 松手落在它的横向范围里时执行 [secondaryActivate]，不执行 [activate]。
+  RenderBox? secondaryBox;
+  VoidCallback? secondaryActivate;
 }
 
 /// 一块面板的跟手滑选与高亮胶囊（移植自 NexioSchedule 的
@@ -20,7 +27,10 @@ class ExpressiveMenuRowHandle {
 /// - 行经 [ExpressiveMenuSelectionScope] 登记；面板的唯一点按手势在这里：
 ///   按下即在手指下那一行亮起胶囊，按住上下滑动时胶囊以弹簧（阻尼比 0.85、
 ///   刚度 700）连贯滑到新的一行（每换一行一次轻触感），松手执行手指下那一行；
-///   滑出各行时胶囊淡出、位置停在最近一行，松手不执行。
+///   滑出各行时胶囊淡出、位置停在最近一行，松手不执行。松手落在行里的独立
+///   小按钮（`ExpressiveMenuRowSecondary`，如树形列表的展开 / 收起）上时执行
+///   它，不执行这一行。
+/// - 行的范围只算露出来的部分（被上层裁到 0 高的行不参与）。
 /// - 面板长到 98% 前不接管（展开途中的点按被忽略）；内容装不下需要滚动时
 ///   不滑选，手指移动超过 12dp 视为滚动、松手不执行，只保留点选。
 /// - 悬停、键盘聚焦与外部指定的高亮也用同一块胶囊（优先级：按住 > 指定 >
@@ -116,7 +126,48 @@ class ExpressiveMenuSelection extends ChangeNotifier {
       box.getTransformTo(content),
       Offset.zero,
     ).dy;
-    return (top, top + box.size.height);
+    var span = (top, top + box.size.height);
+    // 只算露出来的部分：收起到 0 高的行（树形列表里收起的子项，经
+    // ListItemPresence 的 Align + ClipRect）自己仍按原高布局，只是被上层
+    // 裁掉；按原高算会盖住下面的行、抢走它们的点按与胶囊。
+    RenderObject child = box;
+    var parent = box.parent;
+    while (parent != null && !identical(parent, content)) {
+      final clip = parent.describeApproximatePaintClip(child);
+      if (clip != null) {
+        final visible = MatrixUtils.transformRect(
+          parent.getTransformTo(content),
+          clip,
+        );
+        span = (
+          math.max(span.$1, visible.top),
+          math.min(span.$2, visible.bottom),
+        );
+        if (span.$2 <= span.$1) return null;
+      }
+      child = parent;
+      parent = parent.parent;
+    }
+    return span;
+  }
+
+  /// 松手的位置 [position]（内容坐标）是否落在 [row] 的独立小按钮上：只看
+  /// 横向（手指已在这一行上），按钮格整列都算。
+  bool _hitsSecondary(ExpressiveMenuRowHandle row, Offset position) {
+    final box = row.secondaryBox;
+    final content = contentBox();
+    if (box == null ||
+        content == null ||
+        !box.attached ||
+        !content.attached ||
+        !box.hasSize) {
+      return false;
+    }
+    final rect = MatrixUtils.transformRect(
+      box.getTransformTo(content),
+      Offset.zero & box.size,
+    );
+    return position.dx >= rect.left && position.dx < rect.right;
   }
 
   ExpressiveMenuRowHandle? _rowAt(double y) {
@@ -187,7 +238,13 @@ class ExpressiveMenuSelection extends ChangeNotifier {
     if (event.pointer != _pointer) return;
     final target = _scrolled ? null : _pressed;
     _endPointer();
-    if (target != null && target.enabled) target.activate?.call();
+    if (target == null || !target.enabled) return;
+    final secondary = target.secondaryActivate;
+    if (secondary != null && _hitsSecondary(target, event.localPosition)) {
+      secondary();
+      return;
+    }
+    target.activate?.call();
   }
 
   void handlePointerCancel(PointerCancelEvent event) {

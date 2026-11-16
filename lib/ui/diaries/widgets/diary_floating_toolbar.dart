@@ -24,6 +24,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_block_actions/diary_block_ac
 import 'package:node_diary/ui/diaries/widgets/diary_callout/diary_callout_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_code_block_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_code_block_button.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_host.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_toolbar_color_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_list_style/diary_list_style_panel.dart';
@@ -573,7 +574,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   ) {
     return switch (content) {
       _ToolbarPanel.color => DiaryColorPanel(
-        controller: widget.controller,
+        host: DiaryEditorColorHost(widget.controller),
         target: _colorTarget,
         mode: _colorMode,
         onModeChanged: _handleColorModeChanged,

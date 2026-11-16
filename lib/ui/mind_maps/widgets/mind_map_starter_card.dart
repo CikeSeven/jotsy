@@ -15,6 +15,7 @@ class MindMapStarterCard extends StatelessWidget {
     required this.onTemplate,
     this.onConvertBack,
     this.onImport,
+    this.onAiGenerate,
   });
 
   final ValueChanged<MindMapTemplate> onTemplate;
@@ -24,6 +25,9 @@ class MindMapStarterCard extends StatelessWidget {
 
   /// 从文件导入（XMind、OPML、FreeMind、Markdown）。
   final VoidCallback? onImport;
+
+  /// AI 生成整张导图（AI 写作可用时才有，排在模板之前）。
+  final VoidCallback? onAiGenerate;
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +89,16 @@ class MindMapStarterCard extends StatelessWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: MindMapTemplate.values.length,
+                  itemCount:
+                      MindMapTemplate.values.length +
+                      (onAiGenerate == null ? 0 : 1),
                   separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (BuildContext context, int index) {
+                    final ai = onAiGenerate;
+                    if (ai != null) {
+                      if (index == 0) return _AiTile(onTap: ai);
+                      index -= 1;
+                    }
                     final template = MindMapTemplate.values[index];
                     return _TemplateTile(
                       template: template,
@@ -152,6 +163,64 @@ class _TemplateTile extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 模板前的“AI 生成”格：同模板格的尺寸，预览处是 `primaryContainer` 底上的
+/// 魔杖，表明它不是现成的模板。
+class _AiTile extends StatelessWidget {
+  const _AiTile({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final name = l10n.mindMapAiTile;
+    return Semantics(
+      button: true,
+      label: l10n.mindMapAiGenerate,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          width: 116,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Container(
+                height: 76,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: FaIcon(
+                  FontAwesomeIcons.wandMagicSparkles,
+                  size: 22,
+                  color: scheme.onPrimaryContainer,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ExcludeSemantics(
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

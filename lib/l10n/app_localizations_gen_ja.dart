@@ -16574,4 +16574,144 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mindMapConvertFromDiary => 'マインドマップに変換';
+
+  @override
+  String get aiPromptMindMapSystem =>
+      'あなたは明快で整理されたマインドマップを作ります。各トピックは短い語句（ふつう 2〜12 文字）で、完全な文にはしません。兄弟トピックは重ならず、合わせて親トピックを網羅します。求められない限り、番号や絵文字は付けません。';
+
+  @override
+  String get aiPromptMindMapFormat =>
+      'アウトラインだけを出力し、前置き・説明・コードフェンスは付けないでください。1 行目は「# 」に続けて中心トピック、その後は 1 トピック 1 行で「- 」で始まるリスト項目とし、1 階層ごとに半角スペース 2 つでインデントします。';
+
+  @override
+  String get aiPromptMindMapExpandFormat =>
+      '新しいサブトピックだけを「- 」で始まるリストとして出力してください（さらに下位のトピックを付ける場合は 1 階層ごとに半角スペース 2 つでインデント）。見出し・前置き・説明・コードフェンスは付けないでください。';
+
+  @override
+  String aiPromptMindMapGenerate(String topic) {
+    return '次のテーマでマインドマップを作ってください：$topic';
+  }
+
+  @override
+  String aiPromptMindMapDepth(int levels) {
+    return '中心トピックより下の階層数：$levels。主要なブランチは 4〜7 個にしてください。';
+  }
+
+  @override
+  String get aiPromptMindMapStyleDivergent =>
+      '幅広く発想してください：さまざまな観点・可能性・意外なアイデアを含めます。';
+
+  @override
+  String get aiPromptMindMapStyleStructured =>
+      '計画や分析のように論理的に整理してください：分類・手順・優先度を明確にします。';
+
+  @override
+  String get aiPromptMindMapStyleStudy =>
+      '学習ノートのように整理してください：重要な概念・定義・例とそれらの関係。';
+
+  @override
+  String aiPromptMindMapExtra(String text) {
+    return 'ユーザーからの追加の要望：$text';
+  }
+
+  @override
+  String aiPromptMindMapExpand(String topic) {
+    return 'トピック「$topic」の下に新しいサブトピックを 3〜7 個追加してください。既存のサブトピックと重複させないでください。';
+  }
+
+  @override
+  String aiPromptMindMapPath(String path) {
+    return 'マップ内での位置：$path';
+  }
+
+  @override
+  String aiPromptMindMapCurrent(String outline) {
+    return '現在のマップ全体：\n$outline';
+  }
+
+  @override
+  String get aiPromptMindMapFromDiary =>
+      '以下の日記をマインドマップにしてください。中心トピックは日記の短いタイトルとし、ブランチには主な出来事・考え・気持ち・学びをまとめます。';
+
+  @override
+  String get aiPromptMindMapSummarize =>
+      '以下のマインドマップを短い数段落で要約してください：主旨、各主要ブランチの要点、結論や次のステップ。見出しのない通常の Markdown で書いてください。';
+
+  @override
+  String get mindMapAi => 'AI';
+
+  @override
+  String get mindMapAiGenerate => 'AI でマップを作成';
+
+  @override
+  String get mindMapAiTile => 'AI で作成';
+
+  @override
+  String get mindMapAiExpand => 'AI で展開';
+
+  @override
+  String get mindMapAiSummarize => 'AI でマップを要約';
+
+  @override
+  String get mindMapAiFromDiary => 'AI でマインドマップに';
+
+  @override
+  String get mindMapAiFromDiaryHint =>
+      'AI がこの日記を新しいマインドマップの日記にまとめます。元の日記はそのままです。';
+
+  @override
+  String mindMapAiExpandHint(String topic) {
+    return '「$topic」の下にサブトピックを追加';
+  }
+
+  @override
+  String get mindMapAiReplaceHint => '現在のマップを置き換えます。元に戻せます。';
+
+  @override
+  String get mindMapAiTopicHint => '何を整理しますか？例：引っ越しの計画';
+
+  @override
+  String get mindMapAiExtraHint => '追加の要望（任意）';
+
+  @override
+  String get mindMapAiDepth => '階層';
+
+  @override
+  String get mindMapAiStyle => 'スタイル';
+
+  @override
+  String get mindMapAiStyleDivergent => '発散';
+
+  @override
+  String get mindMapAiStyleStructured => '構造化';
+
+  @override
+  String get mindMapAiStyleStudy => '学習ノート';
+
+  @override
+  String get mindMapAiRun => '生成';
+
+  @override
+  String get mindMapAiRegenerate => '再生成';
+
+  @override
+  String get mindMapAiGenerating => '生成中…';
+
+  @override
+  String get mindMapAiUse => 'このマップを使う';
+
+  @override
+  String get mindMapAiAdd => 'マップに追加';
+
+  @override
+  String get mindMapAiOpenAsDiary => 'マップの日記として開く';
+
+  @override
+  String get mindMapAiToNote => 'メモに追加';
+
+  @override
+  String get mindMapAiNoteAdded => '中心トピックのメモに追加しました';
+
+  @override
+  String get mindMapAiEmpty => 'AI から使えるトピックが返ってきませんでした。言い方を変えてもう一度お試しください。';
 }

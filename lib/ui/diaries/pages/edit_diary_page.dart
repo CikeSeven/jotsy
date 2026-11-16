@@ -87,6 +87,7 @@ import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mind_map_entry_chip.dart';
 import 'package:node_diary/ui/mind_maps/controllers/mind_map_editing_controller.dart';
+import 'package:node_diary/ui/mind_maps/controllers/mind_map_ai_scope.dart';
 import 'package:node_diary/ui/mind_maps/controllers/mind_map_io_flow.dart';
 import 'package:node_diary/ui/mind_maps/sections/mind_map_export_sheet.dart';
 import 'package:node_diary/ui/mind_maps/sections/mind_map_style_sheet.dart';
@@ -1012,6 +1013,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       // 自定义正文颜色（阅读式版式、通过对比度检查时）经 DefaultTextStyle
       // 交给正文，与预览页相同；没有时合并一个空样式，不改变什么。始终包
       // 这一层：颜色有无切换时组件树结构不变，编辑器不会重建。
+      // 正文里的嵌入导图：AI 入口按这篇日记的私密口径判断（见 MindMapAiScope）。
       child: DefaultTextStyle.merge(
         style: TextStyle(color: readingResolved?.bodyColor),
         // 「更多」等面板展开 / 收起时只重建这一层，把新的遮挡高度交给正文：
@@ -1020,27 +1022,31 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         // 不逐帧重建。
         child: ValueListenableBuilder<double>(
           valueListenable: _toolbarPanelExtent,
-          builder: (context, _, _) => DiaryEditor(
-            controller: _contentController,
-            appearance: appearance,
-            focusNode: _contentFocusNode,
-            onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
-            onCameraCommand: AppPlatform.supportsCameraCapture
-                ? (kind) => unawaited(_controller.captureMedia(kind))
-                : null,
-            onRecordingCommand: _recordingAvailable
-                ? _toggleRecordingPanel
-                : null,
-            onAiCommand: _aiWritingAvailable
-                ? (command) => unawaited(_controller.handleAiSlash(command))
-                : null,
-            aiPrompts: aiPrompts,
-            placeholder: context.l10n.autoT0133,
-            padding: EdgeInsets.symmetric(horizontal: gutter),
-            header: header,
-            scrollHandle: _readingScroll,
-            autoScrollEdgeOffset: _editorBottomCover(),
-            footer: footer,
+          builder: (context, _, _) => MindMapAiScope(
+            allowed: _controller._aiAllowed,
+            child: DiaryEditor(
+              controller: _contentController,
+              appearance: appearance,
+              focusNode: _contentFocusNode,
+              onMediaCommand: (kind) =>
+                  unawaited(_controller.importMedia(kind)),
+              onCameraCommand: AppPlatform.supportsCameraCapture
+                  ? (kind) => unawaited(_controller.captureMedia(kind))
+                  : null,
+              onRecordingCommand: _recordingAvailable
+                  ? _toggleRecordingPanel
+                  : null,
+              onAiCommand: _aiWritingAvailable
+                  ? (command) => unawaited(_controller.handleAiSlash(command))
+                  : null,
+              aiPrompts: aiPrompts,
+              placeholder: context.l10n.autoT0133,
+              padding: EdgeInsets.symmetric(horizontal: gutter),
+              header: header,
+              scrollHandle: _readingScroll,
+              autoScrollEdgeOffset: _editorBottomCover(),
+              footer: footer,
+            ),
           ),
         ),
       ),

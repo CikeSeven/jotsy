@@ -194,10 +194,13 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
       ],
       body: (BuildContext context, double topInset) => MindMapReveal(
         origin: origin,
-        child: MindMapWorkspace(
-          controller: controller,
-          topInset: topInset,
-          onConvertBack: _isCreateEntry ? _convertBackToText : null,
+        child: MindMapAiScope(
+          allowed: _controller._aiAllowed,
+          child: MindMapWorkspace(
+            controller: controller,
+            topInset: topInset,
+            onConvertBack: _isCreateEntry ? _convertBackToText : null,
+          ),
         ),
       ),
       overlay: showEditMetaPanel

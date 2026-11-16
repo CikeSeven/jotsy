@@ -21828,5 +21828,196 @@
   "mindMapConvertFromDiary": "マインドマップに変換",
   "@mindMapConvertFromDiary": {
     "description": "Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept)."
+  },
+  "aiPromptMindMapSystem": "あなたは明快で整理されたマインドマップを作ります。各トピックは短い語句（ふつう 2〜12 文字）で、完全な文にはしません。兄弟トピックは重ならず、合わせて親トピックを網羅します。求められない限り、番号や絵文字は付けません。",
+  "@aiPromptMindMapSystem": {
+    "description": "AI prompt: system instruction for mind map generation. Sent to the model, not shown in the UI."
+  },
+  "aiPromptMindMapFormat": "アウトラインだけを出力し、前置き・説明・コードフェンスは付けないでください。1 行目は「# 」に続けて中心トピック、その後は 1 トピック 1 行で「- 」で始まるリスト項目とし、1 階層ごとに半角スペース 2 つでインデントします。",
+  "@aiPromptMindMapFormat": {
+    "description": "AI prompt: required output format for a whole mind map."
+  },
+  "aiPromptMindMapExpandFormat": "新しいサブトピックだけを「- 」で始まるリストとして出力してください（さらに下位のトピックを付ける場合は 1 階層ごとに半角スペース 2 つでインデント）。見出し・前置き・説明・コードフェンスは付けないでください。",
+  "@aiPromptMindMapExpandFormat": {
+    "description": "AI prompt: required output format when adding subtopics."
+  },
+  "aiPromptMindMapGenerate": "次のテーマでマインドマップを作ってください：{topic}",
+  "@aiPromptMindMapGenerate": {
+    "description": "AI prompt: ask for a mind map about the user's topic.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapDepth": "中心トピックより下の階層数：{levels}。主要なブランチは 4〜7 個にしてください。",
+  "@aiPromptMindMapDepth": {
+    "description": "AI prompt: how deep the generated mind map should be.",
+    "placeholders": {
+      "levels": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptMindMapStyleDivergent": "幅広く発想してください：さまざまな観点・可能性・意外なアイデアを含めます。",
+  "@aiPromptMindMapStyleDivergent": {
+    "description": "AI prompt: brainstorm style for mind map generation."
+  },
+  "aiPromptMindMapStyleStructured": "計画や分析のように論理的に整理してください：分類・手順・優先度を明確にします。",
+  "@aiPromptMindMapStyleStructured": {
+    "description": "AI prompt: structured style for mind map generation."
+  },
+  "aiPromptMindMapStyleStudy": "学習ノートのように整理してください：重要な概念・定義・例とそれらの関係。",
+  "@aiPromptMindMapStyleStudy": {
+    "description": "AI prompt: study-notes style for mind map generation."
+  },
+  "aiPromptMindMapExtra": "ユーザーからの追加の要望：{text}",
+  "@aiPromptMindMapExtra": {
+    "description": "AI prompt: the user's extra requirements for the mind map.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapExpand": "トピック「{topic}」の下に新しいサブトピックを 3〜7 個追加してください。既存のサブトピックと重複させないでください。",
+  "@aiPromptMindMapExpand": {
+    "description": "AI prompt: ask for new subtopics under a topic.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapPath": "マップ内での位置：{path}",
+  "@aiPromptMindMapPath": {
+    "description": "AI prompt: the path from the central topic to the topic being expanded.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapCurrent": "現在のマップ全体：\n{outline}",
+  "@aiPromptMindMapCurrent": {
+    "description": "AI prompt: the current mind map as an outline.",
+    "placeholders": {
+      "outline": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapFromDiary": "以下の日記をマインドマップにしてください。中心トピックは日記の短いタイトルとし、ブランチには主な出来事・考え・気持ち・学びをまとめます。",
+  "@aiPromptMindMapFromDiary": {
+    "description": "AI prompt: build a mind map from a diary entry."
+  },
+  "aiPromptMindMapSummarize": "以下のマインドマップを短い数段落で要約してください：主旨、各主要ブランチの要点、結論や次のステップ。見出しのない通常の Markdown で書いてください。",
+  "@aiPromptMindMapSummarize": {
+    "description": "AI prompt: summarize a mind map."
+  },
+  "mindMapAi": "AI",
+  "@mindMapAi": {
+    "description": "Mind map dock button that opens the AI actions (very short)."
+  },
+  "mindMapAiGenerate": "AI でマップを作成",
+  "@mindMapAiGenerate": {
+    "description": "Mind map: generate a whole map from a topic with AI (menu item and panel title)."
+  },
+  "mindMapAiTile": "AI で作成",
+  "@mindMapAiTile": {
+    "description": "Mind map starter card: short name of the AI tile before the templates."
+  },
+  "mindMapAiExpand": "AI で展開",
+  "@mindMapAiExpand": {
+    "description": "Mind map: let AI add subtopics under the selected topic."
+  },
+  "mindMapAiSummarize": "AI でマップを要約",
+  "@mindMapAiSummarize": {
+    "description": "Mind map: let AI summarize the whole map."
+  },
+  "mindMapAiFromDiary": "AI でマインドマップに",
+  "@mindMapAiFromDiary": {
+    "description": "Diary more menu: let AI build a new mind map diary from this diary."
+  },
+  "mindMapAiFromDiaryHint": "AI がこの日記を新しいマインドマップの日記にまとめます。元の日記はそのままです。",
+  "@mindMapAiFromDiaryHint": {
+    "description": "Mind map AI panel: explanation when building a map from a diary."
+  },
+  "mindMapAiExpandHint": "「{topic}」の下にサブトピックを追加",
+  "@mindMapAiExpandHint": {
+    "description": "Mind map AI panel: which topic gets the new subtopics.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "mindMapAiReplaceHint": "現在のマップを置き換えます。元に戻せます。",
+  "@mindMapAiReplaceHint": {
+    "description": "Mind map AI panel: generating replaces a map that already has topics."
+  },
+  "mindMapAiTopicHint": "何を整理しますか？例：引っ越しの計画",
+  "@mindMapAiTopicHint": {
+    "description": "Mind map AI panel: hint of the topic field."
+  },
+  "mindMapAiExtraHint": "追加の要望（任意）",
+  "@mindMapAiExtraHint": {
+    "description": "Mind map AI panel: hint of the optional requirements field."
+  },
+  "mindMapAiDepth": "階層",
+  "@mindMapAiDepth": {
+    "description": "Mind map AI panel: how many levels to generate."
+  },
+  "mindMapAiStyle": "スタイル",
+  "@mindMapAiStyle": {
+    "description": "Mind map AI panel: section title for the generation style."
+  },
+  "mindMapAiStyleDivergent": "発散",
+  "@mindMapAiStyleDivergent": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiStyleStructured": "構造化",
+  "@mindMapAiStyleStructured": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiStyleStudy": "学習ノート",
+  "@mindMapAiStyleStudy": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiRun": "生成",
+  "@mindMapAiRun": {
+    "description": "Mind map AI panel: start generating."
+  },
+  "mindMapAiRegenerate": "再生成",
+  "@mindMapAiRegenerate": {
+    "description": "Mind map AI panel: generate again."
+  },
+  "mindMapAiGenerating": "生成中…",
+  "@mindMapAiGenerating": {
+    "description": "Mind map AI panel: status while topics stream in."
+  },
+  "mindMapAiUse": "このマップを使う",
+  "@mindMapAiUse": {
+    "description": "Mind map AI panel: put the generated map on the canvas."
+  },
+  "mindMapAiAdd": "マップに追加",
+  "@mindMapAiAdd": {
+    "description": "Mind map AI panel: add the generated subtopics to the map."
+  },
+  "mindMapAiOpenAsDiary": "マップの日記として開く",
+  "@mindMapAiOpenAsDiary": {
+    "description": "Mind map AI panel: open the generated map as a new mind map diary."
+  },
+  "mindMapAiToNote": "メモに追加",
+  "@mindMapAiToNote": {
+    "description": "Mind map AI panel: append the summary to the central topic's note."
+  },
+  "mindMapAiNoteAdded": "中心トピックのメモに追加しました",
+  "@mindMapAiNoteAdded": {
+    "description": "Mind map AI: the summary was added to the note."
+  },
+  "mindMapAiEmpty": "AI から使えるトピックが返ってきませんでした。言い方を変えてもう一度お試しください。",
+  "@mindMapAiEmpty": {
+    "description": "Mind map AI panel: the reply couldn't be read as topics."
   }
 }

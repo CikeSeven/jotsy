@@ -18644,4 +18644,146 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mindMapConvertFromDiary => 'Turn into mind map';
+
+  @override
+  String get aiPromptMindMapSystem =>
+      'You build clear, well-organized mind maps. Every topic is a short phrase (usually 2 to 8 words), never a full sentence. Sibling topics don\'t overlap and together cover their parent. Don\'t number topics and don\'t add emoji unless asked.';
+
+  @override
+  String get aiPromptMindMapFormat =>
+      'Output only the outline, with no introduction, explanation or code fence: the first line is \"# \" followed by the central topic, then one line per topic as a \"- \" list item, indented two spaces per level.';
+
+  @override
+  String get aiPromptMindMapExpandFormat =>
+      'Output only the new subtopics as a \"- \" list (they may have their own subtopics, indented two spaces per level), with no heading, introduction, explanation or code fence.';
+
+  @override
+  String aiPromptMindMapGenerate(String topic) {
+    return 'Create a mind map about: $topic';
+  }
+
+  @override
+  String aiPromptMindMapDepth(int levels) {
+    return 'Levels below the central topic: $levels. Use 4 to 7 main branches.';
+  }
+
+  @override
+  String get aiPromptMindMapStyleDivergent =>
+      'Brainstorm widely: cover different angles, possibilities and unexpected ideas.';
+
+  @override
+  String get aiPromptMindMapStyleStructured =>
+      'Organize it logically like a plan or an analysis: clear categories, steps and priorities.';
+
+  @override
+  String get aiPromptMindMapStyleStudy =>
+      'Organize it like study notes: key concepts, definitions, examples and how they relate.';
+
+  @override
+  String aiPromptMindMapExtra(String text) {
+    return 'Additional requirements from the user: $text';
+  }
+
+  @override
+  String aiPromptMindMapExpand(String topic) {
+    return 'Add 3 to 7 new subtopics under the topic \"$topic\". Don\'t repeat its existing subtopics.';
+  }
+
+  @override
+  String aiPromptMindMapPath(String path) {
+    return 'Where it sits in the map: $path';
+  }
+
+  @override
+  String aiPromptMindMapCurrent(String outline) {
+    return 'The whole map so far:\n$outline';
+  }
+
+  @override
+  String get aiPromptMindMapFromDiary =>
+      'Turn the diary entry below into a mind map: the central topic is a short title for the entry, and the branches capture its main events, thoughts, feelings and takeaways.';
+
+  @override
+  String get aiPromptMindMapSummarize =>
+      'Summarize the mind map below in a few short paragraphs: its main idea, the key points of each main branch, and any conclusions or next steps. Use plain Markdown without headings.';
+
+  @override
+  String get mindMapAi => 'AI';
+
+  @override
+  String get mindMapAiGenerate => 'Generate with AI';
+
+  @override
+  String get mindMapAiTile => 'AI map';
+
+  @override
+  String get mindMapAiExpand => 'Expand with AI';
+
+  @override
+  String get mindMapAiSummarize => 'Summarize with AI';
+
+  @override
+  String get mindMapAiFromDiary => 'Mind map with AI';
+
+  @override
+  String get mindMapAiFromDiaryHint =>
+      'AI turns this entry into a new mind map diary. The entry stays as it is.';
+
+  @override
+  String mindMapAiExpandHint(String topic) {
+    return 'New subtopics under “$topic”';
+  }
+
+  @override
+  String get mindMapAiReplaceHint =>
+      'Replaces the current map. You can undo it.';
+
+  @override
+  String get mindMapAiTopicHint => 'What do you want to map? e.g. Moving house';
+
+  @override
+  String get mindMapAiExtraHint => 'Anything else? (optional)';
+
+  @override
+  String get mindMapAiDepth => 'Levels';
+
+  @override
+  String get mindMapAiStyle => 'Style';
+
+  @override
+  String get mindMapAiStyleDivergent => 'Brainstorm';
+
+  @override
+  String get mindMapAiStyleStructured => 'Structured';
+
+  @override
+  String get mindMapAiStyleStudy => 'Study notes';
+
+  @override
+  String get mindMapAiRun => 'Generate';
+
+  @override
+  String get mindMapAiRegenerate => 'Regenerate';
+
+  @override
+  String get mindMapAiGenerating => 'Generating…';
+
+  @override
+  String get mindMapAiUse => 'Use this map';
+
+  @override
+  String get mindMapAiAdd => 'Add to map';
+
+  @override
+  String get mindMapAiOpenAsDiary => 'Open as mind map diary';
+
+  @override
+  String get mindMapAiToNote => 'Add to note';
+
+  @override
+  String get mindMapAiNoteAdded => 'Added to the central topic\'s note';
+
+  @override
+  String get mindMapAiEmpty =>
+      'The AI didn\'t return any topics. Try rephrasing and generate again.';
 }

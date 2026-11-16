@@ -21261,5 +21261,196 @@
   "mindMapConvertFromDiary": "Turn into mind map",
   "@mindMapConvertFromDiary": {
     "description": "Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept)."
+  },
+  "aiPromptMindMapSystem": "You build clear, well-organized mind maps. Every topic is a short phrase (usually 2 to 8 words), never a full sentence. Sibling topics don't overlap and together cover their parent. Don't number topics and don't add emoji unless asked.",
+  "@aiPromptMindMapSystem": {
+    "description": "AI prompt: system instruction for mind map generation. Sent to the model, not shown in the UI."
+  },
+  "aiPromptMindMapFormat": "Output only the outline, with no introduction, explanation or code fence: the first line is \"# \" followed by the central topic, then one line per topic as a \"- \" list item, indented two spaces per level.",
+  "@aiPromptMindMapFormat": {
+    "description": "AI prompt: required output format for a whole mind map."
+  },
+  "aiPromptMindMapExpandFormat": "Output only the new subtopics as a \"- \" list (they may have their own subtopics, indented two spaces per level), with no heading, introduction, explanation or code fence.",
+  "@aiPromptMindMapExpandFormat": {
+    "description": "AI prompt: required output format when adding subtopics."
+  },
+  "aiPromptMindMapGenerate": "Create a mind map about: {topic}",
+  "@aiPromptMindMapGenerate": {
+    "description": "AI prompt: ask for a mind map about the user's topic.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapDepth": "Levels below the central topic: {levels}. Use 4 to 7 main branches.",
+  "@aiPromptMindMapDepth": {
+    "description": "AI prompt: how deep the generated mind map should be.",
+    "placeholders": {
+      "levels": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptMindMapStyleDivergent": "Brainstorm widely: cover different angles, possibilities and unexpected ideas.",
+  "@aiPromptMindMapStyleDivergent": {
+    "description": "AI prompt: brainstorm style for mind map generation."
+  },
+  "aiPromptMindMapStyleStructured": "Organize it logically like a plan or an analysis: clear categories, steps and priorities.",
+  "@aiPromptMindMapStyleStructured": {
+    "description": "AI prompt: structured style for mind map generation."
+  },
+  "aiPromptMindMapStyleStudy": "Organize it like study notes: key concepts, definitions, examples and how they relate.",
+  "@aiPromptMindMapStyleStudy": {
+    "description": "AI prompt: study-notes style for mind map generation."
+  },
+  "aiPromptMindMapExtra": "Additional requirements from the user: {text}",
+  "@aiPromptMindMapExtra": {
+    "description": "AI prompt: the user's extra requirements for the mind map.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapExpand": "Add 3 to 7 new subtopics under the topic \"{topic}\". Don't repeat its existing subtopics.",
+  "@aiPromptMindMapExpand": {
+    "description": "AI prompt: ask for new subtopics under a topic.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapPath": "Where it sits in the map: {path}",
+  "@aiPromptMindMapPath": {
+    "description": "AI prompt: the path from the central topic to the topic being expanded.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapCurrent": "The whole map so far:\n{outline}",
+  "@aiPromptMindMapCurrent": {
+    "description": "AI prompt: the current mind map as an outline.",
+    "placeholders": {
+      "outline": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapFromDiary": "Turn the diary entry below into a mind map: the central topic is a short title for the entry, and the branches capture its main events, thoughts, feelings and takeaways.",
+  "@aiPromptMindMapFromDiary": {
+    "description": "AI prompt: build a mind map from a diary entry."
+  },
+  "aiPromptMindMapSummarize": "Summarize the mind map below in a few short paragraphs: its main idea, the key points of each main branch, and any conclusions or next steps. Use plain Markdown without headings.",
+  "@aiPromptMindMapSummarize": {
+    "description": "AI prompt: summarize a mind map."
+  },
+  "mindMapAi": "AI",
+  "@mindMapAi": {
+    "description": "Mind map dock button that opens the AI actions (very short)."
+  },
+  "mindMapAiGenerate": "Generate with AI",
+  "@mindMapAiGenerate": {
+    "description": "Mind map: generate a whole map from a topic with AI (menu item and panel title)."
+  },
+  "mindMapAiTile": "AI map",
+  "@mindMapAiTile": {
+    "description": "Mind map starter card: short name of the AI tile before the templates."
+  },
+  "mindMapAiExpand": "Expand with AI",
+  "@mindMapAiExpand": {
+    "description": "Mind map: let AI add subtopics under the selected topic."
+  },
+  "mindMapAiSummarize": "Summarize with AI",
+  "@mindMapAiSummarize": {
+    "description": "Mind map: let AI summarize the whole map."
+  },
+  "mindMapAiFromDiary": "Mind map with AI",
+  "@mindMapAiFromDiary": {
+    "description": "Diary more menu: let AI build a new mind map diary from this diary."
+  },
+  "mindMapAiFromDiaryHint": "AI turns this entry into a new mind map diary. The entry stays as it is.",
+  "@mindMapAiFromDiaryHint": {
+    "description": "Mind map AI panel: explanation when building a map from a diary."
+  },
+  "mindMapAiExpandHint": "New subtopics under “{topic}”",
+  "@mindMapAiExpandHint": {
+    "description": "Mind map AI panel: which topic gets the new subtopics.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "mindMapAiReplaceHint": "Replaces the current map. You can undo it.",
+  "@mindMapAiReplaceHint": {
+    "description": "Mind map AI panel: generating replaces a map that already has topics."
+  },
+  "mindMapAiTopicHint": "What do you want to map? e.g. Moving house",
+  "@mindMapAiTopicHint": {
+    "description": "Mind map AI panel: hint of the topic field."
+  },
+  "mindMapAiExtraHint": "Anything else? (optional)",
+  "@mindMapAiExtraHint": {
+    "description": "Mind map AI panel: hint of the optional requirements field."
+  },
+  "mindMapAiDepth": "Levels",
+  "@mindMapAiDepth": {
+    "description": "Mind map AI panel: how many levels to generate."
+  },
+  "mindMapAiStyle": "Style",
+  "@mindMapAiStyle": {
+    "description": "Mind map AI panel: section title for the generation style."
+  },
+  "mindMapAiStyleDivergent": "Brainstorm",
+  "@mindMapAiStyleDivergent": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiStyleStructured": "Structured",
+  "@mindMapAiStyleStructured": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiStyleStudy": "Study notes",
+  "@mindMapAiStyleStudy": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiRun": "Generate",
+  "@mindMapAiRun": {
+    "description": "Mind map AI panel: start generating."
+  },
+  "mindMapAiRegenerate": "Regenerate",
+  "@mindMapAiRegenerate": {
+    "description": "Mind map AI panel: generate again."
+  },
+  "mindMapAiGenerating": "Generating…",
+  "@mindMapAiGenerating": {
+    "description": "Mind map AI panel: status while topics stream in."
+  },
+  "mindMapAiUse": "Use this map",
+  "@mindMapAiUse": {
+    "description": "Mind map AI panel: put the generated map on the canvas."
+  },
+  "mindMapAiAdd": "Add to map",
+  "@mindMapAiAdd": {
+    "description": "Mind map AI panel: add the generated subtopics to the map."
+  },
+  "mindMapAiOpenAsDiary": "Open as mind map diary",
+  "@mindMapAiOpenAsDiary": {
+    "description": "Mind map AI panel: open the generated map as a new mind map diary."
+  },
+  "mindMapAiToNote": "Add to note",
+  "@mindMapAiToNote": {
+    "description": "Mind map AI panel: append the summary to the central topic's note."
+  },
+  "mindMapAiNoteAdded": "Added to the central topic's note",
+  "@mindMapAiNoteAdded": {
+    "description": "Mind map AI: the summary was added to the note."
+  },
+  "mindMapAiEmpty": "The AI didn't return any topics. Try rephrasing and generate again.",
+  "@mindMapAiEmpty": {
+    "description": "Mind map AI panel: the reply couldn't be read as topics."
   }
 }

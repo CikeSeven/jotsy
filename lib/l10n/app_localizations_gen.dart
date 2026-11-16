@@ -29271,6 +29271,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn into mind map'**
   String get mindMapConvertFromDiary;
+
+  /// AI prompt: system instruction for mind map generation. Sent to the model, not shown in the UI.
+  ///
+  /// In en, this message translates to:
+  /// **'You build clear, well-organized mind maps. Every topic is a short phrase (usually 2 to 8 words), never a full sentence. Sibling topics don\'t overlap and together cover their parent. Don\'t number topics and don\'t add emoji unless asked.'**
+  String get aiPromptMindMapSystem;
+
+  /// AI prompt: required output format for a whole mind map.
+  ///
+  /// In en, this message translates to:
+  /// **'Output only the outline, with no introduction, explanation or code fence: the first line is \"# \" followed by the central topic, then one line per topic as a \"- \" list item, indented two spaces per level.'**
+  String get aiPromptMindMapFormat;
+
+  /// AI prompt: required output format when adding subtopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Output only the new subtopics as a \"- \" list (they may have their own subtopics, indented two spaces per level), with no heading, introduction, explanation or code fence.'**
+  String get aiPromptMindMapExpandFormat;
+
+  /// AI prompt: ask for a mind map about the user's topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a mind map about: {topic}'**
+  String aiPromptMindMapGenerate(String topic);
+
+  /// AI prompt: how deep the generated mind map should be.
+  ///
+  /// In en, this message translates to:
+  /// **'Levels below the central topic: {levels}. Use 4 to 7 main branches.'**
+  String aiPromptMindMapDepth(int levels);
+
+  /// AI prompt: brainstorm style for mind map generation.
+  ///
+  /// In en, this message translates to:
+  /// **'Brainstorm widely: cover different angles, possibilities and unexpected ideas.'**
+  String get aiPromptMindMapStyleDivergent;
+
+  /// AI prompt: structured style for mind map generation.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize it logically like a plan or an analysis: clear categories, steps and priorities.'**
+  String get aiPromptMindMapStyleStructured;
+
+  /// AI prompt: study-notes style for mind map generation.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize it like study notes: key concepts, definitions, examples and how they relate.'**
+  String get aiPromptMindMapStyleStudy;
+
+  /// AI prompt: the user's extra requirements for the mind map.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional requirements from the user: {text}'**
+  String aiPromptMindMapExtra(String text);
+
+  /// AI prompt: ask for new subtopics under a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 3 to 7 new subtopics under the topic \"{topic}\". Don\'t repeat its existing subtopics.'**
+  String aiPromptMindMapExpand(String topic);
+
+  /// AI prompt: the path from the central topic to the topic being expanded.
+  ///
+  /// In en, this message translates to:
+  /// **'Where it sits in the map: {path}'**
+  String aiPromptMindMapPath(String path);
+
+  /// AI prompt: the current mind map as an outline.
+  ///
+  /// In en, this message translates to:
+  /// **'The whole map so far:\n{outline}'**
+  String aiPromptMindMapCurrent(String outline);
+
+  /// AI prompt: build a mind map from a diary entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the diary entry below into a mind map: the central topic is a short title for the entry, and the branches capture its main events, thoughts, feelings and takeaways.'**
+  String get aiPromptMindMapFromDiary;
+
+  /// AI prompt: summarize a mind map.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize the mind map below in a few short paragraphs: its main idea, the key points of each main branch, and any conclusions or next steps. Use plain Markdown without headings.'**
+  String get aiPromptMindMapSummarize;
+
+  /// Mind map dock button that opens the AI actions (very short).
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get mindMapAi;
+
+  /// Mind map: generate a whole map from a topic with AI (menu item and panel title).
+  ///
+  /// In en, this message translates to:
+  /// **'Generate with AI'**
+  String get mindMapAiGenerate;
+
+  /// Mind map starter card: short name of the AI tile before the templates.
+  ///
+  /// In en, this message translates to:
+  /// **'AI map'**
+  String get mindMapAiTile;
+
+  /// Mind map: let AI add subtopics under the selected topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand with AI'**
+  String get mindMapAiExpand;
+
+  /// Mind map: let AI summarize the whole map.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize with AI'**
+  String get mindMapAiSummarize;
+
+  /// Diary more menu: let AI build a new mind map diary from this diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind map with AI'**
+  String get mindMapAiFromDiary;
+
+  /// Mind map AI panel: explanation when building a map from a diary.
+  ///
+  /// In en, this message translates to:
+  /// **'AI turns this entry into a new mind map diary. The entry stays as it is.'**
+  String get mindMapAiFromDiaryHint;
+
+  /// Mind map AI panel: which topic gets the new subtopics.
+  ///
+  /// In en, this message translates to:
+  /// **'New subtopics under “{topic}”'**
+  String mindMapAiExpandHint(String topic);
+
+  /// Mind map AI panel: generating replaces a map that already has topics.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaces the current map. You can undo it.'**
+  String get mindMapAiReplaceHint;
+
+  /// Mind map AI panel: hint of the topic field.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to map? e.g. Moving house'**
+  String get mindMapAiTopicHint;
+
+  /// Mind map AI panel: hint of the optional requirements field.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything else? (optional)'**
+  String get mindMapAiExtraHint;
+
+  /// Mind map AI panel: how many levels to generate.
+  ///
+  /// In en, this message translates to:
+  /// **'Levels'**
+  String get mindMapAiDepth;
+
+  /// Mind map AI panel: section title for the generation style.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get mindMapAiStyle;
+
+  /// Mind map AI style option (short).
+  ///
+  /// In en, this message translates to:
+  /// **'Brainstorm'**
+  String get mindMapAiStyleDivergent;
+
+  /// Mind map AI style option (short).
+  ///
+  /// In en, this message translates to:
+  /// **'Structured'**
+  String get mindMapAiStyleStructured;
+
+  /// Mind map AI style option (short).
+  ///
+  /// In en, this message translates to:
+  /// **'Study notes'**
+  String get mindMapAiStyleStudy;
+
+  /// Mind map AI panel: start generating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate'**
+  String get mindMapAiRun;
+
+  /// Mind map AI panel: generate again.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get mindMapAiRegenerate;
+
+  /// Mind map AI panel: status while topics stream in.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating…'**
+  String get mindMapAiGenerating;
+
+  /// Mind map AI panel: put the generated map on the canvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this map'**
+  String get mindMapAiUse;
+
+  /// Mind map AI panel: add the generated subtopics to the map.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to map'**
+  String get mindMapAiAdd;
+
+  /// Mind map AI panel: open the generated map as a new mind map diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Open as mind map diary'**
+  String get mindMapAiOpenAsDiary;
+
+  /// Mind map AI panel: append the summary to the central topic's note.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to note'**
+  String get mindMapAiToNote;
+
+  /// Mind map AI: the summary was added to the note.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to the central topic\'s note'**
+  String get mindMapAiNoteAdded;
+
+  /// Mind map AI panel: the reply couldn't be read as topics.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI didn\'t return any topics. Try rephrasing and generate again.'**
+  String get mindMapAiEmpty;
 }
 
 class _AppLocalizationsDelegate

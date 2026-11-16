@@ -19341,4 +19341,146 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get mindMapConvertFromDiary => 'Превратить в интеллект-карту';
+
+  @override
+  String get aiPromptMindMapSystem =>
+      'Ты составляешь понятные, хорошо организованные интеллект-карты. Каждая тема — короткая фраза (обычно 2–8 слов), а не полное предложение. Соседние темы не пересекаются и вместе охватывают родительскую. Не нумеруй темы и не добавляй эмодзи, если об этом не просят.';
+
+  @override
+  String get aiPromptMindMapFormat =>
+      'Выведи только структуру, без вступления, пояснений и блоков кода: первая строка — «# » и центральная тема, затем по одной теме на строку в виде пункта списка «- », с отступом в два пробела на каждый уровень.';
+
+  @override
+  String get aiPromptMindMapExpandFormat =>
+      'Выведи только новые подтемы списком с «- » (у них могут быть свои подтемы с отступом в два пробела на уровень), без заголовка, вступления, пояснений и блоков кода.';
+
+  @override
+  String aiPromptMindMapGenerate(String topic) {
+    return 'Составь интеллект-карту на тему: $topic';
+  }
+
+  @override
+  String aiPromptMindMapDepth(int levels) {
+    return 'Уровней ниже центральной темы: $levels. Главных ветвей — от 4 до 7.';
+  }
+
+  @override
+  String get aiPromptMindMapStyleDivergent =>
+      'Мысли широко: охвати разные углы зрения, возможности и неожиданные идеи.';
+
+  @override
+  String get aiPromptMindMapStyleStructured =>
+      'Выстрой всё логично, как план или анализ: чёткие категории, шаги и приоритеты.';
+
+  @override
+  String get aiPromptMindMapStyleStudy =>
+      'Оформи как учебный конспект: ключевые понятия, определения, примеры и связи между ними.';
+
+  @override
+  String aiPromptMindMapExtra(String text) {
+    return 'Дополнительные пожелания пользователя: $text';
+  }
+
+  @override
+  String aiPromptMindMapExpand(String topic) {
+    return 'Добавь от 3 до 7 новых подтем к теме «$topic». Не повторяй уже существующие подтемы.';
+  }
+
+  @override
+  String aiPromptMindMapPath(String path) {
+    return 'Её место в карте: $path';
+  }
+
+  @override
+  String aiPromptMindMapCurrent(String outline) {
+    return 'Вся карта на данный момент:\n$outline';
+  }
+
+  @override
+  String get aiPromptMindMapFromDiary =>
+      'Преврати запись ниже в интеллект-карту: центральная тема — короткий заголовок записи, а ветви отражают главные события, мысли, чувства и выводы.';
+
+  @override
+  String get aiPromptMindMapSummarize =>
+      'Кратко перескажи интеллект-карту ниже в нескольких абзацах: главная мысль, ключевые моменты каждой главной ветви и выводы или следующие шаги. Используй обычный Markdown без заголовков.';
+
+  @override
+  String get mindMapAi => 'ИИ';
+
+  @override
+  String get mindMapAiGenerate => 'Создать с ИИ';
+
+  @override
+  String get mindMapAiTile => 'С ИИ';
+
+  @override
+  String get mindMapAiExpand => 'Развернуть с ИИ';
+
+  @override
+  String get mindMapAiSummarize => 'Пересказать с ИИ';
+
+  @override
+  String get mindMapAiFromDiary => 'Интеллект-карта с ИИ';
+
+  @override
+  String get mindMapAiFromDiaryHint =>
+      'ИИ превратит эту запись в новую запись-карту. Сама запись не изменится.';
+
+  @override
+  String mindMapAiExpandHint(String topic) {
+    return 'Новые подтемы для «$topic»';
+  }
+
+  @override
+  String get mindMapAiReplaceHint =>
+      'Заменит текущую карту. Это можно отменить.';
+
+  @override
+  String get mindMapAiTopicHint => 'О чём карта? Например: переезд';
+
+  @override
+  String get mindMapAiExtraHint => 'Пожелания (необязательно)';
+
+  @override
+  String get mindMapAiDepth => 'Уровни';
+
+  @override
+  String get mindMapAiStyle => 'Стиль';
+
+  @override
+  String get mindMapAiStyleDivergent => 'Идеи';
+
+  @override
+  String get mindMapAiStyleStructured => 'Структура';
+
+  @override
+  String get mindMapAiStyleStudy => 'Конспект';
+
+  @override
+  String get mindMapAiRun => 'Создать';
+
+  @override
+  String get mindMapAiRegenerate => 'Заново';
+
+  @override
+  String get mindMapAiGenerating => 'Создаём…';
+
+  @override
+  String get mindMapAiUse => 'Использовать';
+
+  @override
+  String get mindMapAiAdd => 'Добавить в карту';
+
+  @override
+  String get mindMapAiOpenAsDiary => 'Открыть как запись-карту';
+
+  @override
+  String get mindMapAiToNote => 'В заметку';
+
+  @override
+  String get mindMapAiNoteAdded => 'Добавлено в заметку центральной темы';
+
+  @override
+  String get mindMapAiEmpty =>
+      'ИИ не вернул ни одной темы. Попробуйте переформулировать и создать заново.';
 }

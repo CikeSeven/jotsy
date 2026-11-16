@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../../core/services/app_platform.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/expressive_state_blend.dart';
 
@@ -21,9 +22,13 @@ const double _gripSize = 11;
 /// 像素就能看出和首行文字没对齐；上移这么多，点阵中线才落在把手中线上。
 const double _gripInkDrop = _gripSize * 0.034;
 
-/// 触控区域比可见尺寸大：左侧外扩 8dp、上下各 4dp；右侧只外扩 2dp——再多
-/// 就压住正文开头，点行首放光标会误触把手。
-const EdgeInsets diaryBlockHandleHitSlop = EdgeInsets.fromLTRB(8, 4, 2, 4);
+/// 触控区域比可见尺寸大：左侧外扩 8dp、上下各 4dp；右侧在手机上只外扩
+/// 2dp——再多就压住正文开头，点行首放光标会误触把手。桌面的鼠标指得准，
+/// 右侧一点也不外扩：点在第一个字左缘放光标、从行首拖选一行是桌面上的
+/// 常用操作，压住哪怕 2dp 也会误入段落选择模式（#293）。
+EdgeInsets get diaryBlockHandleHitSlop => AppPlatform.isDesktop
+    ? const EdgeInsets.fromLTRB(8, 4, 0, 4)
+    : const EdgeInsets.fromLTRB(8, 4, 2, 4);
 
 /// 段落把手本体。
 ///
@@ -46,6 +51,7 @@ class DiaryBlockHandle extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final fast = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    final slop = diaryBlockHandleHitSlop;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: fast,
@@ -60,7 +66,7 @@ class DiaryBlockHandle extends StatelessWidget {
           onTap: onTap,
           onDragStart: onDragStart,
           child: Padding(
-            padding: diaryBlockHandleHitSlop,
+            padding: slop,
             child: ExpressiveStateBlend(
               active: dragging,
               builder: (context, t, _) => Container(

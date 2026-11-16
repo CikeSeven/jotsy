@@ -16339,4 +16339,166 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settingsFeaturesMindMapsSubtitle =>
       '新しい日記をマップにしたり、本文にマップを挿入したりできます';
+
+  @override
+  String get mindMapAdd => '追加';
+
+  @override
+  String get mindMapInsert => '挿入';
+
+  @override
+  String get mindMapMore => 'その他';
+
+  @override
+  String get mindMapMarkers => 'アイコン';
+
+  @override
+  String get mindMapLabels => 'ラベル';
+
+  @override
+  String get mindMapNote => 'メモ';
+
+  @override
+  String get mindMapLink => 'リンク';
+
+  @override
+  String get mindMapTask => 'チェック';
+
+  @override
+  String get mindMapNodeStyleTitle => 'トピックのスタイル';
+
+  @override
+  String get mindMapShape => '形';
+
+  @override
+  String get mindMapShapeRounded => '角丸';
+
+  @override
+  String get mindMapShapePill => 'カプセル';
+
+  @override
+  String get mindMapShapeRect => '四角';
+
+  @override
+  String get mindMapShapeEllipse => '楕円';
+
+  @override
+  String get mindMapShapeUnderline => '下線';
+
+  @override
+  String get mindMapShapePlain => '文字のみ';
+
+  @override
+  String get mindMapFill => '塗り';
+
+  @override
+  String get mindMapTextColor => '文字色';
+
+  @override
+  String get mindMapBranchColor => 'ブランチの色';
+
+  @override
+  String get mindMapColorDefault => 'デフォルト';
+
+  @override
+  String get mindMapTextStyle => '文字';
+
+  @override
+  String get mindMapBold => '太字';
+
+  @override
+  String get mindMapItalic => '斜体';
+
+  @override
+  String get mindMapStrike => '取り消し線';
+
+  @override
+  String get mindMapSizeSmall => '小';
+
+  @override
+  String get mindMapSizeMedium => '中';
+
+  @override
+  String get mindMapSizeLarge => '大';
+
+  @override
+  String get mindMapSizeHuge => '特大';
+
+  @override
+  String get mindMapResetStyle => 'スタイルをリセット';
+
+  @override
+  String get mindMapMarkerPriority => '優先度';
+
+  @override
+  String get mindMapMarkerProgress => '進捗';
+
+  @override
+  String get mindMapMarkerFlag => '旗';
+
+  @override
+  String get mindMapMarkerStar => '星';
+
+  @override
+  String get mindMapMarkerFace => '表情';
+
+  @override
+  String get mindMapMarkerSymbol => '記号';
+
+  @override
+  String get mindMapMarkerEmoji => '任意の絵文字';
+
+  @override
+  String get mindMapEmojiHint => '絵文字を入力';
+
+  @override
+  String get mindMapClearMarkers => 'アイコンをすべて削除';
+
+  @override
+  String get mindMapLabelHint => '新しいラベル';
+
+  @override
+  String get mindMapNoteHint => 'メモを書く…';
+
+  @override
+  String get mindMapLinkUrl => 'URL';
+
+  @override
+  String get mindMapLinkDiary => '日記';
+
+  @override
+  String get mindMapLinkOpen => 'リンクを開く';
+
+  @override
+  String get mindMapLinkRemove => 'リンクを削除';
+
+  @override
+  String get mindMapLinkInvalid => '有効な URL を入力してください';
+
+  @override
+  String get mindMapCopy => 'コピー';
+
+  @override
+  String get mindMapCut => '切り取り';
+
+  @override
+  String get mindMapPaste => '貼り付け';
+
+  @override
+  String get mindMapOutline => 'アウトライン';
+
+  @override
+  String get mindMapCanvasView => 'マップ';
+
+  @override
+  String get mindMapIndent => 'インデント';
+
+  @override
+  String get mindMapOutdent => 'インデント解除';
+
+  @override
+  String get mindMapMoveUp => '上へ';
+
+  @override
+  String get mindMapMoveDown => '下へ';
 }

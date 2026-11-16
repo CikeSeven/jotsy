@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
+import '../models/mind_map_markers.dart';
 import '../models/mind_map_themes.dart';
 
 /// 一个分支的颜色：强调色（连线、下划线、实色底）及其上的文字色，容器色
@@ -92,6 +93,10 @@ final class MindMapPalette {
       surface.computeLuminance() < 0.5 ? Brightness.dark : Brightness.light,
     );
   }
+
+  /// 贴纸颜色（固定种子按明暗换算，与主题无关）。
+  MindMapBranchColors marker(MindMapMarkerColor color) =>
+      custom(Color(color.seed));
 
   final Map<(int, bool), MindMapBranchColors> _customCache =
       <(int, bool), MindMapBranchColors>{};

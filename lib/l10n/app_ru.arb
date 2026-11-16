@@ -21516,5 +21516,221 @@
   "settingsFeaturesMindMapsSubtitle": "Превращайте запись в карту или вставляйте карту в текст",
   "@settingsFeaturesMindMapsSubtitle": {
     "description": "Features page: subtitle of the mind maps switch."
+  },
+  "mindMapAdd": "Добавить",
+  "@mindMapAdd": {
+    "description": "Mind map panels: add the typed label / emoji."
+  },
+  "mindMapInsert": "Вставить",
+  "@mindMapInsert": {
+    "description": "Mind map: dock button and panel title for adding stickers, labels, a note, a link or a checkbox to a topic."
+  },
+  "mindMapMore": "Ещё",
+  "@mindMapMore": {
+    "description": "Mind map dock button that opens more actions for the selected topic."
+  },
+  "mindMapMarkers": "Значки",
+  "@mindMapMarkers": {
+    "description": "Mind map: stickers on a topic (priority, progress, flags, stars, faces, symbols)."
+  },
+  "mindMapLabels": "Метки",
+  "@mindMapLabels": {
+    "description": "Mind map: small labels under a topic's text."
+  },
+  "mindMapNote": "Заметка",
+  "@mindMapNote": {
+    "description": "Mind map: a longer note attached to a topic."
+  },
+  "mindMapLink": "Ссылка",
+  "@mindMapLink": {
+    "description": "Mind map: a web link or a link to a diary on a topic."
+  },
+  "mindMapTask": "Флажок",
+  "@mindMapTask": {
+    "description": "Mind map: turn a topic into a checkable task (or back)."
+  },
+  "mindMapNodeStyleTitle": "Стиль темы",
+  "@mindMapNodeStyleTitle": {
+    "description": "Title of the panel that styles one topic."
+  },
+  "mindMapShape": "Форма",
+  "@mindMapShape": {
+    "description": "Topic style panel: section title for the topic shape."
+  },
+  "mindMapShapeRounded": "Скруглённая",
+  "@mindMapShapeRounded": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapePill": "Капсула",
+  "@mindMapShapePill": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeRect": "Прямоугольник",
+  "@mindMapShapeRect": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeEllipse": "Овал",
+  "@mindMapShapeEllipse": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeUnderline": "Подчёркивание",
+  "@mindMapShapeUnderline": {
+    "description": "Topic shape option: only a line under the text."
+  },
+  "mindMapShapePlain": "Только текст",
+  "@mindMapShapePlain": {
+    "description": "Topic shape option: no box or line."
+  },
+  "mindMapFill": "Заливка",
+  "@mindMapFill": {
+    "description": "Topic style panel: background color of the topic."
+  },
+  "mindMapTextColor": "Цвет текста",
+  "@mindMapTextColor": {
+    "description": "Topic style panel: text color."
+  },
+  "mindMapBranchColor": "Цвет ветви",
+  "@mindMapBranchColor": {
+    "description": "Topic style panel: color of this topic's whole branch (lines and subtopics)."
+  },
+  "mindMapColorDefault": "По умолчанию",
+  "@mindMapColorDefault": {
+    "description": "Topic style panel: use the theme's color."
+  },
+  "mindMapTextStyle": "Текст",
+  "@mindMapTextStyle": {
+    "description": "Topic style panel: section title for bold, italic, strikethrough and size."
+  },
+  "mindMapBold": "Жирный",
+  "@mindMapBold": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapItalic": "Курсив",
+  "@mindMapItalic": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapStrike": "Зачёркнутый",
+  "@mindMapStrike": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapSizeSmall": "S",
+  "@mindMapSizeSmall": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeMedium": "M",
+  "@mindMapSizeMedium": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeLarge": "L",
+  "@mindMapSizeLarge": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeHuge": "XL",
+  "@mindMapSizeHuge": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapResetStyle": "Сбросить стиль",
+  "@mindMapResetStyle": {
+    "description": "Topic style panel: remove all custom styles from the topic."
+  },
+  "mindMapMarkerPriority": "Приоритет",
+  "@mindMapMarkerPriority": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerProgress": "Прогресс",
+  "@mindMapMarkerProgress": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerFlag": "Флажки",
+  "@mindMapMarkerFlag": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerStar": "Звёзды",
+  "@mindMapMarkerStar": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerFace": "Лица",
+  "@mindMapMarkerFace": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerSymbol": "Символы",
+  "@mindMapMarkerSymbol": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerEmoji": "Любой эмодзи",
+  "@mindMapMarkerEmoji": {
+    "description": "Sticker panel: section for adding any emoji as a sticker."
+  },
+  "mindMapEmojiHint": "Введите эмодзи",
+  "@mindMapEmojiHint": {
+    "description": "Sticker panel: hint of the emoji input."
+  },
+  "mindMapClearMarkers": "Убрать все значки",
+  "@mindMapClearMarkers": {
+    "description": "Sticker panel: remove every sticker from the topic."
+  },
+  "mindMapLabelHint": "Новая метка",
+  "@mindMapLabelHint": {
+    "description": "Labels panel: hint of the input."
+  },
+  "mindMapNoteHint": "Напишите заметку…",
+  "@mindMapNoteHint": {
+    "description": "Note panel: hint of the input."
+  },
+  "mindMapLinkUrl": "Веб-ссылка",
+  "@mindMapLinkUrl": {
+    "description": "Link panel: link to a web address."
+  },
+  "mindMapLinkDiary": "Запись",
+  "@mindMapLinkDiary": {
+    "description": "Link panel: link to one of your diaries."
+  },
+  "mindMapLinkOpen": "Открыть ссылку",
+  "@mindMapLinkOpen": {
+    "description": "Link panel: open the topic's current link."
+  },
+  "mindMapLinkRemove": "Убрать",
+  "@mindMapLinkRemove": {
+    "description": "Link panel: remove the topic's link."
+  },
+  "mindMapLinkInvalid": "Введите корректный адрес",
+  "@mindMapLinkInvalid": {
+    "description": "Link panel: error when the typed web address can't be used."
+  },
+  "mindMapCopy": "Копировать",
+  "@mindMapCopy": {
+    "description": "Mind map: copy the selected topic with its subtopics."
+  },
+  "mindMapCut": "Вырезать",
+  "@mindMapCut": {
+    "description": "Mind map: cut the selected topic with its subtopics."
+  },
+  "mindMapPaste": "Вставить",
+  "@mindMapPaste": {
+    "description": "Mind map: paste copied topics (or lines of text) under the selected topic."
+  },
+  "mindMapOutline": "Структура",
+  "@mindMapOutline": {
+    "description": "Mind map: switch to the outline (indented list) view."
+  },
+  "mindMapCanvasView": "Карта",
+  "@mindMapCanvasView": {
+    "description": "Mind map: switch back to the map canvas view."
+  },
+  "mindMapIndent": "Вправо",
+  "@mindMapIndent": {
+    "description": "Mind map outline: make the topic a subtopic of the one above."
+  },
+  "mindMapOutdent": "Влево",
+  "@mindMapOutdent": {
+    "description": "Mind map outline: move the topic up one level."
+  },
+  "mindMapMoveUp": "Вверх",
+  "@mindMapMoveUp": {
+    "description": "Mind map outline: move the topic above its previous sibling."
+  },
+  "mindMapMoveDown": "Вниз",
+  "@mindMapMoveDown": {
+    "description": "Mind map outline: move the topic below its next sibling."
   }
 }

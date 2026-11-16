@@ -5,13 +5,16 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../controllers/mind_map_editing_controller.dart';
 
 /// 画布底部的浮动工具坞（材质与编辑器的悬浮工具栏同一套）。
 ///
 /// 两组按钮随选中状态切换（在同一块不透明表面里交叉淡化，表面本身不淡）：
-/// - 没选中：添加主题（加在根下）、结构与样式、适应屏幕；
-/// - 选中节点：子主题、同级主题、编辑文字、收起 / 展开、删除（根不能删）。
+/// - 没选中：添加主题（加在根下）、导图样式、适应屏幕（大纲里没有）；
+/// - 选中主题：子主题、同级主题、插入（图标、标签、备注、链接、待办）、
+///   主题样式、删除（根不能删）、更多（编辑文字、收起 / 展开、复制、剪切、
+///   粘贴，弹出菜单）。
 /// 窄屏放不下时横向滚动（桌面可拖动 / Shift + 滚轮）。
 class MindMapDock extends StatelessWidget {
   const MindMapDock({
@@ -19,11 +22,21 @@ class MindMapDock extends StatelessWidget {
     required this.controller,
     required this.onOpenStyle,
     required this.onFit,
+    required this.onInsert,
+    required this.onNodeStyle,
+    required this.onCopy,
+    required this.onCut,
+    required this.onPaste,
   });
 
   final MindMapEditingController controller;
   final VoidCallback onOpenStyle;
-  final VoidCallback onFit;
+  final VoidCallback? onFit;
+  final ValueChanged<String> onInsert;
+  final ValueChanged<String> onNodeStyle;
+  final VoidCallback onCopy;
+  final VoidCallback onCut;
+  final VoidCallback onPaste;
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +63,12 @@ class MindMapDock extends StatelessWidget {
                   label: l10n.mindMapStyle,
                   onPressed: onOpenStyle,
                 ),
-                _DockButton(
-                  icon: FontAwesomeIcons.expand,
-                  label: l10n.mindMapFit,
-                  onPressed: onFit,
-                ),
+                if (onFit != null)
+                  _DockButton(
+                    icon: FontAwesomeIcons.expand,
+                    label: l10n.mindMapFit,
+                    onPressed: onFit,
+                  ),
               ]
             : <Widget>[
                 _DockButton(
@@ -68,31 +82,64 @@ class MindMapDock extends StatelessWidget {
                   onPressed: () => controller.addSibling(),
                 ),
                 _DockButton(
-                  icon: FontAwesomeIcons.pen,
-                  label: l10n.mindMapEditText,
-                  onPressed: () => controller.startEditing(node.id),
-                ),
-                _DockButton(
-                  icon: node.collapsed
-                      ? FontAwesomeIcons.upRightAndDownLeftFromCenter
-                      : FontAwesomeIcons.downLeftAndUpRightToCenter,
-                  label: node.collapsed
-                      ? l10n.mindMapExpand
-                      : l10n.mindMapCollapse,
-                  onPressed: node.children.isEmpty
-                      ? null
-                      : () => controller.toggleCollapsed(node.id),
+                  icon: FontAwesomeIcons.faceSmile,
+                  label: l10n.mindMapInsert,
+                  onPressed: () => onInsert(node.id),
                 ),
                 _DockButton(
                   icon: FontAwesomeIcons.palette,
                   label: l10n.mindMapStyle,
-                  onPressed: onOpenStyle,
+                  onPressed: () => onNodeStyle(node.id),
                 ),
                 _DockButton(
                   icon: FontAwesomeIcons.trashCan,
                   label: l10n.mindMapDelete,
                   destructive: true,
                   onPressed: isRoot ? null : controller.deleteSelected,
+                ),
+                ExpressiveMenuAnchor(
+                  menuChildren: <Widget>[
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.pen),
+                      onPressed: () => controller.startEditing(node.id),
+                      child: Text(l10n.mindMapEditText),
+                    ),
+                    if (node.children.isNotEmpty)
+                      ExpressiveMenuItem(
+                        leadingIcon: FaIcon(
+                          node.collapsed
+                              ? FontAwesomeIcons.upRightAndDownLeftFromCenter
+                              : FontAwesomeIcons.downLeftAndUpRightToCenter,
+                        ),
+                        onPressed: () => controller.toggleCollapsed(node.id),
+                        child: Text(
+                          node.collapsed
+                              ? l10n.mindMapExpand
+                              : l10n.mindMapCollapse,
+                        ),
+                      ),
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.copy),
+                      onPressed: onCopy,
+                      child: Text(l10n.mindMapCopy),
+                    ),
+                    if (!isRoot)
+                      ExpressiveMenuItem(
+                        leadingIcon: const FaIcon(FontAwesomeIcons.scissors),
+                        onPressed: onCut,
+                        child: Text(l10n.mindMapCut),
+                      ),
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.paste),
+                      onPressed: onPaste,
+                      child: Text(l10n.mindMapPaste),
+                    ),
+                  ],
+                  builder: (context, menu, _) => _DockButton(
+                    icon: FontAwesomeIcons.ellipsis,
+                    label: l10n.mindMapMore,
+                    onPressed: menu.toggle,
+                  ),
                 ),
               ];
         return DiaryFloatingToolbarSurface(
@@ -153,7 +200,7 @@ class _DockButton extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(14),
         child: SizedBox(
-          width: 60,
+          width: 56,
           height: 52,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

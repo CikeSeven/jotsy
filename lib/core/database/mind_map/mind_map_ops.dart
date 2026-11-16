@@ -294,6 +294,43 @@ abstract final class MindMapOps {
     return document.copyWith(root: clone(root, 0, isRoot: true));
   }
 
+  /// 缩进：成为前一个同级节点的最后一个子节点（没有前一个同级时不动）。
+  static MindMapDocument indent(MindMapDocument document, String id) {
+    final index = document.index;
+    final parent = index.parentOf(id);
+    final position = index.positionOf(id);
+    if (parent == null || position == 0) return document;
+    final previous = index[parent]!.children[position - 1];
+    if (index.depthOf(id) + 1 > kMindMapMaxDepth) return document;
+    return moveNode(document, id, previous.id, previous.children.length);
+  }
+
+  /// 取消缩进：提到父节点之后，成为父节点的同级（父节点是根时不动）。
+  static MindMapDocument outdent(MindMapDocument document, String id) {
+    final index = document.index;
+    final parent = index.parentOf(id);
+    if (parent == null) return document;
+    final grand = index.parentOf(parent);
+    if (grand == null) return document;
+    return moveNode(document, id, grand, index.positionOf(parent) + 1);
+  }
+
+  /// 在同级之间上移 / 下移一位；到头时不动。
+  static MindMapDocument shift(
+    MindMapDocument document,
+    String id, {
+    required bool up,
+  }) {
+    final index = document.index;
+    final parent = index.parentOf(id);
+    if (parent == null) return document;
+    final position = index.positionOf(id);
+    final count = index[parent]!.children.length;
+    final target = up ? position - 1 : position + 1;
+    if (target < 0 || target >= count) return document;
+    return moveNode(document, id, parent, target);
+  }
+
   /// 节点 [id] 在先序里的上一个 / 下一个可见节点（跳过收起的子树）。
   static String? visibleNeighbour(
     MindMapDocument document,

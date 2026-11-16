@@ -82,6 +82,49 @@ String mindMapOutlineText(MindMapDocument document, {String untitled = ''}) {
   return buffer.toString().trimRight();
 }
 
+/// 一棵子树的大纲文本（[node] 在第一行，子主题逐级缩进成 `- ` 列表）：
+/// 复制主题时写进系统剪贴板，别的应用里也能贴成大纲。
+String mindMapSubtreeOutline(MindMapNode node) {
+  final buffer = StringBuffer();
+  void visit(MindMapNode current, int depth) {
+    final text = current.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();
+    if (depth == 0) {
+      buffer.writeln(text);
+    } else {
+      buffer
+        ..write('  ' * (depth - 1))
+        ..write('- ')
+        ..writeln(text);
+    }
+    for (final child in current.children) {
+      visit(child, depth + 1);
+    }
+  }
+
+  visit(node, 0);
+  return buffer.toString().trimRight();
+}
+
+/// 把多行文字解析成若干棵子树：缩进最浅的每一行各是一棵（粘贴到导图时
+/// 成为选中主题的几个子主题）。没有文字时为空列表。
+List<MindMapNode> mindMapNodesFromOutline(String text) {
+  final lines = text
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n')
+      .where((line) => line.trim().isNotEmpty)
+      .toList();
+  if (lines.isEmpty) return const <MindMapNode>[];
+  final wrapped = StringBuffer('_');
+  for (final line in lines) {
+    wrapped
+      ..write('\n  ')
+      ..write(line.replaceAll('\t', '  '));
+  }
+  return mindMapNodeFromOutline(wrapped.toString())?.children ??
+      const <MindMapNode>[];
+}
+
 /// 是否为“什么都没写”的导图：只有一个根节点，根上没有文字、备注、图片等
 /// 任何内容。新建的空导图据此不算草稿、不算正文内容。
 bool mindMapIsBlank(MindMapDocument document) {

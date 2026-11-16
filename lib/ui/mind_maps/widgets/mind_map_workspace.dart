@@ -2,27 +2,39 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../core/database/diary_blocks/diary_link_target.dart';
+import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../core/database/mind_map/mind_map_text.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../diaries/controllers/diary_link_open_flow.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
+import '../../settings/widgets/external_link.dart';
+import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/keyboard_visibility.dart';
+import '../controllers/mind_map_clipboard.dart';
 import '../controllers/mind_map_editing_controller.dart';
 import '../controllers/mind_map_viewport_controller.dart';
 import '../models/mind_map_templates.dart';
+import '../layout/mind_map_node_content.dart';
+import '../sections/mind_map_node_sheets.dart';
 import '../sections/mind_map_style_sheet.dart';
 import '../viewmodels/mind_map_hit_test.dart';
+import '../viewmodels/mind_map_look.dart';
 import 'mind_map_canvas.dart';
 import 'mind_map_dock.dart';
+import 'mind_map_outline_view.dart';
 import 'mind_map_starter_card.dart';
 
-/// 导图编辑工作区：画布 + 底部工具坞 + 空图起步卡 + 键盘附件条 + 缩放胶囊，
-/// 以及桌面快捷键与节点的右键 / 长按菜单。导图日记的编辑页与正文里嵌入
+/// 导图编辑工作区：画布或大纲（左上角切换）+ 底部工具坞 + 起步卡 + 键盘
+/// 附件条 + 缩放胶囊，以及桌面快捷键与节点的右键 / 长按菜单。导图日记的编辑页与正文里嵌入
 /// 导图的全屏编辑页共用它，宿主只负责外框（顶栏）与保存。
 ///
 /// 输入：编辑会话 [controller]（宿主持有，改动经它的 `onChanged` 写回）、
@@ -33,8 +45,12 @@ import 'mind_map_starter_card.dart';
 /// Tab / Insert 子主题、Enter 同级（Shift + Enter 加在前面）、Delete /
 /// Backspace 删除、F2 / 空格编辑、方向键在节点间移动、Ctrl / ⌘ + Z / Y /
 /// Shift + Z 撤销重做、Ctrl / ⌘ + 0 适应屏幕、+ / − 缩放、Ctrl / ⌘ + 1 实际
-/// 大小、Ctrl / ⌘ + / 收起或展开、Esc 取消选中（没选中时交给页面返回）。
-class MindMapWorkspace extends StatefulWidget {
+/// 大小、Ctrl / ⌘ + / 收起或展开、Ctrl / ⌘ + C / X / V 复制剪切粘贴、Esc
+/// 取消选中（没选中时交给页面返回）。
+///
+/// 节点里的备注与链接标记：点备注打开备注面板（只读时只能看），点链接打开
+/// 网址或日记（日记链接经 `openDiaryLinkTarget`）。
+class MindMapWorkspace extends ConsumerStatefulWidget {
   const MindMapWorkspace({
     super.key,
     required this.controller,
@@ -49,10 +65,10 @@ class MindMapWorkspace extends StatefulWidget {
   final bool readOnly;
 
   @override
-  State<MindMapWorkspace> createState() => MindMapWorkspaceState();
+  ConsumerState<MindMapWorkspace> createState() => MindMapWorkspaceState();
 }
 
-class MindMapWorkspaceState extends State<MindMapWorkspace> {
+class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
   final MindMapViewportController _viewport = MindMapViewportController();
   final GlobalKey<MindMapCanvasState> _canvas = GlobalKey<MindMapCanvasState>();
   final GlobalKey<ExpressiveMenuAnchorState> _nodeMenu =
@@ -60,6 +76,9 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
   final ValueNotifier<double> _keyboardInset = ValueNotifier<double>(0);
   final FocusNode _focus = FocusNode(debugLabel: 'mind-map-workspace');
   String? _menuNodeId;
+
+  /// 显示大纲而不是画布（页面临时状态）。
+  bool _outline = false;
 
   /// 底部工具坞占的高度（含与屏幕底边的间距）。
   static const double _dockReserve = 92;
@@ -119,6 +138,54 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
     WidgetsBinding.instance.addPostFrameCallback((_) => fitToScreen());
   }
 
+  void _openNodeStyle(String id) {
+    _controller.stopEditing();
+    final look = MindMapLook.of(context, _controller.document);
+    showMindMapNodeStyleSheet(context, _controller, id, look.palette);
+  }
+
+  void _openInsert(String id) {
+    _controller.stopEditing();
+    showMindMapInsertSheet(context, _controller, id);
+  }
+
+  void _onNodePart(String id, MindMapNodePart part) {
+    final node = _controller.document.index[id];
+    if (node == null) return;
+    switch (part) {
+      case MindMapNodePart.note:
+        showMindMapNoteSheet(
+          context,
+          _controller,
+          id,
+          readOnly: widget.readOnly,
+        );
+      case MindMapNodePart.link:
+        final href = node.href?.trim() ?? '';
+        if (href.isNotEmpty) _openLink(href);
+      case MindMapNodePart.checkbox:
+        _controller.toggleTask(id);
+    }
+  }
+
+  void _openLink(String href) {
+    final target = DiaryLinkTarget.tryParse(href);
+    if (target != null) {
+      openDiaryLinkTarget(context, ref, target, fromEditor: !widget.readOnly);
+      return;
+    }
+    openExternalLink(context, href);
+  }
+
+  void _copy() {
+    final id = _controller.selectedId;
+    if (id != null) MindMapClipboard.copy(_controller.document, id);
+  }
+
+  void _cut() => MindMapClipboard.cut(_controller);
+
+  void _paste() => MindMapClipboard.paste(_controller);
+
   void _openNodeMenu(String id, Offset globalPosition) {
     setState(() => _menuNodeId = id);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -176,6 +243,18 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
       }
       if (key == LogicalKeyboardKey.slash && selected != null) {
         controller.toggleCollapsed(selected);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.keyC && selected != null) {
+        _copy();
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.keyX && selected != null) {
+        _cut();
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.keyV) {
+        _paste();
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
@@ -256,6 +335,41 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
         },
         child: Text(l10n.mindMapAddSibling),
       ),
+      ExpressiveMenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.faceSmile),
+        onPressed: () => _openInsert(node.id),
+        child: Text(l10n.mindMapInsert),
+      ),
+      ExpressiveMenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.palette),
+        onPressed: () => _openNodeStyle(node.id),
+        child: Text(l10n.mindMapNodeStyleTitle),
+      ),
+      ExpressiveMenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.copy),
+        onPressed: () {
+          _controller.select(node.id);
+          _copy();
+        },
+        child: Text(l10n.mindMapCopy),
+      ),
+      if (!isRoot)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.scissors),
+          onPressed: () {
+            _controller.select(node.id);
+            _cut();
+          },
+          child: Text(l10n.mindMapCut),
+        ),
+      ExpressiveMenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.paste),
+        onPressed: () {
+          _controller.select(node.id);
+          _paste();
+        },
+        child: Text(l10n.mindMapPaste),
+      ),
       if (node.children.isNotEmpty)
         ExpressiveMenuItem(
           leadingIcon: FaIcon(
@@ -303,29 +417,52 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
         fit: StackFit.expand,
         children: <Widget>[
           _KeyboardInsetProbe(notifier: _keyboardInset),
-          Semantics(
-            label: context.l10n.mindMapCanvasLabel,
-            child: MindMapCanvas(
-              key: _canvas,
+          if (_outline)
+            MindMapOutlineView(
               controller: controller,
-              viewport: _viewport,
-              padding: padding,
-              keyboardInset: _keyboardInset,
-              interactive: !widget.readOnly,
-              onNodeMenu: _openNodeMenu,
+              padding: padding + const EdgeInsets.only(top: 48),
+              onNodePart: (id, part) => _onNodePart(
+                id,
+                part == 'note' ? MindMapNodePart.note : MindMapNodePart.link,
+              ),
+            )
+          else
+            Semantics(
+              label: context.l10n.mindMapCanvasLabel,
+              child: MindMapCanvas(
+                key: _canvas,
+                controller: controller,
+                viewport: _viewport,
+                padding: padding,
+                keyboardInset: _keyboardInset,
+                interactive: !widget.readOnly,
+                onNodeMenu: _openNodeMenu,
+                onNodePart: _onNodePart,
+              ),
             ),
-          ),
           Positioned(
             top: widget.topInset + 10,
-            right: 12,
-            child: _ZoomChip(
-              viewport: _viewport,
-              onFit: () => _canvas.currentState?.fitToScreen(),
-              onActual: () => _canvas.currentState?.zoomToActual(),
-              onZoomIn: () => _canvas.currentState?.zoomBy(1.25),
-              onZoomOut: () => _canvas.currentState?.zoomBy(0.8),
+            left: 12,
+            child: _ViewSwitch(
+              outline: _outline,
+              onChanged: (outline) {
+                controller.stopEditing();
+                setState(() => _outline = outline);
+              },
             ),
           ),
+          if (!_outline)
+            Positioned(
+              top: widget.topInset + 10,
+              right: 12,
+              child: _ZoomChip(
+                viewport: _viewport,
+                onFit: () => _canvas.currentState?.fitToScreen(),
+                onActual: () => _canvas.currentState?.zoomToActual(),
+                onZoomIn: () => _canvas.currentState?.zoomBy(1.25),
+                onZoomOut: () => _canvas.currentState?.zoomBy(0.8),
+              ),
+            ),
           if (showDock || showStarter)
             Positioned(
               left: 12,
@@ -351,7 +488,14 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
                           MindMapDock(
                             controller: controller,
                             onOpenStyle: _openStyle,
-                            onFit: () => _canvas.currentState?.fitToScreen(),
+                            onFit: _outline
+                                ? null
+                                : () => _canvas.currentState?.fitToScreen(),
+                            onInsert: _openInsert,
+                            onNodeStyle: _openNodeStyle,
+                            onCopy: _copy,
+                            onCut: _cut,
+                            onPaste: _paste,
                           ),
                       ],
                     ),
@@ -365,7 +509,9 @@ class MindMapWorkspaceState extends State<MindMapWorkspace> {
               right: 0,
               bottom: 0,
               child: KeyboardInsetPadding(
-                child: _EditingAccessoryBar(controller: controller),
+                child: _outline
+                    ? _OutlineAccessoryBar(controller: controller)
+                    : _EditingAccessoryBar(controller: controller),
               ),
             ),
           Positioned(
@@ -591,6 +737,130 @@ class _ChipSurface extends StatelessWidget {
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: child,
+    );
+  }
+}
+
+/// 左上角的“画布 | 大纲”切换（与缩放胶囊同一材质）。
+class _ViewSwitch extends StatelessWidget {
+  const _ViewSwitch({required this.outline, required this.onChanged});
+
+  final bool outline;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return _ChipSurface(
+      child: Padding(
+        padding: const EdgeInsets.all(3),
+        child: ExpressiveButtonGroup<bool>(
+          dense: true,
+          segments: <ButtonSegment<bool>>[
+            ButtonSegment<bool>(
+              value: false,
+              icon: const FaIcon(FontAwesomeIcons.sitemap, size: 12),
+              label: Text(l10n.mindMapCanvasView),
+            ),
+            ButtonSegment<bool>(
+              value: true,
+              icon: const FaIcon(FontAwesomeIcons.listUl, size: 12),
+              label: Text(l10n.mindMapOutline),
+            ),
+          ],
+          selected: <bool>{outline},
+          onSelectionChanged: (value) => onChanged(value.first),
+        ),
+      ),
+    );
+  }
+}
+
+/// 大纲里编辑文字时键盘上方的附件条：缩进、取消缩进、上移、下移、完成。
+class _OutlineAccessoryBar extends StatelessWidget {
+  const _OutlineAccessoryBar({required this.controller});
+
+  final MindMapEditingController controller;
+
+  void _apply(MindMapDocument Function(MindMapDocument, String) op) {
+    final id = controller.editingId;
+    if (id == null) return;
+    controller.commit(op(controller.document, id), select: id);
+    controller.startEditing(id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onSurface;
+    Widget action(FaIconData icon, String label, VoidCallback onTap) =>
+        Expanded(
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(14),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                FaIcon(icon, size: 15, color: color),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      child: DiaryFloatingToolbarSurface(
+        child: SizedBox(
+          height: 52,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              children: <Widget>[
+                action(
+                  FontAwesomeIcons.outdent,
+                  l10n.mindMapOutdent,
+                  () => _apply(MindMapOps.outdent),
+                ),
+                action(
+                  FontAwesomeIcons.indent,
+                  l10n.mindMapIndent,
+                  () => _apply(MindMapOps.indent),
+                ),
+                action(
+                  FontAwesomeIcons.arrowUp,
+                  l10n.mindMapMoveUp,
+                  () => _apply(
+                    (document, id) => MindMapOps.shift(document, id, up: true),
+                  ),
+                ),
+                action(
+                  FontAwesomeIcons.arrowDown,
+                  l10n.mindMapMoveDown,
+                  () => _apply(
+                    (document, id) => MindMapOps.shift(document, id, up: false),
+                  ),
+                ),
+                action(
+                  FontAwesomeIcons.check,
+                  l10n.mindMapDone,
+                  controller.stopEditing,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

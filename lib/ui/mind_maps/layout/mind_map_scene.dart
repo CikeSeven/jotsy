@@ -3,6 +3,7 @@ import 'package:flutter/painting.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../models/mind_map_options.dart';
 import '../viewmodels/mind_map_visuals.dart';
+import 'mind_map_node_content.dart';
 
 /// 布局的产物：每个可见节点的位置与外观、每条连线的走向，以及整体边界。
 ///
@@ -36,6 +37,7 @@ final class MindMapSceneNode {
     required this.placeholder,
     required this.flow,
     required this.hiddenCount,
+    required this.content,
   });
 
   final MindMapNode node;
@@ -54,6 +56,9 @@ final class MindMapSceneNode {
   /// 收起时被藏起来的子孙数；没收起为 0。
   final int hiddenCount;
 
+  /// 节点框里的内容排版（文字、待办框、贴纸、标记、标签的位置）。
+  final MindMapNodeContent content;
+
   String get id => node.id;
 
   bool get hasChildren => node.children.isNotEmpty;
@@ -69,6 +74,7 @@ final class MindMapSceneNode {
     placeholder: placeholder,
     flow: flow,
     hiddenCount: hiddenCount,
+    content: content,
   );
 
   /// 收起 / 展开徽标的中心（子节点出去的那一侧）。

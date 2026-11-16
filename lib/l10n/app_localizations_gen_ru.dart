@@ -19104,4 +19104,166 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get settingsFeaturesMindMapsSubtitle =>
       'Превращайте запись в карту или вставляйте карту в текст';
+
+  @override
+  String get mindMapAdd => 'Добавить';
+
+  @override
+  String get mindMapInsert => 'Вставить';
+
+  @override
+  String get mindMapMore => 'Ещё';
+
+  @override
+  String get mindMapMarkers => 'Значки';
+
+  @override
+  String get mindMapLabels => 'Метки';
+
+  @override
+  String get mindMapNote => 'Заметка';
+
+  @override
+  String get mindMapLink => 'Ссылка';
+
+  @override
+  String get mindMapTask => 'Флажок';
+
+  @override
+  String get mindMapNodeStyleTitle => 'Стиль темы';
+
+  @override
+  String get mindMapShape => 'Форма';
+
+  @override
+  String get mindMapShapeRounded => 'Скруглённая';
+
+  @override
+  String get mindMapShapePill => 'Капсула';
+
+  @override
+  String get mindMapShapeRect => 'Прямоугольник';
+
+  @override
+  String get mindMapShapeEllipse => 'Овал';
+
+  @override
+  String get mindMapShapeUnderline => 'Подчёркивание';
+
+  @override
+  String get mindMapShapePlain => 'Только текст';
+
+  @override
+  String get mindMapFill => 'Заливка';
+
+  @override
+  String get mindMapTextColor => 'Цвет текста';
+
+  @override
+  String get mindMapBranchColor => 'Цвет ветви';
+
+  @override
+  String get mindMapColorDefault => 'По умолчанию';
+
+  @override
+  String get mindMapTextStyle => 'Текст';
+
+  @override
+  String get mindMapBold => 'Жирный';
+
+  @override
+  String get mindMapItalic => 'Курсив';
+
+  @override
+  String get mindMapStrike => 'Зачёркнутый';
+
+  @override
+  String get mindMapSizeSmall => 'S';
+
+  @override
+  String get mindMapSizeMedium => 'M';
+
+  @override
+  String get mindMapSizeLarge => 'L';
+
+  @override
+  String get mindMapSizeHuge => 'XL';
+
+  @override
+  String get mindMapResetStyle => 'Сбросить стиль';
+
+  @override
+  String get mindMapMarkerPriority => 'Приоритет';
+
+  @override
+  String get mindMapMarkerProgress => 'Прогресс';
+
+  @override
+  String get mindMapMarkerFlag => 'Флажки';
+
+  @override
+  String get mindMapMarkerStar => 'Звёзды';
+
+  @override
+  String get mindMapMarkerFace => 'Лица';
+
+  @override
+  String get mindMapMarkerSymbol => 'Символы';
+
+  @override
+  String get mindMapMarkerEmoji => 'Любой эмодзи';
+
+  @override
+  String get mindMapEmojiHint => 'Введите эмодзи';
+
+  @override
+  String get mindMapClearMarkers => 'Убрать все значки';
+
+  @override
+  String get mindMapLabelHint => 'Новая метка';
+
+  @override
+  String get mindMapNoteHint => 'Напишите заметку…';
+
+  @override
+  String get mindMapLinkUrl => 'Веб-ссылка';
+
+  @override
+  String get mindMapLinkDiary => 'Запись';
+
+  @override
+  String get mindMapLinkOpen => 'Открыть ссылку';
+
+  @override
+  String get mindMapLinkRemove => 'Убрать';
+
+  @override
+  String get mindMapLinkInvalid => 'Введите корректный адрес';
+
+  @override
+  String get mindMapCopy => 'Копировать';
+
+  @override
+  String get mindMapCut => 'Вырезать';
+
+  @override
+  String get mindMapPaste => 'Вставить';
+
+  @override
+  String get mindMapOutline => 'Структура';
+
+  @override
+  String get mindMapCanvasView => 'Карта';
+
+  @override
+  String get mindMapIndent => 'Вправо';
+
+  @override
+  String get mindMapOutdent => 'Влево';
+
+  @override
+  String get mindMapMoveUp => 'Вверх';
+
+  @override
+  String get mindMapMoveDown => 'Вниз';
 }

@@ -16073,4 +16073,166 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsFeaturesMindMapsSubtitle => '新建日记可以转成导图，正文里也能插入导图';
+
+  @override
+  String get mindMapAdd => '添加';
+
+  @override
+  String get mindMapInsert => '插入';
+
+  @override
+  String get mindMapMore => '更多';
+
+  @override
+  String get mindMapMarkers => '图标';
+
+  @override
+  String get mindMapLabels => '标签';
+
+  @override
+  String get mindMapNote => '备注';
+
+  @override
+  String get mindMapLink => '链接';
+
+  @override
+  String get mindMapTask => '待办';
+
+  @override
+  String get mindMapNodeStyleTitle => '主题样式';
+
+  @override
+  String get mindMapShape => '形状';
+
+  @override
+  String get mindMapShapeRounded => '圆角';
+
+  @override
+  String get mindMapShapePill => '胶囊';
+
+  @override
+  String get mindMapShapeRect => '方角';
+
+  @override
+  String get mindMapShapeEllipse => '椭圆';
+
+  @override
+  String get mindMapShapeUnderline => '下划线';
+
+  @override
+  String get mindMapShapePlain => '纯文字';
+
+  @override
+  String get mindMapFill => '底色';
+
+  @override
+  String get mindMapTextColor => '文字颜色';
+
+  @override
+  String get mindMapBranchColor => '分支颜色';
+
+  @override
+  String get mindMapColorDefault => '默认';
+
+  @override
+  String get mindMapTextStyle => '文字';
+
+  @override
+  String get mindMapBold => '粗体';
+
+  @override
+  String get mindMapItalic => '斜体';
+
+  @override
+  String get mindMapStrike => '删除线';
+
+  @override
+  String get mindMapSizeSmall => '小';
+
+  @override
+  String get mindMapSizeMedium => '中';
+
+  @override
+  String get mindMapSizeLarge => '大';
+
+  @override
+  String get mindMapSizeHuge => '特大';
+
+  @override
+  String get mindMapResetStyle => '恢复默认样式';
+
+  @override
+  String get mindMapMarkerPriority => '优先级';
+
+  @override
+  String get mindMapMarkerProgress => '进度';
+
+  @override
+  String get mindMapMarkerFlag => '旗帜';
+
+  @override
+  String get mindMapMarkerStar => '星标';
+
+  @override
+  String get mindMapMarkerFace => '表情';
+
+  @override
+  String get mindMapMarkerSymbol => '符号';
+
+  @override
+  String get mindMapMarkerEmoji => '任意 emoji';
+
+  @override
+  String get mindMapEmojiHint => '输入一个 emoji';
+
+  @override
+  String get mindMapClearMarkers => '清除全部图标';
+
+  @override
+  String get mindMapLabelHint => '新标签';
+
+  @override
+  String get mindMapNoteHint => '写点备注…';
+
+  @override
+  String get mindMapLinkUrl => '网址';
+
+  @override
+  String get mindMapLinkDiary => '日记';
+
+  @override
+  String get mindMapLinkOpen => '打开链接';
+
+  @override
+  String get mindMapLinkRemove => '移除链接';
+
+  @override
+  String get mindMapLinkInvalid => '请输入有效的网址';
+
+  @override
+  String get mindMapCopy => '复制';
+
+  @override
+  String get mindMapCut => '剪切';
+
+  @override
+  String get mindMapPaste => '粘贴';
+
+  @override
+  String get mindMapOutline => '大纲';
+
+  @override
+  String get mindMapCanvasView => '画布';
+
+  @override
+  String get mindMapIndent => '缩进';
+
+  @override
+  String get mindMapOutdent => '取消缩进';
+
+  @override
+  String get mindMapMoveUp => '上移';
+
+  @override
+  String get mindMapMoveDown => '下移';
 }

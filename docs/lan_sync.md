@@ -38,7 +38,7 @@
 ### 2.1 基本类型（`sync_model.dart`）
 
 ```dart
-const int kSyncFormatVersion = 3;
+const int kSyncFormatVersion = 4;
 
 enum SyncEntity { diary, tag, notebook, membership, orderList, comment, template, anniversary, dayMood, todoList, todo, settings, prefs }
 
@@ -63,7 +63,7 @@ class SyncManifest {
 - **哈希**：`sha256(utf8(规范 JSON))` 取前 16 字节，小写十六进制（32 字符）。
 - 规范化必须是**幂等且跨设备确定**的：A 的记录写入 B 后，B 读出的规范记录与 A 的逐字节相同（测试兜底，含历史 Delta / 旧节点格式的正文、胶囊、带附件的 metadata）。
 - 规范形式（分面组成、归一规则、哈希）一旦改变必须提升 `kSyncFormatVersion`（版本不同的设备握手时互相拒绝）；只修正本机实现、不改协议时提升 `kSyncCanonicalRevision`（`sync_hash_cache.dart`），让哈希缓存整份作废重算。
-- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。3 为新增待办清单 `todoList` 与待办 `todo` 两类实体、prefs 多出 `feature.todos`：已有记录的规范值不变（prefs 多出的分面按 4.1 第 2 条“有值的一侧胜出”），历史哈希仍有效；旧版设备的实体集合本来也对不上，提升版本让双方在 `sync.hello` 就明确拒绝、提示升级。
+- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。3 为新增待办清单 `todoList` 与待办 `todo` 两类实体、prefs 多出 `feature.todos`：已有记录的规范值不变（prefs 多出的分面按 4.1 第 2 条“有值的一侧胜出”），历史哈希仍有效；旧版设备的实体集合本来也对不上，提升版本让双方在 `sync.hello` 就明确拒绝、提示升级。4 为留言多出 `delta`（留言文字的格式）：只在有格式时出现，没有格式的留言与版本 3 的规范值逐字节相同，历史哈希仍有效；提升版本让认不出它的旧版设备拒绝同步（理由同 2）。
 
 ### 2.2 实体与分面
 
@@ -74,7 +74,7 @@ class SyncManifest {
 | notebook | `notebookId` | **definition**：`name`、`kind`、`visibility`、`payload`（库中原始 JSON 解析后的对象，键排序、封面路径归一；**不要**经 `NotebookPayload.decode` 再编码，它会丢掉认不出的键）、`pinned`、`closed`、`parentId`、`createdAt`、`updatedAt` |
 | membership | `<notebookId>|<diaryId>` | **main**：`chapterId`、`addedAt`（只有手动日记本有成员——按 `kind` 列原始值为 `manual` 判断，与 `acceptsManualEntries` 同一口径；智能本的残留关联行与日记已不在的悬空行忽略；位置不在这里） |
 | orderList | `shelf` / `templates` / `book:<notebookId>` | **items**：`ids`（书架：全部日记本按 `sortOrder`、同值按本地 id（应用的 `_notebookManualOrder`，不看置顶——置顶是 definition 的 `pinned`）；模板：只含用户模板（不含 `builtin.*`：改过的内置模板按内置顺序显示、不看 `sort_order`），按 `sortOrder`、同值按本地 id（`_templateOrder`）；书序：手动日记本内日记按 `position`、`addedAt`、日记本地 id（`_entriesInOrder`）的业务 id 列表。平手只在从未排序过的数据上出现，写入层按列表重排为 0..n-1 后两端不再有平手。`shelf`、`templates` 总是存在（可为空列表），每本手动日记本都有 `book:<id>`（空本为空列表），智能本没有） |
-| comment | `commentId` | **main**：`diaryId`、`content`、`mood`、`createdAt`、`editedAt`、`images`（留言图片：列值经 `decodeDiaryCommentImages` 规整、路径归一后再按首次出现去重的列表；**只在有图片时出现**，没有图片的留言与格式版本 1 的规范值逐字节相同；列里的坏数据按没有图片处理） |
+| comment | `commentId` | **main**：`diaryId`、`content`、`mood`、`createdAt`、`editedAt`、`images`（留言图片：列值经 `decodeDiaryCommentImages` 规整、路径归一后再按首次出现去重的列表；**只在有图片时出现**，没有图片的留言与格式版本 1 的规范值逐字节相同；列里的坏数据按没有图片处理）、`delta`（留言文字的格式：列值经 `normalizeDiaryCommentDelta` 规整后解析出的数组，与 `content` 对不上的格式按没有格式处理；**只在有格式时出现**，没有格式的留言与格式版本 3 的规范值逐字节相同） |
 | template | `templateId`（含 `builtin.*`） | **main**：`name`、`payload`（库中原始 JSON 解析后的对象，键排序；保存时已经白名单重建，读取时应用自己再经 `sanitizeDiaryTemplateBlocks`，同步层在 core 不引用 UI 模块的清理函数、原样搬运）、`createdAt`、`updatedAt` |
 | anniversary | `anniversaryId` | **main**：全部业务列（含 `metadata` 对象、`linkedDiaryId`、`pinned`、`createdAt`、`updatedAt`） |
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |

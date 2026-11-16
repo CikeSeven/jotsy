@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/rich_text/inline_rich_text.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
@@ -439,6 +441,189 @@ void main() {
               migrated.diaryComments,
             )..where((t) => t.commentId.equals(commentId))).getSingle();
             expect(added.imagePaths, <String>['/r/diary_images/m/a.jpg']);
+            final version = await migrated
+                .customSelect('PRAGMA user_version')
+                .getSingle();
+            expect(version.read<int>('user_version'), migrated.schemaVersion);
+          } finally {
+            await migrated.close();
+          }
+        },
+      );
+    }
+  });
+
+  group('comment formatting', () {
+    const bold = InlineTextMarks(bold: true);
+    const link = InlineTextMarks(href: 'jotsy://diary/target');
+
+    test('formats are trimmed with the text and stored as a delta', () async {
+      final id = await diary('有格式');
+      await db.addDiaryComment(
+        diaryId: id,
+        content: '  看 那篇  ',
+        runs: const <InlineTextRun>[
+          InlineTextRun('  '),
+          InlineTextRun('看', bold),
+          InlineTextRun(' '),
+          InlineTextRun('那篇', link),
+          InlineTextRun('  '),
+        ],
+      );
+      final row = (await comments(id)).single;
+      expect(row.content, '看 那篇');
+      expect(row.textRuns, const <InlineTextRun>[
+        InlineTextRun('看', bold),
+        InlineTextRun(' '),
+        InlineTextRun('那篇', link),
+      ]);
+    });
+
+    test('plain comments keep the delta column NULL', () async {
+      final id = await diary('无格式');
+      await db.addDiaryComment(
+        diaryId: id,
+        content: '普通',
+        runs: const <InlineTextRun>[InlineTextRun('普通')],
+      );
+      expect((await comments(id)).single.delta, isNull);
+    });
+
+    test('unsupported marks and links are dropped on write', () async {
+      final id = await diary('清理');
+      await db.addDiaryComment(
+        diaryId: id,
+        content: 'abc',
+        runs: const <InlineTextRun>[
+          InlineTextRun('a', InlineTextMarks(color: '#FFFF0000')),
+          InlineTextRun('b', InlineTextMarks(href: 'javascript:alert(1)')),
+          InlineTextRun('c', InlineTextMarks(href: 'https://example.com')),
+        ],
+      );
+      expect((await comments(id)).single.textRuns, const <InlineTextRun>[
+        InlineTextRun('ab'),
+        InlineTextRun('c', InlineTextMarks(href: 'https://example.com')),
+      ]);
+    });
+
+    test('runs that do not spell the text are ignored', () async {
+      final id = await diary('对不上');
+      await db.addDiaryComment(
+        diaryId: id,
+        content: '文字',
+        runs: const <InlineTextRun>[InlineTextRun('别的', bold)],
+      );
+      expect((await comments(id)).single.delta, isNull);
+    });
+
+    test('changing only the formats counts as an edit', () async {
+      final id = await diary('改格式');
+      final commentId = await db.addDiaryComment(diaryId: id, content: '加粗');
+      expect(
+        await db.updateDiaryComment(
+          commentId,
+          content: '加粗',
+          runs: const <InlineTextRun>[InlineTextRun('加粗')],
+        ),
+        isFalse,
+      );
+      expect(
+        await db.updateDiaryComment(
+          commentId,
+          content: '加粗',
+          runs: const <InlineTextRun>[InlineTextRun('加粗', bold)],
+        ),
+        isTrue,
+      );
+      final row = (await comments(id)).single;
+      expect(row.editedAt, isNotNull);
+      expect(row.textRuns, const <InlineTextRun>[InlineTextRun('加粗', bold)]);
+    });
+
+    test('a text-only update moves the existing formats along', () async {
+      final id = await diary('只改字');
+      final commentId = await db.addDiaryComment(
+        diaryId: id,
+        content: '重要的事',
+        runs: const <InlineTextRun>[
+          InlineTextRun('重要', bold),
+          InlineTextRun('的事'),
+        ],
+      );
+      await db.updateDiaryComment(commentId, content: '重要的大事');
+      expect((await comments(id)).single.textRuns, const <InlineTextRun>[
+        InlineTextRun('重要', bold),
+        InlineTextRun('的大事'),
+      ]);
+    });
+
+    test('a stale delta that no longer matches reads as plain text', () async {
+      final id = await diary('旧格式');
+      final commentId = await db.addDiaryComment(
+        diaryId: id,
+        content: '原来',
+        runs: const <InlineTextRun>[InlineTextRun('原来', bold)],
+      );
+      // 模拟降级后旧构建只改了文字。
+      await (db.update(db.diaryComments)
+            ..where((t) => t.commentId.equals(commentId)))
+          .write(const DiaryCommentsCompanion(content: Value('后来')));
+      final row = (await comments(id)).single;
+      expect(row.textRuns, const <InlineTextRun>[InlineTextRun('后来')]);
+    });
+  });
+
+  group('schema v23 migration', () {
+    /// v22 的留言表没有 delta 列：从当前定义删掉它，写一条旧留言。
+    Future<File> v22DatabaseFile({required bool keepDeltaColumn}) async {
+      final root = await Directory.systemTemp.createTemp('jotsy_v23_delta');
+      addTearDown(() => root.delete(recursive: true));
+      final file = File('${root.path}/v22.sqlite');
+      final original = AppDatabase.forTesting(NativeDatabase(file));
+      try {
+        final diaryId = await original.createDiary(
+          title: '升级前',
+          contentDocJson: '[{"insert":"正文\\n"}]',
+          contentText: '正文',
+          metadataJson: '{}',
+        );
+        await original.addDiaryComment(diaryId: diaryId, content: '旧留言');
+      } finally {
+        await original.close();
+      }
+      final legacy = sqlite3.open(file.path);
+      if (!keepDeltaColumn) {
+        legacy.execute('ALTER TABLE diary_comments DROP COLUMN delta');
+      }
+      legacy.execute('PRAGMA user_version = 22');
+      legacy.close();
+      return file;
+    }
+
+    for (final keep in <bool>[false, true]) {
+      test(
+        'v22 upgrade ${keep ? 'over a column a downgrade left' : 'adds the delta column'} '
+        'and keeps the comments',
+        () async {
+          final file = await v22DatabaseFile(keepDeltaColumn: keep);
+          final migrated = AppDatabase.forTesting(NativeDatabase(file));
+          try {
+            final old = await migrated
+                .select(migrated.diaryComments)
+                .getSingle();
+            expect(old.content, '旧留言');
+            expect(old.delta, isNull);
+            final commentId = await migrated.addDiaryComment(
+              diaryId: old.diaryId,
+              content: '新',
+              runs: const <InlineTextRun>[
+                InlineTextRun('新', InlineTextMarks(bold: true)),
+              ],
+            );
+            final added = await (migrated.select(
+              migrated.diaryComments,
+            )..where((t) => t.commentId.equals(commentId))).getSingle();
+            expect(added.delta, isNotNull);
             final version = await migrated
                 .customSelect('PRAGMA user_version')
                 .getSingle();

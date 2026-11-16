@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' show Value;
 
 import '../../../database/app_database.dart';
@@ -10,7 +12,9 @@ import 'sync_model.dart';
 /// - tag：以名称为 id（各设备的本地 id 不同，名称在库里唯一），只有颜色分面；
 /// - comment / anniversary / dayMood：全部业务列；留言的 `images` 为解码后的
 ///   路径列表（经 `decodeDiaryCommentImages` 规整、路径归一），只在有图片时
-///   出现——没有图片的留言与格式版本 1 的规范值相同；纪念日的 `metadata`、模板的
+///   出现——没有图片的留言与格式版本 1 的规范值相同；留言的 `delta` 为文字
+///   格式（经 `normalizeDiaryCommentDelta` 规整后解析出的数组），只在与文字
+///   对得上的格式存在时出现——没有格式的留言与格式版本 3 的规范值相同；纪念日的 `metadata`、模板的
 ///   `payload` 取库中原始 JSON 解析后的对象（解析不了的原文保留，见
 ///   [syncDecodeJsonObjectColumn]）；留言图片列的坏数据按“没有图片”规整
 ///   （与界面读取同一口径），不保留原文；
@@ -62,6 +66,9 @@ SyncRecord syncCommentRecord(SyncRawComment row) {
     for (final image in decodeDiaryCommentImages(row.images))
       syncNormalizeMediaRefs(image)! as String,
   ]);
+  // 格式按与文字对得上的那份规整（坏数据与对不上的旧格式不同步），两端
+  // 编码同一口径、规范值才相同。
+  final delta = normalizeDiaryCommentDelta(row.delta, row.content);
   return SyncRecord(
     SyncKey(SyncEntity.comment, row.commentId),
     <String, Object?>{
@@ -72,6 +79,7 @@ SyncRecord syncCommentRecord(SyncRawComment row) {
         'createdAt': syncMillisOfSeconds(row.createdAt),
         'editedAt': syncMillisOfSecondsOrNull(row.editedAt),
         if (images.isNotEmpty) 'images': images,
+        if (delta != null) 'delta': jsonDecode(delta),
       },
     },
   );
@@ -86,6 +94,7 @@ class SyncCommentColumns {
     required this.createdAt,
     required this.editedAt,
     this.images,
+    this.delta,
   });
 
   /// [dataRoot] 为本机数据根目录：图片的 `jotsy-media:<键>` 在这里换回本机
@@ -106,14 +115,22 @@ class SyncCommentColumns {
       for (final image in (rawImages as List<Object?>?) ?? const <Object?>[])
         syncStringOf(syncRebindMediaRefs(image, dataRoot), 'images'),
     ];
+    final rawDelta = value['delta'];
+    if (rawDelta != null && rawDelta is! List) {
+      throw FormatException('同步记录字段 delta 不是数组', rawDelta);
+    }
+    final content = syncStringOf(value['content'], 'content');
     return SyncCommentColumns(
       commentId: record.key.id,
       diaryId: syncStringOf(value['diaryId'], 'diaryId'),
-      content: syncStringOf(value['content'], 'content'),
+      content: content,
       mood: syncStringOrNullOf(value['mood'], 'mood'),
       createdAt: syncDateTimeOf(value['createdAt']),
       editedAt: syncDateTimeOrNullOf(value['editedAt']),
       images: encodeDiaryCommentImages(images),
+      delta: rawDelta == null
+          ? null
+          : normalizeDiaryCommentDelta(jsonEncode(rawDelta), content),
     );
   }
 
@@ -127,6 +144,9 @@ class SyncCommentColumns {
   /// 图片列的值（[encodeDiaryCommentImages]），没有图片为 null。
   final String? images;
 
+  /// 格式列的值（[normalizeDiaryCommentDelta]），没有格式为 null。
+  final String? delta;
+
   DiaryCommentsCompanion toCompanion() => DiaryCommentsCompanion(
     commentId: Value<String>(commentId),
     diaryId: Value<String>(diaryId),
@@ -135,6 +155,7 @@ class SyncCommentColumns {
     createdAt: Value<DateTime>(createdAt),
     editedAt: Value<DateTime?>(editedAt),
     images: Value<String?>(images),
+    delta: Value<String?>(delta),
   );
 }
 

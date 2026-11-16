@@ -26,7 +26,11 @@ import 'package:meta/meta.dart';
 ///   `feature.todos`。已有记录的规范值不变，历史哈希仍有效；旧版设备的实体
 ///   集合本来也对不上，提升版本让 `sync.hello` 明确以“版本不同”拒绝、提示
 ///   升级，而不是含糊地报实体集合不符。
-const int kSyncFormatVersion = 3;
+/// - 4：留言记录多出 `delta`（留言文字的格式，只在有格式时出现）。没有格式
+///   的留言与版本 3 的规范值逐字节相同，历史哈希仍有效；提升版本让旧版设备
+///   拒绝同步——它认不出这个字段，写入时会丢掉格式，下次同步再把“没有格式”
+///   的版本当作冲突的一方传回来。
+const int kSyncFormatVersion = 4;
 
 /// 规范值里托管媒体引用的前缀：`jotsy-media:diary_images/media_x/a.jpg`。
 const String kSyncMediaRefPrefix = 'jotsy-media:';

@@ -4513,6 +4513,15 @@ class $DiaryCommentsTable extends DiaryComments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _deltaMeta = const VerificationMeta('delta');
+  @override
+  late final GeneratedColumn<String> delta = GeneratedColumn<String>(
+    'delta',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4523,6 +4532,7 @@ class $DiaryCommentsTable extends DiaryComments
     createdAt,
     editedAt,
     images,
+    delta,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4589,6 +4599,12 @@ class $DiaryCommentsTable extends DiaryComments
         images.isAcceptableOrUnknown(data['images']!, _imagesMeta),
       );
     }
+    if (data.containsKey('delta')) {
+      context.handle(
+        _deltaMeta,
+        delta.isAcceptableOrUnknown(data['delta']!, _deltaMeta),
+      );
+    }
     return context;
   }
 
@@ -4630,6 +4646,10 @@ class $DiaryCommentsTable extends DiaryComments
         DriftSqlType.string,
         data['${effectivePrefix}images'],
       ),
+      delta: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}delta'],
+      ),
     );
   }
 
@@ -4648,6 +4668,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
   final DateTime createdAt;
   final DateTime? editedAt;
   final String? images;
+  final String? delta;
   const DiaryCommentRow({
     required this.id,
     required this.commentId,
@@ -4657,6 +4678,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
     required this.createdAt,
     this.editedAt,
     this.images,
+    this.delta,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4675,6 +4697,9 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
     if (!nullToAbsent || images != null) {
       map['images'] = Variable<String>(images);
     }
+    if (!nullToAbsent || delta != null) {
+      map['delta'] = Variable<String>(delta);
+    }
     return map;
   }
 
@@ -4692,6 +4717,9 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
       images: images == null && nullToAbsent
           ? const Value.absent()
           : Value(images),
+      delta: delta == null && nullToAbsent
+          ? const Value.absent()
+          : Value(delta),
     );
   }
 
@@ -4709,6 +4737,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       editedAt: serializer.fromJson<DateTime?>(json['editedAt']),
       images: serializer.fromJson<String?>(json['images']),
+      delta: serializer.fromJson<String?>(json['delta']),
     );
   }
   @override
@@ -4723,6 +4752,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'editedAt': serializer.toJson<DateTime?>(editedAt),
       'images': serializer.toJson<String?>(images),
+      'delta': serializer.toJson<String?>(delta),
     };
   }
 
@@ -4735,6 +4765,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
     DateTime? createdAt,
     Value<DateTime?> editedAt = const Value.absent(),
     Value<String?> images = const Value.absent(),
+    Value<String?> delta = const Value.absent(),
   }) => DiaryCommentRow(
     id: id ?? this.id,
     commentId: commentId ?? this.commentId,
@@ -4744,6 +4775,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
     createdAt: createdAt ?? this.createdAt,
     editedAt: editedAt.present ? editedAt.value : this.editedAt,
     images: images.present ? images.value : this.images,
+    delta: delta.present ? delta.value : this.delta,
   );
   DiaryCommentRow copyWithCompanion(DiaryCommentsCompanion data) {
     return DiaryCommentRow(
@@ -4755,6 +4787,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       editedAt: data.editedAt.present ? data.editedAt.value : this.editedAt,
       images: data.images.present ? data.images.value : this.images,
+      delta: data.delta.present ? data.delta.value : this.delta,
     );
   }
 
@@ -4768,7 +4801,8 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
           ..write('mood: $mood, ')
           ..write('createdAt: $createdAt, ')
           ..write('editedAt: $editedAt, ')
-          ..write('images: $images')
+          ..write('images: $images, ')
+          ..write('delta: $delta')
           ..write(')'))
         .toString();
   }
@@ -4783,6 +4817,7 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
     createdAt,
     editedAt,
     images,
+    delta,
   );
   @override
   bool operator ==(Object other) =>
@@ -4795,7 +4830,8 @@ class DiaryCommentRow extends DataClass implements Insertable<DiaryCommentRow> {
           other.mood == this.mood &&
           other.createdAt == this.createdAt &&
           other.editedAt == this.editedAt &&
-          other.images == this.images);
+          other.images == this.images &&
+          other.delta == this.delta);
 }
 
 class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
@@ -4807,6 +4843,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
   final Value<DateTime> createdAt;
   final Value<DateTime?> editedAt;
   final Value<String?> images;
+  final Value<String?> delta;
   const DiaryCommentsCompanion({
     this.id = const Value.absent(),
     this.commentId = const Value.absent(),
@@ -4816,6 +4853,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
     this.createdAt = const Value.absent(),
     this.editedAt = const Value.absent(),
     this.images = const Value.absent(),
+    this.delta = const Value.absent(),
   });
   DiaryCommentsCompanion.insert({
     this.id = const Value.absent(),
@@ -4826,6 +4864,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
     required DateTime createdAt,
     this.editedAt = const Value.absent(),
     this.images = const Value.absent(),
+    this.delta = const Value.absent(),
   }) : commentId = Value(commentId),
        diaryId = Value(diaryId),
        content = Value(content),
@@ -4839,6 +4878,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? editedAt,
     Expression<String>? images,
+    Expression<String>? delta,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4849,6 +4889,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
       if (createdAt != null) 'created_at': createdAt,
       if (editedAt != null) 'edited_at': editedAt,
       if (images != null) 'images': images,
+      if (delta != null) 'delta': delta,
     });
   }
 
@@ -4861,6 +4902,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
     Value<DateTime>? createdAt,
     Value<DateTime?>? editedAt,
     Value<String?>? images,
+    Value<String?>? delta,
   }) {
     return DiaryCommentsCompanion(
       id: id ?? this.id,
@@ -4871,6 +4913,7 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
       createdAt: createdAt ?? this.createdAt,
       editedAt: editedAt ?? this.editedAt,
       images: images ?? this.images,
+      delta: delta ?? this.delta,
     );
   }
 
@@ -4901,6 +4944,9 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
     if (images.present) {
       map['images'] = Variable<String>(images.value);
     }
+    if (delta.present) {
+      map['delta'] = Variable<String>(delta.value);
+    }
     return map;
   }
 
@@ -4914,7 +4960,8 @@ class DiaryCommentsCompanion extends UpdateCompanion<DiaryCommentRow> {
           ..write('mood: $mood, ')
           ..write('createdAt: $createdAt, ')
           ..write('editedAt: $editedAt, ')
-          ..write('images: $images')
+          ..write('images: $images, ')
+          ..write('delta: $delta')
           ..write(')'))
         .toString();
   }
@@ -11273,6 +11320,7 @@ typedef $$DiaryCommentsTableCreateCompanionBuilder =
       required DateTime createdAt,
       Value<DateTime?> editedAt,
       Value<String?> images,
+      Value<String?> delta,
     });
 typedef $$DiaryCommentsTableUpdateCompanionBuilder =
     DiaryCommentsCompanion Function({
@@ -11284,6 +11332,7 @@ typedef $$DiaryCommentsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime?> editedAt,
       Value<String?> images,
+      Value<String?> delta,
     });
 
 class $$DiaryCommentsTableFilterComposer
@@ -11332,6 +11381,11 @@ class $$DiaryCommentsTableFilterComposer
 
   ColumnFilters<String> get images => $composableBuilder(
     column: $table.images,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get delta => $composableBuilder(
+    column: $table.delta,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -11384,6 +11438,11 @@ class $$DiaryCommentsTableOrderingComposer
     column: $table.images,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get delta => $composableBuilder(
+    column: $table.delta,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DiaryCommentsTableAnnotationComposer
@@ -11418,6 +11477,9 @@ class $$DiaryCommentsTableAnnotationComposer
 
   GeneratedColumn<String> get images =>
       $composableBuilder(column: $table.images, builder: (column) => column);
+
+  GeneratedColumn<String> get delta =>
+      $composableBuilder(column: $table.delta, builder: (column) => column);
 }
 
 class $$DiaryCommentsTableTableManager
@@ -11459,6 +11521,7 @@ class $$DiaryCommentsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> editedAt = const Value.absent(),
                 Value<String?> images = const Value.absent(),
+                Value<String?> delta = const Value.absent(),
               }) => DiaryCommentsCompanion(
                 id: id,
                 commentId: commentId,
@@ -11468,6 +11531,7 @@ class $$DiaryCommentsTableTableManager
                 createdAt: createdAt,
                 editedAt: editedAt,
                 images: images,
+                delta: delta,
               ),
           createCompanionCallback:
               ({
@@ -11479,6 +11543,7 @@ class $$DiaryCommentsTableTableManager
                 required DateTime createdAt,
                 Value<DateTime?> editedAt = const Value.absent(),
                 Value<String?> images = const Value.absent(),
+                Value<String?> delta = const Value.absent(),
               }) => DiaryCommentsCompanion.insert(
                 id: id,
                 commentId: commentId,
@@ -11488,6 +11553,7 @@ class $$DiaryCommentsTableTableManager
                 createdAt: createdAt,
                 editedAt: editedAt,
                 images: images,
+                delta: delta,
               ),
           withReferenceMapper: (p0) => p0
               .map(

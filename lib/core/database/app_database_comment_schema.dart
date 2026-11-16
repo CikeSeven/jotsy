@@ -13,7 +13,9 @@ part of 'app_database.dart';
 ///    日记 metadata 的心情同一口径），用户之后改了心情选项，旧留言仍显示原来
 ///    的 emoji；`images`（v18）为托管图片路径的 JSON 数组，没有图片为 NULL，
 ///    编解码只经 `diary_comment_images.dart`。文字与图片至少有一样：只有图片
-///    的留言 `content` 为空串；
+///    的留言 `content` 为空串；`delta`（v23）为文字的格式（粗体等与链接），
+///    `content` 仍是权威的纯文字，格式与文字对不上时按没有格式读，编解码只经
+///    `diary_comment_rich_text.dart`；
 /// 4. `createdAt` 是写下的时间，编辑不改它（时间线按它排序、相对时间从它
 ///    算起）；`editedAt` 非空即“已编辑”；
 /// 5. 预览页按日记读、卡片按日记计数、搜索按日记 EXISTS，都以 `diary_id`
@@ -39,6 +41,8 @@ class DiaryComments extends Table {
   DateTimeColumn get editedAt => dateTime().named('edited_at').nullable()();
 
   TextColumn get images => text().nullable()();
+
+  TextColumn get delta => text().nullable()();
 }
 
 /// 一条留言最多的字数（输入框 `maxLength`，按字形簇计）。只在写留言的面板
@@ -52,4 +56,8 @@ extension DiaryCommentRowImages on DiaryCommentRow {
 
   /// 是否写了文字（只有图片的留言为 false）。
   bool get hasText => content.trim().isNotEmpty;
+
+  /// 文字按格式分好的段（经 [decodeDiaryCommentRuns]）；没有格式时整段一个
+  /// 无格式的段，只有图片的留言为空列表。
+  List<InlineTextRun> get textRuns => decodeDiaryCommentRuns(delta, content);
 }

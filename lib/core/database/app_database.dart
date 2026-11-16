@@ -11,6 +11,8 @@ import '../../utils/text_stats.dart';
 import 'content_codec.dart';
 import 'diary_blocks/diary_link_target.dart';
 import 'diary_comment_images.dart';
+import 'diary_comment_rich_text.dart';
+import 'rich_text/inline_rich_text.dart';
 import 'diary_list_scope.dart';
 import 'diary_search_terms.dart';
 import 'local_date_text.dart';
@@ -22,6 +24,7 @@ import '../services/app_data_directory.dart';
 
 export 'ai_message_images.dart';
 export 'diary_comment_images.dart';
+export 'diary_comment_rich_text.dart';
 export 'diary_list_scope.dart';
 export 'diary_search_terms.dart';
 export 'local_date_text.dart';
@@ -142,7 +145,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -210,6 +213,11 @@ class AppDatabase extends _$AppDatabase
       // 在 v17 分支之后（理由同 v20）。
       if (from < 22) {
         await _migrateAiMessagesAddImages(m);
+      }
+      // v23 留言加格式列，只动留言表，同样排在 v1 分支之前；必须在 v16
+      // 分支之后（理由同 v18）。
+      if (from < 23) {
+        await _migrateDiaryCommentsAddDelta(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

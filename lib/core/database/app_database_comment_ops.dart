@@ -28,43 +28,52 @@ mixin _AppDatabaseCommentOps
 
   /// 给 [diaryId] 写一条留言，返回新留言的业务 id。
   ///
-  /// [content] 去掉首尾空白；[images] 为已复制进托管目录的图片路径（按添加
-  /// 顺序，经 [encodeDiaryCommentImages] 规整）。文字为空且没有图片时抛
-  /// [FormatException]；[mood] 为空串按没选心情处理。
+  /// [content] 去掉首尾空白；[runs] 为输入框里的文字与格式（拼起来须等于
+  /// [content]，否则不带格式），格式随文字一起裁剪、经
+  /// [normalizeDiaryCommentText] 规整，没有格式时不存；[images] 为已复制进
+  /// 托管目录的图片路径（按添加顺序，经 [encodeDiaryCommentImages] 规整）。
+  /// 文字为空且没有图片时抛 [FormatException]；[mood] 为空串按没选心情处理。
   Future<String> addDiaryComment({
     required String diaryId,
     required String content,
+    List<InlineTextRun>? runs,
     String? mood,
     List<String> images = const <String>[],
   }) async {
     final commentId = _newBusinessUuid();
     final encodedImages = encodeDiaryCommentImages(images);
+    final text = _normalizeDiaryComment(
+      content,
+      runs: runs,
+      hasImages: encodedImages != null,
+    );
     await into(diaryComments).insert(
       DiaryCommentsCompanion.insert(
         commentId: commentId,
         diaryId: diaryId,
-        content: _normalizeDiaryComment(
-          content,
-          hasImages: encodedImages != null,
-        ),
+        content: text.content,
         mood: Value(_normalizeCommentMood(mood)),
         createdAt: DateTime.now(),
         images: Value(encodedImages),
+        delta: Value(text.delta),
       ),
     );
     return commentId;
   }
 
-  /// 改写一条留言的文字、心情与图片；有变化时记下编辑时间（显示“已编辑”），
-  /// 原样保存不算编辑。返回是否真的改动了。
+  /// 改写一条留言的文字、格式、心情与图片；有变化时记下编辑时间（显示
+  /// “已编辑”），原样保存不算编辑。返回是否真的改动了。
   ///
-  /// [images] 为 null 时保留原有图片（只改文字与心情的调用方不会误删图片）；
-  /// 给出列表（可为空）即整份替换。去掉的图片不在这里删文件：撤销与其他
-  /// 引用由媒体回收按引用处理（与日记正文删图同一做法）。文字为空且改写后
-  /// 没有图片时抛 [FormatException]。
+  /// [runs] 为 null 时原有格式按公共前缀 / 后缀挪到新文字上
+  /// （[remapRunsAfterEdit]，只改文字的调用方不会丢掉格式）；给出时整份替换
+  /// （口径同 [addDiaryComment]）。[images] 为 null 时保留原有图片（只改
+  /// 文字与心情的调用方不会误删图片）；给出列表（可为空）即整份替换。去掉的
+  /// 图片不在这里删文件：撤销与其他引用由媒体回收按引用处理（与日记正文删图
+  /// 同一做法）。文字为空且改写后没有图片时抛 [FormatException]。
   Future<bool> updateDiaryComment(
     String commentId, {
     required String content,
+    List<InlineTextRun>? runs,
     String? mood,
     List<String>? images,
   }) {
@@ -82,17 +91,25 @@ mixin _AppDatabaseCommentOps
           : encodeDiaryCommentImages(images);
       final text = _normalizeDiaryComment(
         content,
+        runs:
+            runs ??
+            (row == null ? null : remapRunsAfterEdit(row.textRuns, content)),
         hasImages: encodedImages != null,
       );
+      final currentDelta = row == null
+          ? null
+          : normalizeDiaryCommentDelta(row.delta, row.content);
       if (row == null ||
-          (row.content == text &&
+          (row.content == text.content &&
+              currentDelta == text.delta &&
               row.mood == normalizedMood &&
               currentImages == encodedImages)) {
         return false;
       }
       await (update(diaryComments)..where((t) => t.id.equals(row.id))).write(
         DiaryCommentsCompanion(
-          content: Value(text),
+          content: Value(text.content),
+          delta: Value(text.delta),
           mood: Value(normalizedMood),
           images: Value(encodedImages),
           editedAt: Value(DateTime.now()),
@@ -302,10 +319,15 @@ WHERE d.is_deleted = 0
     _writeDiaryScopeFilter(sql, variables, DiaryListScope.all);
   }
 
-  /// 去掉首尾空白；只有图片的留言文字可以为空，文字与图片都没有时拒绝。
-  String _normalizeDiaryComment(String raw, {required bool hasImages}) {
-    final text = raw.trim();
-    if (text.isEmpty && !hasImages) {
+  /// 去掉首尾空白、规整格式（[normalizeDiaryCommentText]）；只有图片的
+  /// 留言文字可以为空，文字与图片都没有时拒绝。
+  DiaryCommentText _normalizeDiaryComment(
+    String raw, {
+    required List<InlineTextRun>? runs,
+    required bool hasImages,
+  }) {
+    final text = normalizeDiaryCommentText(raw, runs: runs);
+    if (text.content.isEmpty && !hasImages) {
       throw const FormatException('留言不能为空');
     }
     return text;

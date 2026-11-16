@@ -1,3 +1,4 @@
+import '../diary_blocks/diary_blocks_codec.dart';
 import '../diary_blocks/diary_blocks_schema.dart';
 import '../diary_blocks/diary_blocks_walk.dart';
 import 'mind_map_document.dart';
@@ -73,6 +74,13 @@ MindMapDocument? diaryMindMapPage(Map<String, Object?> document) {
   }
   return mindMapOfBlock(first);
 }
+
+/// 存储原文（`diaries.content`）是导图日记时返回那张导图，否则为 null。先经
+/// [storedContentMayHaveMindMap] 预判，普通日记不解析整篇正文。
+MindMapDocument? storedDiaryMindMapPage(String content) =>
+    storedContentMayHaveMindMap(content)
+    ? diaryMindMapPage(decodeStoredDiaryBlocks(content))
+    : null;
 
 /// 存储原文里可能有导图（便宜的预判，避免为每张卡片解析整篇正文）。块文档
 /// 是紧凑 JSON（`encodeDiaryBlocks`），正文文字里的引号会被转义，不会误中。

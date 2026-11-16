@@ -8,19 +8,22 @@ import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mind_map_entry_chip.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_workspace.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/expressive_test_theme.dart';
 
 /// 导图日记在编辑页里：新建空白日记可以转成导图（草稿照常保存，中心主题
 /// 就是标题），空导图可以转回文字，功能关闭时没有按钮；编辑已有的导图
-/// 日记直接是画布，改动经日记的自动保存写库。
+/// 日记直接是画布，改动经日记的自动保存写库；导图日记没有预览页，“更多”
+/// 里留着分享、导出与写留言。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -205,6 +208,42 @@ void main() {
     expect(stored?.root.children.map((n) => n.text), ['Work', 'Rest', 'Play']);
     expect(saved.diary.contentText, 'Plan\nWork\nRest\nPlay');
     expect(saved.diary.title, 'Plan');
+    await unmount(tester);
+  });
+
+  testWidgets('a mind map diary has no preview page, so More keeps share, '
+      'export and writing a comment', (tester) async {
+    await setUpStores(
+      tester,
+      prefs: <String, Object>{
+        'app.settings.app_features': AppFeatures.defaults
+            .copyWith(comments: true)
+            .encode(),
+      },
+    );
+    final map = MindMapDocument.blank().copyWith(
+      root: mindMapNodeFromOutline('Plan\n  Work')!,
+    );
+    final diaryId = (await tester.runAsync(
+      () => database.createDiary(
+        title: 'Plan',
+        contentDocJson: encodeDiaryBlocks(mindMapDiaryDocument(map)),
+        contentText: mindMapPlainText(map),
+        metadataJson: '{}',
+      ),
+    ))!;
+    await open(tester, EditDiaryPage(diaryId: diaryId));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(MindMapWorkspace)),
+    );
+
+    await tester.tap(find.byTooltip(l10n.diaryEditorMoreActions));
+    await tester.pumpAndSettle();
+    Finder item(String label) => find.widgetWithText(ExpressiveMenuItem, label);
+    expect(item(l10n.mindMapExport), findsOneWidget);
+    expect(item(l10n.previewShare), findsOneWidget);
+    expect(item(l10n.previewExport), findsOneWidget);
+    expect(item(l10n.diaryCommentSheetNew), findsOneWidget);
     await unmount(tester);
   });
 }

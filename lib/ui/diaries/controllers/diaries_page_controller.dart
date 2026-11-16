@@ -229,12 +229,13 @@ class DiariesPageController {
 
   /// 点按列表卡片（普通模式）：双栏时在右栏阅读（选中这一篇，不推入路由；
   /// 双栏不抓取封面、也不量卡片，这里只兜底释放）；否则从这张卡片展开预览页。
+  /// 导图日记没有预览，双栏时也直接推入编辑页（见 [openDiaryPage]）。
   void openDiary(
     DiaryWithTags diary,
     ImageViewerHero? coverHero,
     ContainerTransformOrigin? origin,
   ) {
-    if (_state._twoPane) {
+    if (_state._twoPane && !isMindMapDiary(diary)) {
       coverHero?.dispose();
       _state._readingSelection.select(diary.diary.diaryId);
       return;

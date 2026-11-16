@@ -6,7 +6,8 @@ import '../../viewmodels/diary_card_appearance.dart';
 import '../../viewmodels/diary_card_resolved_style.dart';
 import '../../viewmodels/diary_card_view_data.dart';
 import '../../viewmodels/search_highlight.dart';
-import '../../../mind_maps/widgets/mind_map_card_preview.dart';
+import '../../../../core/database/mind_map/mind_map_text.dart';
+import '../../../mind_maps/widgets/mind_map_card_outline.dart';
 import '../diary_item_tag_row.dart';
 import 'diary_card_badges.dart';
 import 'diary_card_lines.dart';
@@ -67,8 +68,8 @@ class DiaryCardBlocks extends StatelessWidget {
 
   /// 标题行：样式隐藏标题时为 null。日记没写标题时看开关
   /// [DiaryCardContentStyle.showUntitled]：开启时取正文第一行（像便签那样，
-  /// 摘要随之从第二行起），正文没有文字（如只有图片）时退回 [untitled]；
-  /// 关闭时为 null，不显示标题行。
+  /// 摘要随之从第二行起），正文没有文字（如只有图片）或是导图日记时退回
+  /// [untitled]；关闭时为 null，不显示标题行。
   static DiaryCardTitleLine? titleLine(
     DiaryCardContentStyle content, {
     required String title,
@@ -83,6 +84,11 @@ class DiaryCardBlocks extends StatelessWidget {
     }
     if (!content.showUntitled) {
       return null;
+    }
+    // 导图日记的正文是大纲摘要，第一行是某个主题，不拿来当标题（会与大纲
+    // 重复）；中心主题没写字时按没写标题显示。
+    if (viewData.mindMap != null) {
+      return (text: untitled, fromContent: false);
     }
     final leading = viewData.leadingLine;
     return leading == null
@@ -257,16 +263,24 @@ class DiaryCardBlocks extends StatelessWidget {
     if (!resolved.style.content.showPreview) {
       return null;
     }
-    // 导图日记的摘要是导图缩略图（搜索时仍显示命中处的文字）。
+    // 导图日记的摘要是大纲（搜索时仍显示命中处的文字）。
     if (viewData.mindMap case final map? when highlightTerms.isEmpty) {
-      return MindMapCardPreview(
-        document: map,
-        compact: resolved.compact,
-        captionStyle: resolved.previewStyle?.copyWith(
+      final lines = mindMapCardOutline(
+        map,
+        maxLines: MindMapCardOutline.lineBudget(
+          resolved.modeStyle.previewMaxLines,
+          compact: resolved.compact,
+        ),
+      );
+      if (lines.isEmpty) {
+        return null;
+      }
+      return MindMapCardOutline(
+        lines: lines,
+        textStyle: resolved.previewStyle?.copyWith(
           color: appearance.previewColor,
         ),
-        fill: appearance.chipFill,
-        border: appearance.chipBorder,
+        accentColor: appearance.accentColor,
         centered: resolved.centered,
       );
     }

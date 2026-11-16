@@ -89,6 +89,17 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
 
+    packaging {
+        jniLibs {
+            // 原生库在 APK 里压缩存放，安装时再解压到应用目录。minSdk ≥ 23 时 AGP 默认
+            // 原样存放（安装后直接映射、不另占一份），但安装包主要经 GitHub 直接下载，
+            // 不像应用商店那样传输时再压缩：Dart 机器码 libapp.so、引擎 libflutter.so、
+            // 扫码与 SQLite 的 .so 原样合计约 50MB，压缩后约 22MB，arm64 包由约 74MB
+            // 降到约 46MB。代价是装机后多占一份解压出的原生库空间、首次安装略慢。
+            useLegacyPackaging = true
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")

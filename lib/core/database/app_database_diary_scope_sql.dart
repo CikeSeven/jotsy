@@ -6,9 +6,11 @@ part of 'app_database.dart';
 /// 私密日记；私密日记本是可见性不是 normal 的手动本，以及它们（经手动本一路
 /// 往下）的子本、孙本——上级私密，整棵子树都私密（[_privateNotebookIdsSql]）。
 /// 私密日记：
-/// - 不出现在任何全局查询里（全部日记、搜索、探索、日历、归档、导出候选等）；
+/// - 不出现在任何全局查询里（全部日记、探索、日历、归档、导出候选等）；
 /// - 只在它所在的那本私密日记本的范围里出现；
 /// - 普通日记本与智能日记本的范围同样排除它（私密优先于其他归属）。
+/// 唯一的例外是搜索页的全局搜索（[DiaryGlobalSearchScope]）：只排除生效
+/// 上锁的本子里的日记（[_lockedDiaryExclusionSql]），隐藏本子里的照样搜得到。
 /// 回收站与按 id 直接打开不过滤，原因见各自的注释。
 ///
 /// 凡是用到私密排除或成员关系的查询，`readsFrom` 都必须包含 `notebooks` 与
@@ -53,7 +55,10 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
       DiaryNotebookScope() =>
         'JOIN diary_notebooks sdn ON sdn.diary_id = d.id\n'
             'JOIN notebooks sn ON sn.id = sdn.notebook_id\n',
-      DiaryAllScope() || DiaryUnfiledScope() || DiarySmartScope() => '',
+      DiaryAllScope() ||
+      DiaryGlobalSearchScope() ||
+      DiaryUnfiledScope() ||
+      DiarySmartScope() => '',
     };
   }
 
@@ -67,6 +72,9 @@ mixin _AppDatabaseDiaryScopeSql on _$AppDatabase {
     switch (scope) {
       case DiaryAllScope():
         sql.writeln('  AND ${_privateDiaryExclusionSql('d.id')}');
+      case DiaryGlobalSearchScope():
+        // 隐藏本子里的日记也搜得到，只排除上锁的（理由见范围类的注释）。
+        sql.writeln('  AND ${_lockedDiaryExclusionSql('d.id')}');
       case DiaryUnfiledScope():
         // 不在任何日记本里：私密日记都在私密本子里，已被这一条排除，不必
         // 再叠私密排除。
@@ -238,7 +246,8 @@ final String _privateNotebookIdsSql = _notebookSubtreeIdsSql(
 
 /// 生效可见性为上锁的日记本的本地 id：自己或某个上级是上锁（或认不出的
 /// 可见性，按 locked 解读）的手动本。口径同 [_privateNotebookIdsSql]，只是
-/// 起点不含隐藏本；存储管理据此决定揭示私密媒体前要不要验证身份。
+/// 起点不含隐藏本；存储管理据此决定揭示私密媒体前要不要验证身份，全局搜索
+/// 据此排除上锁日记（[_lockedDiaryExclusionSql]）。
 final String _lockedNotebookIdsSql = _notebookSubtreeIdsSql(
   "visibility NOT IN ('${NotebookVisibility.normal.name}', "
   "'${NotebookVisibility.hidden.name}')",
@@ -288,6 +297,11 @@ const String _filedDiaryIdsSql =
 /// 所有全局日记查询都经它过滤，见 [_AppDatabaseDiaryScopeSql] 的私密规则。
 String _privateDiaryExclusionSql(String idColumn) =>
     '$idColumn NOT IN ($_privateDiaryIdsSql)';
+
+/// 只排除生效上锁的本子里的日记，隐藏本子里的保留：仅供搜索页的全局搜索
+/// （[DiaryGlobalSearchScope]），其他全局查询一律用 [_privateDiaryExclusionSql]。
+String _lockedDiaryExclusionSql(String idColumn) =>
+    '$idColumn NOT IN ($_lockedDiaryIdsSql)';
 
 /// 成书位置的上限（int64 最大值）：排在所有成员之后。
 const String _lastBookPosition = '9223372036854775807';

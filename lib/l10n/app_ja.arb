@@ -9438,7 +9438,7 @@
   "@notebookPrivacyHidden": {
     "description": "Privacy option: entries do not appear in All entries."
   },
-  "notebookPrivacyHiddenHint": "この日記帳の中でのみ表示されます",
+  "notebookPrivacyHiddenHint": "この日記帳の中でのみ表示されますが、検索では見つかります",
   "@notebookPrivacyHiddenHint": {
     "description": "Description of the hide-from-All-entries option."
   },
@@ -9446,7 +9446,7 @@
   "@notebookPrivacyLocked": {
     "description": "Privacy option: opening the notebook needs authentication."
   },
-  "notebookPrivacyLockedHint": "開くときに本人確認が必要になり、「すべての日記」にも表示されません",
+  "notebookPrivacyLockedHint": "開くときに本人確認が必要になり、「すべての日記」にも検索にも表示されません",
   "@notebookPrivacyLockedHint": {
     "description": "Description of the lock option."
   },

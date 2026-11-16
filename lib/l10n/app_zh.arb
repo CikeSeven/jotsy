@@ -9379,7 +9379,7 @@
   "@notebookPrivacyHidden": {
     "description": "隐私选项：本子里的日记不出现在全部日记里。"
   },
-  "notebookPrivacyHiddenHint": "只在这本里看到",
+  "notebookPrivacyHiddenHint": "只在这本里看到，搜索时仍能找到",
   "@notebookPrivacyHiddenHint": {
     "description": "“不在全部日记中显示”选项的说明。"
   },
@@ -9387,7 +9387,7 @@
   "@notebookPrivacyLocked": {
     "description": "隐私选项：打开本子要验证身份。"
   },
-  "notebookPrivacyLockedHint": "打开时验证身份，并且不在全部日记中显示",
+  "notebookPrivacyLockedHint": "打开时验证身份，不在全部日记中显示，也搜不到",
   "@notebookPrivacyLockedHint": {
     "description": "“上锁”选项的说明。"
   },

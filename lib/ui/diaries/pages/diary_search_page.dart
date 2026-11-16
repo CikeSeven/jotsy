@@ -62,7 +62,7 @@ class DiarySearchPage extends ConsumerStatefulWidget {
     super.key,
     this.initialKeyword = '',
     this.initialTagIds = const <int>{},
-    this.scope = DiaryListScope.all,
+    this.scope = DiaryListScope.globalSearch,
     this.scopeLabel,
     this.scopeIcon,
   });
@@ -71,7 +71,8 @@ class DiarySearchPage extends ConsumerStatefulWidget {
   final Set<int> initialTagIds;
 
   /// 搜索范围：从日记本里打开时为这本，条件行最前显示可移除的日记本胶囊
-  /// （[scopeLabel] + [scopeIcon]）；移除后在全部日记中搜索。
+  /// （[scopeLabel] + [scopeIcon]）；默认与移除后为全局搜索
+  /// （[DiaryListScope.globalSearch]：全部日记加上隐藏日记本里的日记）。
   final DiaryListScope scope;
   final String? scopeLabel;
   final FaIconData? scopeIcon;
@@ -80,7 +81,7 @@ class DiarySearchPage extends ConsumerStatefulWidget {
   static Route<void> buildRoute({
     String initialKeyword = '',
     Set<int> initialTagIds = const <int>{},
-    DiaryListScope scope = DiaryListScope.all,
+    DiaryListScope scope = DiaryListScope.globalSearch,
     String? scopeLabel,
     FaIconData? scopeIcon,
   }) {
@@ -206,9 +207,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     // 用 viewPadding：padding 的底边在键盘盖过导航条的那几帧里逐帧变小，
     // 读 padding（哪怕只取顶边）会让整页（连同结果卡片）跟着逐帧重建。
     final topSafeInset = MediaQuery.viewPaddingOf(context).top;
-    final scopeLabel = session.scope != DiaryListScope.all
-        ? widget.scopeLabel
-        : null;
+    final scopeLabel = session.isGlobalScope ? null : widget.scopeLabel;
 
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{

@@ -21,8 +21,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../support/expressive_test_theme.dart';
 
 /// 导图的导出与转换入口：导图日记的 ⋮ 菜单打开导出面板（复制为大纲文字
-/// 写进剪贴板），图片与 PDF 能画出来，文字日记能转成一篇新的导图日记，
-/// 空导图的起步卡上有导入按钮。
+/// 写进剪贴板），图片与 PDF 能画出来，文字日记能直接存成一篇新的导图日记
+/// 并进入它的编辑页，空导图的起步卡上有导入按钮。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -186,8 +186,8 @@ void main() {
     );
   });
 
-  testWidgets('a text diary turns into a new mind map diary; the original '
-      'is kept', (tester) async {
+  testWidgets('converting a text diary saves a new mind map diary right '
+      'away and opens its editor; the original is kept', (tester) async {
     await setUpStores(tester);
     final diaryId = await createDiary(
       tester,
@@ -223,30 +223,95 @@ void main() {
     ))!.diary;
     await pumpApp(
       tester,
-      Builder(
-        builder: (BuildContext context) => Scaffold(
-          body: TextButton(
-            onPressed: () => openMindMapFromDiary(context, diary),
-            child: const Text('Convert'),
-          ),
+      Scaffold(
+        body: Consumer(
+          builder: (BuildContext context, WidgetRef ref, Widget? _) =>
+              TextButton(
+                onPressed: () => openMindMapFromDiary(context, ref, diary),
+                child: const Text('Convert'),
+              ),
         ),
       ),
     );
     await tester.tap(find.text('Convert'));
     await warmUp(tester);
-    expect(find.byType(MindMapWorkspace), findsOneWidget);
-    final workspace = tester.widget<MindMapWorkspace>(
-      find.byType(MindMapWorkspace),
-    );
+    await warmUp(tester);
+
+    // 已经存成一篇日记：库里多了一篇导图日记，标题是中心主题。
+    final rows = (await tester.runAsync(
+      () => database.select(database.diaries).get(),
+    ))!;
+    expect(rows, hasLength(2));
+    final created = rows.singleWhere((row) => row.diaryId != diaryId);
+    expect(created.title, 'Monday');
+    expect(created.isDeleted, isFalse);
     expect(
-      mindMapOutlineText(workspace.controller.document),
+      mindMapOutlineText(
+        diaryMindMapPage(decodeStoredDiaryBlocks(created.content))!,
+      ),
       'Monday\n- Work\n  - Ship',
     );
+    expect(created.contentText, 'Monday\nWork\nShip');
+
+    // 直接进的是这篇的编辑页（导图工作区），不是带“发布”的新建页。
+    expect(find.byType(MindMapWorkspace), findsOneWidget);
+    final page = tester.widget<EditDiaryPage>(find.byType(EditDiaryPage));
+    expect(page.diaryId, created.diaryId);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(MindMapWorkspace)),
+    );
+    expect(find.byTooltip(l10n.autoT0136), findsNothing);
 
     final original = (await tester.runAsync(
       () => database.getDiaryWithTagsByDiaryId(diaryId),
     ))!.diary;
     expect(original.content, diary.content);
+    await unmount(tester);
+  });
+
+  testWidgets('deleting the saved mind map diary from its editor offers '
+      'undo on the page it was made from', (tester) async {
+    await setUpStores(tester);
+    await pumpApp(
+      tester,
+      Scaffold(
+        body: Consumer(
+          builder: (BuildContext context, WidgetRef ref, Widget? _) =>
+              TextButton(
+                onPressed: () => saveMindMapAsDiary(context, ref, map),
+                child: const Text('Save'),
+              ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Save'));
+    await warmUp(tester);
+    await warmUp(tester);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(MindMapWorkspace)),
+    );
+    final diaryId = tester
+        .widget<EditDiaryPage>(find.byType(EditDiaryPage))
+        .diaryId!;
+
+    await tester.tap(find.byTooltip(l10n.diaryEditorMoreActions));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.commonDelete));
+    await tester.pumpAndSettle();
+    // 确认对话框的“删除”。
+    await tester.tap(find.text(l10n.commonDelete).last);
+    await warmUp(tester);
+    await warmUp(tester);
+
+    expect(find.byType(EditDiaryPage), findsNothing);
+    expect(find.text(l10n.autoT0075), findsOneWidget);
+    await tester.tap(find.text(l10n.commonUndo));
+    await warmUp(tester);
+    final restored = (await tester.runAsync(
+      () => database.getDiaryWithTagsByDiaryId(diaryId),
+    ))!.diary;
+    expect(restored.isDeleted, isFalse);
+    expect(restored.title, 'Plan');
     await unmount(tester);
   });
 

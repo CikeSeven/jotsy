@@ -87,10 +87,9 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
     _mindMapSession = created;
   }
 
-  /// 中心主题的文字就是这篇日记的标题（压成一行，标题列最长 200 字）。
+  /// 中心主题的文字就是这篇日记的标题（见 [mindMapDiaryTitle]）。
   void _syncTitleFromMindMap(MindMapDocument map) {
-    var title = map.root.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();
-    if (title.length > 200) title = title.substring(0, 200);
+    final title = mindMapDiaryTitle(map);
     if (_titleController.text != title) _titleController.text = title;
   }
 

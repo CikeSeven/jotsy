@@ -2,7 +2,7 @@
 //
 // 职责边界：
 // - 输入（构造注入）：数据库、数据根目录、状态目录、设置服务（同步设置用）、
-//   冲突副本标题后缀（界面层本地化后给出）、编辑会话接口、外部能力
+//   导入字体的指纹（同步设置时把字体 id 换成跨设备引用）、冲突副本标题后缀（界面层本地化后给出）、编辑会话接口、外部能力
 //   [LanSyncServiceHooks]（套接字、发现、地址、时钟、计时器）与计时；
 // - 输出：[state]（整体状态快照）、[events]（配对、确认、会话结束、自动同步
 //   提示）、[qrTicket]；
@@ -93,6 +93,7 @@ import 'sync/sync_local_state.dart';
 import 'sync/sync_media.dart';
 import 'sync/sync_media_index.dart';
 import 'sync/sync_model.dart';
+import 'sync/sync_settings_fonts.dart';
 
 export 'lan_sync_service_config.dart';
 export 'lan_sync_session.dart'
@@ -125,6 +126,7 @@ class LanSyncService {
     required this.stateDir,
     required this.conflictTitleSuffix,
     this.settings,
+    this.fontFingerprints,
     this.appVersion = '',
     LanSyncEditingGate? editing,
     EditingSessionRegistry? registry,
@@ -149,6 +151,11 @@ class LanSyncService {
 
   /// 设置服务；为 null 时不同步设置（“同步设置”开关照常记录）。
   final SettingsService? settings;
+
+  /// 本机导入字体的指纹（`DiaryFontStorageService.contentFingerprints`）：
+  /// 同步设置时排版里的字体 id 据此换成跨设备引用，两台设备导入同一个字体
+  /// 文件就能对上（sync_settings_fonts.dart）。为 null 时字体 id 原样同步。
+  final SyncFontFingerprints? fontFingerprints;
 
   /// 冲突副本标题后缀：参数是副本所保存版本那一台设备的名字（本机版本为
   /// 本机设备名，对方版本为对方的显示名），返回本地化好的文字（如

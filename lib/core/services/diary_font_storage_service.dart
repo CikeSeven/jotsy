@@ -2,64 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'diary_imported_font.dart';
 import 'font_file_info.dart';
 
-/// 用户导入的一款正文字体。
-@immutable
-class DiaryImportedFont {
-  const DiaryImportedFont({
-    required this.id,
-    required this.name,
-    required this.fileName,
-  });
-
-  /// 写入 `DiaryTypography.fontId` 的标识，同时决定引擎里的字族名。
-  final String id;
-
-  /// 显示名：导入时按界面语言取自字体 name 表，取不到时用原文件名。
-  final String name;
-
-  /// 字体目录下的文件名（`<id>.<ttf|otf|ttc>`）。
-  final String fileName;
-
-  Map<String, Object?> toJson() => <String, Object?>{
-    'id': id,
-    'name': name,
-    'fileName': fileName,
-  };
-
-  /// 清单条目缺字段或文件名试图越出字体目录时返回 null（整条忽略）。
-  static DiaryImportedFont? tryParse(Object? json) {
-    if (json is! Map) {
-      return null;
-    }
-    final id = json['id'];
-    final name = json['name'];
-    final fileName = json['fileName'];
-    if (id is! String || name is! String || fileName is! String) {
-      return null;
-    }
-    if (id.isEmpty || fileName != p.basename(fileName)) {
-      return null;
-    }
-    return DiaryImportedFont(id: id, name: name, fileName: fileName);
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      other is DiaryImportedFont &&
-      other.id == id &&
-      other.name == name &&
-      other.fileName == fileName;
-
-  @override
-  int get hashCode => Object.hash(id, name, fileName);
-}
+export 'diary_imported_font.dart';
 
 /// 导入失败原因，界面据此给出具体提示。
 enum DiaryFontImportFailure { unsupportedFormat, unreadable }
@@ -81,7 +33,9 @@ class DiaryFontImportException implements Exception {
 ///   清单；清单与文件不一致时（文件被系统清理）以文件为准，缺文件的条目不列出。
 /// - 注册：`FontLoader` 的注册是进程级的且无法撤销，同一字体每个进程只注册
 ///   一次（静态缓存）；删除字体后已注册的字面留到进程结束，不影响正确性。
-/// - 并发：导入与删除串行执行，避免两次写清单互相覆盖。
+/// - 指纹：清单条目可带文件内容的 SHA-256（[contentFingerprints] 第一次需要
+///   时补算并写回），局域网同步靠它在两台设备之间认出同一款字体。
+/// - 并发：导入、删除与补写指纹串行执行，避免两次写清单互相覆盖。
 class DiaryFontStorageService {
   DiaryFontStorageService({Future<Directory> Function()? baseDirectory})
     : _baseDirectory = baseDirectory ?? getApplicationSupportDirectory;
@@ -110,6 +64,52 @@ class DiaryFontStorageService {
       }
     }
     return present;
+  }
+
+  /// 本机导入字体的 id → 文件内容的 SHA-256（小写十六进制），只含文件还在
+  /// 的字体。局域网同步据此把设置里只在本机有效的字体 id 换成跨设备的
+  /// 引用：两台设备导入同一个文件时 id 不同、指纹相同（#288）。
+  ///
+  /// 清单里还没有指纹的条目在这里流式计算（不把十几 MB 的中文字体整个读进
+  /// 内存），再合进**此刻**的清单写回：写回与导入 / 删除串行，计算期间新
+  /// 导入的字体不会被覆盖掉，被删掉的字体也不会被写回来。单个文件读不了时
+  /// 跳过这一款（它本来也显示不出来）；写回失败不影响结果，下次再算。
+  Future<Map<String, String>> contentFingerprints() async {
+    final directory = await _fontDirectory();
+    final result = <String, String>{};
+    final computed = <String, String>{};
+    for (final font in await listFonts()) {
+      final known = font.sha256;
+      if (known != null) {
+        result[font.id] = known;
+        continue;
+      }
+      try {
+        final file = File(p.join(directory.path, font.fileName));
+        final digest = await crypto.sha256.bind(file.openRead()).first;
+        result[font.id] = computed[font.id] = digest.toString();
+      } on FileSystemException catch (error) {
+        debugPrint('Diary font ${font.id} fingerprint failed: $error');
+      }
+    }
+    if (computed.isEmpty) {
+      return result;
+    }
+    try {
+      await _serialized(() async {
+        final current = await _readManifest(directory);
+        await _writeManifest(directory, <DiaryImportedFont>[
+          for (final font in current)
+            if (computed[font.id] case final hash? when font.sha256 == null)
+              font.withSha256(hash)
+            else
+              font,
+        ]);
+      });
+    } on Object catch (error) {
+      debugPrint('Diary font fingerprints not saved: $error');
+    }
+    return result;
   }
 
   /// 校验并复制字体文件，返回新条目；同名且同大小的字体已存在时直接返回

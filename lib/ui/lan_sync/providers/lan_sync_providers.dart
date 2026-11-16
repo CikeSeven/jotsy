@@ -34,10 +34,15 @@ final lanSyncControllerProvider = Provider<LanSyncUiController>((Ref ref) {
   }
   final database = ref.watch(appDatabaseProvider);
   final settings = ref.watch(settingsServiceProvider.future);
+  // 与界面导入 / 删除字体用同一个实例：补写指纹与导入经它的同一个队列串行。
+  final fonts = ref.watch(diaryFontStorageServiceProvider);
   final binding = WidgetsBinding.instance;
   final controller = EngineLanSyncUiController(
-    createService: () async =>
-        createAppLanSyncService(database: database, settings: await settings),
+    createService: () async => createAppLanSyncService(
+      database: database,
+      settings: await settings,
+      fonts: fonts,
+    ),
     platform: currentLanSyncPlatform(),
     foreground: lanSyncForegroundOf(binding.lifecycleState) ?? true,
   );

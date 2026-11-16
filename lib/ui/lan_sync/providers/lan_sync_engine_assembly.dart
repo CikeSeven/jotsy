@@ -1,6 +1,7 @@
 // 同步引擎的生产装配：解析真实目录与应用版本，接上本地化的冲突副本后缀。
 //
-// - 输入：数据库、设置服务（同步设置与界面语言）；
+// - 输入：数据库、设置服务（同步设置与界面语言）、导入字体库（同步设置时
+//   取字体的内容指纹）；
 // - 输出：一份尚未启动的 [LanSyncService]（由 `EngineLanSyncUiController`
 //   启动与关闭）；
 // - 副作用：解析 / 创建托管数据根目录与不随备份的状态目录（docs/lan_sync.md
@@ -15,6 +16,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_data_directory.dart';
+import '../../../core/services/diary_font_storage_service.dart';
 import '../../../core/services/lan_sync/lan_sync_service.dart';
 import '../../../core/services/lan_sync/lan_sync_state_directory.dart';
 import '../../../core/services/settings_service.dart';
@@ -40,6 +42,7 @@ String lanSyncConflictTitleSuffix(Locale locale, String deviceName) {
 Future<LanSyncService> createAppLanSyncService({
   required AppDatabase database,
   required SettingsService settings,
+  required DiaryFontStorageService fonts,
 }) async {
   final dataRoot = await appDataRootDirectory();
   final stateDir = await lanSyncStateDirectory();
@@ -48,6 +51,7 @@ Future<LanSyncService> createAppLanSyncService({
     dataRoot: dataRoot,
     stateDir: stateDir,
     settings: settings,
+    fontFingerprints: fonts.contentFingerprints,
     appVersion: await _appVersion(),
     conflictTitleSuffix: (String deviceName) =>
         lanSyncConflictTitleSuffix(settings.localeNotifier.value, deviceName),

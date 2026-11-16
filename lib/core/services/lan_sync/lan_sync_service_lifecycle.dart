@@ -14,6 +14,7 @@ extension _Lifecycle on LanSyncService {
       database: database,
       stateDir: stateDir,
       settings: settings,
+      fontFingerprints: fontFingerprints,
       clock: _now,
     );
     _mediaIndex = SyncMediaIndex(stateDir: stateDir, dataRoot: dataRoot);

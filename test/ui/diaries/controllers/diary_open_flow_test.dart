@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_open_flow.dart';
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_behavior.dart';
@@ -8,6 +12,7 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/locked_diary_page.dart';
+import 'package:node_diary/ui/mind_maps/widgets/mind_map_workspace.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_route.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 
@@ -15,6 +20,7 @@ import '../../../support/diary_drafts_harness.dart';
 
 /// 点开日记：默认进预览页；“打开日记时直接编辑”开启时直接进编辑页，未解封
 /// 的时间胶囊与找不到的日记仍交给预览页；编辑页里删除时按预览页的结果返回。
+/// 导图日记没有预览页，不看开关直接进编辑页。
 void main() {
   final results = <DiaryPreviewResult?>[];
   setUp(results.clear);
@@ -22,12 +28,18 @@ void main() {
   Future<String> seedDiary(
     DiaryDraftsHarness h, {
     DateTime? capsuleUnlockAt,
+    bool mindMap = false,
   }) async {
+    final map = MindMapDocument.blank().copyWith(
+      root: mindMapNodeFromOutline('Plan\n  Work\n  Rest')!,
+    );
     return (await h.tester.runAsync(
       () => h.database.createDiary(
-        title: 'Seeded diary',
-        contentDocJson: '[{"insert":"Body\\n"}]',
-        contentText: 'Body',
+        title: mindMap ? 'Plan' : 'Seeded diary',
+        contentDocJson: mindMap
+            ? encodeDiaryBlocks(mindMapDiaryDocument(map))
+            : '[{"insert":"Body\\n"}]',
+        contentText: mindMap ? mindMapPlainText(map) : 'Body',
         metadataJson: '{}',
         createdAtOverride: DateTime(2026, 10, 1),
         capsuleUnlockAt: capsuleUnlockAt,
@@ -282,6 +294,62 @@ void main() {
     await tapOpen(tester, h);
 
     expect(find.byType(DiaryPreviewPage), findsOneWidget);
+    expect(find.byType(EditDiaryPage), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('a mind map diary skips the preview even with open-in-editor '
+      'off', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final diaryId = await seedDiary(h, mindMap: true);
+    await pumpOpener(h, diaryId, fromCard: true);
+
+    await tapOpen(tester, h);
+
+    expect(find.byType(DiaryPreviewPage), findsNothing);
+    final editor = find.byType(EditDiaryPage);
+    expect(tester.widget<EditDiaryPage>(editor).diaryId, diaryId);
+    expect(find.byType(MindMapWorkspace), findsOneWidget);
+    expect(
+      ModalRoute.of(tester.element(editor)),
+      isA<ContainerTransformPageRoute<Object?>>(),
+    );
+
+    await tester.binding.handlePopRoute();
+    await h.settle();
+    await tester.pumpAndSettle();
+    expect(editor, findsNothing);
+    expect(results, <DiaryPreviewResult?>[null]);
+    await h.unmount();
+  });
+
+  testWidgets('entries without data look a mind map diary up and open the '
+      'editor', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final diaryId = await seedDiary(h, mindMap: true);
+    await pumpOpener(h, diaryId, withDetail: false);
+
+    await tapOpen(tester, h);
+
+    expect(find.byType(DiaryPreviewPage), findsNothing);
+    expect(find.byType(MindMapWorkspace), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('a sealed mind map capsule still opens on the preview page', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final diaryId = await seedDiary(
+      h,
+      mindMap: true,
+      capsuleUnlockAt: DateTime.now().add(const Duration(days: 30)),
+    );
+    await pumpOpener(h, diaryId);
+
+    await tapOpen(tester, h);
+
+    expect(find.byType(LockedDiaryPage), findsOneWidget);
     expect(find.byType(EditDiaryPage), findsNothing);
     await h.unmount();
   });

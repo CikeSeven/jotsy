@@ -157,12 +157,48 @@ bool mindMapHasOnlyRoot(MindMapDocument document) {
 /// 节点总数（含收起的）。
 int mindMapNodeCount(MindMapDocument document) => document.index.length;
 
-/// 根的各个一级主题的文字（跳过空的），卡片摘要用。
-List<String> mindMapTopLevelTopics(MindMapDocument document) => <String>[
-  for (final child in document.root.children)
-    if (child.text.trim().isNotEmpty)
-      child.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim(),
-];
+/// 日记卡片摘要用的大纲：中心主题是卡片标题，所以从一级主题（深度 1）
+/// 排起，最多 [maxLines] 行、最深到 [maxDepth] 级。
+///
+/// 行数有限时先保住全貌：按层挑选（先放一级主题，还有余量再按先序放二级，
+/// 再三级），再按先序排出——挑中的主题的父主题一定已经挑中，缩进不会断层；
+/// 余量不够一整层时排在前面的分支先得。收起的主题不往下展开（与画布上看到
+/// 的一致）；中心主题例外，它的一级主题总是列出（不然卡片上什么都没有）。
+/// 空主题照样占一行（文字为空串，由界面显示占位文字），与画布上一致。
+List<MindMapOutlineLine> mindMapCardOutline(
+  MindMapDocument document, {
+  required int maxLines,
+  int maxDepth = 3,
+}) {
+  if (maxLines <= 0 || maxDepth <= 0) return const <MindMapOutlineLine>[];
+  final picked = Set<MindMapNode>.identity();
+  var level = document.root.children;
+  for (var depth = 1; depth <= maxDepth && level.isNotEmpty; depth++) {
+    final next = <MindMapNode>[];
+    for (final node in level) {
+      if (picked.length >= maxLines) break;
+      picked.add(node);
+      if (!node.collapsed) next.addAll(node.children);
+    }
+    if (picked.length >= maxLines) break;
+    level = next;
+  }
+  final out = <MindMapOutlineLine>[];
+  void visit(MindMapNode parent, int depth) {
+    for (final child in parent.children) {
+      if (!picked.contains(child)) continue;
+      out.add((
+        text: child.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim(),
+        depth: depth,
+        node: child,
+      ));
+      visit(child, depth + 1);
+    }
+  }
+
+  visit(document.root, 1);
+  return out;
+}
 
 /// 把缩进大纲（每级两个空格或一个 Tab，行首的 `-` / `*` / `+` / `1.`
 /// 列表记号去掉）解析成节点树：第一行是根，之后按缩进挂到上一行或其祖先

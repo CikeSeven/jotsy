@@ -55,7 +55,7 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
     }
   }
 
-  /// 滚到页尾的留言区（信息栏的“N 条留言”；打开日记时直接编辑时还有
+  /// 滚到页尾的留言区（信息栏的“N 条留言”；不经过预览页时还有
   /// “更多 → 写留言”）：[end] 为 true
   /// 时让留言区末尾进入视口，否则留言区开头对齐视口顶部（同预览页）。
   ///
@@ -187,9 +187,9 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   /// 日记本不单列（信息面板里就有）；页面样式不放（在预览页的“更多”里）。
   ///
   /// 分享在顶栏上；导出、写留言与 AI 回应平时在预览页（编辑页从预览页进入，
-  /// 返回即是），菜单里不重复。只有“打开日记时直接编辑”开着时用户不经过
-  /// 预览页，这时分享、导出与写留言排在“编辑信息”之后，AI 回应进 AI 二级
-  /// 菜单（[_ReadingMenuOptions]）。
+  /// 返回即是），菜单里不重复。只有用户不经过预览页时（“打开日记时直接
+  /// 编辑”开着，或导图日记，见 [_ReadingMenuOptions.skipsPreview]），分享、
+  /// 导出与写留言排在“编辑信息”之后，AI 回应进 AI 二级菜单。
   ///
   /// 在 build 里构建（开关来自这一帧的 [_ReadingFrame.menu]，不在这里订阅）。
   /// 分享、导出、AI 回应与删除先补存，手动保存时不写（见各动作）。
@@ -212,17 +212,17 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
           },
         ),
       ],
-      onShare: menu.openInEditor
+      onShare: menu.skipsPreview
           ? () => _shareFromReading(frame.resolved)
           : null,
-      onExport: menu.openInEditor
+      onExport: menu.skipsPreview
           ? () async {
               final detail = await _flushAndReload();
               if (detail == null || !mounted) return;
               await _readingExport.exportDiary(context, ref, detail: detail);
             }
           : null,
-      onWriteComment: menu.openInEditor && comments != null
+      onWriteComment: menu.skipsPreview && comments != null
           ? () async {
               // 同留言区的“写留言…”：先滚到留言区末尾再打开面板，写下的
               // 那条就在眼前。
@@ -269,7 +269,7 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
   }
 
   /// “更多 → AI ›”二级菜单的条目：写作灵感、AI 生成标题、AI 推荐标签与心情
-  /// （各按 AI 模块开关出现），“打开日记时直接编辑”开着时再加 AI 回应；一项
+  /// （各按 AI 模块开关出现），不经过预览页时再加 AI 回应；一项
   /// 都没有时为空，菜单里不出现“AI”这一行。
   ///
   /// 二级菜单的条目在点开时取定（见 [ExpressiveSubmenuItem]），所以停用状态
@@ -302,7 +302,7 @@ extension _EditDiaryReadingActions on _EditDiaryPageState {
               : () => _controller.suggestWithAi(titleOnly: false),
         ),
       ],
-      if (menu.openInEditor && frame.aiReplyAvailable)
+      if (menu.skipsPreview && frame.aiReplyAvailable)
         diaryMoreMenuEntry(
           FontAwesomeIcons.commentDots,
           l10n.aiReplyMoreItem,

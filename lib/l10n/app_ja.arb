@@ -1291,6 +1291,15 @@
   "@exploreGallerySortOldest": {
     "description": "Media gallery sort: oldest entries first."
   },
+  "exploreGalleryGroupCount": "{count}枚",
+  "@exploreGalleryGroupCount": {
+    "description": "Media gallery: number of photos in a date group, shown at the end of the group heading.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoT0055": "表示できる画像はまだありません",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."

@@ -116,15 +116,16 @@ ORDER BY d.updated_at DESC, d.id DESC
   }
 
   /// 分页读取媒体画廊的候选日记（含归档，不含回收站、未解封的时间胶囊与
-  /// 私密日记），按发表时间排序。
+  /// 私密日记），按发表时间排序，只取封面、正文原文与发表时间。
   ///
-  /// 画廊按批提取图片来源，避免一次性加载全量日记导致首屏等待过长或内存
-  /// 抖动；画廊按发表日期分组，必须按发表时间分页，后来的一页才只会接在
-  /// 已有分组的末尾。[scope] 为“日记本图片”筛选（全部 / 未收录 / 某本，
-  /// 经 [_writeDiaryScopeFilter]，私密口径与首页列表一致）；[from] / [to]
-  /// 为发表时间范围（含两端），为 null 时不限；[newestFirst] 为 false 时
-  /// 从最早的一篇起。
-  Future<List<Diary>> getActiveDiariesPage({
+  /// 只取可能带图的行（有封面，或正文含 `"image"` 片段，与日记本统计页的
+  /// [watchScopedMediaContents] 同一口径）：纯文字日记在数据库线程就排除，
+  /// 画廊建全量图片索引时不必逐篇解析它们的正文。画廊按发表日期分组，必须
+  /// 按发表时间分页，后来的一页才只会接在已有分组的末尾。[scope] 为“日记本
+  /// 图片”筛选（全部 / 未收录 / 某本，经 [_writeDiaryScopeFilter]，私密口径
+  /// 与首页列表一致）；[from] / [to] 为发表时间范围（含两端），为 null 时
+  /// 不限；[newestFirst] 为 false 时从最早的一篇起。
+  Future<List<DiaryMediaContent>> getGalleryMediaPage({
     required int limit,
     required int offset,
     DiaryListScope scope = DiaryListScope.all,
@@ -134,11 +135,15 @@ ORDER BY d.updated_at DESC, d.id DESC
   }) {
     final variables = <Variable<Object>>[Variable<DateTime>(DateTime.now())];
     final sql = StringBuffer()
-      ..writeln('SELECT d.* FROM diaries d')
+      ..writeln('SELECT d.diary_id, d.cover, d.content, d.created_at')
+      ..writeln('FROM diaries d')
       ..write(_diaryScopeJoinSql(scope))
       ..writeln('WHERE d.is_deleted = 0')
       ..writeln(
         '  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)',
+      )
+      ..writeln(
+        '''  AND ((d.cover IS NOT NULL AND trim(d.cover) <> '') OR d.content LIKE '%"image"%')''',
       );
     _writeDiaryScopeFilter(sql, variables, scope);
     if (from != null) {
@@ -160,7 +165,17 @@ ORDER BY d.updated_at DESC, d.id DESC
       sql.toString(),
       variables: variables,
       readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries]),
-    ).get().then((rows) => rows.map(_mapDiaryFromRow).toList(growable: false));
+    ).get().then(
+      (rows) => List<DiaryMediaContent>.unmodifiable(<DiaryMediaContent>[
+        for (final row in rows)
+          DiaryMediaContent(
+            diaryId: row.read<String>('diary_id'),
+            cover: row.readNullable<String>('cover'),
+            content: row.read<String>('content'),
+            createdAt: _readDateTime(row, 'created_at'),
+          ),
+      ]),
+    );
   }
 
   /// 监听已归档日记列表（仅归档且未删除，不含私密日记）。

@@ -916,6 +916,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exploreGallerySortOldest => '最早在前';
 
   @override
+  String exploreGalleryGroupCount(int count) {
+    return '$count 张';
+  }
+
+  @override
   String get autoT0055 => '还没有可展示的图片';
 
   @override

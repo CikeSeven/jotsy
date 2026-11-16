@@ -1728,6 +1728,12 @@ abstract class AppLocalizations {
   /// **'Oldest first'**
   String get exploreGallerySortOldest;
 
+  /// Media gallery: number of photos in a date group, shown at the end of the group heading.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo} other{{count} photos}}'**
+  String exploreGalleryGroupCount(int count);
+
   /// Auto-generated metadata for autoT0055.
   ///
   /// In en, this message translates to:

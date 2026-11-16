@@ -1291,6 +1291,15 @@
   "@exploreGallerySortOldest": {
     "description": "媒体画廊排序：最早的在前。"
   },
+  "exploreGalleryGroupCount": "{count} 张",
+  "@exploreGalleryGroupCount": {
+    "description": "媒体画廊：日期分组标题行尾的图片张数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoT0055": "还没有可展示的图片",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."

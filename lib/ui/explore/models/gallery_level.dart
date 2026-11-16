@@ -18,34 +18,53 @@ enum GalleryLevel {
 }
 
 /// 双指捏合（桌面为 Ctrl + 滚轮 / 触控板捏合）切换的四档：列数与分组层级
-/// 联动。张开放大到 [closeUp]，捏合缩小到 [yearGrid]，到头不再越界。
+/// 联动。张开放大到 [day]（默认），捏合缩小到 [year]，到头不再越界。
 ///
 /// [columns] 是手机宽度下的列数；宽窗口按 [columnsFor] 加列，格子保持手机
 /// 上的大小，不会被放大成几张大图。
 enum GalleryZoom {
-  /// 3 列，按天分组（默认，最大的格子）。
-  closeUp(columns: 3, level: GalleryLevel.day),
+  /// 4 列，按天分组（默认，最大的格子）。
+  day(columns: 4, level: GalleryLevel.day, cornerRadius: 4),
 
-  /// 4 列，按天分组。
-  dayGrid(columns: 4, level: GalleryLevel.day),
+  /// 5 列，按天分组。
+  dayDense(columns: 5, level: GalleryLevel.day, cornerRadius: 4),
 
   /// 8 列，按月分组。
-  monthGrid(columns: 8, level: GalleryLevel.month),
+  month(columns: 8, level: GalleryLevel.month, cornerRadius: 2),
 
-  /// 10 列，按年分组（最小的格子）。
-  yearGrid(columns: 10, level: GalleryLevel.year);
+  /// 16 列，按年分组（最小的格子，不切圆角：一屏几百格，每格一次圆角
+  /// 裁切的开销不值得）。
+  year(columns: 16, level: GalleryLevel.year, cornerRadius: 0);
 
-  const GalleryZoom({required this.columns, required this.level});
+  const GalleryZoom({
+    required this.columns,
+    required this.level,
+    required this.cornerRadius,
+  });
+
+  /// 打开画廊时的档位。
+  static const GalleryZoom initial = day;
 
   final int columns;
   final GalleryLevel level;
 
-  /// 按网格实际可用宽度 [width] 算列数：每列至少 `480 / columns`（3 列档为
-  /// 160，即改版前 `max(3, 宽 ÷ 160)`），且不少于 [columns]。
+  /// 缩略图圆角。
+  final double cornerRadius;
+
+  /// 按网格可用宽度 [width] 算列数：每列至少 `480 / columns`（4 列档为
+  /// 120），且不少于 [columns]。手机宽度（≤ 480）下就是 [columns]。
   int columnsFor(double width) {
     final byWidth = (width * columns / 480).floor();
     return byWidth > columns ? byWidth : columns;
   }
+
+  /// 缩略图按哪一档的格子大小解码：同一族的档位共用一份解码（4 / 5 列按
+  /// 4 列、8 / 16 列按 8 列），捏合在族内换档时缓存直接命中、不重新解码；
+  /// 16 列多占的内存在图像缓存的预算内。
+  GalleryZoom get decodeReference => switch (this) {
+    GalleryZoom.day || GalleryZoom.dayDense => GalleryZoom.day,
+    GalleryZoom.month || GalleryZoom.year => GalleryZoom.month,
+  };
 
   /// 捏合缩小一档（格子变小、分组变粗）；已是最小一档时为 null。
   GalleryZoom? get zoomedOut =>
@@ -68,6 +87,8 @@ class GalleryGroup {
   final DateTime key;
   final List<ExploreMediaItem> items;
   final int start;
+
+  int get end => start + items.length;
 }
 
 /// 按层级聚合后的分组与网格显示顺序的扁平列表（纯函数结果）。
@@ -112,15 +133,4 @@ class GalleryGroups {
 
   final List<GalleryGroup> groups;
   final List<ExploreMediaItem> ordered;
-
-  /// 包含整体下标 [index] 的那一组的序号；越界时为 null。
-  int? groupIndexOf(int index) {
-    for (var i = 0; i < groups.length; i++) {
-      final group = groups[i];
-      if (index >= group.start && index < group.start + group.items.length) {
-        return i;
-      }
-    }
-    return null;
-  }
 }

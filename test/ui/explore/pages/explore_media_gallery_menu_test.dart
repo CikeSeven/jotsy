@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -11,11 +12,13 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/calendar/providers/calendar_display_options_provider.dart';
 import 'package:node_diary/ui/explore/pages/explore_media_gallery_page.dart';
-import 'package:node_diary/ui/explore/widgets/explore_shared_widgets.dart';
+import 'package:node_diary/ui/explore/widgets/gallery_cell.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_group_header.dart';
+import 'package:node_diary/ui/explore/widgets/gallery_rows_sliver.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_time_range_cells.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_time_range_picker.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
+import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -81,7 +84,7 @@ void main() {
   }
 
   List<String> sources(WidgetTester tester) => tester
-      .widgetList<ExploreMediaThumb>(find.byType(ExploreMediaThumb))
+      .widgetList<GalleryCell>(find.byType(GalleryCell))
       .map((thumb) => thumb.source)
       .toList();
 
@@ -90,48 +93,93 @@ void main() {
     final (_, l10n) = await pump(tester);
     expect(sources(tester), <String>['/today.jpg', '/old.jpg']);
     expect(
-      find.widgetWithText(GalleryGroupHeader, l10n.calendarRelativeToday),
+      find.descendant(
+        of: find.byType(GalleryGroupHeader),
+        matching: find.textContaining(l10n.calendarRelativeToday),
+      ),
       findsOneWidget,
     );
     expect(find.byType(GalleryGroupHeader), findsNWidgets(2));
     await unmount(tester);
   });
 
-  testWidgets('pinching and Ctrl + wheel step through the zoom levels', (
-    tester,
-  ) async {
+  testWidgets('a pinch scales the grid with the fingers, then settles on '
+      'a fixed level; Ctrl + wheel steps one level', (tester) async {
     // 手机宽度：各档就是它们的基本列数。
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final (_, l10n) = await pump(tester);
-    int columns() =>
-        (tester.widget<SliverGrid>(find.byType(SliverGrid).first).gridDelegate
-                as SliverGridDelegateWithFixedCrossAxisCount)
-            .crossAxisCount;
-    expect(columns(), 3);
+    final grids = find.byType(GalleryRowsSliver);
+    int columns() => tester.widget<GalleryRowsSliver>(grids.first).grid.columns;
+    // 缩放层包在滚动视图外面（滚动视图里面还有回弹指示器自己的
+    // Transform）：从滚动视图往上找最近的那一层。
+    final views = find.byType(CustomScrollView);
+    T nearest<T extends Widget>(Finder of) =>
+        tester.widget<T>(find.ancestor(of: of, matching: find.byType(T)).first);
+    expect(columns(), 4);
+    expect(grids, findsOneWidget);
 
-    // 两指捏近：缩小一档（4 列，仍按天）。
-    final center = tester.getCenter(find.byType(CustomScrollView));
+    // 捏近一点：正式网格跟着手指缩小，5 列的预览同时淡入，列数还没变。
+    final center = tester.getCenter(views.first);
     final a = await tester.startGesture(center - const Offset(60, 0));
     final b = await tester.startGesture(center + const Offset(60, 0));
-    await a.moveBy(const Offset(8, 0));
-    await b.moveBy(const Offset(-8, 0));
+    await a.moveBy(const Offset(3, 0));
+    await b.moveBy(const Offset(-3, 0));
     await tester.pump();
+    expect(grids, findsNWidgets(2));
+    expect(tester.widget<GalleryRowsSliver>(grids.last).grid.columns, 5);
+    // 横向缩放比例即手指距离之比（z 轴不缩放）。
+    expect(
+      nearest<Transform>(views.first).transform.entry(0, 0),
+      closeTo(114 / 120, 0.001),
+    );
+    expect(nearest<Opacity>(views.first).opacity, lessThan(1));
+    expect(nearest<Opacity>(views.last).opacity, greaterThan(0));
+    expect(columns(), 4);
+
+    // 进度不够就松手：弹回 4 列，预览撤下；两指按下过，不算点按。
     await a.up();
     await b.up();
     await tester.pumpAndSettle();
     expect(columns(), 4);
+    expect(grids, findsOneWidget);
+    expect(find.byType(ImageViewerPage), findsNothing);
 
-    // 按住 Ctrl 向下滚：再缩小一档，按月分组。
+    // 一次捏合一路捏到底：途经 5、8 列，停在 16 列（按年）。
+    final c = await tester.startGesture(center - const Offset(150, 0));
+    final d = await tester.startGesture(center + const Offset(150, 0));
+    for (var step = 0; step < 14; step++) {
+      await c.moveBy(const Offset(10, 0));
+      await d.moveBy(const Offset(-10, 0));
+      await tester.pump();
+    }
+    await c.up();
+    await d.up();
+    await tester.pumpAndSettle();
+    expect(columns(), 16);
+    expect(grids, findsOneWidget);
+    final year = DateFormat.y(l10n.localeName);
+    final now = DateTime.now();
+    for (final date in <DateTime>[now, DateTime(now.year - 1)]) {
+      expect(
+        find.descendant(
+          of: find.byType(GalleryGroupHeader),
+          matching: find.text(year.format(date)),
+        ),
+        findsOneWidget,
+      );
+    }
+
+    // 按住 Ctrl 向上滚：放大一档，8 列按月分组。
     final mouse = TestPointer(9, PointerDeviceKind.mouse);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
     await tester.sendEventToBinding(mouse.hover(center));
-    await tester.sendEventToBinding(mouse.scroll(const Offset(0, 40)));
+    await tester.sendEventToBinding(mouse.scroll(const Offset(0, -40)));
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     await tester.pumpAndSettle();
     expect(columns(), 8);
-    expect(find.text(l10n.calendarRelativeToday), findsNothing);
+    expect(find.textContaining(l10n.calendarRelativeToday), findsNothing);
     await unmount(tester);
   });
 

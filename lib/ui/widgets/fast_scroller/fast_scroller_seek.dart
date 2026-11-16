@@ -34,12 +34,14 @@ class FastScrollSeek {
     required this.reduceMotion,
     this.onNeedItems,
     this.onSettled,
-  }) {
+    double Function()? maxItemsPerFrame,
+  }) : _maxItemsPerFrameOf = maxItemsPerFrame {
     _ticker = vsync.createTicker(_tick);
   }
 
-  /// 远距离移动时每帧最多跨过的项数（另有至少 [_minStepViewports] 屏）。
-  static const double _maxItemsPerFrame = 32;
+  /// 远距离移动时每帧默认最多跨过的项数（另有至少 [_minStepViewports]
+  /// 屏），宿主可经构造参数改。
+  static const double defaultMaxItemsPerFrame = 32;
   static const double _minStepViewports = 3;
   static const int _maxRefines = 4;
   static const int _maxReversals = 2;
@@ -55,6 +57,8 @@ class FastScrollSeek {
 
   /// 松手后的移动结束（到达或被取消）时调用。
   final VoidCallback? onSettled;
+
+  final double Function()? _maxItemsPerFrameOf;
 
   late final Ticker _ticker;
   double? _target;
@@ -192,9 +196,13 @@ class FastScrollSeek {
     double viewport,
     FastScrollListGeometry geometry,
   ) {
+    final items = _maxItemsPerFrameOf?.call() ?? defaultMaxItemsPerFrame;
+    if (items.isInfinite) {
+      return distance;
+    }
     final cap = math.max(
       viewport * _minStepViewports,
-      geometry.averageExtent * _maxItemsPerFrame,
+      geometry.averageExtent * items,
     );
     return distance.abs() <= cap ? distance : cap * distance.sign;
   }

@@ -925,6 +925,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exploreGallerySortOldest => '古い順';
 
   @override
+  String exploreGalleryGroupCount(int count) {
+    return '$count枚';
+  }
+
+  @override
   String get autoT0055 => '表示できる画像はまだありません';
 
   @override

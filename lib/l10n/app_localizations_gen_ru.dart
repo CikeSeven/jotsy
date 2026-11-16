@@ -981,6 +981,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get exploreGallerySortOldest => 'Сначала старые';
 
   @override
+  String exploreGalleryGroupCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count фото',
+      many: '$count фото',
+      few: '$count фото',
+      one: '$count фото',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get autoT0055 => 'Изображений пока нет';
 
   @override

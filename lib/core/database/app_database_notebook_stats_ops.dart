@@ -44,16 +44,20 @@ ${_diaryScopeJoinSql(scope)}WHERE d.is_deleted = 0
   }
 }
 
-/// 一篇可能带图的日记：封面与富文本正文原文（[AppDatabase.watchScopedMediaContents]）。
+/// 一篇可能带图的日记：封面与富文本正文原文（[AppDatabase.watchScopedMediaContents]）；
+/// 媒体画廊（[AppDatabase.getGalleryMediaPage]）另带发表时间 [createdAt]，
+/// 画廊按它分组。
 @immutable
 class DiaryMediaContent {
   const DiaryMediaContent({
     required this.diaryId,
     required this.content,
     this.cover,
+    this.createdAt,
   });
 
   final String diaryId;
   final String? cover;
   final String content;
+  final DateTime? createdAt;
 }

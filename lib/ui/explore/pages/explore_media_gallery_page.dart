@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -27,27 +25,22 @@ import '../../notebooks/viewmodels/notebook_tree_rows.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
-import '../../widgets/width_layout_builder.dart';
 import '../controllers/explore_media_gallery_controller.dart';
 import '../models/explore_media_gallery_filter.dart';
 import '../models/explore_view_data.dart';
-import '../models/gallery_layout.dart';
-import '../models/gallery_level.dart';
-import '../widgets/explore_shared_widgets.dart';
 import '../widgets/gallery_filter_menu.dart';
-import '../widgets/gallery_group_header.dart';
 import '../widgets/gallery_time_range_picker.dart';
+import '../widgets/gallery_zoomable_grid.dart';
 
 /// 探索页“媒体画廊”全量浏览页。
 ///
-/// 职责边界：
-/// - 监听页面控制器的分页结果，滚动触底时请求续载；
-/// - 按发表日期分组（[GalleryZoom] 四档：3 / 4 列按天、8 列按月、10 列按年，
-///   宽窗口按宽度加列），每组标题吸顶、被下一组顶走；双指捏合换档（桌面
-///   为 Ctrl + 滚轮或触控板捏合），换档前后视口顶部停在同一张图附近；
+/// 职责边界（页面只做装配）：
+/// - 订阅 [ExploreMediaGalleryController]：打开后在后台分批建好全部图片的
+///   索引（来源 + 日期，不解码图片），首批到了即显示，之后的批次接在末尾；
+/// - 网格、按档位分组、捏合换档与快速滚动条在 [GalleryZoomableGrid]；
 /// - 顶栏 ⋮ 菜单：日记本图片（不列上锁的本子；日记本功能关闭时不出现）、
 ///   时间选择（内联日历，见 [GalleryTimeRangePicker]）与排序，换了就经
-///   [ExploreMediaGalleryController.configure] 从头重查；
+///   [ExploreMediaGalleryController.configure] 从头重查并回到顶部；
 /// - 点按缩略图打开看图页（看图页长按“打开日记”），长按缩略图直接打开
 ///   所在日记；
 /// - 不负责日记聚合统计（保持与 ExplorePageController 解耦）。
@@ -60,49 +53,18 @@ class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
 }
 
 class _ExploreMediaGalleryPageState
-    extends ConsumerState<ExploreMediaGalleryPage>
-    with SingleTickerProviderStateMixin {
-  static const double _prefetchExtent = 720;
-  static const double _cellGap = 2;
-
+    extends ConsumerState<ExploreMediaGalleryPage> {
   final ScrollController _scrollController = ScrollController();
   late final ExploreMediaGalleryController _controller;
   final GalleryTimePickerBackHandle _timePickerBack =
       GalleryTimePickerBackHandle();
 
-  GalleryZoom _zoom = GalleryZoom.closeUp;
   GalleryNotebookChoice _notebookChoice = GalleryNotebookChoice.all;
 
-  /// 首次加载完成前用整页的加载 / 空态 / 出错；之后换筛选也一直留在网格里
-  /// （空态与加载画在网格内），AnimatedSwitcher 不会同时挂着新旧两个用同一
-  /// 个 [_scrollController] 的滚动视图。
+  /// 首批结果到达（或确认没有结果）前用整页的加载 / 出错；之后换筛选也
+  /// 一直留在网格里（空态与加载画在网格内），AnimatedSwitcher 不会同时
+  /// 挂着新旧两个用同一个 [_scrollController] 的滚动视图。
   bool _loadedOnce = false;
-
-  /// 分组缓存：媒体列表、筛选代号与分组层级都没变时沿用。
-  GalleryGroups _groups = GalleryGroups.empty;
-  (int, int, GalleryLevel)? _groupsKey;
-
-  /// 最近一次布局时网格的列数与宽度（已扣内边距），换档时据此找回锚点。
-  int _columns = GalleryZoom.closeUp.columns;
-  double _gridWidth = 0;
-
-  /// 换档时整个网格从 0.95 弹回 1，提示格子大小变了（不重建滚动视图）。
-  late final AnimationController _zoomPulse = AnimationController(
-    vsync: this,
-    value: 1,
-  );
-  late final Animation<double> _zoomScale = Tween<double>(begin: 0.95, end: 1)
-      .animate(
-        CurvedAnimation(parent: _zoomPulse, curve: ExpressiveMotion.spatial),
-      );
-
-  /// 双指捏合：直接跟踪两根手指的距离，不走手势竞技场（缩放手势会被列表
-  /// 的竖向拖动抢走）。每跨过一档就把基准换成当前距离，一次捏合可连跨几档。
-  final Map<int, Offset> _pointers = <int, Offset>{};
-  double? _pinchBase;
-
-  /// 触控板捏合（桌面）的基准比例，规则同上。
-  double _panZoomBase = 1;
 
   List<ExploreMediaItem> get _mediaItems => _controller.items;
   bool get _isLoading => _controller.isLoading;
@@ -116,7 +78,6 @@ class _ExploreMediaGalleryPageState
     _controller = ExploreMediaGalleryController(
       database: ref.read(appDatabaseProvider),
     )..addListener(_handleGalleryChanged);
-    _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _controller.loadMore();
@@ -129,20 +90,8 @@ class _ExploreMediaGalleryPageState
     _controller
       ..removeListener(_handleGalleryChanged)
       ..dispose();
-    _scrollController
-      ..removeListener(_handleScroll)
-      ..dispose();
-    _zoomPulse.dispose();
+    _scrollController.dispose();
     super.dispose();
-  }
-
-  GalleryGroups _currentGroups() {
-    final key = (_mediaItems.length, _controller.generation, _zoom.level);
-    if (_groupsKey != key) {
-      _groups = GalleryGroups.of(_mediaItems, _zoom.level);
-      _groupsKey = key;
-    }
-    return _groups;
   }
 
   @override
@@ -282,95 +231,6 @@ class _ExploreMediaGalleryPageState
     return DiaryListScope.all;
   }
 
-  // ---- 换档（捏合 / Ctrl + 滚轮）----
-
-  void _changeZoom(GalleryZoom? next) {
-    if (next == null || next == _zoom) return;
-    HapticFeedback.selectionClick();
-    final anchor = _scrollController.hasClients && _gridWidth > 0
-        ? _layout(_currentGroups(), _columns).anchorAt(_scrollController.offset)
-        : null;
-    setState(() => _zoom = next);
-    _zoomPulse
-      ..duration = ExpressiveMotion.duration(context, ExpressiveMotion.standard)
-      ..forward(from: 0);
-    if (anchor == null) return;
-    // 新档位布局后，把换档前视口顶部那张图所在的行重新放到顶部。
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
-      final target = _layout(_currentGroups(), _columns).offsetOf(anchor);
-      if (target == null) return;
-      final position = _scrollController.position;
-      _scrollController.jumpTo(
-        target.clamp(position.minScrollExtent, position.maxScrollExtent),
-      );
-    });
-  }
-
-  GalleryLayout _layout(GalleryGroups groups, int columns) => GalleryLayout(
-    groups: groups.groups,
-    columns: columns,
-    gridWidth: _gridWidth,
-    headerExtent: GalleryGroupHeader.extent,
-    gap: _cellGap,
-  );
-
-  void _onPointerDown(PointerDownEvent event) {
-    _pointers[event.pointer] = event.position;
-    if (_pointers.length == 2) _pinchBase = _pinchDistance();
-  }
-
-  void _onPointerMove(PointerMoveEvent event) {
-    if (!_pointers.containsKey(event.pointer)) return;
-    _pointers[event.pointer] = event.position;
-    final base = _pinchBase;
-    final distance = _pinchDistance();
-    if (base == null || distance == null || base <= 0) return;
-    if (_stepZoom(distance / base)) _pinchBase = distance;
-  }
-
-  void _onPointerUp(PointerEvent event) {
-    _pointers.remove(event.pointer);
-    if (_pointers.length != 2) _pinchBase = null;
-  }
-
-  double? _pinchDistance() {
-    if (_pointers.length != 2) return null;
-    final points = _pointers.values.toList(growable: false);
-    return (points[1] - points[0]).distance;
-  }
-
-  /// 比例越过阈值就换一档：捏小（< 0.9）缩小格子，张开（> 1.11）放大。
-  bool _stepZoom(double ratio) {
-    final next = ratio < 0.9
-        ? _zoom.zoomedOut
-        : ratio > 1.11
-        ? _zoom.zoomedIn
-        : null;
-    if (next == null) return false;
-    _changeZoom(next);
-    return true;
-  }
-
-  void _onPanZoomStart(PointerPanZoomStartEvent event) => _panZoomBase = 1;
-
-  void _onPanZoomUpdate(PointerPanZoomUpdateEvent event) {
-    if (_stepZoom(event.scale / _panZoomBase)) _panZoomBase = event.scale;
-  }
-
-  /// 桌面：按住 Ctrl 滚动滚轮换档（向上放大、向下缩小），这次滚动不再
-  /// 滚动列表。
-  void _onPointerSignal(PointerSignalEvent event) {
-    if (event is! PointerScrollEvent ||
-        !HardwareKeyboard.instance.isControlPressed ||
-        event.scrollDelta.dy == 0) {
-      return;
-    }
-    GestureBinding.instance.pointerSignalResolver.register(event, (_) {
-      _changeZoom(event.scrollDelta.dy < 0 ? _zoom.zoomedIn : _zoom.zoomedOut);
-    });
-  }
-
   // ---- 内容 ----
 
   Widget _buildBody(BuildContext context) {
@@ -415,101 +275,26 @@ class _ExploreMediaGalleryPageState
         );
       }
     }
-    final groups = _currentGroups();
-    return Listener(
+    return GalleryZoomableGrid(
       key: const ValueKey<String>('grid'),
-      onPointerDown: _onPointerDown,
-      onPointerMove: _onPointerMove,
-      onPointerUp: _onPointerUp,
-      onPointerCancel: _onPointerUp,
-      onPointerPanZoomStart: _onPanZoomStart,
-      onPointerPanZoomUpdate: _onPanZoomUpdate,
-      onPointerSignal: _onPointerSignal,
-      child: ScaleTransition(
-        scale: _zoomScale,
-        // 列数随网格实际宽度增加（见 [GalleryZoom.columnsFor]），缩略图大小
-        // 保持在手机上的体感，不会在宽窗口里被放大成几张大图。
-        child: WidthLayoutBuilder(
-          builder: (BuildContext context, double width) {
-            _columns = _zoom.columnsFor(width);
-            _gridWidth = width - AppSpacing.m * 2;
-            return _buildScrollView(groups, _columns);
-          },
-        ),
+      items: _mediaItems,
+      generation: _controller.generation,
+      scrollController: _scrollController,
+      empty: _mediaItems.isEmpty && !_isLoading && _errorMessage == null
+          ? const _EmptyHint()
+          : null,
+      footer: _GalleryFooter(
+        isLoading: _isLoading,
+        // 空结果时由空态说明，不再写“已到底”。
+        hasMore: _hasMore || _mediaItems.isEmpty,
+        errorMessage: _errorMessage,
+        onRetry: _loadMore,
       ),
+      heroTagOf: _heroTag,
+      onOpen: _openViewer,
+      onLongPress: (int index) =>
+          unawaited(_openDiary(_mediaItems[index].diaryId)),
     );
-  }
-
-  Widget _buildScrollView(GalleryGroups groups, int columns) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: <Widget>[
-        for (final group in groups.groups) _buildGroup(group, columns),
-        if (_mediaItems.isEmpty && !_isLoading && _errorMessage == null)
-          const SliverFillRemaining(hasScrollBody: false, child: _EmptyHint()),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.m,
-              12,
-              AppSpacing.m,
-              AppSpacing.xl,
-            ),
-            child: _GalleryFooter(
-              isLoading: _isLoading,
-              // 空结果时由上面的空态说明，不再写“已到底”。
-              hasMore: _hasMore || _mediaItems.isEmpty,
-              errorMessage: _errorMessage,
-              onRetry: _loadMore,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 一组：吸顶的日期标题 + 网格。组走完时标题被下一组的标题顶走。
-  Widget _buildGroup(GalleryGroup group, int columns) {
-    return SliverMainAxisGroup(
-      key: ValueKey<DateTime>(group.key),
-      slivers: <Widget>[
-        PinnedHeaderSliver(
-          child: GalleryGroupHeader(
-            title: GalleryGroupHeader.titleFor(context, group.key, _zoom.level),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-          sliver: SliverGrid(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final item = group.items[index];
-              return _GalleryCell(
-                item: item,
-                heroTag: _heroTag(item.source),
-                onTap: (BuildContext cellContext) =>
-                    _openViewer(group.start + index, cellContext),
-                onLongPress: () => unawaited(_openDiary(item.diaryId)),
-              );
-            }, childCount: group.items.length),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-              mainAxisSpacing: _cellGap,
-              crossAxisSpacing: _cellGap,
-              childAspectRatio: 1,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _handleScroll() {
-    if (!_scrollController.hasClients || _isLoading || !_hasMore) {
-      return;
-    }
-    if (_scrollController.position.extentAfter < _prefetchExtent) {
-      _loadMore();
-    }
   }
 
   void _handleGalleryChanged() {
@@ -517,18 +302,10 @@ class _ExploreMediaGalleryPageState
       return;
     }
     setState(() {
-      if (!_controller.isLoading &&
-          (_controller.items.isNotEmpty || !_controller.hasMore)) {
+      // 分批加载：第一批到了就进网格，后面的批次接在网格末尾。
+      if (_controller.items.isNotEmpty ||
+          (!_controller.isLoading && !_controller.hasMore)) {
         _loadedOnce = true;
-      }
-    });
-    // 宽窗口一行放得多，一页结果可能填不满屏幕：没有可滚动的距离就不会
-    // 触发滚动预取，这里在布局后补查一次，填满为止（或没有更多）。
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted &&
-          _scrollController.hasClients &&
-          _scrollController.position.maxScrollExtent <= 0) {
-        _handleScroll();
       }
     });
   }
@@ -581,57 +358,6 @@ class _ExploreMediaGalleryPageState
     if (reason == SnackBarClosedReason.action) {
       await database.restoreDiary(deletedId, touchUpdatedAt: false);
     }
-  }
-}
-
-/// 网格里的一格：缩略图（看图页的共享元素来源）+ 叠在上面的水波纹层。
-class _GalleryCell extends StatelessWidget {
-  const _GalleryCell({
-    required this.item,
-    required this.heroTag,
-    required this.onTap,
-    required this.onLongPress,
-  });
-
-  static const double _radius = 4;
-
-  final ExploreMediaItem item;
-  final Object heroTag;
-  final ValueChanged<BuildContext> onTap;
-  final VoidCallback onLongPress;
-
-  @override
-  Widget build(BuildContext context) {
-    // 缩略图本身不透明，水波纹需画在叠于其上的透明 Material 上。点按时从
-    // 格子自己的 context 抓取已绘制的缩略图作为看图页的飞入画面。
-    return Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        ImageViewerHeroSource(
-          tag: heroTag,
-          borderRadius: BorderRadius.circular(_radius),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final side = constraints.biggest.shortestSide;
-              return ExploreMediaThumb(
-                source: item.source,
-                width: side,
-                height: side,
-                radius: _radius,
-              );
-            },
-          ),
-        ),
-        Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(_radius),
-            onTap: () => onTap(context),
-            onLongPress: onLongPress,
-          ),
-        ),
-      ],
-    );
   }
 }
 

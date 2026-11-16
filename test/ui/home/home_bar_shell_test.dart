@@ -501,10 +501,10 @@ void main() {
     await tester.pump();
     await gesture.moveBy(const Offset(-150, 0));
     await tester.pump();
-    // 从居中的日记(1)左滑向探索(2)：指示器停在两项之间。
+    // 从最左的日记(0)左滑向日历(1)：指示器停在两项之间。
     final x = indicatorX();
-    expect(x, greaterThan(iconX(1) + 1));
-    expect(x, lessThan(iconX(2) - 1));
+    expect(x, greaterThan(iconX(0) + 1));
+    expect(x, lessThan(iconX(1) - 1));
     await gesture.up();
     await tester.pumpAndSettle();
     await _unmount(tester);

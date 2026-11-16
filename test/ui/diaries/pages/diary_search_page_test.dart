@@ -39,6 +39,8 @@ Future<_SearchHarness> _pumpSearch(
   List<String> recent = const <String>[],
   List<DiaryWithTags> results = const <DiaryWithTags>[],
   int count = 0,
+  DiaryListScope scope = DiaryListScope.globalSearch,
+  String? scopeLabel,
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{
     if (recent.isNotEmpty)
@@ -83,7 +85,11 @@ Future<_SearchHarness> _pumpSearch(
             body: Center(
               child: TextButton(
                 onPressed: () => Navigator.of(context).push(
-                  DiarySearchPage.buildRoute(initialKeyword: initialKeyword),
+                  DiarySearchPage.buildRoute(
+                    initialKeyword: initialKeyword,
+                    scope: scope,
+                    scopeLabel: scopeLabel,
+                  ),
                 ),
                 child: const Text('open'),
               ),
@@ -149,6 +155,40 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Recent searches'), findsNothing);
     expect(h.savedPreferences.recent, isEmpty);
+  });
+
+  testWidgets('searching without a notebook uses the global search scope', (
+    tester,
+  ) async {
+    final h = await _pumpSearch(tester, initialKeyword: 'sea');
+
+    // 全局搜索：隐藏日记本里的日记也搜得到（口径见数据库层测试）。
+    expect(h.lastQuery.scope, DiaryListScope.globalSearch);
+    expect(
+      find.byKey(const ValueKey<String>('search_scope_chip')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('removing the notebook condition switches to global search', (
+    tester,
+  ) async {
+    const travelBook = DiaryNotebookScope(notebookId: 'book-travel');
+    final h = await _pumpSearch(
+      tester,
+      initialKeyword: 'sea',
+      scope: travelBook,
+      scopeLabel: 'Trips',
+    );
+    expect(h.lastQuery.scope, travelBook);
+
+    await tester.tap(find.bySemanticsLabel('Remove notebook condition: Trips'));
+    await tester.pumpAndSettle();
+    expect(h.lastQuery.scope, DiaryListScope.globalSearch);
+    expect(
+      find.byKey(const ValueKey<String>('search_scope_chip')),
+      findsNothing,
+    );
   });
 
   testWidgets('a frequent tag becomes a removable condition', (tester) async {

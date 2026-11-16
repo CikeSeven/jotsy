@@ -80,6 +80,18 @@ import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_common.
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_mind_map_entry_chip.dart';
+import 'package:node_diary/ui/mind_maps/controllers/mind_map_editing_controller.dart';
+import 'package:node_diary/ui/mind_maps/sections/mind_map_style_sheet.dart';
+import 'package:node_diary/ui/mind_maps/viewmodels/mind_map_labels.dart';
+import 'package:node_diary/ui/mind_maps/widgets/mind_map_page_scaffold.dart';
+import 'package:node_diary/ui/mind_maps/widgets/mind_map_reveal.dart';
+import 'package:node_diary/ui/mind_maps/widgets/mind_map_workspace.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
@@ -144,6 +156,7 @@ part '../controllers/edit_diary_template_flow.dart';
 part '../controllers/edit_diary_ai_flow.dart';
 part '../controllers/edit_diary_reading_flow.dart';
 part '../controllers/edit_diary_reading_actions.dart';
+part '../controllers/edit_diary_mind_map_flow.dart';
 
 /// 日记编辑页。
 ///
@@ -265,6 +278,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 菜单随时可打开面板。
   late final DiaryDayPhotosController _dayPhotos;
   SettingsService? _dayPhotoSettings;
+
+  // 导图日记（正文是一张导图）时的编辑会话，见 edit_diary_mind_map_flow；
+  // 刚由新建页转成导图时，画布从“思维导图”按钮的矩形展开。
+  _EditDiaryMindMapSession? _mindMapSession;
+  Rect? _mindMapRevealOrigin;
 
   // ==================== 发布上下文草稿字段 ====================
   late editor.DiaryEditorController _contentController;
@@ -510,6 +528,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
     _editSavedFlashTimer?.cancel();
     _aiSession?.dispose();
+    _mindMapSession?.dispose();
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
     widget.coverHero?.dispose();
     _readingExport.dispose();
@@ -1044,6 +1063,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             contentLocked: contentLocked,
             appearance: appearance,
           ),
+          // 正文为空时可以把这篇变成思维导图（开始写正文后自己收起）。
+          if (_isCreateEntry &&
+              ref.watch(appFeaturesProvider.select((f) => f.mindMaps)))
+            DiaryMindMapEntryChip(
+              content: _contentController,
+              onPressed: contentLocked ? (_) {} : _convertToMindMap,
+            ),
           if (_isCreateEntry && templatesEnabled)
             DiaryTemplateStrip(
               controller: _templates,
@@ -1243,6 +1269,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (!_initialized && loadedDetail != null) {
       _initializeFromDetail(loadedDetail);
     }
+    // 正文是导图日记时换成导图工作区（会话随正文控制器重建，见
+    // edit_diary_mind_map_flow）。
+    _syncMindMapSession();
     // 编辑已有日记：与预览页同一版式（页头、页尾、主题与边距）。
     final reading = _readingFrame(context);
 
@@ -1570,7 +1599,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   ],
                 ),
               );
-              final scaffold = reading == null
+              final scaffold = _mindMapSession != null
+                  ? _buildMindMapScaffold(
+                      context,
+                      reading: reading,
+                      showEditMetaPanel: showEditMetaPanel,
+                    )
+                  : reading == null
                   ? buildScaffold(context)
                   : Theme(
                       data: reading.resolved.theme,

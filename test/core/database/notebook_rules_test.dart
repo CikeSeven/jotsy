@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/database/content_codec.dart';
@@ -377,6 +380,24 @@ void main() {
       );
       await diary('text only', text: '"image": "audio": "attachment":');
       await diary(
+        'mind map diary',
+        content: encodeDiaryBlocks(
+          mindMapDiaryDocument(MindMapDocument.blank(text: 'Plan')),
+        ),
+      );
+      await diary(
+        'embedded mind map',
+        content: jsonEncode(<String, Object?>{
+          'document': <String, Object?>{
+            'type': 'page',
+            'children': <Object?>[
+              mindMapBlockNode(MindMapDocument.blank(text: 'Ideas')),
+            ],
+          },
+        }),
+      );
+      await diary('mind map words', text: '"type":"mind_map"');
+      await diary(
         'sealed image',
         content: documentWith({'image': '/m/s.png'}),
         capsuleUnlockAt: DateTime(2099),
@@ -395,6 +416,11 @@ void main() {
       expect(await media(NotebookMediaKind.attachment), <String>{
         'attachment',
         'legacy file',
+      });
+      // 导图日记与正文里嵌入的导图都算；正文里只是写了这几个字的不算。
+      expect(await media(NotebookMediaKind.mindMap), <String>{
+        'mind map diary',
+        'embedded mind map',
       });
     });
 

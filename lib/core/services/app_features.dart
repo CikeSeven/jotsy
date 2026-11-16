@@ -1,7 +1,7 @@
 // 功能管理开关（设置 → 功能管理）。
 //
 // 职责：描述用户可整体关闭的功能——日历 Tab、待办 Tab、探索 Tab、日记本、
-// 纪念日、日记模板、时间胶囊、侧滑归档、留言、AI 助手——是否开启；待办、
+// 纪念日、日记模板、时间胶囊、侧滑归档、留言、AI 助手、思维导图——是否开启；待办、
 // 纪念日、留言与 AI 助手默认关闭（让初始界面简洁，AI 还需要用户自己的
 // 接口），其余默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
 //
@@ -26,6 +26,7 @@ class AppFeatures {
     this.swipeArchive = true,
     this.comments = false,
     this.ai = false,
+    this.mindMaps = true,
   });
 
   /// 默认开关（待办、纪念日、留言与 AI 助手关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
@@ -68,6 +69,11 @@ class AppFeatures {
   /// AI 记录与服务商配置都保留。
   final bool ai;
 
+  /// 思维导图：新建空白日记时的“思维导图”按钮、正文 `/` 菜单的插入导图，
+  /// 以及新建智能规则里的“有思维导图”。默认开启；关闭只隐藏这些创建入口，
+  /// 已有的导图日记与正文里的导图照常显示、照常编辑（它们就是日记内容）。
+  final bool mindMaps;
+
   /// 纪念日依附日历（列表只能从日历顶栏进入），日历关闭时一并关闭；界面一律
   /// 读这个 getter 判断纪念日是否可用，不直接读 [anniversaries]（它只是用户
   /// 自己的开关值，日历重新开启时恢复）。
@@ -83,6 +89,7 @@ class AppFeatures {
   static const _keySwipeArchive = 'swipeArchive';
   static const _keyComments = 'comments';
   static const _keyAi = 'ai';
+  static const _keyMindMaps = 'mindMaps';
 
   /// 解析设置原文。空值、坏 JSON 或不是对象时回到 [defaults]；每个字段
   /// 单独读取，类型不对只让这一项回到默认，认不出的键忽略——这样新旧版本
@@ -113,6 +120,7 @@ class AppFeatures {
       swipeArchive: read(_keySwipeArchive, defaults.swipeArchive),
       comments: read(_keyComments, defaults.comments),
       ai: read(_keyAi, defaults.ai),
+      mindMaps: read(_keyMindMaps, defaults.mindMaps),
     );
   }
 
@@ -130,6 +138,7 @@ class AppFeatures {
       _keySwipeArchive: swipeArchive,
       _keyComments: comments,
       _keyAi: ai,
+      _keyMindMaps: mindMaps,
     });
   }
 
@@ -144,6 +153,7 @@ class AppFeatures {
     bool? swipeArchive,
     bool? comments,
     bool? ai,
+    bool? mindMaps,
   }) {
     return AppFeatures(
       calendar: calendar ?? this.calendar,
@@ -156,6 +166,7 @@ class AppFeatures {
       swipeArchive: swipeArchive ?? this.swipeArchive,
       comments: comments ?? this.comments,
       ai: ai ?? this.ai,
+      mindMaps: mindMaps ?? this.mindMaps,
     );
   }
 
@@ -171,7 +182,8 @@ class AppFeatures {
       other.timeCapsules == timeCapsules &&
       other.swipeArchive == swipeArchive &&
       other.comments == comments &&
-      other.ai == ai;
+      other.ai == ai &&
+      other.mindMaps == mindMaps;
 
   @override
   int get hashCode => Object.hash(
@@ -185,6 +197,7 @@ class AppFeatures {
     swipeArchive,
     comments,
     ai,
+    mindMaps,
   );
 
   @override
@@ -192,5 +205,6 @@ class AppFeatures {
       'AppFeatures(calendar: $calendar, todos: $todos, explore: $explore, '
       'notebooks: $notebooks, anniversaries: $anniversaries, '
       'templates: $templates, timeCapsules: $timeCapsules, '
-      'swipeArchive: $swipeArchive, comments: $comments, ai: $ai)';
+      'swipeArchive: $swipeArchive, comments: $comments, ai: $ai, '
+      'mindMaps: $mindMaps)';
 }

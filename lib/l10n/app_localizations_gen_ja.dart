@@ -16094,4 +16094,249 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetSampleAnniversary2 => '母の誕生日';
+
+  @override
+  String get mindMapRootPlaceholder => '中心トピック';
+
+  @override
+  String get mindMapNodePlaceholder => 'トピック';
+
+  @override
+  String get mindMapAddTopic => '追加';
+
+  @override
+  String get mindMapAddChild => '子トピック';
+
+  @override
+  String get mindMapAddSibling => '同レベル';
+
+  @override
+  String get mindMapEditText => '編集';
+
+  @override
+  String get mindMapCollapse => '折りたたむ';
+
+  @override
+  String get mindMapExpand => '展開';
+
+  @override
+  String get mindMapDelete => '削除';
+
+  @override
+  String get mindMapStyle => 'スタイル';
+
+  @override
+  String get mindMapFit => '全体表示';
+
+  @override
+  String get mindMapZoomActual => '実寸';
+
+  @override
+  String get mindMapZoomIn => '拡大';
+
+  @override
+  String get mindMapZoomOut => '縮小';
+
+  @override
+  String get mindMapUndo => '元に戻す';
+
+  @override
+  String get mindMapRedo => 'やり直す';
+
+  @override
+  String get mindMapNewLine => '改行';
+
+  @override
+  String get mindMapDone => '完了';
+
+  @override
+  String get mindMapStyleSheetTitle => 'マップのスタイル';
+
+  @override
+  String get mindMapStructureTitle => '構造';
+
+  @override
+  String get mindMapStructureMindMap => 'マインドマップ';
+
+  @override
+  String get mindMapStructureLogicRight => 'ロジック図';
+
+  @override
+  String get mindMapStructureLogicLeft => '左向きロジック図';
+
+  @override
+  String get mindMapStructureOrgDown => '組織図';
+
+  @override
+  String get mindMapStructureTreeRight => 'ツリー';
+
+  @override
+  String get mindMapStructureTimeline => 'タイムライン';
+
+  @override
+  String get mindMapStructureFishbone => 'フィッシュボーン';
+
+  @override
+  String get mindMapThemeTitle => '配色テーマ';
+
+  @override
+  String get mindMapThemeFollow => 'アプリに合わせる';
+
+  @override
+  String get mindMapThemeRainbow => 'レインボー';
+
+  @override
+  String get mindMapThemeOcean => 'オーシャン';
+
+  @override
+  String get mindMapThemeForest => 'フォレスト';
+
+  @override
+  String get mindMapThemeSunset => '夕焼け';
+
+  @override
+  String get mindMapThemeSakura => '桜';
+
+  @override
+  String get mindMapThemeInk => '墨';
+
+  @override
+  String get mindMapThemePaper => 'ペーパー';
+
+  @override
+  String get mindMapThemeNeon => 'ネオン';
+
+  @override
+  String get mindMapThemeMacaron => 'マカロン';
+
+  @override
+  String get mindMapLineTitle => '線';
+
+  @override
+  String get mindMapLineCurve => '曲線';
+
+  @override
+  String get mindMapLineStraight => '直線';
+
+  @override
+  String get mindMapLineElbow => '直角';
+
+  @override
+  String get mindMapLineRounded => '角丸';
+
+  @override
+  String get mindMapSpacingTitle => '間隔';
+
+  @override
+  String get mindMapSpacingCompact => '狭い';
+
+  @override
+  String get mindMapSpacingStandard => '標準';
+
+  @override
+  String get mindMapSpacingLoose => '広い';
+
+  @override
+  String get mindMapRainbow => 'ブランチを色分け';
+
+  @override
+  String get mindMapGrid => 'ドットグリッド';
+
+  @override
+  String get mindMapCreateChip => 'マインドマップ';
+
+  @override
+  String get mindMapCreateChipTooltip => 'この日記をマインドマップにする';
+
+  @override
+  String get mindMapStarterTitle => 'テンプレートから始める';
+
+  @override
+  String get mindMapConvertBack => '文章に戻す';
+
+  @override
+  String get mindMapTemplateBrainstorm => 'ブレスト';
+
+  @override
+  String get mindMapTemplateSwot => 'SWOT分析';
+
+  @override
+  String get mindMapTemplateBook => '読書ノート';
+
+  @override
+  String get mindMapTemplateProject => 'プロジェクト計画';
+
+  @override
+  String get mindMapTemplateWeek => '週間計画';
+
+  @override
+  String get mindMapTemplateDecision => '意思決定';
+
+  @override
+  String get mindMapTemplateTrip => '旅行プラン';
+
+  @override
+  String get mindMapTemplateGoals => '年間目標';
+
+  @override
+  String get mindMapTemplateBrainstormOutline =>
+      'ブレスト\n  課題\n    背景\n    目標\n  アイデア\n    案 A\n    案 B\n    案 C\n  次のステップ\n    検証すること\n    必要な助け';
+
+  @override
+  String get mindMapTemplateSwotOutline =>
+      'SWOT分析\n  強み\n    得意なこと\n  弱み\n    改善したいこと\n  機会\n    外部の追い風\n  脅威\n    外部のリスク';
+
+  @override
+  String get mindMapTemplateBookOutline =>
+      '書名\n  著者と背景\n  主な主張\n    主張その一\n    主張その二\n  印象に残った一節\n  自分の考え\n  やってみること';
+
+  @override
+  String get mindMapTemplateProjectOutline =>
+      'プロジェクト\n  目標\n    達成したい結果\n    評価の基準\n  マイルストーン\n    第1段階\n    第2段階\n    第3段階\n  リソース\n    メンバー\n    予算\n  リスク\n    起こりうる問題\n    対応策';
+
+  @override
+  String get mindMapTemplateWeekOutline =>
+      '今週の計画\n  月曜日\n  火曜日\n  水曜日\n  木曜日\n  金曜日\n  週末';
+
+  @override
+  String get mindMapTemplateDecisionOutline =>
+      '決めること\n  選択肢 A\n    メリット\n    コスト\n  選択肢 B\n    メリット\n    コスト\n  判断の基準\n  最終的な選択';
+
+  @override
+  String get mindMapTemplateTripOutline =>
+      '旅行\n  日程\n    交通\n    宿泊\n  持ち物\n    書類\n    服\n    電子機器\n  予算\n  行きたい場所';
+
+  @override
+  String get mindMapTemplateGoalsOutline =>
+      '今年の目標\n  健康\n  学び\n  仕事\n  家族と友人\n  趣味\n  お金';
+
+  @override
+  String mindMapTopicCount(int count) {
+    return '$count 個のトピック';
+  }
+
+  @override
+  String get mindMapViewFull => '全画面で見る';
+
+  @override
+  String get mindMapEditMap => 'マップを編集';
+
+  @override
+  String get mindMapUntitled => '無題のマップ';
+
+  @override
+  String get mindMapDiaryInfo => '日記の情報';
+
+  @override
+  String get mindMapCanvasLabel => 'マインドマップのキャンバス';
+
+  @override
+  String get notebookRuleMediaMindMap => 'マインドマップあり';
+
+  @override
+  String get settingsFeaturesMindMaps => 'マインドマップ';
+
+  @override
+  String get settingsFeaturesMindMapsSubtitle =>
+      '新しい日記をマップにしたり、本文にマップを挿入したりできます';
 }

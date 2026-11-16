@@ -164,6 +164,14 @@ class AppFeaturesPage extends ConsumerWidget {
                         ),
                       ),
                       SettingsSwitchTile(
+                        title: l10n.settingsFeaturesMindMaps,
+                        subtitle: l10n.settingsFeaturesMindMapsSubtitle,
+                        value: features.mindMaps,
+                        onChanged: writer(
+                          (v) => features.copyWith(mindMaps: v),
+                        ),
+                      ),
+                      SettingsSwitchTile(
                         title: l10n.settingsFeaturesTimeCapsules,
                         subtitle: l10n.settingsFeaturesTimeCapsulesSubtitle,
                         value: features.timeCapsules,

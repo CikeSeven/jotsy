@@ -6,6 +6,7 @@ import '../../viewmodels/diary_card_appearance.dart';
 import '../../viewmodels/diary_card_resolved_style.dart';
 import '../../viewmodels/diary_card_view_data.dart';
 import '../../viewmodels/search_highlight.dart';
+import '../../../mind_maps/widgets/mind_map_card_preview.dart';
 import '../diary_item_tag_row.dart';
 import 'diary_card_badges.dart';
 import 'diary_card_lines.dart';
@@ -255,6 +256,19 @@ class DiaryCardBlocks extends StatelessWidget {
   Widget? _preview() {
     if (!resolved.style.content.showPreview) {
       return null;
+    }
+    // 导图日记的摘要是导图缩略图（搜索时仍显示命中处的文字）。
+    if (viewData.mindMap case final map? when highlightTerms.isEmpty) {
+      return MindMapCardPreview(
+        document: map,
+        compact: resolved.compact,
+        captionStyle: resolved.previewStyle?.copyWith(
+          color: appearance.previewColor,
+        ),
+        fill: appearance.chipFill,
+        border: appearance.chipBorder,
+        centered: resolved.centered,
+      );
     }
     // 正文第一行已当作标题时，摘要（含搜索开窗）只取它之后的文字，不重复
     // 显示同一行；只命中第一行时，标题里已经标出，摘要照常从第二行起。

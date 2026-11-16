@@ -18155,4 +18155,255 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetSampleAnniversary2 => 'Mom\'s birthday';
+
+  @override
+  String get mindMapRootPlaceholder => 'Central topic';
+
+  @override
+  String get mindMapNodePlaceholder => 'Topic';
+
+  @override
+  String get mindMapAddTopic => 'Add topic';
+
+  @override
+  String get mindMapAddChild => 'Subtopic';
+
+  @override
+  String get mindMapAddSibling => 'Sibling';
+
+  @override
+  String get mindMapEditText => 'Edit';
+
+  @override
+  String get mindMapCollapse => 'Collapse';
+
+  @override
+  String get mindMapExpand => 'Expand';
+
+  @override
+  String get mindMapDelete => 'Delete';
+
+  @override
+  String get mindMapStyle => 'Style';
+
+  @override
+  String get mindMapFit => 'Fit';
+
+  @override
+  String get mindMapZoomActual => 'Actual size';
+
+  @override
+  String get mindMapZoomIn => 'Zoom in';
+
+  @override
+  String get mindMapZoomOut => 'Zoom out';
+
+  @override
+  String get mindMapUndo => 'Undo';
+
+  @override
+  String get mindMapRedo => 'Redo';
+
+  @override
+  String get mindMapNewLine => 'New line';
+
+  @override
+  String get mindMapDone => 'Done';
+
+  @override
+  String get mindMapStyleSheetTitle => 'Mind map style';
+
+  @override
+  String get mindMapStructureTitle => 'Structure';
+
+  @override
+  String get mindMapStructureMindMap => 'Mind map';
+
+  @override
+  String get mindMapStructureLogicRight => 'Logic chart';
+
+  @override
+  String get mindMapStructureLogicLeft => 'Left logic chart';
+
+  @override
+  String get mindMapStructureOrgDown => 'Org chart';
+
+  @override
+  String get mindMapStructureTreeRight => 'Tree';
+
+  @override
+  String get mindMapStructureTimeline => 'Timeline';
+
+  @override
+  String get mindMapStructureFishbone => 'Fishbone';
+
+  @override
+  String get mindMapThemeTitle => 'Color theme';
+
+  @override
+  String get mindMapThemeFollow => 'Follow app';
+
+  @override
+  String get mindMapThemeRainbow => 'Rainbow';
+
+  @override
+  String get mindMapThemeOcean => 'Ocean';
+
+  @override
+  String get mindMapThemeForest => 'Forest';
+
+  @override
+  String get mindMapThemeSunset => 'Sunset';
+
+  @override
+  String get mindMapThemeSakura => 'Sakura';
+
+  @override
+  String get mindMapThemeInk => 'Ink';
+
+  @override
+  String get mindMapThemePaper => 'Paper';
+
+  @override
+  String get mindMapThemeNeon => 'Neon';
+
+  @override
+  String get mindMapThemeMacaron => 'Macaron';
+
+  @override
+  String get mindMapLineTitle => 'Lines';
+
+  @override
+  String get mindMapLineCurve => 'Curved';
+
+  @override
+  String get mindMapLineStraight => 'Straight';
+
+  @override
+  String get mindMapLineElbow => 'Elbow';
+
+  @override
+  String get mindMapLineRounded => 'Rounded';
+
+  @override
+  String get mindMapSpacingTitle => 'Spacing';
+
+  @override
+  String get mindMapSpacingCompact => 'Compact';
+
+  @override
+  String get mindMapSpacingStandard => 'Standard';
+
+  @override
+  String get mindMapSpacingLoose => 'Loose';
+
+  @override
+  String get mindMapRainbow => 'Rainbow branches';
+
+  @override
+  String get mindMapGrid => 'Dot grid';
+
+  @override
+  String get mindMapCreateChip => 'Mind map';
+
+  @override
+  String get mindMapCreateChipTooltip => 'Turn this diary into a mind map';
+
+  @override
+  String get mindMapStarterTitle => 'Start from a template';
+
+  @override
+  String get mindMapConvertBack => 'Back to text';
+
+  @override
+  String get mindMapTemplateBrainstorm => 'Brainstorm';
+
+  @override
+  String get mindMapTemplateSwot => 'SWOT';
+
+  @override
+  String get mindMapTemplateBook => 'Book notes';
+
+  @override
+  String get mindMapTemplateProject => 'Project plan';
+
+  @override
+  String get mindMapTemplateWeek => 'Weekly plan';
+
+  @override
+  String get mindMapTemplateDecision => 'Decision';
+
+  @override
+  String get mindMapTemplateTrip => 'Trip plan';
+
+  @override
+  String get mindMapTemplateGoals => 'Yearly goals';
+
+  @override
+  String get mindMapTemplateBrainstormOutline =>
+      'Brainstorm\n  The problem\n    Background\n    Goal\n  Ideas\n    Idea A\n    Idea B\n    Idea C\n  Next steps\n    To validate\n    Help needed';
+
+  @override
+  String get mindMapTemplateSwotOutline =>
+      'SWOT analysis\n  Strengths\n    What we do well\n  Weaknesses\n    What to improve\n  Opportunities\n    Favorable outside factors\n  Threats\n    Outside risks';
+
+  @override
+  String get mindMapTemplateBookOutline =>
+      'Book title\n  Author and context\n  Key ideas\n    Idea one\n    Idea two\n  Favorite quotes\n  My thoughts\n  What I will do';
+
+  @override
+  String get mindMapTemplateProjectOutline =>
+      'Project\n  Goal\n    Desired result\n    How to measure\n  Milestones\n    Phase 1\n    Phase 2\n    Phase 3\n  Resources\n    People\n    Budget\n  Risks\n    What could go wrong\n    How to respond';
+
+  @override
+  String get mindMapTemplateWeekOutline =>
+      'This week\n  Monday\n  Tuesday\n  Wednesday\n  Thursday\n  Friday\n  Weekend';
+
+  @override
+  String get mindMapTemplateDecisionOutline =>
+      'The decision\n  Option A\n    Benefits\n    Costs\n  Option B\n    Benefits\n    Costs\n  What matters most\n  Final choice';
+
+  @override
+  String get mindMapTemplateTripOutline =>
+      'Trip\n  Itinerary\n    Transport\n    Stays\n  Packing\n    Documents\n    Clothes\n    Electronics\n  Budget\n  Must-see places';
+
+  @override
+  String get mindMapTemplateGoalsOutline =>
+      'Goals this year\n  Health\n  Learning\n  Work\n  Family and friends\n  Hobbies\n  Money';
+
+  @override
+  String mindMapTopicCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count topics',
+      one: '1 topic',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mindMapViewFull => 'Full screen';
+
+  @override
+  String get mindMapEditMap => 'Edit mind map';
+
+  @override
+  String get mindMapUntitled => 'Untitled mind map';
+
+  @override
+  String get mindMapDiaryInfo => 'Diary info';
+
+  @override
+  String get mindMapCanvasLabel => 'Mind map canvas';
+
+  @override
+  String get notebookRuleMediaMindMap => 'Has mind maps';
+
+  @override
+  String get settingsFeaturesMindMaps => 'Mind maps';
+
+  @override
+  String get settingsFeaturesMindMapsSubtitle =>
+      'Turn a new diary into a mind map, or insert one into the body';
 }

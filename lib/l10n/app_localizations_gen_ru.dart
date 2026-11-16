@@ -18851,4 +18851,257 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get homeWidgetSampleAnniversary2 => 'День рождения мамы';
+
+  @override
+  String get mindMapRootPlaceholder => 'Центральная тема';
+
+  @override
+  String get mindMapNodePlaceholder => 'Тема';
+
+  @override
+  String get mindMapAddTopic => 'Добавить';
+
+  @override
+  String get mindMapAddChild => 'Подтема';
+
+  @override
+  String get mindMapAddSibling => 'Рядом';
+
+  @override
+  String get mindMapEditText => 'Изменить';
+
+  @override
+  String get mindMapCollapse => 'Свернуть';
+
+  @override
+  String get mindMapExpand => 'Развернуть';
+
+  @override
+  String get mindMapDelete => 'Удалить';
+
+  @override
+  String get mindMapStyle => 'Стиль';
+
+  @override
+  String get mindMapFit => 'Вместить';
+
+  @override
+  String get mindMapZoomActual => 'Реальный размер';
+
+  @override
+  String get mindMapZoomIn => 'Увеличить';
+
+  @override
+  String get mindMapZoomOut => 'Уменьшить';
+
+  @override
+  String get mindMapUndo => 'Отменить';
+
+  @override
+  String get mindMapRedo => 'Повторить';
+
+  @override
+  String get mindMapNewLine => 'Новая строка';
+
+  @override
+  String get mindMapDone => 'Готово';
+
+  @override
+  String get mindMapStyleSheetTitle => 'Стиль карты';
+
+  @override
+  String get mindMapStructureTitle => 'Структура';
+
+  @override
+  String get mindMapStructureMindMap => 'Интеллект-карта';
+
+  @override
+  String get mindMapStructureLogicRight => 'Логическая схема';
+
+  @override
+  String get mindMapStructureLogicLeft => 'Схема влево';
+
+  @override
+  String get mindMapStructureOrgDown => 'Оргструктура';
+
+  @override
+  String get mindMapStructureTreeRight => 'Дерево';
+
+  @override
+  String get mindMapStructureTimeline => 'Хронология';
+
+  @override
+  String get mindMapStructureFishbone => 'Рыбья кость';
+
+  @override
+  String get mindMapThemeTitle => 'Цветовая тема';
+
+  @override
+  String get mindMapThemeFollow => 'Как в приложении';
+
+  @override
+  String get mindMapThemeRainbow => 'Радуга';
+
+  @override
+  String get mindMapThemeOcean => 'Океан';
+
+  @override
+  String get mindMapThemeForest => 'Лес';
+
+  @override
+  String get mindMapThemeSunset => 'Закат';
+
+  @override
+  String get mindMapThemeSakura => 'Сакура';
+
+  @override
+  String get mindMapThemeInk => 'Тушь';
+
+  @override
+  String get mindMapThemePaper => 'Бумага';
+
+  @override
+  String get mindMapThemeNeon => 'Неон';
+
+  @override
+  String get mindMapThemeMacaron => 'Макарон';
+
+  @override
+  String get mindMapLineTitle => 'Линии';
+
+  @override
+  String get mindMapLineCurve => 'Кривые';
+
+  @override
+  String get mindMapLineStraight => 'Прямые';
+
+  @override
+  String get mindMapLineElbow => 'Ломаные';
+
+  @override
+  String get mindMapLineRounded => 'Скруглённые';
+
+  @override
+  String get mindMapSpacingTitle => 'Интервалы';
+
+  @override
+  String get mindMapSpacingCompact => 'Плотно';
+
+  @override
+  String get mindMapSpacingStandard => 'Стандарт';
+
+  @override
+  String get mindMapSpacingLoose => 'Свободно';
+
+  @override
+  String get mindMapRainbow => 'Цветные ветви';
+
+  @override
+  String get mindMapGrid => 'Точечная сетка';
+
+  @override
+  String get mindMapCreateChip => 'Интеллект-карта';
+
+  @override
+  String get mindMapCreateChipTooltip => 'Превратить запись в интеллект-карту';
+
+  @override
+  String get mindMapStarterTitle => 'Начать с шаблона';
+
+  @override
+  String get mindMapConvertBack => 'Обратно в текст';
+
+  @override
+  String get mindMapTemplateBrainstorm => 'Мозговой штурм';
+
+  @override
+  String get mindMapTemplateSwot => 'SWOT-анализ';
+
+  @override
+  String get mindMapTemplateBook => 'О книге';
+
+  @override
+  String get mindMapTemplateProject => 'План проекта';
+
+  @override
+  String get mindMapTemplateWeek => 'План недели';
+
+  @override
+  String get mindMapTemplateDecision => 'Решение';
+
+  @override
+  String get mindMapTemplateTrip => 'Поездка';
+
+  @override
+  String get mindMapTemplateGoals => 'Цели на год';
+
+  @override
+  String get mindMapTemplateBrainstormOutline =>
+      'Мозговой штурм\n  Проблема\n    Контекст\n    Цель\n  Идеи\n    Идея A\n    Идея B\n    Идея C\n  Дальше\n    Проверить\n    Нужна помощь';
+
+  @override
+  String get mindMapTemplateSwotOutline =>
+      'SWOT-анализ\n  Сильные стороны\n    Что получается хорошо\n  Слабые стороны\n    Что улучшить\n  Возможности\n    Благоприятные факторы\n  Угрозы\n    Внешние риски';
+
+  @override
+  String get mindMapTemplateBookOutline =>
+      'Название книги\n  Автор и контекст\n  Главные идеи\n    Идея первая\n    Идея вторая\n  Цитаты\n  Мои мысли\n  Что сделаю';
+
+  @override
+  String get mindMapTemplateProjectOutline =>
+      'Проект\n  Цель\n    Желаемый результат\n    Как измерить\n  Этапы\n    Этап 1\n    Этап 2\n    Этап 3\n  Ресурсы\n    Люди\n    Бюджет\n  Риски\n    Что может пойти не так\n    Как реагировать';
+
+  @override
+  String get mindMapTemplateWeekOutline =>
+      'Эта неделя\n  Понедельник\n  Вторник\n  Среда\n  Четверг\n  Пятница\n  Выходные';
+
+  @override
+  String get mindMapTemplateDecisionOutline =>
+      'Решение\n  Вариант A\n    Плюсы\n    Цена\n  Вариант B\n    Плюсы\n    Цена\n  Что важнее всего\n  Итоговый выбор';
+
+  @override
+  String get mindMapTemplateTripOutline =>
+      'Поездка\n  Маршрут\n    Транспорт\n    Жильё\n  Вещи\n    Документы\n    Одежда\n    Техника\n  Бюджет\n  Обязательно посетить';
+
+  @override
+  String get mindMapTemplateGoalsOutline =>
+      'Цели на год\n  Здоровье\n  Учёба\n  Работа\n  Семья и друзья\n  Хобби\n  Финансы';
+
+  @override
+  String mindMapTopicCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count темы',
+      many: '$count тем',
+      few: '$count темы',
+      one: '$count тема',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mindMapViewFull => 'Во весь экран';
+
+  @override
+  String get mindMapEditMap => 'Изменить карту';
+
+  @override
+  String get mindMapUntitled => 'Карта без названия';
+
+  @override
+  String get mindMapDiaryInfo => 'Сведения о записи';
+
+  @override
+  String get mindMapCanvasLabel => 'Холст интеллект-карты';
+
+  @override
+  String get notebookRuleMediaMindMap => 'Есть интеллект-карты';
+
+  @override
+  String get settingsFeaturesMindMaps => 'Интеллект-карты';
+
+  @override
+  String get settingsFeaturesMindMapsSubtitle =>
+      'Превращайте запись в карту или вставляйте карту в текст';
 }

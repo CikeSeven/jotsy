@@ -236,6 +236,7 @@ class SetFeatureEnabledTool extends AiTool {
     'time_capsules',
     'swipe_archive',
     'comments',
+    'mind_maps',
   ];
 
   @override
@@ -286,6 +287,7 @@ class SetFeatureEnabledTool extends AiTool {
         'time_capsules' => l10n.settingsFeaturesTimeCapsules,
         'swipe_archive' => l10n.settingsFeaturesSwipeArchive,
         'comments' => l10n.settingsFeaturesComments,
+        'mind_maps' => l10n.settingsFeaturesMindMaps,
         final other => '${other ?? ''}',
       };
 
@@ -318,6 +320,7 @@ class SetFeatureEnabledTool extends AiTool {
       'templates' => current.copyWith(templates: on),
       'time_capsules' => current.copyWith(timeCapsules: on),
       'swipe_archive' => current.copyWith(swipeArchive: on),
+      'mind_maps' => current.copyWith(mindMaps: on),
       _ => current.copyWith(comments: on),
     };
     await saveAppFeatures(settings, next);

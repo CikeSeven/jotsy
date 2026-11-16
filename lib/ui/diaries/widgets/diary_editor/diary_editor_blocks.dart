@@ -17,14 +17,15 @@ import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
 import 'diary_callout_block.dart';
 import 'diary_link_card_block.dart';
+import 'diary_mind_map_block.dart';
 import 'diary_paragraph_block.dart';
 import 'diary_quote_bar.dart';
 import 'diary_table_block.dart';
 import 'diary_toggle_block.dart';
 
 /// 原生块组件的单一注册点：共享排版、段落首行缩进、行首标记（列表、待办、
-/// 引用）、提示块、折叠块、代码外壳、媒体与日记链接卡片（[onOpenLink] 打开
-/// 卡片的目标）。段落把手不在块里，见 [DiaryBlockHandleLayer]。
+/// 引用）、提示块、折叠块、代码外壳、媒体、日记链接卡片（[onOpenLink] 打开
+/// 卡片的目标）与思维导图。段落把手不在块里，见 [DiaryBlockHandleLayer]。
 Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   BuildContext context, {
   required DiaryEditorController controller,
@@ -146,6 +147,7 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
       controller: controller,
       onOpen: onOpenLink ?? (_) {},
     ),
+    kDiaryBlockMindMap: DiaryMindMapBlockBuilder(controller: controller),
     // 表格与格子：格内段落经同一份渲染器构建（见 DiaryTableBlock）。
     'table': DiaryTableBlockBuilder(
       configuration: text,

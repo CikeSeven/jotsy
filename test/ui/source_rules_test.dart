@@ -79,6 +79,13 @@ void main() {
   guard(appLock.where((file) => !file.path.contains('/controllers/')), [
     animation,
   ]);
+  // 思维导图：公共组件、主题色与动效 token 同其他新模块；主题配色只经
+  // MindMapPalette 由种子色推出（见 docs/rules/mind_maps.md）。
+  final mindMaps = filesUnder('lib/ui/mind_maps');
+  guard(mindMaps, [...common, ...fixedColors, 'Icon(Icons.']);
+  guard(mindMaps.where((file) => !file.path.contains('/controllers/')), [
+    animation,
+  ]);
   // AI 助手：公共组件、主题色与动效 token 同其他新模块。
   final ai = filesUnder('lib/ui/ai');
   guard(ai, [...common, ...fixedColors, 'Icon(Icons.']);

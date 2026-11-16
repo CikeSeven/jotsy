@@ -90,6 +90,7 @@ List<DiaryBlockCommand> diaryBlockCommands(
   bool notebookCards = false,
   void Function(DiaryAiSlashCommand)? onAi,
   bool aiPrompts = false,
+  VoidCallback? onMindMap,
 }) => [
   DiaryBlockCommand(
     'paragraph',
@@ -242,6 +243,16 @@ List<DiaryBlockCommand> diaryBlockCommands(
         action: () => onLinkCard(DiaryLinkKind.notebook),
       ),
   ],
+  // 思维导图：插入一张空导图并直接打开全屏编辑。
+  if (onMindMap != null)
+    DiaryBlockCommand(
+      kDiaryBlockMindMap,
+      l10n.mindMapCreateChip,
+      FontAwesomeIcons.sitemap,
+      const ['mind', 'map', 'mindmap', 'diagram', '思维导图', '导图', '脑图'],
+      group: DiaryBlockCommandGroup.insert,
+      action: onMindMap,
+    ),
   if (onRecording != null)
     DiaryBlockCommand(
       'audio',

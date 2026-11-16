@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../legacy_content_codec.dart';
+import '../mind_map/mind_map_blocks.dart';
 import 'diary_blocks_from_delta.dart';
 import 'diary_blocks_schema.dart';
 import 'diary_blocks_table.dart';
@@ -184,7 +185,7 @@ String diaryBlocksPlainText(
       continue;
     }
     buffer
-      ..write(embedText?.call(node) ?? diaryBlockText(node))
+      ..write(embedText?.call(node) ?? _mirrorText(node))
       ..write('\n');
   }
   return buffer
@@ -194,19 +195,37 @@ String diaryBlocksPlainText(
       .trimRight();
 }
 
-/// 是否有可见内容：非空白文字（含表格格子里的段落），或任一媒体 / 分隔线块。
+/// 块在纯文本镜像里的文字：文字块为行内文字，导图为它的纯文本镜像（搜索、
+/// 字数与 AI 都读得到节点文字），其余为空。
+String _mirrorText(Map<String, Object?> node) => isMindMapBlock(node)
+    ? mindMapBlockPlainText(diaryBlockData(node))
+    : diaryBlockText(node);
+
+/// 嵌入块是否算内容：空导图（只有一个没写字的根节点）不算，其余都算。
+bool _embedIsContent(Map<String, Object?> node) =>
+    !isMindMapBlock(node) || !mindMapBlockIsBlank(diaryBlockData(node));
+
+/// 是否有可见内容：非空白文字（含表格格子里的段落），或任一媒体 / 分隔线块，
+/// 或写了东西的导图。
 bool diaryBlocksHaveVisibleContent(Map<String, Object?> document) {
   for (final (node, _) in walkDiaryBlocks(document)) {
-    if (kDiaryEmbedBlockTypes.contains(node[kDiaryBlockTypeKey])) return true;
+    if (kDiaryEmbedBlockTypes.contains(node[kDiaryBlockTypeKey])) {
+      if (_embedIsContent(node)) return true;
+      continue;
+    }
     if (diaryBlockText(node).trim().isNotEmpty) return true;
   }
   return false;
 }
 
-/// 是否含媒体或分隔线（纯文本镜像为空的草稿据此判断是否值得保留）。
+/// 是否含媒体、分隔线或写了东西的导图（纯文本镜像为空的草稿据此判断是否
+/// 值得保留）。
 bool diaryBlocksHaveEmbeds(Map<String, Object?> document) {
   for (final (node, _) in walkDiaryBlocks(document)) {
-    if (kDiaryEmbedBlockTypes.contains(node[kDiaryBlockTypeKey])) return true;
+    if (kDiaryEmbedBlockTypes.contains(node[kDiaryBlockTypeKey]) &&
+        _embedIsContent(node)) {
+      return true;
+    }
   }
   return false;
 }

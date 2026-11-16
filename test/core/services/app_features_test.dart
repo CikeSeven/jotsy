@@ -53,6 +53,7 @@ void main() {
         'swipeArchive': true,
         'comments': false,
         'ai': false,
+        'mindMaps': true,
       });
       expect(AppFeatures.decode(raw), AppFeatures.defaults);
     });
@@ -66,6 +67,7 @@ void main() {
         swipeArchive: false,
         comments: true,
         ai: true,
+        mindMaps: false,
       );
       final raw = features.encode();
 
@@ -80,6 +82,7 @@ void main() {
         'swipeArchive',
         'comments',
         'ai',
+        'mindMaps',
       ]);
       expect(AppFeatures.decode(raw), features);
     });

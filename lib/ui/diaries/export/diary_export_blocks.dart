@@ -11,6 +11,8 @@ import '../../../core/database/diary_blocks/diary_blocks_table.dart';
 import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/diary_blocks/diary_list_style.dart';
+import '../../../core/database/mind_map/mind_map_blocks.dart';
+import '../../../core/database/mind_map/mind_map_text.dart';
 import '../models/diary_image_embed_data.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';

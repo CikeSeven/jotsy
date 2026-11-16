@@ -40,6 +40,7 @@ import 'diary_table_keyboard_interceptor.dart';
 import 'diary_table_shortcuts.dart';
 import 'diary_block_commands.dart';
 import '../../controllers/diary_editor_controller.dart';
+import '../../controllers/diary_mind_map_editing.dart';
 import 'diary_editor_spans.dart';
 import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
@@ -350,6 +351,9 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     final notebooksEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.notebooks),
     );
+    final mindMapsEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.mindMaps),
+    );
     // 工具栏的「缩进 / 取消缩进」按这里画段落的全局缩进判断（只是普通字段，
     // 不通知监听者；排版设置只能在别的页面改，回到编辑页时会重建到这里）。
     widget.controller.globalFirstLineIndent =
@@ -408,6 +412,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       widget.header != null,
       widget.blockComponentOverrides,
       notebooksEnabled,
+      mindMapsEnabled,
     );
     if (_native != null && _nativeInputs == inputs) {
       return _decorateNative(_native!);
@@ -485,6 +490,10 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
                 ? (kind) => unawaited(_mentionMenu.openCardAtCaret({kind}))
                 : null,
             notebookCards: notebooksEnabled,
+            // 只在写日记的正文里能插导图（模板正文没有日记来源，不收导图）。
+            onMindMap: linking && mindMapsEnabled
+                ? () => unawaited(insertDiaryMindMap(context, controller))
+                : null,
           ),
         ),
         // 表格里的回车与 Markdown 原文先于其他块规则。

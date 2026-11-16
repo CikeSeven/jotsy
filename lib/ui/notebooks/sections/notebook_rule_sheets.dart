@@ -14,6 +14,7 @@ import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/keyboard_visibility.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../viewmodels/notebook_rule_labels.dart';
 import 'notebook_rule_date_editor.dart';
 
@@ -511,17 +512,17 @@ class _TextRuleEditorState extends State<_TextRuleEditor> {
 }
 
 /// 图片与附件：四选一。
-class _MediaRuleEditor extends StatefulWidget {
+class _MediaRuleEditor extends ConsumerStatefulWidget {
   const _MediaRuleEditor({this.initial, this.onChanged});
 
   final NotebookMediaRule? initial;
   final ValueChanged<NotebookRule?>? onChanged;
 
   @override
-  State<_MediaRuleEditor> createState() => _MediaRuleEditorState();
+  ConsumerState<_MediaRuleEditor> createState() => _MediaRuleEditorState();
 }
 
-class _MediaRuleEditorState extends State<_MediaRuleEditor> {
+class _MediaRuleEditorState extends ConsumerState<_MediaRuleEditor> {
   // 实时模式没有初值时不预选：打开面板不应套上“有图片”。
   late NotebookMediaKind? _kind =
       widget.initial?.kind ??
@@ -536,17 +537,24 @@ class _MediaRuleEditorState extends State<_MediaRuleEditor> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final kind = _kind;
+    final mindMapsEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.mindMaps),
+    );
     return NotebookRuleSheetFrame(
       title: l10n.notebookRuleTypeMedia,
       result: kind == null ? null : NotebookMediaRule(kind),
       live: widget.onChanged != null,
       children: <Widget>[
         for (final option in NotebookMediaKind.values)
-          ExpressiveChoiceTile(
-            label: notebookMediaKindLabel(l10n, option),
-            selected: kind == option,
-            onTap: () => _select(option),
-          ),
+          // 思维导图功能关闭时不提供这一项（已经选了的照常显示）。
+          if (option != NotebookMediaKind.mindMap ||
+              mindMapsEnabled ||
+              kind == option)
+            ExpressiveChoiceTile(
+              label: notebookMediaKindLabel(l10n, option),
+              selected: kind == option,
+              onTap: () => _select(option),
+            ),
       ],
     );
   }

@@ -12,11 +12,11 @@
 .
 ├─ lib/
 │  ├─ main.dart  # 应用入口
-│  ├─ app/  # App 装配与主题系统（theme/：Expressive token、配色、窗口分档 AppBreakpoints、滚动行为）
+│  ├─ app/  # App 装配与主题（theme/：Expressive token、配色、AppBreakpoints、滚动行为）
 │  ├─ core/
-│  │  ├─ database/  # Drift 数据库，按职责拆分的 ops（见 §3）；diary_blocks/：正文块文档格式与兼容
+│  │  ├─ database/  # Drift 数据库，按职责拆分的 ops（见 §3）；diary_blocks/、mind_map/：正文块与导图文档格式
 │  │  └─ services/  # 跨模块服务（平台能力 AppPlatform、数据根目录、设置、备份与网盘、导入、媒体、更新等）
-│  │     ├─ ai/  # AI 助手引擎（纯 Dart，docs/ai_assistant.md）
+│  │     ├─ ai/  # AI 助手引擎（纯 Dart）
 │  │     ├─ app_passcode/  # 应用密码的本机存储、摘要与限流
 │  │     ├─ home_widgets/  # 桌面小组件设置、网关与启动链接
 │  │     ├─ lan_sync/  # 局域网同步引擎（docs/lan_sync.md）；sync/：同步数据层与纯函数规划器
@@ -24,10 +24,8 @@
 │  ├─ ui/
 │  │  ├─ diaries/  # 日记主业务模块，分层见 §3（widgets/diary_editor/ 为共用编辑器）
 │  │  ├─ app_surface/  # 背景与材质（玻璃）
-│  │  ├─ anniversaries/  # 纪念日与倒数日
-│  │  ├─ todos/  # 独立待办
-│  │  ├─ diary_templates/  # 日记模板
-│  │  ├─ notebooks/  # 日记本
+│  │  ├─ anniversaries|todos|diary_templates|notebooks/  # 纪念日、待办、模板、日记本
+│  │  ├─ mind_maps/  # 思维导图
 │  │  ├─ ai/  # AI 助手界面
 │  │  ├─ app_lock/  # 应用锁、应用密码与统一验证入口 IdentityVerifier
 │  │  ├─ lan_sync|storage|home_widgets/  # 局域网同步、存储管理、桌面小组件
@@ -108,6 +106,7 @@
 | 日记模板 | `diary_templates.md` |
 | 日记本（私密、上锁、嵌套、封面、章节、备份合并、首页范围与启动恢复） | `notebooks.md` |
 | 待办、提醒与日历 / 日记联动 | `todos.md` |
+| 思维导图（导图日记、嵌入导图、画布与配色） | `mind_maps.md` |
 | 日历、纪念日、这天的心情、法定节假日 | `calendar.md` |
 | 探索页 | `explore.md` |
 | 留言 | `comments.md` |
@@ -171,7 +170,7 @@
   - `dart run build_runner build --delete-conflicting-outputs`
   - `dart run tool/check_arb.dart`（改动 ARB 后）
   - `flutter build linux --release`（桌面改动后本地验证；Windows 包只在 CI / 发布中构建）
-- 必须：本地构建 Linux 需先装 `clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev`，以及 audioplayers_linux 需要的 GStreamer 开发包（`libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`，与 `ci.yml` 同一份）。
+- 必须：本地构建 Linux 先装与 `ci.yml` 同一份的包：`clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`（后两个为 audioplayers_linux 所需）。
 - 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（按文件分片，覆盖率经 `tool/merge_lcov.dart` 合并；`Tests` 门禁须等所有分片通过）、Android 视频选择器原生回归测试、arm64 的 Android release 构建、Linux 与 Windows 的 release 构建（只验证能否编译，产物不上传；发布工作流经 `skip-desktop-builds` 跳过）、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。CI 从网络下载的东西必须有缓存，缓存只由 main 写入（`actions/main-cache`，见 `docs/ci_performance.md`）。
 - 必须：Flutter 版本只定义在 `.github/actions/setup-flutter/action.yml`（CI 与发布共用），升级须单独提交并先让 CI 全绿；依赖以 `pubspec.lock` 为准（CI 用 `flutter pub get --enforce-lockfile`），改动 `pubspec.yaml` 的依赖必须同时提交锁文件。
 - 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。

@@ -1,0 +1,202 @@
+// ignore_for_file: invalid_use_of_protected_member
+
+part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+
+/// 导图日记在编辑页里的形态（正文是一张 `mode: page` 的导图时）。
+///
+/// 职责边界：
+/// - 识别：正文顶层第一块是 page 模式的 `mind_map`、其余都是空段落时进入
+///   导图模式（[_EditDiaryMindMapFlow._syncMindMapSession]，每次构建时核对，
+///   正文控制器被换掉——回填详情、续写草稿——时重建会话）；
+/// - 外框：不构建文字编辑器、悬浮工具栏与录音面板，整页是导图工作区
+///   （[MindMapWorkspace]），顶栏是返回、撤销 / 重做、发布（新建）或保存
+///   （手动保存）与“更多”；编辑已有日记时“更多”沿用阅读式编辑页的菜单
+///   （信息、分享、导出、留言、删除……），信息面板照常从底部升起；
+/// - 写回：导图的每次改动经 [_EditDiaryMindMapSession] 写进正文里那一块
+///   （不进正文的撤销栈，导图有自己的撤销），正文控制器随之通知，草稿与
+///   编辑的自动保存、手动保存、发布都沿用文字日记的链路；中心主题的文字
+///   同步写进标题（导图日记只有一个标题）；
+/// - 转换：新建页正文为空时点“思维导图”转成导图（[_convertToMindMap]，
+///   画布从按钮处展开），空导图可以转回文字日记（[_convertBackToText]）。
+///   两者都经 `restoreContent`，不进正文撤销栈。
+class _EditDiaryMindMapSession {
+  _EditDiaryMindMapSession(this.content, MindMapDocument map)
+    : controller = MindMapEditingController(map);
+
+  /// 会话绑定的正文控制器；页面换了正文控制器就要换会话。
+  final editor.DiaryEditorController content;
+  final MindMapEditingController controller;
+
+  /// 把导图写回正文里的导图块。
+  void write(MindMapDocument map) {
+    if (content.isDisposed) return;
+    final children = content.document.root.children;
+    if (children.isEmpty || children.first.type != kDiaryBlockMindMap) return;
+    final transaction = content.state.transaction
+      ..updateNode(children.first, mindMapBlockData(map, page: true));
+    content.apply(transaction, recordUndo: false, updateSelection: false);
+  }
+
+  void dispose() => controller.dispose();
+}
+
+/// 正文（AppFlowy 文档）是否为导图日记；与 `diaryMindMapPage` 同一口径。
+bool _isMindMapDiaryDocument(editor.Document document) {
+  final children = document.root.children;
+  if (children.isEmpty) return false;
+  final first = children.first;
+  if (first.type != kDiaryBlockMindMap ||
+      !isMindMapPageData(first.attributes)) {
+    return false;
+  }
+  for (final rest in children.skip(1)) {
+    if (rest.type != kDiaryBlockParagraph ||
+        rest.children.isNotEmpty ||
+        (rest.delta?.toPlainText().trim().isNotEmpty ?? false)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+extension _EditDiaryMindMapFlow on _EditDiaryPageState {
+  /// 按当前正文核对导图会话（构建时调用，不触发重建）。
+  void _syncMindMapSession() {
+    final content = _contentController;
+    final isMap = _isMindMapDiaryDocument(content.document);
+    final session = _mindMapSession;
+    if (!isMap) {
+      if (session != null) {
+        _mindMapSession = null;
+        session.dispose();
+      }
+      return;
+    }
+    if (session != null && identical(session.content, content)) return;
+    session?.dispose();
+    final first = content.document.root.children.first;
+    final created = _EditDiaryMindMapSession(
+      content,
+      mindMapOfBlockData(first.attributes),
+    );
+    created.controller.onChanged = (map) {
+      created.write(map);
+      _syncTitleFromMindMap(map);
+    };
+    _mindMapSession = created;
+  }
+
+  /// 中心主题的文字就是这篇日记的标题（压成一行，标题列最长 200 字）。
+  void _syncTitleFromMindMap(MindMapDocument map) {
+    var title = map.root.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();
+    if (title.length > 200) title = title.substring(0, 200);
+    if (_titleController.text != title) _titleController.text = title;
+  }
+
+  /// 新建页：把空白正文换成一张导图（中心主题取已写的标题）。[origin] 为
+  /// “思维导图”按钮的全局矩形，画布从这里展开。
+  void _convertToMindMap(Rect? origin) {
+    if (_contentController.hasContent) return;
+    final title = _titleController.text
+        .replaceAll(RegExp(r'\s*\n\s*'), ' ')
+        .trim();
+    final map = MindMapDocument.blank(text: title);
+    FocusManager.instance.primaryFocus?.unfocus();
+    _contentController.restoreContent(
+      encodeDiaryBlocks(mindMapDiaryDocument(map)),
+    );
+    setState(() {
+      _mindMapRevealOrigin = origin;
+      _syncMindMapSession();
+    });
+    // 没写标题时直接编辑中心主题，键盘随之弹出。
+    if (title.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final session = _mindMapSession;
+        if (!mounted || session == null) return;
+        session.controller.startEditing(session.controller.document.root.id);
+      });
+    }
+  }
+
+  /// 还只有中心主题的导图转回文字日记（中心主题的文字已经在标题里，
+  /// 转回不丢东西）。
+  void _convertBackToText() {
+    final session = _mindMapSession;
+    if (session == null || !mindMapHasOnlyRoot(session.controller.document)) {
+      return;
+    }
+    _contentController.restoreContent('');
+    setState(() {
+      _mindMapRevealOrigin = null;
+      _syncMindMapSession();
+    });
+  }
+
+  /// 导图模式的整页。
+  Widget _buildMindMapScaffold(
+    BuildContext context, {
+    required _ReadingFrame? reading,
+    required bool showEditMetaPanel,
+  }) {
+    final session = _mindMapSession!;
+    final l10n = context.l10n;
+    final controller = session.controller;
+    final origin = _mindMapRevealOrigin;
+    _mindMapRevealOrigin = null;
+    final busy = _saving || _mediaImportController.isBusy;
+    return MindMapPageScaffold(
+      paintBackground: false,
+      controller: controller,
+      title: _isCreateEntry
+          ? Text(l10n.autoT0134)
+          : ListenableBuilder(
+              listenable: controller,
+              builder: (BuildContext context, Widget? _) => Text(
+                mindMapTitle(l10n, controller.document.root.text),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+      onBack: () => unawaited(_controller.attemptExit()),
+      actions: <Widget>[
+        if (!_isCreateEntry && _controller.manualEditSave)
+          _buildReadingSaveButton(),
+        ExpressiveMenuButton(
+          tooltip: l10n.diaryEditorMoreActions,
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+          items: <Widget>[
+            ExpressiveMenuItem(
+              leadingIcon: const FaIcon(FontAwesomeIcons.palette),
+              onPressed: () => showMindMapStyleSheet(context, controller),
+              child: Text(l10n.mindMapStyleSheetTitle),
+            ),
+            if (reading != null) ..._readingMoreItems(reading),
+          ],
+        ),
+        if (_isCreateEntry)
+          IconButton(
+            onPressed: busy ? null : _controller.openPublishPage,
+            icon: const FaIcon(FontAwesomeIcons.plus),
+            tooltip: l10n.autoT0136,
+          ),
+      ],
+      body: (BuildContext context, double topInset) => MindMapReveal(
+        origin: origin,
+        child: MindMapWorkspace(
+          controller: controller,
+          topInset: topInset,
+          onConvertBack: _isCreateEntry ? _convertBackToText : null,
+        ),
+      ),
+      overlay: showEditMetaPanel
+          ? Positioned.fill(
+              key: const ValueKey<String>('edit-meta-panel'),
+              child: _metaPanelColumn(
+                (bool wide) => _buildMetaPanel(fillWidth: wide),
+              ),
+            )
+          : null,
+    );
+  }
+}

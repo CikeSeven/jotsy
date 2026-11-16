@@ -20632,5 +20632,322 @@
   "homeWidgetSampleAnniversary2": "妈妈生日",
   "@homeWidgetSampleAnniversary2": {
     "description": "桌面小组件预览里的示例内容（启动器的小组件列表）：纪念日名称。"
+  },
+  "mindMapRootPlaceholder": "中心主题",
+  "@mindMapRootPlaceholder": {
+    "description": "思维导图：根节点还没写字时显示的占位文字。"
+  },
+  "mindMapNodePlaceholder": "主题",
+  "@mindMapNodePlaceholder": {
+    "description": "思维导图：节点还没写字时显示的占位文字。"
+  },
+  "mindMapAddTopic": "添加主题",
+  "@mindMapAddTopic": {
+    "description": "思维导图底部工具坞（未选中节点时）：在中心主题下添加一个主题。"
+  },
+  "mindMapAddChild": "子主题",
+  "@mindMapAddChild": {
+    "description": "思维导图：在选中的主题下添加子主题（工具坞按钮与菜单项）。"
+  },
+  "mindMapAddSibling": "同级主题",
+  "@mindMapAddSibling": {
+    "description": "思维导图：在选中主题旁添加同级主题（工具坞按钮与菜单项）。"
+  },
+  "mindMapEditText": "编辑",
+  "@mindMapEditText": {
+    "description": "思维导图：编辑选中主题的文字。"
+  },
+  "mindMapCollapse": "收起",
+  "@mindMapCollapse": {
+    "description": "思维导图：收起选中主题的子主题。"
+  },
+  "mindMapExpand": "展开",
+  "@mindMapExpand": {
+    "description": "思维导图：展开选中主题收起的子主题。"
+  },
+  "mindMapDelete": "删除",
+  "@mindMapDelete": {
+    "description": "思维导图：删除选中的主题（连同子主题）。"
+  },
+  "mindMapStyle": "样式",
+  "@mindMapStyle": {
+    "description": "思维导图工具坞按钮：打开结构与配色面板。"
+  },
+  "mindMapFit": "适应屏幕",
+  "@mindMapFit": {
+    "description": "思维导图：缩放到整张图放进屏幕。"
+  },
+  "mindMapZoomActual": "实际大小",
+  "@mindMapZoomActual": {
+    "description": "思维导图缩放菜单：按 100% 显示。"
+  },
+  "mindMapZoomIn": "放大",
+  "@mindMapZoomIn": {
+    "description": "思维导图缩放菜单：放大。"
+  },
+  "mindMapZoomOut": "缩小",
+  "@mindMapZoomOut": {
+    "description": "思维导图缩放菜单：缩小。"
+  },
+  "mindMapUndo": "撤销",
+  "@mindMapUndo": {
+    "description": "思维导图编辑页顶栏：撤销上一步。"
+  },
+  "mindMapRedo": "重做",
+  "@mindMapRedo": {
+    "description": "思维导图编辑页顶栏：重做。"
+  },
+  "mindMapNewLine": "换行",
+  "@mindMapNewLine": {
+    "description": "思维导图：软键盘上方的按钮，在正在编辑的主题里换行。"
+  },
+  "mindMapDone": "完成",
+  "@mindMapDone": {
+    "description": "思维导图：软键盘上方的按钮，结束编辑主题文字。"
+  },
+  "mindMapStyleSheetTitle": "导图样式",
+  "@mindMapStyleSheetTitle": {
+    "description": "思维导图结构与配色面板的标题。"
+  },
+  "mindMapStructureTitle": "结构",
+  "@mindMapStructureTitle": {
+    "description": "思维导图样式面板：结构分组的标题。"
+  },
+  "mindMapStructureMindMap": "思维导图",
+  "@mindMapStructureMindMap": {
+    "description": "导图结构：中心主题在中间，分支分在左右两侧。"
+  },
+  "mindMapStructureLogicRight": "逻辑图",
+  "@mindMapStructureLogicRight": {
+    "description": "导图结构：分支向右展开。"
+  },
+  "mindMapStructureLogicLeft": "左向逻辑图",
+  "@mindMapStructureLogicLeft": {
+    "description": "导图结构：分支向左展开。"
+  },
+  "mindMapStructureOrgDown": "组织结构图",
+  "@mindMapStructureOrgDown": {
+    "description": "导图结构：分支向下展开。"
+  },
+  "mindMapStructureTreeRight": "树形目录",
+  "@mindMapStructureTreeRight": {
+    "description": "导图结构：像目录一样逐级缩进的树。"
+  },
+  "mindMapStructureTimeline": "时间线",
+  "@mindMapStructureTimeline": {
+    "description": "导图结构：一级主题排在一条横向时间轴上。"
+  },
+  "mindMapStructureFishbone": "鱼骨图",
+  "@mindMapStructureFishbone": {
+    "description": "导图结构：鱼头在右的因果鱼骨图。"
+  },
+  "mindMapThemeTitle": "配色主题",
+  "@mindMapThemeTitle": {
+    "description": "思维导图样式面板：配色主题分组的标题。"
+  },
+  "mindMapThemeFollow": "跟随应用",
+  "@mindMapThemeFollow": {
+    "description": "跟随应用主题色的导图配色。"
+  },
+  "mindMapThemeRainbow": "彩虹",
+  "@mindMapThemeRainbow": {
+    "description": "导图配色主题名称。"
+  },
+  "mindMapThemeOcean": "海盐",
+  "@mindMapThemeOcean": {
+    "description": "导图配色主题名称。"
+  },
+  "mindMapThemeForest": "森林",
+  "@mindMapThemeForest": {
+    "description": "导图配色主题名称。"
+  },
+  "mindMapThemeSunset": "晚霞",
+  "@mindMapThemeSunset": {
+    "description": "导图配色主题名称。"
+  },
+  "mindMapThemeSakura": "樱花",
+  "@mindMapThemeSakura": {
+    "description": "导图配色主题名称。"
+  },
+  "mindMapThemeInk": "墨韵",
+  "@mindMapThemeInk": {
+    "description": "导图配色主题名称（黑白）。"
+  },
+  "mindMapThemePaper": "纸本",
+  "@mindMapThemePaper": {
+    "description": "导图配色主题名称（极简、下划线主题）。"
+  },
+  "mindMapThemeNeon": "霓虹",
+  "@mindMapThemeNeon": {
+    "description": "导图配色主题名称。"
+  },
+  "mindMapThemeMacaron": "马卡龙",
+  "@mindMapThemeMacaron": {
+    "description": "导图配色主题名称（柔和色）。"
+  },
+  "mindMapLineTitle": "连线",
+  "@mindMapLineTitle": {
+    "description": "思维导图样式面板：连线样式分组的标题。"
+  },
+  "mindMapLineCurve": "曲线",
+  "@mindMapLineCurve": {
+    "description": "导图连线样式。"
+  },
+  "mindMapLineStraight": "直线",
+  "@mindMapLineStraight": {
+    "description": "导图连线样式。"
+  },
+  "mindMapLineElbow": "直角",
+  "@mindMapLineElbow": {
+    "description": "导图连线样式（直角折线）。"
+  },
+  "mindMapLineRounded": "圆角",
+  "@mindMapLineRounded": {
+    "description": "导图连线样式（圆角折线）。"
+  },
+  "mindMapSpacingTitle": "间距",
+  "@mindMapSpacingTitle": {
+    "description": "思维导图样式面板：间距分组的标题。"
+  },
+  "mindMapSpacingCompact": "紧凑",
+  "@mindMapSpacingCompact": {
+    "description": "导图间距选项。"
+  },
+  "mindMapSpacingStandard": "标准",
+  "@mindMapSpacingStandard": {
+    "description": "导图间距选项。"
+  },
+  "mindMapSpacingLoose": "宽松",
+  "@mindMapSpacingLoose": {
+    "description": "导图间距选项。"
+  },
+  "mindMapRainbow": "彩虹分支",
+  "@mindMapRainbow": {
+    "description": "思维导图样式面板开关：每个一级分支用不同的颜色。"
+  },
+  "mindMapGrid": "点阵背景",
+  "@mindMapGrid": {
+    "description": "思维导图样式面板开关：在导图后面显示点阵。"
+  },
+  "mindMapCreateChip": "思维导图",
+  "@mindMapCreateChip": {
+    "description": "新建日记页：正文为空时显示的小按钮，点按后这篇日记变成思维导图。"
+  },
+  "mindMapCreateChipTooltip": "把这篇日记变成思维导图",
+  "@mindMapCreateChipTooltip": {
+    "description": "新建日记页思维导图按钮的提示文字。"
+  },
+  "mindMapStarterTitle": "从模板开始",
+  "@mindMapStarterTitle": {
+    "description": "思维导图：空导图上出现的起步卡标题，下面是可套用的模板。"
+  },
+  "mindMapConvertBack": "转回文字日记",
+  "@mindMapConvertBack": {
+    "description": "思维导图：把空的导图日记转回普通的文字日记。"
+  },
+  "mindMapTemplateBrainstorm": "头脑风暴",
+  "@mindMapTemplateBrainstorm": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateSwot": "SWOT 分析",
+  "@mindMapTemplateSwot": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateBook": "读书笔记",
+  "@mindMapTemplateBook": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateProject": "项目计划",
+  "@mindMapTemplateProject": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateWeek": "一周计划",
+  "@mindMapTemplateWeek": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateDecision": "决策分析",
+  "@mindMapTemplateDecision": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateTrip": "旅行清单",
+  "@mindMapTemplateTrip": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateGoals": "年度目标",
+  "@mindMapTemplateGoals": {
+    "description": "导图模板名称。"
+  },
+  "mindMapTemplateBrainstormOutline": "头脑风暴\n  问题是什么\n    背景\n    目标\n  可能的方案\n    方案 A\n    方案 B\n    方案 C\n  下一步\n    要验证的\n    需要的帮助",
+  "@mindMapTemplateBrainstormOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateSwotOutline": "SWOT 分析\n  优势\n    擅长什么\n  劣势\n    需要改进什么\n  机会\n    外部的有利因素\n  威胁\n    外部的风险",
+  "@mindMapTemplateSwotOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateBookOutline": "书名\n  作者与背景\n  核心观点\n    观点一\n    观点二\n  精彩摘录\n  我的思考\n  行动清单",
+  "@mindMapTemplateBookOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateProjectOutline": "项目名称\n  目标\n    要达成的结果\n    衡量标准\n  里程碑\n    第一阶段\n    第二阶段\n    第三阶段\n  资源\n    人员\n    预算\n  风险\n    可能的问题\n    应对办法",
+  "@mindMapTemplateProjectOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateWeekOutline": "本周计划\n  周一\n  周二\n  周三\n  周四\n  周五\n  周末",
+  "@mindMapTemplateWeekOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateDecisionOutline": "要做的决定\n  选项 A\n    好处\n    代价\n  选项 B\n    好处\n    代价\n  判断标准\n  最终选择",
+  "@mindMapTemplateDecisionOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateTripOutline": "旅行计划\n  行程\n    交通\n    住宿\n  行李\n    证件\n    衣物\n    电子设备\n  预算\n  必去的地方",
+  "@mindMapTemplateTripOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTemplateGoalsOutline": "年度目标\n  健康\n  学习\n  工作\n  家人与朋友\n  兴趣\n  财务",
+  "@mindMapTemplateGoalsOutline": {
+    "description": "导图模板内容：缩进大纲，第一行是中心主题，每级缩进两个空格，翻译时保留缩进。"
+  },
+  "mindMapTopicCount": "{count} 个主题",
+  "@mindMapTopicCount": {
+    "description": "思维导图：一张导图里的主题数（卡片与预览页的说明行）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mindMapViewFull": "全屏查看",
+  "@mindMapViewFull": {
+    "description": "思维导图预览：全屏打开导图，可以平移缩放。"
+  },
+  "mindMapEditMap": "编辑导图",
+  "@mindMapEditMap": {
+    "description": "思维导图查看页 / 嵌入卡片：打开导图进行编辑。"
+  },
+  "mindMapUntitled": "未命名导图",
+  "@mindMapUntitled": {
+    "description": "中心主题没有文字的导图（查看页标题、卡片等）。"
+  },
+  "mindMapDiaryInfo": "日记信息",
+  "@mindMapDiaryInfo": {
+    "description": "导图日记编辑页菜单：打开日期、心情、标签与日记本等信息面板。"
+  },
+  "mindMapCanvasLabel": "思维导图画布",
+  "@mindMapCanvasLabel": {
+    "description": "思维导图画布的无障碍标签。"
+  },
+  "notebookRuleMediaMindMap": "有思维导图",
+  "@notebookRuleMediaMindMap": {
+    "description": "智能日记本 / 搜索筛选规则：本身是导图或含有导图的日记。"
+  },
+  "settingsFeaturesMindMaps": "思维导图",
+  "@settingsFeaturesMindMaps": {
+    "description": "功能管理页：思维导图的开关。"
+  },
+  "settingsFeaturesMindMapsSubtitle": "新建日记可以转成导图，正文里也能插入导图",
+  "@settingsFeaturesMindMapsSubtitle": {
+    "description": "功能管理页：思维导图开关的说明。"
   }
 }

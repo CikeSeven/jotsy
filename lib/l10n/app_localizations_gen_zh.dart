@@ -15829,4 +15829,248 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetSampleAnniversary2 => '妈妈生日';
+
+  @override
+  String get mindMapRootPlaceholder => '中心主题';
+
+  @override
+  String get mindMapNodePlaceholder => '主题';
+
+  @override
+  String get mindMapAddTopic => '添加主题';
+
+  @override
+  String get mindMapAddChild => '子主题';
+
+  @override
+  String get mindMapAddSibling => '同级主题';
+
+  @override
+  String get mindMapEditText => '编辑';
+
+  @override
+  String get mindMapCollapse => '收起';
+
+  @override
+  String get mindMapExpand => '展开';
+
+  @override
+  String get mindMapDelete => '删除';
+
+  @override
+  String get mindMapStyle => '样式';
+
+  @override
+  String get mindMapFit => '适应屏幕';
+
+  @override
+  String get mindMapZoomActual => '实际大小';
+
+  @override
+  String get mindMapZoomIn => '放大';
+
+  @override
+  String get mindMapZoomOut => '缩小';
+
+  @override
+  String get mindMapUndo => '撤销';
+
+  @override
+  String get mindMapRedo => '重做';
+
+  @override
+  String get mindMapNewLine => '换行';
+
+  @override
+  String get mindMapDone => '完成';
+
+  @override
+  String get mindMapStyleSheetTitle => '导图样式';
+
+  @override
+  String get mindMapStructureTitle => '结构';
+
+  @override
+  String get mindMapStructureMindMap => '思维导图';
+
+  @override
+  String get mindMapStructureLogicRight => '逻辑图';
+
+  @override
+  String get mindMapStructureLogicLeft => '左向逻辑图';
+
+  @override
+  String get mindMapStructureOrgDown => '组织结构图';
+
+  @override
+  String get mindMapStructureTreeRight => '树形目录';
+
+  @override
+  String get mindMapStructureTimeline => '时间线';
+
+  @override
+  String get mindMapStructureFishbone => '鱼骨图';
+
+  @override
+  String get mindMapThemeTitle => '配色主题';
+
+  @override
+  String get mindMapThemeFollow => '跟随应用';
+
+  @override
+  String get mindMapThemeRainbow => '彩虹';
+
+  @override
+  String get mindMapThemeOcean => '海盐';
+
+  @override
+  String get mindMapThemeForest => '森林';
+
+  @override
+  String get mindMapThemeSunset => '晚霞';
+
+  @override
+  String get mindMapThemeSakura => '樱花';
+
+  @override
+  String get mindMapThemeInk => '墨韵';
+
+  @override
+  String get mindMapThemePaper => '纸本';
+
+  @override
+  String get mindMapThemeNeon => '霓虹';
+
+  @override
+  String get mindMapThemeMacaron => '马卡龙';
+
+  @override
+  String get mindMapLineTitle => '连线';
+
+  @override
+  String get mindMapLineCurve => '曲线';
+
+  @override
+  String get mindMapLineStraight => '直线';
+
+  @override
+  String get mindMapLineElbow => '直角';
+
+  @override
+  String get mindMapLineRounded => '圆角';
+
+  @override
+  String get mindMapSpacingTitle => '间距';
+
+  @override
+  String get mindMapSpacingCompact => '紧凑';
+
+  @override
+  String get mindMapSpacingStandard => '标准';
+
+  @override
+  String get mindMapSpacingLoose => '宽松';
+
+  @override
+  String get mindMapRainbow => '彩虹分支';
+
+  @override
+  String get mindMapGrid => '点阵背景';
+
+  @override
+  String get mindMapCreateChip => '思维导图';
+
+  @override
+  String get mindMapCreateChipTooltip => '把这篇日记变成思维导图';
+
+  @override
+  String get mindMapStarterTitle => '从模板开始';
+
+  @override
+  String get mindMapConvertBack => '转回文字日记';
+
+  @override
+  String get mindMapTemplateBrainstorm => '头脑风暴';
+
+  @override
+  String get mindMapTemplateSwot => 'SWOT 分析';
+
+  @override
+  String get mindMapTemplateBook => '读书笔记';
+
+  @override
+  String get mindMapTemplateProject => '项目计划';
+
+  @override
+  String get mindMapTemplateWeek => '一周计划';
+
+  @override
+  String get mindMapTemplateDecision => '决策分析';
+
+  @override
+  String get mindMapTemplateTrip => '旅行清单';
+
+  @override
+  String get mindMapTemplateGoals => '年度目标';
+
+  @override
+  String get mindMapTemplateBrainstormOutline =>
+      '头脑风暴\n  问题是什么\n    背景\n    目标\n  可能的方案\n    方案 A\n    方案 B\n    方案 C\n  下一步\n    要验证的\n    需要的帮助';
+
+  @override
+  String get mindMapTemplateSwotOutline =>
+      'SWOT 分析\n  优势\n    擅长什么\n  劣势\n    需要改进什么\n  机会\n    外部的有利因素\n  威胁\n    外部的风险';
+
+  @override
+  String get mindMapTemplateBookOutline =>
+      '书名\n  作者与背景\n  核心观点\n    观点一\n    观点二\n  精彩摘录\n  我的思考\n  行动清单';
+
+  @override
+  String get mindMapTemplateProjectOutline =>
+      '项目名称\n  目标\n    要达成的结果\n    衡量标准\n  里程碑\n    第一阶段\n    第二阶段\n    第三阶段\n  资源\n    人员\n    预算\n  风险\n    可能的问题\n    应对办法';
+
+  @override
+  String get mindMapTemplateWeekOutline =>
+      '本周计划\n  周一\n  周二\n  周三\n  周四\n  周五\n  周末';
+
+  @override
+  String get mindMapTemplateDecisionOutline =>
+      '要做的决定\n  选项 A\n    好处\n    代价\n  选项 B\n    好处\n    代价\n  判断标准\n  最终选择';
+
+  @override
+  String get mindMapTemplateTripOutline =>
+      '旅行计划\n  行程\n    交通\n    住宿\n  行李\n    证件\n    衣物\n    电子设备\n  预算\n  必去的地方';
+
+  @override
+  String get mindMapTemplateGoalsOutline =>
+      '年度目标\n  健康\n  学习\n  工作\n  家人与朋友\n  兴趣\n  财务';
+
+  @override
+  String mindMapTopicCount(int count) {
+    return '$count 个主题';
+  }
+
+  @override
+  String get mindMapViewFull => '全屏查看';
+
+  @override
+  String get mindMapEditMap => '编辑导图';
+
+  @override
+  String get mindMapUntitled => '未命名导图';
+
+  @override
+  String get mindMapDiaryInfo => '日记信息';
+
+  @override
+  String get mindMapCanvasLabel => '思维导图画布';
+
+  @override
+  String get notebookRuleMediaMindMap => '有思维导图';
+
+  @override
+  String get settingsFeaturesMindMaps => '思维导图';
+
+  @override
+  String get settingsFeaturesMindMapsSubtitle => '新建日记可以转成导图，正文里也能插入导图';
 }

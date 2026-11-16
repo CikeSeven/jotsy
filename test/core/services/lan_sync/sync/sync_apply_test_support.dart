@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/lan_sync/sync/sync_media.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_media_index.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_plan.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_settings_fonts.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
 import 'sync_test_devices.dart';
@@ -15,16 +16,21 @@ import 'sync_test_devices.dart';
 /// 带前置条件的写入。
 
 class SyncApplyRig {
-  SyncApplyRig(this.device, {SettingsService? settings, Duration? undoWait})
-    : state = SyncLocalState(
-        database: device.db,
-        stateDir: device.stateDir,
-        settings: settings,
-      ),
-      index = SyncMediaIndex(
-        stateDir: device.stateDir,
-        dataRoot: device.dataRoot,
-      ) {
+  SyncApplyRig(
+    this.device, {
+    SettingsService? settings,
+    SyncFontFingerprints? fontFingerprints,
+    Duration? undoWait,
+  }) : state = SyncLocalState(
+         database: device.db,
+         stateDir: device.stateDir,
+         settings: settings,
+         fontFingerprints: fontFingerprints,
+       ),
+       index = SyncMediaIndex(
+         stateDir: device.stateDir,
+         dataRoot: device.dataRoot,
+       ) {
     media = SyncMediaLibrary(dataRoot: device.dataRoot, index: index);
     applier = SyncApplier(
       database: device.db,

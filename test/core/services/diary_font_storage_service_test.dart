@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_font_storage_service.dart';
 import 'package:path/path.dart' as p;
@@ -201,6 +203,83 @@ void main() {
 
     expect(family, DiaryFontStorageService.familyFor(font.id));
     expect(storage.loadFontFamily(font), completion(family));
+  });
+
+  test('content fingerprints match across devices and are saved to the '
+      'manifest', () async {
+    final bytes = buildTestFont(
+      names: <TestFontName>[
+        (platform: 3, encoding: 1, language: 0x0409, nameId: 1, value: 'Wen'),
+      ],
+    );
+    final expected = crypto.sha256.convert(bytes).toString();
+    final font = await storage.importFont(
+      await writeSource('wen.ttf', bytes),
+      languageCode: 'en',
+    );
+
+    // 另一台“设备”导入同一个文件：id 不同，指纹相同。
+    final otherBase = await Directory(p.join(root.path, 'other')).create();
+    final other = DiaryFontStorageService(baseDirectory: () async => otherBase);
+    final otherFont = await other.importFont(
+      await writeSource('copy.ttf', bytes),
+      languageCode: 'en',
+    );
+    expect(otherFont.id, isNot(font.id));
+
+    expect(await storage.contentFingerprints(), <String, String>{
+      font.id: expected,
+    });
+    expect(await other.contentFingerprints(), <String, String>{
+      otherFont.id: expected,
+    });
+    // 算过的指纹写回了清单，重启后直接读出、不再重算。
+    final manifest =
+        jsonDecode(
+              await File(
+                p.join(fontDirectory().path, 'fonts.json'),
+              ).readAsString(),
+            )
+            as List;
+    expect((manifest.single as Map)['sha256'], expected);
+    expect(
+      await DiaryFontStorageService(
+        baseDirectory: () async => base,
+      ).listFonts(),
+      <DiaryImportedFont>[font.withSha256(expected)],
+    );
+  });
+
+  test('fonts whose file is gone get no fingerprint; a malformed one is '
+      'recomputed', () async {
+    final bytes = buildTestFont();
+    final kept = await storage.importFont(
+      await writeSource('kept.ttf', bytes),
+      languageCode: 'en',
+    );
+    final gone = await storage.importFont(
+      await writeSource('gone.ttf', buildTestFont(version: 0x4F54544F)),
+      languageCode: 'en',
+    );
+    await File(p.join(fontDirectory().path, gone.fileName)).delete();
+    final manifestFile = File(p.join(fontDirectory().path, 'fonts.json'));
+    final entries = (jsonDecode(await manifestFile.readAsString()) as List)
+        .cast<Map<String, Object?>>();
+    await manifestFile.writeAsString(
+      jsonEncode(<Object?>[
+        for (final entry in entries)
+          entry['id'] == kept.id ? {...entry, 'sha256': 'NOT-A-HASH'} : entry,
+      ]),
+    );
+
+    expect(await storage.contentFingerprints(), <String, String>{
+      kept.id: crypto.sha256.convert(bytes).toString(),
+    });
+    // 缺文件的条目照旧留在清单里（文件可能只是暂时读不到），只是没有指纹。
+    final saved = (jsonDecode(await manifestFile.readAsString()) as List)
+        .cast<Map<String, Object?>>();
+    expect(saved.map((entry) => entry['id']), <String>[kept.id, gone.id]);
+    expect(saved.last.containsKey('sha256'), isFalse);
   });
 
   test('loading a font whose file is gone fails and can be retried', () async {

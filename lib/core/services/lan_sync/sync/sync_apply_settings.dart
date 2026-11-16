@@ -6,7 +6,7 @@ part of 'sync_apply.dart';
 /// - 部分节点由 [syncSettingsRestoreNode] / [syncPrefsRestoreNode] 生成
 ///   （`tagOrderNames` 按写入后的标签表换回本地 id，背景图引用还原为文件名
 ///   ——文件在写入前已就位；功能开关与本机此刻的开关合并成整份原文，数据类
-///   开关只打开不关闭）；
+///   开关只打开不关闭；导入字体的引用经 [fontIdsByRef] 换回本机字体 id）；
 /// - 经 [BackupSettings.restore] 应用，`clearLegacyDraft: false`：覆盖恢复会
 ///   顺带清掉没迁移的旧版单份草稿（只有读不出来的旧草稿才会一直留着），
 ///   同步只是应用设置变化，不能删掉本机用户的数据；
@@ -20,6 +20,7 @@ Future<bool> _applySyncSettings(
   SyncRecord record, {
   required Set<String> facets,
   required Map<String, int> tagIdsByName,
+  required Map<String, String> fontIdsByRef,
   required String dataRoot,
 }) async {
   final node = record.key.entity == SyncEntity.prefs
@@ -34,6 +35,7 @@ Future<bool> _applySyncSettings(
           facets: facets,
           dataRoot: dataRoot,
           localAppFeaturesRaw: settings.appFeaturesRaw,
+          fontIdsByRef: fontIdsByRef,
         );
   final snapshot = settings.captureBackupSnapshot();
   try {

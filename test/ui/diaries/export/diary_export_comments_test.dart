@@ -4,6 +4,7 @@ import 'dart:ui' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/rich_text/inline_rich_text.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_book.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_docx.dart';
@@ -307,6 +308,120 @@ void main() {
       expect(ascii.decode(withComments.sublist(0, 5)), '%PDF-');
       final without = await pdf(entry());
       expect(withComments.length, greaterThan(without.length));
+    });
+  });
+
+  group('formatted comments', () {
+    const content = '粗 网 本篇\n下一行';
+    final formatted = DiaryCommentRow(
+      id: 3,
+      commentId: 'c3',
+      diaryId: 'c',
+      content: content,
+      createdAt: DateTime(2026, 4, 4, 8),
+      delta: encodeDiaryCommentDelta(const <InlineTextRun>[
+        InlineTextRun('粗', InlineTextMarks(bold: true)),
+        InlineTextRun(' '),
+        InlineTextRun('网', InlineTextMarks(href: 'https://example.com')),
+        InlineTextRun(' '),
+        InlineTextRun('本篇', InlineTextMarks(href: 'jotsy://diary/other')),
+        InlineTextRun('\n下一行'),
+      ]),
+    );
+
+    test('labels split the lines and keep only web links', () {
+      final lines = testExportLabels.commentLines(formatted);
+      expect(lines, hasLength(2));
+      expect(lines.first.first.bold, isTrue);
+      expect(lines.first[2].link, 'https://example.com');
+      expect(lines.first[4].text, '本篇');
+      expect(lines.first[4].link, isNull);
+      expect(lines.last.single.text, '下一行');
+      // 没有格式的留言照旧写纯文字。
+      expect(testExportLabels.commentHasFormats(comments.first), isFalse);
+      expect(testExportLabels.commentHasFormats(formatted), isTrue);
+    });
+
+    test('Markdown and HTML write the formats, never jotsy links', () async {
+      final e = entry(withComments: <DiaryCommentRow>[formatted]);
+      final markdown = utf8.decode(
+        (await DiaryMarkdownWriter.write(
+          <DiaryExportEntry>[e],
+          options: DiaryExportOptions.defaults,
+          labels: testExportLabels,
+          media: DiaryExportMediaLibrary(),
+        )).bytes!,
+      );
+      expect(
+        markdown,
+        contains('  **粗** [网](https://example.com) 本篇\n\n  下一行\n'),
+      );
+      expect(markdown, isNot(contains('jotsy://')));
+
+      final html = utf8.decode(
+        (await DiaryHtmlWriter.write(
+          <DiaryExportEntry>[e],
+          options: DiaryExportOptions.defaults,
+          labels: testExportLabels,
+          media: DiaryExportMediaLibrary(),
+          documentTitle: 'Jotsy',
+          languageTag: 'zh',
+        )).bytes!,
+      );
+      expect(html, contains('href="https://example.com"'));
+      expect(html, contains('<strong>粗</strong>'));
+      expect(html, isNot(contains('jotsy://')));
+    });
+
+    test('Word and PDF write the formats and stay valid', () async {
+      final e = entry(withComments: <DiaryCommentRow>[formatted]);
+      final docx = await DiaryDocxWriter.write(
+        <DiaryExportEntry>[e],
+        options: DiaryExportOptions.defaults,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: 'Jotsy',
+        languageTag: 'zh-CN',
+        now: DateTime.utc(2026, 10, 28),
+      );
+      final xml = utf8.decode(
+        docx.files!.firstWhere((f) => f.path == 'word/document.xml').bytes!,
+      );
+      final document = XmlDocument.parse(xml);
+      expect(document.findAllElements('w:hyperlink'), hasLength(1));
+      expect(document.findAllElements('w:b'), isNotEmpty);
+      for (final file in docx.files!) {
+        expect(
+          utf8.decode(file.bytes!, allowMalformed: true),
+          isNot(contains('jotsy://')),
+        );
+      }
+
+      final fonts = await DiaryPdfFonts.load();
+      final pdf = (await DiaryPdfWriter.write(
+        <DiaryExportEntry>[e],
+        options: DiaryExportOptions.defaults,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        fonts: fonts,
+        documentTitle: 'Jotsy',
+      )).bytes!;
+      expect(ascii.decode(pdf.sublist(0, 5)), '%PDF-');
+      expect(latin1.decode(pdf), contains('https://example.com'));
+      expect(latin1.decode(pdf), isNot(contains('jotsy://')));
+    });
+
+    test('plain text keeps only the words', () {
+      final text = utf8.decode(
+        DiaryTextWriter.write(
+          <DiaryExportEntry>[
+            entry(withComments: <DiaryCommentRow>[formatted]),
+          ],
+          options: DiaryExportOptions.defaults,
+          labels: testExportLabels,
+        ).bytes!,
+      );
+      expect(text, endsWith('$content\n'));
     });
   });
 }

@@ -298,7 +298,13 @@ class DiaryPdfWriter {
       }
     }
     widgets.addAll(
-      buildDiaryPdfComments(entry, labels, images: commentImages, emoji: emoji),
+      buildDiaryPdfComments(
+        entry,
+        labels,
+        images: commentImages,
+        emoji: emoji,
+        effects: textEffects,
+      ),
     );
     return widgets;
   }

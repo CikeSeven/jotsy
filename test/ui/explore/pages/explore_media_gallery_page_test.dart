@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/explore/models/gallery_level.dart';
 import 'package:node_diary/ui/explore/pages/explore_media_gallery_page.dart';
 import 'package:node_diary/ui/explore/widgets/explore_shared_widgets.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
@@ -81,6 +82,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.byType(ExploreMediaThumb), findsNWidgets(3));
+        await _unmount(tester);
       },
     );
   }
@@ -112,16 +114,34 @@ void _registerFirstFrameTest() {
     await tester.pumpAndSettle();
     expect(find.byType(ExploreMediaThumb), findsNWidgets(3));
     expect(find.text(l10n.autoT0055), findsNothing);
+    await _unmount(tester);
   });
 }
 
 void _registerWideWindowTests() {
   test('gallery columns grow every 160 but never drop below three', () {
-    expect(ExploreMediaGalleryPage.galleryColumns(320), 3);
-    expect(ExploreMediaGalleryPage.galleryColumns(599), 3);
-    expect(ExploreMediaGalleryPage.galleryColumns(800), 5);
-    expect(ExploreMediaGalleryPage.galleryColumns(1280), 8);
+    expect(GalleryZoom.closeUp.columnsFor(320), 3);
+    expect(GalleryZoom.closeUp.columnsFor(599), 3);
+    expect(GalleryZoom.closeUp.columnsFor(800), 5);
+    expect(GalleryZoom.closeUp.columnsFor(1280), 8);
   });
+
+  test(
+    'every zoom level keeps its phone column count and grows with width',
+    () {
+      for (final zoom in GalleryZoom.values) {
+        expect(zoom.columnsFor(360), zoom.columns, reason: '$zoom');
+        expect(
+          zoom.columnsFor(1280),
+          greaterThan(zoom.columns),
+          reason: '$zoom',
+        );
+      }
+      expect(GalleryZoom.closeUp.zoomedIn, isNull);
+      expect(GalleryZoom.yearGrid.zoomedOut, isNull);
+      expect(GalleryZoom.closeUp.zoomedOut, GalleryZoom.dayGrid);
+    },
+  );
 
   for (final (width, columns) in <(double, int)>[(400, 3), (1280, 8)]) {
     testWidgets('a $width wide window lays the gallery out in $columns '
@@ -152,8 +172,15 @@ void _registerWideWindowTests() {
       final thumb = tester.getSize(find.byType(ExploreMediaThumb).first);
       expect(thumb.width, lessThanOrEqualTo(160));
       expect(tester.takeException(), isNull);
+      await _unmount(tester);
     });
   }
+}
+
+/// 页面订阅了日记本等 drift 流：卸载后再走一拍，让 drift 关流的计时器跑完。
+Future<void> _unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  await tester.pump(Duration.zero);
 }
 
 class _GalleryDatabase extends AppDatabase {
@@ -163,6 +190,10 @@ class _GalleryDatabase extends AppDatabase {
   Future<List<Diary>> getActiveDiariesPage({
     required int limit,
     required int offset,
+    DiaryListScope scope = DiaryListScope.all,
+    bool newestFirst = true,
+    DateTime? from,
+    DateTime? to,
   }) async => [
     createExploreTestDiary(
       cover: '/cover.jpg',

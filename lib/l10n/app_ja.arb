@@ -1231,6 +1231,66 @@
   "@autoT0054": {
     "description": "Auto-generated metadata for autoT0054."
   },
+  "exploreGalleryMenuTooltip": "絞り込みと並べ替え",
+  "@exploreGalleryMenuTooltip": {
+    "description": "Media gallery: tooltip of the top bar more menu (notebook, date range and sort)."
+  },
+  "exploreGalleryNotebookFilter": "日記帳の写真",
+  "@exploreGalleryNotebookFilter": {
+    "description": "Media gallery menu: submenu that limits photos to one notebook."
+  },
+  "exploreGalleryNotebookAll": "すべての日記の写真",
+  "@exploreGalleryNotebookAll": {
+    "description": "Media gallery notebook filter: show photos from all entries."
+  },
+  "exploreGalleryNotebookUnfiled": "未分類の日記の写真",
+  "@exploreGalleryNotebookUnfiled": {
+    "description": "Media gallery notebook filter: only photos from entries that are in no notebook."
+  },
+  "exploreGalleryTimeRange": "期間",
+  "@exploreGalleryTimeRange": {
+    "description": "Media gallery menu: submenu with an inline calendar to pick a date range."
+  },
+  "exploreGalleryTimeAllMonths": "すべて（{month}）",
+  "@exploreGalleryTimeAllMonths": {
+    "description": "Media gallery date picker: month chip when all twelve months are selected; month is the month currently shown.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "Nov"
+      }
+    }
+  },
+  "exploreGalleryTimeSpan": "{start}～{end}",
+  "@exploreGalleryTimeSpan": {
+    "description": "Media gallery date picker: a range of months or years in the header chips.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Mar"
+      },
+      "end": {
+        "type": "String",
+        "example": "Jun"
+      }
+    }
+  },
+  "exploreGalleryTimeClear": "クリア",
+  "@exploreGalleryTimeClear": {
+    "description": "Media gallery date picker: remove the applied date range."
+  },
+  "exploreGallerySort": "並べ替え",
+  "@exploreGallerySort": {
+    "description": "Media gallery menu: submenu to choose the date order."
+  },
+  "exploreGallerySortNewest": "新しい順",
+  "@exploreGallerySortNewest": {
+    "description": "Media gallery sort: newest entries first (default)."
+  },
+  "exploreGallerySortOldest": "古い順",
+  "@exploreGallerySortOldest": {
+    "description": "Media gallery sort: oldest entries first."
+  },
   "autoT0055": "表示できる画像はまだありません",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."

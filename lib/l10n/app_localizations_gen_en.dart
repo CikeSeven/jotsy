@@ -918,6 +918,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0054 => 'Media gallery';
 
   @override
+  String get exploreGalleryMenuTooltip => 'Filter and sort';
+
+  @override
+  String get exploreGalleryNotebookFilter => 'Notebook photos';
+
+  @override
+  String get exploreGalleryNotebookAll => 'Photos from all entries';
+
+  @override
+  String get exploreGalleryNotebookUnfiled =>
+      'Photos from entries not in a notebook';
+
+  @override
+  String get exploreGalleryTimeRange => 'Date range';
+
+  @override
+  String exploreGalleryTimeAllMonths(String month) {
+    return 'All ($month)';
+  }
+
+  @override
+  String exploreGalleryTimeSpan(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get exploreGalleryTimeClear => 'Clear';
+
+  @override
+  String get exploreGallerySort => 'Sort';
+
+  @override
+  String get exploreGallerySortNewest => 'Newest first';
+
+  @override
+  String get exploreGallerySortOldest => 'Oldest first';
+
+  @override
   String get autoT0055 => 'No images to show yet';
 
   @override

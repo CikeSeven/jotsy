@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/explore/controllers/explore_media_gallery_controller.dart';
+import 'package:node_diary/ui/explore/models/explore_media_gallery_filter.dart';
 
 import '../explore_test_fixtures.dart';
 
@@ -120,6 +121,44 @@ void main() {
     expect(controller.isLoading, isFalse);
   });
 
+  test(
+    'a new filter restarts from the top and drops the in-flight page',
+    () async {
+      final stale = Completer<List<Diary>>();
+      database.readPage = (_, _) => stale.future;
+      final staleLoad = controller.loadMore();
+
+      final fresh = Completer<List<Diary>>();
+      database.readPage = (_, _) => fresh.future;
+      const filter = ExploreMediaGalleryFilter(
+        scope: DiaryListScope.unfiled,
+        newestFirst: false,
+      );
+      controller.configure(filter);
+      expect(controller.filter, filter);
+      expect(controller.isLoading, isTrue);
+      expect(database.scopes.last, DiaryListScope.unfiled);
+      expect(database.newestFirst.last, isFalse);
+
+      stale.complete([createExploreTestDiary(cover: '/old.jpg')]);
+      await staleLoad;
+      expect(controller.items, isEmpty);
+      expect(controller.isLoading, isTrue);
+
+      fresh.complete([createExploreTestDiary(id: 2, cover: '/new.jpg')]);
+      await pumpEventQueue();
+      expect(controller.items.map((item) => item.source), ['/new.jpg']);
+      // 媒体带上所在日记的发表时间，页面据此分组。
+      expect(controller.items.single.date, DateTime(2026, 10, 13, 23, 58));
+      expect(controller.isLoading, isFalse);
+      expect(database.offsets, [0, 0]);
+
+      // 相同筛选不重查。
+      controller.configure(filter);
+      expect(database.offsets, [0, 0]);
+    },
+  );
+
   test('ignores an in-flight result after disposal', () async {
     final pending = Completer<List<Diary>>();
     database.readPage = (_, _) => pending.future;
@@ -144,14 +183,22 @@ class _GalleryDatabase extends AppDatabase {
   _GalleryDatabase() : super.forTesting(NativeDatabase.memory());
 
   final offsets = <int>[];
+  final scopes = <DiaryListScope>[];
+  final newestFirst = <bool>[];
   late Future<List<Diary>> Function(int limit, int offset) readPage;
 
   @override
   Future<List<Diary>> getActiveDiariesPage({
     required int limit,
     required int offset,
+    DiaryListScope scope = DiaryListScope.all,
+    bool newestFirst = true,
+    DateTime? from,
+    DateTime? to,
   }) {
     offsets.add(offset);
+    scopes.add(scope);
+    this.newestFirst.add(newestFirst);
     return readPage(limit, offset);
   }
 }

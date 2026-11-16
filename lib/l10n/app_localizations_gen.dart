@@ -1662,6 +1662,72 @@ abstract class AppLocalizations {
   /// **'Media gallery'**
   String get autoT0054;
 
+  /// Media gallery: tooltip of the top bar more menu (notebook, date range and sort).
+  ///
+  /// In en, this message translates to:
+  /// **'Filter and sort'**
+  String get exploreGalleryMenuTooltip;
+
+  /// Media gallery menu: submenu that limits photos to one notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook photos'**
+  String get exploreGalleryNotebookFilter;
+
+  /// Media gallery notebook filter: show photos from all entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from all entries'**
+  String get exploreGalleryNotebookAll;
+
+  /// Media gallery notebook filter: only photos from entries that are in no notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from entries not in a notebook'**
+  String get exploreGalleryNotebookUnfiled;
+
+  /// Media gallery menu: submenu with an inline calendar to pick a date range.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get exploreGalleryTimeRange;
+
+  /// Media gallery date picker: month chip when all twelve months are selected; month is the month currently shown.
+  ///
+  /// In en, this message translates to:
+  /// **'All ({month})'**
+  String exploreGalleryTimeAllMonths(String month);
+
+  /// Media gallery date picker: a range of months or years in the header chips.
+  ///
+  /// In en, this message translates to:
+  /// **'{start}–{end}'**
+  String exploreGalleryTimeSpan(String start, String end);
+
+  /// Media gallery date picker: remove the applied date range.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get exploreGalleryTimeClear;
+
+  /// Media gallery menu: submenu to choose the date order.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get exploreGallerySort;
+
+  /// Media gallery sort: newest entries first (default).
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get exploreGallerySortNewest;
+
+  /// Media gallery sort: oldest entries first.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get exploreGallerySortOldest;
+
   /// Auto-generated metadata for autoT0055.
   ///
   /// In en, this message translates to:

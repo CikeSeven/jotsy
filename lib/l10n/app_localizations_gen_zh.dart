@@ -879,6 +879,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0054 => '媒体画廊';
 
   @override
+  String get exploreGalleryMenuTooltip => '筛选与排序';
+
+  @override
+  String get exploreGalleryNotebookFilter => '日记本图片';
+
+  @override
+  String get exploreGalleryNotebookAll => '全部日记图片';
+
+  @override
+  String get exploreGalleryNotebookUnfiled => '未收录日记图片';
+
+  @override
+  String get exploreGalleryTimeRange => '时间选择';
+
+  @override
+  String exploreGalleryTimeAllMonths(String month) {
+    return '全部（$month）';
+  }
+
+  @override
+  String exploreGalleryTimeSpan(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get exploreGalleryTimeClear => '清除';
+
+  @override
+  String get exploreGallerySort => '排序';
+
+  @override
+  String get exploreGallerySortNewest => '最新在前';
+
+  @override
+  String get exploreGallerySortOldest => '最早在前';
+
+  @override
   String get autoT0055 => '还没有可展示的图片';
 
   @override

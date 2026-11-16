@@ -1231,6 +1231,66 @@
   "@autoT0054": {
     "description": "Auto-generated metadata for autoT0054."
   },
+  "exploreGalleryMenuTooltip": "Filter and sort",
+  "@exploreGalleryMenuTooltip": {
+    "description": "Media gallery: tooltip of the top bar more menu (notebook, date range and sort)."
+  },
+  "exploreGalleryNotebookFilter": "Notebook photos",
+  "@exploreGalleryNotebookFilter": {
+    "description": "Media gallery menu: submenu that limits photos to one notebook."
+  },
+  "exploreGalleryNotebookAll": "Photos from all entries",
+  "@exploreGalleryNotebookAll": {
+    "description": "Media gallery notebook filter: show photos from all entries."
+  },
+  "exploreGalleryNotebookUnfiled": "Photos from entries not in a notebook",
+  "@exploreGalleryNotebookUnfiled": {
+    "description": "Media gallery notebook filter: only photos from entries that are in no notebook."
+  },
+  "exploreGalleryTimeRange": "Date range",
+  "@exploreGalleryTimeRange": {
+    "description": "Media gallery menu: submenu with an inline calendar to pick a date range."
+  },
+  "exploreGalleryTimeAllMonths": "All ({month})",
+  "@exploreGalleryTimeAllMonths": {
+    "description": "Media gallery date picker: month chip when all twelve months are selected; month is the month currently shown.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "Nov"
+      }
+    }
+  },
+  "exploreGalleryTimeSpan": "{start}–{end}",
+  "@exploreGalleryTimeSpan": {
+    "description": "Media gallery date picker: a range of months or years in the header chips.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Mar"
+      },
+      "end": {
+        "type": "String",
+        "example": "Jun"
+      }
+    }
+  },
+  "exploreGalleryTimeClear": "Clear",
+  "@exploreGalleryTimeClear": {
+    "description": "Media gallery date picker: remove the applied date range."
+  },
+  "exploreGallerySort": "Sort",
+  "@exploreGallerySort": {
+    "description": "Media gallery menu: submenu to choose the date order."
+  },
+  "exploreGallerySortNewest": "Newest first",
+  "@exploreGallerySortNewest": {
+    "description": "Media gallery sort: newest entries first (default)."
+  },
+  "exploreGallerySortOldest": "Oldest first",
+  "@exploreGallerySortOldest": {
+    "description": "Media gallery sort: oldest entries first."
+  },
   "autoT0055": "No images to show yet",
   "@autoT0055": {
     "description": "Auto-generated metadata for autoT0055."

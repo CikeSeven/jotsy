@@ -888,6 +888,43 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autoT0054 => 'メディアギャラリー';
 
   @override
+  String get exploreGalleryMenuTooltip => '絞り込みと並べ替え';
+
+  @override
+  String get exploreGalleryNotebookFilter => '日記帳の写真';
+
+  @override
+  String get exploreGalleryNotebookAll => 'すべての日記の写真';
+
+  @override
+  String get exploreGalleryNotebookUnfiled => '未分類の日記の写真';
+
+  @override
+  String get exploreGalleryTimeRange => '期間';
+
+  @override
+  String exploreGalleryTimeAllMonths(String month) {
+    return 'すべて（$month）';
+  }
+
+  @override
+  String exploreGalleryTimeSpan(String start, String end) {
+    return '$start～$end';
+  }
+
+  @override
+  String get exploreGalleryTimeClear => 'クリア';
+
+  @override
+  String get exploreGallerySort => '並べ替え';
+
+  @override
+  String get exploreGallerySortNewest => '新しい順';
+
+  @override
+  String get exploreGallerySortOldest => '古い順';
+
+  @override
   String get autoT0055 => '表示できる画像はまだありません';
 
   @override

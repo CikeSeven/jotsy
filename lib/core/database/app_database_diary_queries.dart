@@ -115,28 +115,52 @@ ORDER BY d.updated_at DESC, d.id DESC
     ).watch().map(_mapExploreOverviewRows);
   }
 
-  /// 分页读取“未删除日记”候选集（含归档）。
+  /// 分页读取媒体画廊的候选日记（含归档，不含回收站、未解封的时间胶囊与
+  /// 私密日记），按发表时间排序。
   ///
-  /// 用于探索页媒体画廊按批提取图片来源，避免一次性加载全量日记导致
-  /// 首屏等待时间过长或内存抖动。私密日记的图片不进画廊。
+  /// 画廊按批提取图片来源，避免一次性加载全量日记导致首屏等待过长或内存
+  /// 抖动；画廊按发表日期分组，必须按发表时间分页，后来的一页才只会接在
+  /// 已有分组的末尾。[scope] 为“日记本图片”筛选（全部 / 未收录 / 某本，
+  /// 经 [_writeDiaryScopeFilter]，私密口径与首页列表一致）；[from] / [to]
+  /// 为发表时间范围（含两端），为 null 时不限；[newestFirst] 为 false 时
+  /// 从最早的一篇起。
   Future<List<Diary>> getActiveDiariesPage({
     required int limit,
     required int offset,
+    DiaryListScope scope = DiaryListScope.all,
+    bool newestFirst = true,
+    DateTime? from,
+    DateTime? to,
   }) {
-    final query = select(diaries)
-      ..where(
-        (tbl) =>
-            tbl.isDeleted.equals(false) &
-            (tbl.capsuleUnlockAt.isNull() |
-                tbl.capsuleUnlockAt.isSmallerOrEqualValue(DateTime.now())) &
-            CustomExpression<bool>(_privateDiaryExclusionSql('diaries.id')),
-      )
-      ..orderBy(<OrderingTerm Function(Diaries)>[
-        (tbl) => OrderingTerm.desc(tbl.updatedAt),
-        (tbl) => OrderingTerm.desc(tbl.id),
-      ])
-      ..limit(limit, offset: offset);
-    return query.get();
+    final variables = <Variable<Object>>[Variable<DateTime>(DateTime.now())];
+    final sql = StringBuffer()
+      ..writeln('SELECT d.* FROM diaries d')
+      ..write(_diaryScopeJoinSql(scope))
+      ..writeln('WHERE d.is_deleted = 0')
+      ..writeln(
+        '  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)',
+      );
+    _writeDiaryScopeFilter(sql, variables, scope);
+    if (from != null) {
+      sql.writeln('  AND d.created_at >= ?');
+      variables.add(Variable<DateTime>(from));
+    }
+    if (to != null) {
+      sql.writeln('  AND d.created_at <= ?');
+      variables.add(Variable<DateTime>(to));
+    }
+    final direction = newestFirst ? 'DESC' : 'ASC';
+    sql
+      ..writeln('ORDER BY d.created_at $direction, d.id $direction')
+      ..writeln('LIMIT ? OFFSET ?');
+    variables
+      ..add(Variable<int>(limit < 0 ? 0 : limit))
+      ..add(Variable<int>(offset < 0 ? 0 : offset));
+    return customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries]),
+    ).get().then((rows) => rows.map(_mapDiaryFromRow).toList(growable: false));
   }
 
   /// 监听已归档日记列表（仅归档且未删除，不含私密日记）。

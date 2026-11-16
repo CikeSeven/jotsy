@@ -1,14 +1,19 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
+import '../models/explore_media_gallery_filter.dart';
 import '../models/explore_view_data.dart';
 import 'explore_content_extractor.dart';
 
 /// 将分页日记转换为去重后的媒体列表，向页面提供加载、结束与错误状态。
 ///
-/// 数据库只读；每轮成功后一起提交游标和媒体，失败可从原位置重试。
+/// 数据库只读；按发表时间分页（画廊按发表日期分组，见
+/// `AppDatabase.getActiveDiariesPage`），每轮成功后一起提交游标和媒体，失败
+/// 可从原位置重试。[configure] 换筛选时清空已有媒体、从头加载：在途的旧
+/// 一轮按代号 [generation] 丢弃，不会把旧筛选的结果接到新列表后面。
 /// dispose 后忽略在途结果，避免离开页面后继续查询或通知已销毁的监听者。
 class ExploreMediaGalleryController extends ChangeNotifier {
   ExploreMediaGalleryController({required this._database});
@@ -23,20 +28,47 @@ class ExploreMediaGalleryController extends ChangeNotifier {
   final Set<String> _seenSources = <String>{};
 
   late final List<ExploreMediaItem> items = UnmodifiableListView(_mediaItems);
+  ExploreMediaGalleryFilter _filter = const ExploreMediaGalleryFilter();
+  int _generation = 0;
   int _nextOffset = 0;
   bool _isLoading = false;
   bool _hasMore = true;
   bool _hasError = false;
   bool _disposed = false;
 
+  ExploreMediaGalleryFilter get filter => _filter;
+
+  /// 每换一次筛选加一：页面据此丢掉按旧列表算的分组缓存。
+  int get generation => _generation;
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
   bool get hasError => _hasError;
+
+  /// 换成 [filter] 并从头加载；与当前筛选相同时什么也不做。
+  void configure(ExploreMediaGalleryFilter filter) {
+    if (_disposed || filter == _filter) {
+      return;
+    }
+    _filter = filter;
+    _generation += 1;
+    _mediaItems.clear();
+    _seenSources.clear();
+    _nextOffset = 0;
+    _hasMore = true;
+    _hasError = false;
+    // 在途的旧一轮回来时代号已变、直接丢弃，这里先放行新的一轮。
+    _isLoading = false;
+    notifyListeners();
+    unawaited(loadMore());
+  }
 
   Future<void> loadMore() async {
     if (_disposed || _isLoading || !_hasMore) {
       return;
     }
+    final generation = _generation;
+    final filter = _filter;
+    bool stale() => _disposed || generation != _generation;
     _isLoading = true;
     _hasError = false;
     notifyListeners();
@@ -48,7 +80,7 @@ class ExploreMediaGalleryController extends ChangeNotifier {
       var localHasMore = _hasMore;
       var rounds = 0;
 
-      while (!_disposed &&
+      while (!stale() &&
           appended.length < _targetMediaAppendCount &&
           localHasMore &&
           rounds < _maxBatchRoundsPerLoad) {
@@ -56,8 +88,12 @@ class ExploreMediaGalleryController extends ChangeNotifier {
         final diaries = await _database.getActiveDiariesPage(
           limit: _candidateBatchSize,
           offset: localOffset,
+          scope: filter.scope,
+          newestFirst: filter.newestFirst,
+          from: filter.from,
+          to: filter.to,
         );
-        if (_disposed) {
+        if (stale()) {
           return;
         }
         localOffset += diaries.length;
@@ -71,13 +107,17 @@ class ExploreMediaGalleryController extends ChangeNotifier {
               continue;
             }
             appended.add(
-              ExploreMediaItem(source: source, diaryId: diary.diaryId),
+              ExploreMediaItem(
+                source: source,
+                diaryId: diary.diaryId,
+                date: diary.createdAt,
+              ),
             );
           }
         }
       }
 
-      if (_disposed) {
+      if (stale()) {
         return;
       }
       _hasMore = localHasMore;
@@ -85,7 +125,7 @@ class ExploreMediaGalleryController extends ChangeNotifier {
       _mediaItems.addAll(appended);
       _seenSources.addAll(localSources);
     } catch (_) {
-      if (_disposed) {
+      if (stale()) {
         return;
       }
       _hasError = true;

@@ -944,6 +944,43 @@ class AppLocalizationsRu extends AppLocalizations {
   String get autoT0054 => 'Галерея медиафайлов';
 
   @override
+  String get exploreGalleryMenuTooltip => 'Фильтр и сортировка';
+
+  @override
+  String get exploreGalleryNotebookFilter => 'Фото из блокнотов';
+
+  @override
+  String get exploreGalleryNotebookAll => 'Фото из всех записей';
+
+  @override
+  String get exploreGalleryNotebookUnfiled => 'Фото из записей без блокнота';
+
+  @override
+  String get exploreGalleryTimeRange => 'Период';
+
+  @override
+  String exploreGalleryTimeAllMonths(String month) {
+    return 'Все ($month)';
+  }
+
+  @override
+  String exploreGalleryTimeSpan(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get exploreGalleryTimeClear => 'Сбросить';
+
+  @override
+  String get exploreGallerySort => 'Сортировка';
+
+  @override
+  String get exploreGallerySortNewest => 'Сначала новые';
+
+  @override
+  String get exploreGallerySortOldest => 'Сначала старые';
+
+  @override
   String get autoT0055 => 'Изображений пока нет';
 
   @override

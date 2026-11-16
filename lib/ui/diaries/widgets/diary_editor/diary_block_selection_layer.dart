@@ -3,7 +3,12 @@ import 'dart:math' as math;
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/gestures.dart'
-    show DragStartBehavior, kLongPressTimeout, kTouchSlop;
+    show
+        DragStartBehavior,
+        PointerDeviceKind,
+        kLongPressTimeout,
+        kPrimaryMouseButton,
+        kTouchSlop;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -26,10 +31,13 @@ import 'diary_editor_visible_range.dart';
 /// - 绘制选中块的色块（[DiaryBlockSelectionPainter]，文字块衬在正文下、
 ///   自带底色的块盖在正文上），逐块淡入淡出（`fast`）；退出后色块淡出完
 ///   才撤掉绘制；
-/// - 左侧页边距那一列（页边距 + 4dp，不画任何东西）的手势：点按切换；竖向
+/// - 左侧页边距那一列（手机为页边距 + 4dp；桌面只到正文左缘，不伸进文字，
+///   见 [_onDesktopMouseDown]；不画任何东西）的手势：点按切换；竖向
 ///   滑动连选 / 连续取消（以起点那块的新状态为准，以开始滑动时的选择为底
 ///   逐帧重算，滑回去的块恢复原状），到看得见的范围边缘自动滚动；长按拖动
 ///   整组。这一列吃掉竖向拖动，从页边距起手不滚动页面；
+/// - 桌面上鼠标在正文上按下：普通按下退出模式、交还上游放光标或拖选，
+///   Ctrl / ⌘ 按下切换、Shift 按下连选（[_onDesktopMouseDown]，#293）；
 /// - 自己取得焦点，接实体键盘的 Esc（退出、键盘不弹）/ Enter（完成）/
 ///   Delete / Backspace（删除）/ Ctrl·⌘ + A / C / X / D（全选 / 复制 /
 ///   剪切 / 创建副本）/ Alt + Shift + ↑ / ↓（移动）；焦点交给别的输入框
@@ -446,10 +454,44 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
     });
   }
 
-  // ---- 点在正文下方的空白处 ----
+  // ---- 点在正文下方的空白处、桌面上鼠标点正文 ----
 
-  void _onPointerDown(PointerDownEvent event) =>
-      _down = (event.pointer, event.position, event.timeStamp);
+  void _onPointerDown(PointerDownEvent event) {
+    _down = (event.pointer, event.position, event.timeStamp);
+    // 页边距那一列（更深，先收到这次按下并记下指针）照旧由它自己处理。
+    if (event.pointer != _pointer) _onDesktopMouseDown(event);
+  }
+
+  /// 桌面上用鼠标左键在正文上按下（#293）。手机式的“点哪块切换哪块”放在
+  /// 桌面上，误入模式（点到行首的把手）后点正文只会染色、怎么也放不下光标，
+  /// 像正文卡死了一样；桌面编辑器里选中整块后点进文字就是回去打字。所以：
+  /// - 普通按下：以“别处接手”退出模式，这次按下照常交给上游——点按放光标、
+  ///   拖动选字、双击选词。在按下时就退出：上游的点按回调最早在按下后
+  ///   100ms（或抬起时）才到，拖选的起点也要等越过拖动阈值，都在模式之外。
+  /// - Ctrl / ⌘ 按下：切换按下的那一块；Shift 按下：从上次点的块连选到
+  ///   这里。上游这次写下的选区仍由编辑控制器挡掉。
+  /// 块上的识别器在桌面上不收鼠标（见 [DiaryBlockSelectTarget]）。触摸屏与
+  /// 手写笔照手机的规则。
+  void _onDesktopMouseDown(PointerDownEvent event) {
+    if (!AppPlatform.isDesktop ||
+        event.kind != PointerDeviceKind.mouse ||
+        event.buttons & kPrimaryMouseButton == 0 ||
+        !_selection.isActive) {
+      return;
+    }
+    final keys = HardwareKeyboard.instance;
+    if (keys.isShiftPressed || keys.isControlPressed || keys.isMetaPressed) {
+      final unit = _unitAt(event.position.dy);
+      if (unit == null) return;
+      if (keys.isShiftPressed) {
+        _selection.selectRange(unit);
+      } else {
+        _selection.toggle(unit);
+      }
+      return;
+    }
+    _selection.exit(DiaryBlockSelectionExit.release);
+  }
 
   /// 只旁听指针、不参与手势竞争：点按（没挪动、没到长按）落在最后一块
   /// 下方的空白处（页尾里不属于正文的内容除外）时完成，回到打字。
@@ -660,7 +702,9 @@ class _DiaryBlockSelectionLayerState extends State<DiaryBlockSelectionLayer>
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    width: widget.contentLeft + 4,
+                    // 手机多给手指 4dp；桌面的鼠标点在文字左缘是要回去
+                    // 打字（#293），这一列不伸进正文。
+                    width: widget.contentLeft + (AppPlatform.isDesktop ? 0 : 4),
                     child: Listener(
                       onPointerDown: (event) => _pointer = event.pointer,
                       child: GestureDetector(

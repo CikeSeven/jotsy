@@ -97,30 +97,40 @@ void main() {
         'Trip\n'
         '  Packing\n'
         '    Passport\n'
+        '      Visa\n'
         '    Charger\n'
-        '    Tickets\n'
-        '    Snacks\n'
         '  Route\n'
-        '  Budget',
+        '    Day 1\n'
+        '    Day 2\n'
+        '  Budget\n'
+        '    Hotel\n'
+        '    Food\n'
+        '  Photos\n'
+        '    Camera',
       ),
     );
 
     expect(find.byType(MindMapThumbnail), findsNothing);
     expect(find.byType(MindMapCardOutline), findsOneWidget);
-    // 默认列表样式摘要 2 行 → 大纲 6 行：先放满一级主题，再按先序放子主题，
-    // 放不下的（Snacks）不出现。
+    // 默认列表样式摘要 2 行 → 大纲 10 行：按大纲顺序展示到二级，三级（Visa）
+    // 不出现，行数用完后面的分支截断（Camera）。
     expect(find.text('Trip'), findsOneWidget);
     for (final topic in <String>[
       'Packing',
       'Passport',
       'Charger',
-      'Tickets',
       'Route',
+      'Day 1',
+      'Day 2',
       'Budget',
+      'Hotel',
+      'Food',
+      'Photos',
     ]) {
       expect(find.text(topic), findsOneWidget);
     }
-    expect(find.text('Snacks'), findsNothing);
+    expect(find.text('Visa'), findsNothing);
+    expect(find.text('Camera'), findsNothing);
     // 子主题缩进在一级主题的文字起点上。
     final packing = tester.getTopLeft(find.text('Packing'));
     final passport = tester.getTopLeft(find.text('Passport'));

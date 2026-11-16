@@ -8,11 +8,11 @@ import '../../../l10n/app_localizations.dart';
 ///
 /// 和文字日记的摘要一样直接排在卡片上，不加底色与描边：每行一个主题（一行
 /// 截断），按层级缩进一个项目符号的宽度，下一级的符号正好对齐上一级的文字；
-/// 一级主题是强调色实心圆点、文字稍粗（w500），更深的是摘要色空心小圆。颜色都取
-/// 卡片样式算好的值（[textStyle] 为带颜色的摘要文字样式，[accentColor] 为
-/// 卡片的强调色），自定义卡片颜色、反色与玻璃下都与卡片协调。没写字的主题
-/// 显示淡色的占位文字（同画布）。[centered] 时整块大纲居中，行仍靠起始边
-/// 对齐，缩进不乱。
+/// 一级主题是强调色实心圆点、文字稍粗（w500），二级是摘要色空心小圆。
+/// 颜色都取卡片样式算好的值（[textStyle] 为带颜色的摘要文字样式，
+/// [accentColor] 为卡片的强调色），自定义卡片颜色、反色与玻璃下都与卡片
+/// 协调。没写字的主题显示淡色的占位文字（同画布）。[centered] 时整块大纲
+/// 居中，行仍靠起始边对齐，缩进不乱。
 class MindMapCardOutline extends StatelessWidget {
   const MindMapCardOutline({
     super.key,
@@ -22,12 +22,12 @@ class MindMapCardOutline extends StatelessWidget {
     this.centered = false,
   });
 
-  /// 卡片上大纲的行数：一行只放得下一个主题，比文字摘要多四行才看得出
-  /// 层级（与改版前缩略图的高度相当），列表与瀑布流的默认样式都是 6 行，
-  /// 随卡片样式的摘要行数增减，夹在 3–10。瀑布流（[compact]）默认摘要行数
-  /// 本来就多一行，只多加三行。
+  /// 卡片上大纲的行数：一行只放得下一个主题，要放得下一级和二级主题，
+  /// 比文字摘要多八行，列表默认 10 行；随卡片样式的摘要行数增减，夹在
+  /// 4–14。瀑布流（[compact]）默认摘要行数本来就多一行、列又窄，多加六行
+  /// （默认 9 行）。
   static int lineBudget(int previewMaxLines, {required bool compact}) =>
-      (previewMaxLines + (compact ? 3 : 4)).clamp(3, 10);
+      (previewMaxLines + (compact ? 6 : 8)).clamp(4, 14);
 
   final List<MindMapOutlineLine> lines;
   final TextStyle? textStyle;

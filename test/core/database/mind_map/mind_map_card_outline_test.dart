@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
 
-/// 日记卡片上的导图大纲：从一级主题排起，按层挑选、按先序排出，收起的
-/// 主题不展开，行数与深度有上限。
+/// 日记卡片上的导图大纲：从一级主题排起，按大纲顺序展示到二级，行数用完
+/// 截断，不看画布上的收起状态。
 void main() {
   MindMapDocument map(String outline) =>
       MindMapDocument.blank().copyWith(root: mindMapNodeFromOutline(outline)!);
@@ -23,69 +23,60 @@ void main() {
     '  Wed',
   );
 
-  test('with room for everything the outline lists every topic below the '
-      'central one in order', () {
+  test('the outline lists first- and second-level topics in outline order, '
+      'leaving out deeper ones', () {
     expect(rows(mindMapCardOutline(week, maxLines: 20)), <String>[
+      'Mon',
+      '  Gym',
+      '  Read',
+      'Tue',
+      '  Swim',
+      'Wed',
+    ]);
+  });
+
+  test('many top-level topics still show their sub-topics; running out of '
+      'lines cuts the later branches', () {
+    final busy = map(
+      'Plan\n'
+      '  A\n    a1\n    a2\n'
+      '  B\n    b1\n'
+      '  C\n    c1\n'
+      '  D\n  E\n  F\n  G',
+    );
+    expect(rows(mindMapCardOutline(busy, maxLines: 6)), <String>[
+      'A',
+      '  a1',
+      '  a2',
+      'B',
+      '  b1',
+      'C',
+    ]);
+  });
+
+  test('a deeper limit can be asked for', () {
+    expect(rows(mindMapCardOutline(week, maxLines: 4, maxDepth: 3)), <String>[
       'Mon',
       '  Gym',
       '    Legs',
       '  Read',
-      'Tue',
-      '  Swim',
-      'Wed',
     ]);
   });
 
-  test('few lines keep every top-level topic first, then fill sub-topics '
-      'from the first branch on', () {
-    expect(rows(mindMapCardOutline(week, maxLines: 3)), <String>[
-      'Mon',
-      'Tue',
-      'Wed',
-    ]);
-    expect(rows(mindMapCardOutline(week, maxLines: 5)), <String>[
-      'Mon',
-      '  Gym',
-      '  Read',
-      'Tue',
-      'Wed',
-    ]);
-    expect(rows(mindMapCardOutline(week, maxLines: 2)), <String>['Mon', 'Tue']);
-  });
-
-  test('topics deeper than the depth limit are left out', () {
-    expect(rows(mindMapCardOutline(week, maxLines: 20, maxDepth: 2)), <String>[
-      'Mon',
-      '  Gym',
-      '  Read',
-      'Tue',
-      '  Swim',
-      'Wed',
-    ]);
-  });
-
-  test('a collapsed topic keeps its sub-topics folded away; a collapsed '
-      'central topic still lists its top-level topics', () {
-    final mon = week.root.children.first;
+  test('topics collapsed on the canvas still list their sub-topics', () {
     final folded = week.copyWith(
       root: week.root.copyWith(
+        collapsed: true,
         children: <MindMapNode>[
-          mon.copyWith(collapsed: true),
+          week.root.children.first.copyWith(collapsed: true),
           ...week.root.children.skip(1),
         ],
       ),
     );
-    expect(rows(mindMapCardOutline(folded, maxLines: 20)), <String>[
+    expect(rows(mindMapCardOutline(folded, maxLines: 3)), <String>[
       'Mon',
-      'Tue',
-      '  Swim',
-      'Wed',
-    ]);
-    final rootFolded = week.copyWith(root: week.root.copyWith(collapsed: true));
-    expect(rows(mindMapCardOutline(rootFolded, maxLines: 3)), <String>[
-      'Mon',
-      'Tue',
-      'Wed',
+      '  Gym',
+      '  Read',
     ]);
   });
 
@@ -109,5 +100,6 @@ void main() {
       mindMapCardOutline(MindMapDocument.blank(text: 'Solo'), maxLines: 4),
       isEmpty,
     );
+    expect(mindMapCardOutline(week, maxLines: 0), isEmpty);
   });
 }

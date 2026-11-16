@@ -123,7 +123,11 @@ class _HomePageController {
         return;
       }
       final index = _state._currentIndex;
-      if (pageController.page != index.toDouble()) {
+      // 切页弹簧还在跑时也要跳一次：correctPixels 刚把页码放到新下标，帧后
+      // 页码看着已经对了，但弹簧瞄的仍是作废的折叠显示序里的终点（如日记 →
+      // 探索折叠时探索排在第 1 页，关掉待办后它在规范序里是第 2 页），下一帧
+      // 会把页面拖到别的 Tab 上。跳页会结束这段弹簧。
+      if (_pageSpring.isRunning || pageController.page != index.toDouble()) {
         pageController.jumpToPage(index);
       }
     });

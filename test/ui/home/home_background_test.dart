@@ -226,12 +226,12 @@ void main() {
     final surface = _scheme(tester).surface;
 
     final gesture = await _dragToThreeTenths(tester);
-    // 日记居中，左滑去探索：两页各自连同自己区域的背景缩成卡片——日记卡片
-    // 垫着日记的颜色，探索卡片垫着探索的页面底色。
+    // 日记在最左，左滑去日历：两页各自连同自己区域的背景缩成卡片——日记卡片
+    // 垫着日记的颜色，日历卡片垫着日历的页面底色。
     expect(_cardBackgroundColors(tester, AppBackgroundArea.diaries), <Color>[
       _diariesColor,
     ]);
-    expect(_cardBackgroundColors(tester, AppBackgroundArea.explore), <Color>[
+    expect(_cardBackgroundColors(tester, AppBackgroundArea.calendar), <Color>[
       surface,
     ]);
     // 背景层被卡片与舞台色整个盖住：只垫下面那一层，不再做透明度插值。
@@ -258,7 +258,7 @@ void main() {
     // 减少动画没有景深：页面透明地平移，背景固定在下面按页位置插值。
     final blend = _blendLayers(tester).single;
     expect(blend.opacity, inExclusiveRange(0.05, 0.6));
-    // 下层是日记的颜色（不透明），上层是探索的页面底色。
+    // 下层是日记的颜色（不透明），上层是日历的页面底色。
     expect(_backgroundColors(tester), <Color>[_diariesColor, surface]);
     expect(find.byType(AppPagedAreaBackground), findsNothing);
 

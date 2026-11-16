@@ -72,7 +72,7 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
   static const double _fabEnd = 20;
   static const double _topBarHeight = 56;
 
-  /// 预览栏里的项目：全部 Tab，按首页底栏的顺序（日记在中间）。
+  /// 预览栏里的项目：全部 Tab，按首页底栏的固定顺序（日记在最左）。
   static final List<HomeTab> _tabs = allHomeTabsInBarOrder;
 
   /// 初始选中日记：画框里画的就是日记页。

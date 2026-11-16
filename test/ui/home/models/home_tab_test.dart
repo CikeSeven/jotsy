@@ -3,36 +3,33 @@ import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/ui/home/models/home_tab.dart';
 
 void main() {
-  group('visibleHomeTabs puts diaries in the middle', () {
-    test('default three tabs centre diaries between calendar and explore', () {
-      expect(visibleHomeTabs(const AppFeatures()), <HomeTab>[
-        HomeTab.calendar,
-        HomeTab.diaries,
-        HomeTab.explore,
-      ]);
-    });
-
-    test('four tabs put calendar first, diaries second, to-dos third', () {
+  group('visibleHomeTabs keeps a fixed order', () {
+    test('all four tabs read diaries, to-dos, calendar, explore', () {
       expect(visibleHomeTabs(const AppFeatures(todos: true)), <HomeTab>[
-        HomeTab.calendar,
         HomeTab.diaries,
         HomeTab.todos,
+        HomeTab.calendar,
         HomeTab.explore,
       ]);
     });
 
-    test('any three tabs keep the others in their relative order', () {
+    test('the default three tabs drop to-dos without moving the rest', () {
+      expect(visibleHomeTabs(const AppFeatures()), <HomeTab>[
+        HomeTab.diaries,
+        HomeTab.calendar,
+        HomeTab.explore,
+      ]);
+    });
+
+    test('turning a tab off removes it and keeps diaries first', () {
       expect(
         visibleHomeTabs(const AppFeatures(todos: true, explore: false)),
-        <HomeTab>[HomeTab.calendar, HomeTab.diaries, HomeTab.todos],
+        <HomeTab>[HomeTab.diaries, HomeTab.todos, HomeTab.calendar],
       );
       expect(
         visibleHomeTabs(const AppFeatures(todos: true, calendar: false)),
-        <HomeTab>[HomeTab.todos, HomeTab.diaries, HomeTab.explore],
+        <HomeTab>[HomeTab.diaries, HomeTab.todos, HomeTab.explore],
       );
-    });
-
-    test('two tabs keep diaries on the left', () {
       expect(visibleHomeTabs(const AppFeatures(explore: false)), <HomeTab>[
         HomeTab.diaries,
         HomeTab.calendar,

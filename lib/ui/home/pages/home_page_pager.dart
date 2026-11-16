@@ -179,12 +179,27 @@ extension _HomePagePager on _HomePageState {
     }
   }
 
-  /// [displayIndex] 为 PageView 报来的显示下标，换算成 [_tabs] 中的下标。
-  void _handlePageChanged(int displayIndex) {
+  /// 按 PageView 自己的滚动更新换算当前页（代替 `onPageChanged`）。
+  ///
+  /// `onPageChanged` 只在四舍五入的页码与 PageView 上次报告的不同时才报，
+  /// 而换序与 Tab 集合变化都经 `correctPixels` 平移页码、不发通知，PageView
+  /// 记着的“上次报告的页”随之过期：例如日记 → 探索折叠途中关掉待办，折叠序
+  /// 里报过第 1 页，校正后停在规范序的第 2 页，再拖回第 1 页（日历）就不会
+  /// 报告，底栏高亮停在探索。这里改为与自己的 [_currentIndex] 比较，不依赖
+  /// PageView 的缓存。只看本层（depth 0），页内的纵向列表不算。
+  bool _handlePagerScroll(ScrollUpdateNotification notification) {
+    if (notification.depth != 0) return false;
+    final metrics = notification.metrics;
+    final page = metrics is PageMetrics ? metrics.page : null;
+    if (page == null || !page.isFinite) return false;
+    final displayIndex = page.round();
     if (displayIndex < 0 || displayIndex >= _pageOrder.length) {
-      return;
+      return false;
     }
     final index = _pageOrder.barIndexOfDisplay(displayIndex);
+    if (index == _currentIndex && (_isTabSwitching || index == _targetIndex)) {
+      return false;
+    }
     _barScrollHider.reset();
     _setPagerState(() {
       _currentIndex = index;
@@ -193,6 +208,7 @@ extension _HomePagePager on _HomePageState {
       }
       _barHiddenByScroll = false;
     });
+    return false;
   }
 
   Widget _buildPageView() {
@@ -211,45 +227,47 @@ extension _HomePagePager on _HomePageState {
         final stage = depth ? ExpressiveSurfaces.tabStage(scheme) : null;
         return Listener(
           onPointerDown: _handlePagerPointerDown,
-          child: PageView.custom(
-            controller: _controller.pageController,
-            // 宽窗口不能左右滑动切页（鼠标拖动与触控板横滑都不切），只经
-            // 侧边栏与快捷键切换。跨页折叠途中显示序不是底栏顺序，此时拖动
-            // 会滑到底栏上不相邻的页，同样不接受拖动；其余时候弹簧途中可以
-            // 用手指接住。
-            physics: _wide || !_pageOrder.isCanonical
-                ? const NeverScrollableScrollPhysics()
-                : const HomeTabPagePhysics(),
-            // 缓存区覆盖全部 Tab：每页一直留在 PageView 的子列表里。默认的
-            // 保活会在页面移出视口时把它挪进保活桶、移回时再取出，两次都
-            // 对整棵页面子树 detach + attach，真机上起步与落位各卡 8–16ms。
-            // 缓存区里的页照常排版，但不在视口内就不画、不接点按；语义由
-            // 下面的 ExcludeSemantics 排除，读屏不会顺着隐式滚动进到别的
-            // Tab。
-            allowImplicitScrolling: true,
-            scrollCacheExtent: ScrollCacheExtent.viewport(
-              math.max(1, order.length - 1).toDouble(),
+          child: NotificationListener<ScrollUpdateNotification>(
+            onNotification: _handlePagerScroll,
+            child: PageView.custom(
+              controller: _controller.pageController,
+              // 宽窗口不能左右滑动切页（鼠标拖动与触控板横滑都不切），只经
+              // 侧边栏与快捷键切换。跨页折叠途中显示序不是底栏顺序，此时拖动
+              // 会滑到底栏上不相邻的页，同样不接受拖动；其余时候弹簧途中可以
+              // 用手指接住。
+              physics: _wide || !_pageOrder.isCanonical
+                  ? const NeverScrollableScrollPhysics()
+                  : const HomeTabPagePhysics(),
+              // 缓存区覆盖全部 Tab：每页一直留在 PageView 的子列表里。默认的
+              // 保活会在页面移出视口时把它挪进保活桶、移回时再取出，两次都
+              // 对整棵页面子树 detach + attach，真机上起步与落位各卡 8–16ms。
+              // 缓存区里的页照常排版，但不在视口内就不画、不接点按；语义由
+              // 下面的 ExcludeSemantics 排除，读屏不会顺着隐式滚动进到别的
+              // Tab。
+              allowImplicitScrolling: true,
+              scrollCacheExtent: ScrollCacheExtent.viewport(
+                math.max(1, order.length - 1).toDouble(),
+              ),
+              // 子页不另包重绘边界（PageView 默认每页一个）：页面本身在
+              // HomeTabDepth 里有自己的边界，这一层只会让 HomeTabDepth 单独
+              // 重绘。重绘按深度从深到浅进行，单独重绘时 sliver 还没把这一页的
+              // 图层挪到当帧位置，拍快照时内容玻璃的取样（跟随背景层的
+              // FollowerLayer）就按上一帧的位置对齐，落位后与实时画面错开。
+              // 不加这层时 HomeTabDepth 随视口一起重绘，拿到的是当帧位置。
+              childrenDelegate: SliverChildListDelegate(<Widget>[
+                for (var index = 0; index < order.length; index++)
+                  _buildTabSlot(
+                    tab: order[index],
+                    index: index,
+                    shown: visible.contains(index),
+                    depth: depth,
+                    hold: hold,
+                    stage: stage,
+                    scrim: scheme.scrim,
+                    paintsBackground: paintsBackground,
+                  ),
+              ], addRepaintBoundaries: false),
             ),
-            onPageChanged: _handlePageChanged,
-            // 子页不另包重绘边界（PageView 默认每页一个）：页面本身在
-            // HomeTabDepth 里有自己的边界，这一层只会让 HomeTabDepth 单独
-            // 重绘。重绘按深度从深到浅进行，单独重绘时 sliver 还没把这一页的
-            // 图层挪到当帧位置，拍快照时内容玻璃的取样（跟随背景层的
-            // FollowerLayer）就按上一帧的位置对齐，落位后与实时画面错开。
-            // 不加这层时 HomeTabDepth 随视口一起重绘，拿到的是当帧位置。
-            childrenDelegate: SliverChildListDelegate(<Widget>[
-              for (var index = 0; index < order.length; index++)
-                _buildTabSlot(
-                  tab: order[index],
-                  index: index,
-                  shown: visible.contains(index),
-                  depth: depth,
-                  hold: hold,
-                  stage: stage,
-                  scrim: scheme.scrim,
-                  paintsBackground: paintsBackground,
-                ),
-            ], addRepaintBoundaries: false),
           ),
         );
       },

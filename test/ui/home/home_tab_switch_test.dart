@@ -147,11 +147,11 @@ void main() {
     expect(_createFabShown(tester), isTrue);
 
     // 日历页在长按日期的菜单里新建，不再显示全局 FAB。
-    // 默认三个 Tab 为 日历(0) · 日记(1) · 探索(2)，启动落在日记。
-    expect(_homePage(tester), 1);
+    // 默认三个 Tab 为 日记(0) · 日历(1) · 探索(2)，启动落在日记。
+    expect(_homePage(tester), 0);
     await tester.tap(find.text(l10n.navCalendar));
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 0);
+    expect(_homePage(tester), 1);
     expect(_createFabShown(tester), isFalse);
 
     await tester.tap(find.text(l10n.navDiaries));
@@ -165,8 +165,7 @@ void main() {
   ) async {
     await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
     final l10n = tester.element(find.byType(HomePage)).l10n;
-    await tester.tap(_navItem(l10n.navCalendar));
-    await tester.pumpAndSettle();
+    // 日记 · 待办 · 日历 · 探索，启动在日记(0)。
     expect(_homePage(tester), 0);
 
     await tester.tap(_navItem(l10n.navExplore));
@@ -174,14 +173,14 @@ void main() {
     var sawMotion = false;
     for (var frame = 0; frame < 30; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
-      // 日历(0) -> 探索(3)：探索临时排到日历隔壁，只滑一页，日记(1)与
-      // 待办(2)一帧都不露出来。
-      expect(_tabShown(tester, DiariesPage), isFalse, reason: '$frame');
+      // 日记(0) -> 探索(3)：探索临时排到日记隔壁，只滑一页，待办(1)与
+      // 日历(2)一帧都不露出来。
       expect(_tabShown(tester, TodosPage), isFalse, reason: '$frame');
+      expect(_tabShown(tester, CalendarPage), isFalse, reason: '$frame');
       final page = _homePage(tester);
       if (page > 0 && page < 1) {
         sawMotion = true;
-        expect(_tabShown(tester, CalendarPage), isTrue, reason: '$frame');
+        expect(_tabShown(tester, DiariesPage), isTrue, reason: '$frame');
         expect(_tabShown(tester, ExplorePage), isTrue, reason: '$frame');
       }
     }
@@ -193,11 +192,11 @@ void main() {
     expect(_selectedNavLabel(tester), l10n.navExplore);
     expect(find.byType(ExplorePage), findsOneWidget);
 
-    // 换回底栏顺序后，往右滑一页是待办。
+    // 换回底栏顺序后，往右滑一页是日历。
     await tester.drag(find.byType(ExplorePage), const Offset(300, 0));
     await tester.pumpAndSettle();
     expect(_homePage(tester), 2);
-    expect(_selectedNavLabel(tester), l10n.navTodos);
+    expect(_selectedNavLabel(tester), l10n.navCalendar);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
@@ -207,15 +206,15 @@ void main() {
   ) async {
     await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
     final l10n = tester.element(find.byType(HomePage)).l10n;
-    // 日历 · 日记 · 待办 · 探索，启动在日记(1)。
+    // 日记 · 待办 · 日历 · 探索，启动在日记(0)。
     await tester.tap(_navItem(l10n.navTodos));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 64));
     final before = _homePage(tester);
-    expect(before, inExclusiveRange(1, 2));
+    expect(before, inExclusiveRange(0, 1));
 
-    // 还没到待办就改点探索：同向带着速度继续走，不倒退、不停顿。
-    await tester.tap(_navItem(l10n.navExplore));
+    // 还没到待办就改点日历：同向带着速度继续走，不倒退、不停顿。
+    await tester.tap(_navItem(l10n.navCalendar));
     await tester.pump();
     var previous = before;
     for (var frame = 0; frame < 12; frame++) {
@@ -225,20 +224,20 @@ void main() {
       previous = page;
     }
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 3);
-    expect(_selectedNavLabel(tester), l10n.navExplore);
-    expect(find.byType(ExplorePage), findsOneWidget);
+    expect(_homePage(tester), 2);
+    expect(_selectedNavLabel(tester), l10n.navCalendar);
+    expect(find.byType(CalendarPage), findsOneWidget);
     await _unmount(tester);
   });
 
   testWidgets('a finger can catch the page mid-switch', (tester) async {
     await _pumpHome(tester);
     final l10n = tester.element(find.byType(HomePage)).l10n;
-    // 日历(0) · 日记(1) · 探索(2)：点探索后立刻用手指把页面拖回日记。
-    await tester.tap(_navItem(l10n.navExplore));
+    // 日记(0) · 日历(1) · 探索(2)：点日历后立刻用手指把页面拖回日记。
+    await tester.tap(_navItem(l10n.navCalendar));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 48));
-    expect(_homePage(tester), inExclusiveRange(1, 2));
+    expect(_homePage(tester), inExclusiveRange(0, 1));
 
     final gesture = await tester.startGesture(const Offset(200, 400));
     await tester.pump();
@@ -253,7 +252,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await gesture.up();
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 1);
+    expect(_homePage(tester), 0);
     expect(_selectedNavLabel(tester), l10n.navDiaries);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
@@ -280,8 +279,8 @@ void main() {
     final l10n = tester.element(find.byType(HomePage)).l10n;
 
     expect(_navLabels(tester), <String>[
-      l10n.navCalendar,
       l10n.navDiaries,
+      l10n.navCalendar,
       l10n.navExplore,
     ]);
     expect(find.byType(SettingsPage, skipOffstage: false), findsNothing);
@@ -308,7 +307,7 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.byType(SettingsPage), findsNothing);
-    expect(_homePage(tester), 1);
+    expect(_homePage(tester), 0);
     expect(_selectedNavLabel(tester), l10n.navDiaries);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
@@ -437,14 +436,14 @@ void main() {
     await _pumpHome(tester);
 
     // 减少动画没有景深、实时绘制：手指拖动途中两侧页面都启用，不会冻结
-    // 半露出的内容。
+    // 半露出的内容（日记左滑露出右边的日历）。
     final gesture = await tester.startGesture(const Offset(200, 400));
     await gesture.moveBy(const Offset(-20, 0));
     await tester.pump();
     await gesture.moveBy(const Offset(-100, 0));
     await tester.pump();
     expect(_tickersEnabled(tester, DiariesPage), isTrue);
-    expect(_tickersEnabled(tester, ExplorePage), isTrue);
+    expect(_tickersEnabled(tester, CalendarPage), isTrue);
     await gesture.up();
     await tester.pumpAndSettle();
     await _unmount(tester);
@@ -481,22 +480,21 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('to-dos are off by default and sit third when on', (
+    testWidgets('to-dos are off by default and sit second when on', (
       tester,
     ) async {
       await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
       final l10n = tester.element(find.byType(HomePage)).l10n;
 
-      // 四个 Tab 时日历第一格、日记居中偏左（第二格）、待办第三格，启动仍
-      // 落在日记。
+      // 四个 Tab 时固定为日记、待办、日历、探索，启动落在日记。
       expect(_navLabels(tester), <String>[
-        l10n.navCalendar,
         l10n.navDiaries,
         l10n.navTodos,
+        l10n.navCalendar,
         l10n.navExplore,
       ]);
       expect(_selectedNavLabel(tester), l10n.navDiaries);
-      expect(_homePage(tester), 1);
+      expect(_homePage(tester), 0);
       await tester.tap(_navItem(l10n.navTodos));
       await tester.pumpAndSettle();
       expect(find.byType(TodosPage), findsOneWidget);
@@ -562,7 +560,7 @@ void main() {
         appFeaturesRaw: '{"todos":true}',
       );
       final l10n = tester.element(find.byType(HomePage)).l10n;
-      // 日记(1) → 探索(3) 折叠途中关掉待办：探索在新列表里是 2。
+      // 日记(0) → 探索(3) 折叠途中关掉待办：探索在新列表里是 2。
       await tester.tap(_navItem(l10n.navExplore));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 64));
@@ -570,8 +568,8 @@ void main() {
       unawaited(settings.setAppFeaturesRaw('{"todos":false}'));
       await tester.pumpAndSettle();
       expect(_navLabels(tester), <String>[
-        l10n.navCalendar,
         l10n.navDiaries,
+        l10n.navCalendar,
         l10n.navExplore,
       ]);
       expect(_selectedNavLabel(tester), l10n.navExplore);
@@ -579,11 +577,11 @@ void main() {
       expect(find.byType(ExplorePage), findsOneWidget);
       expect(_tabShown(tester, DiariesPage), isFalse);
 
-      // 之后照常滑动：往右回到日记。
+      // 之后照常滑动：往右是日历。
       await tester.drag(find.byType(ExplorePage), const Offset(300, 0));
       await tester.pumpAndSettle();
       expect(_homePage(tester), 1);
-      expect(_selectedNavLabel(tester), l10n.navDiaries);
+      expect(_selectedNavLabel(tester), l10n.navCalendar);
       expect(tester.takeException(), isNull);
       await _unmount(tester);
     });
@@ -607,10 +605,10 @@ void main() {
       expect(find.byType(ExplorePage), findsOneWidget);
       await tester.pumpAndSettle();
 
-      // 日历回到最左，日记随之居中。
+      // 日历回到日记与探索之间。
       expect(_navLabels(tester), <String>[
-        l10n.navCalendar,
         l10n.navDiaries,
+        l10n.navCalendar,
         l10n.navExplore,
       ]);
       expect(_selectedNavLabel(tester), l10n.navExplore);
@@ -620,7 +618,7 @@ void main() {
 
       await tester.tap(_navItem(l10n.navCalendar));
       await tester.pumpAndSettle();
-      expect(_homePage(tester), 0);
+      expect(_homePage(tester), 1);
       expect(find.byType(CalendarPage), findsOneWidget);
       expect(tester.takeException(), isNull);
       await _unmount(tester);

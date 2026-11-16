@@ -7,7 +7,7 @@ const HomeTab _diaries = HomeTab.diaries;
 const HomeTab _todos = HomeTab.todos;
 const HomeTab _explore = HomeTab.explore;
 
-/// 四个 Tab 都开启时的底栏顺序：日历 · 日记 · 待办 · 探索。
+/// 任意一种四 Tab 顺序（模型只看传入的列表，与实际底栏顺序无关）。
 final List<HomeTab> _bar = <HomeTab>[_calendar, _diaries, _todos, _explore];
 
 void main() {

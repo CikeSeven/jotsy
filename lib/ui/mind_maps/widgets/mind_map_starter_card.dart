@@ -14,12 +14,16 @@ class MindMapStarterCard extends StatelessWidget {
     super.key,
     required this.onTemplate,
     this.onConvertBack,
+    this.onImport,
   });
 
   final ValueChanged<MindMapTemplate> onTemplate;
 
   /// 导图日记才有：把这篇转回普通的文字日记。
   final VoidCallback? onConvertBack;
+
+  /// 从文件导入（XMind、OPML、FreeMind、Markdown）。
+  final VoidCallback? onImport;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +55,17 @@ class MindMapStarterCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (onImport != null)
+                    IconButton(
+                      tooltip: l10n.mindMapImport,
+                      onPressed: onImport,
+                      visualDensity: VisualDensity.compact,
+                      icon: FaIcon(
+                        FontAwesomeIcons.fileImport,
+                        size: 15,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                   if (onConvertBack != null)
                     TextButton(
                       onPressed: onConvertBack,

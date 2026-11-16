@@ -21732,5 +21732,101 @@
   "mindMapMoveDown": "下へ",
   "@mindMapMoveDown": {
     "description": "Mind map outline: move the topic below its next sibling."
+  },
+  "mindMapExport": "マップを書き出す",
+  "@mindMapExport": {
+    "description": "Mind map: menu item and panel title for exporting the map as an image, PDF, XMind and other files."
+  },
+  "mindMapExportSaved": "保存しました",
+  "@mindMapExportSaved": {
+    "description": "Mind map export: the file was saved."
+  },
+  "mindMapExportSavedGallery": "写真に保存しました",
+  "@mindMapExportSavedGallery": {
+    "description": "Mind map export: the image was saved to the photo gallery."
+  },
+  "mindMapExportFailed": "書き出せませんでした",
+  "@mindMapExportFailed": {
+    "description": "Mind map export failed."
+  },
+  "mindMapShare": "共有",
+  "@mindMapShare": {
+    "description": "Mind map export panel: tooltip of the share button on a format row."
+  },
+  "mindMapSaveFile": "ファイルに保存",
+  "@mindMapSaveFile": {
+    "description": "Mind map export panel: tooltip of the save-to-file button on a format row."
+  },
+  "mindMapSaveGallery": "写真に保存",
+  "@mindMapSaveGallery": {
+    "description": "Mind map export panel: tooltip of the save-to-gallery button on the image row."
+  },
+  "mindMapExportImage": "画像",
+  "@mindMapExportImage": {
+    "description": "Mind map export panel: the PNG image format."
+  },
+  "mindMapExportImageHint": "マップ全体の PNG（2 倍の解像度）",
+  "@mindMapExportImageHint": {
+    "description": "Mind map export panel: hint under the image format."
+  },
+  "mindMapExportPdfHint": "マップの大きさに合わせた 1 ページ",
+  "@mindMapExportPdfHint": {
+    "description": "Mind map export panel: hint under the PDF format."
+  },
+  "mindMapExportXmindHint": "XMind で開けます（トピック・アイコン・メモ付き）",
+  "@mindMapExportXmindHint": {
+    "description": "Mind map export panel: hint under the XMind format."
+  },
+  "mindMapExportMarkdownHint": "見出しと入れ子のリスト",
+  "@mindMapExportMarkdownHint": {
+    "description": "Mind map export panel: hint under the Markdown format."
+  },
+  "mindMapExportOpmlHint": "アウトライナー向けのアウトライン",
+  "@mindMapExportOpmlHint": {
+    "description": "Mind map export panel: hint under the OPML format."
+  },
+  "mindMapExportFreeMindHint": "FreeMind・Freeplane で開けます",
+  "@mindMapExportFreeMindHint": {
+    "description": "Mind map export panel: hint under the FreeMind format."
+  },
+  "mindMapCopyOutline": "アウトラインとしてコピー",
+  "@mindMapCopyOutline": {
+    "description": "Mind map export panel: copy the map as indented text."
+  },
+  "mindMapCopyOutlineHint": "インデント付きテキスト（1 行に 1 トピック）",
+  "@mindMapCopyOutlineHint": {
+    "description": "Mind map export panel: hint under copy as outline."
+  },
+  "mindMapCopied": "コピーしました",
+  "@mindMapCopied": {
+    "description": "Mind map: the outline text was copied."
+  },
+  "mindMapImport": "ファイルから読み込む",
+  "@mindMapImport": {
+    "description": "Mind map: import a map from an XMind, OPML, FreeMind or Markdown file."
+  },
+  "mindMapImported": "読み込みました",
+  "@mindMapImported": {
+    "description": "Mind map: a file was imported into the map."
+  },
+  "mindMapImportFailed": "このファイルを読み込めません。対応形式：XMind・OPML・FreeMind（.mm）・Markdown",
+  "@mindMapImportFailed": {
+    "description": "Mind map: the chosen file could not be imported."
+  },
+  "mindMapImportReplaceTitle": "このマップを置き換えますか？",
+  "@mindMapImportReplaceTitle": {
+    "description": "Mind map import: confirmation title when the map already has topics."
+  },
+  "mindMapImportReplaceBody": "読み込んだマップでここのトピックがすべて置き換わります。元に戻せます。",
+  "@mindMapImportReplaceBody": {
+    "description": "Mind map import: confirmation body."
+  },
+  "mindMapImportReplaceConfirm": "置き換える",
+  "@mindMapImportReplaceConfirm": {
+    "description": "Mind map import: confirm button."
+  },
+  "mindMapConvertFromDiary": "マインドマップに変換",
+  "@mindMapConvertFromDiary": {
+    "description": "Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept)."
   }
 }

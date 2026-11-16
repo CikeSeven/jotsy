@@ -1,11 +1,11 @@
 ---
 id: mind-maps
 title: Mind maps
-summary: Turning a new diary into a mind map, inserting maps into the text, editing topics, structures and color themes, and finding maps in notebooks and search
+summary: Turning a new diary into a mind map, inserting maps into the text, editing topics, structures and color themes, exporting and importing, and finding maps in notebooks and search
 features: [mindMaps]
 platforms: []
 destinations: [tab_diaries, settings_features]
-keywords: [mind map, mindmap, map, outline, stickers, priority, progress, flag, note, label, link, checkbox, copy paste, topic style, central topic, subtopic, sibling, collapse, expand, drag topic, logic chart, org chart, tree, timeline, fishbone, color theme, rainbow branches, lines, spacing, dot grid, template, brainstorm, SWOT, book notes, mind map diary, insert mind map, has mind maps, smart notebook filter]
+keywords: [mind map, mindmap, map, outline, stickers, priority, progress, flag, note, label, link, checkbox, copy paste, topic style, central topic, subtopic, sibling, collapse, expand, drag topic, logic chart, org chart, tree, timeline, fishbone, color theme, rainbow branches, lines, spacing, dot grid, template, brainstorm, SWOT, book notes, mind map diary, insert mind map, has mind maps, smart notebook filter, export map, XMind, OPML, FreeMind, Markdown, import map, turn into mind map, map image]
 ---
 A mind map is a kind of diary: it lives in the same list as your other diaries, has a date, mood, tags and notebooks, and is backed up, synced and searched along with them.
 
@@ -45,10 +45,19 @@ Open Style in the dock (or More → Mind map style in the top bar) to change:
 - Type "/" in the text and choose "Mind map" to insert a map and edit it full screen. Back in the text it's a map card; one undo returns to how it was before.
 - While editing, tap the card to edit the map again; long-press or right-click to edit, view full screen or delete. While reading, tap the card to view it full screen.
 
-## Reading, filtering and exporting
+## Reading and filtering
 - List cards show a thumbnail of the map and its main topics. The preview page shows the map large; tap it to view full screen with pan and zoom.
 - Smart notebooks and search filters have "Has mind maps" under media, matching mind map diaries and diaries with a map inside.
-- Search, word counts, exports and shared text include every topic; exports write the map as an outline.
+- Search, word counts, diary exports and shared text include every topic, written as an outline.
+
+## Exporting a map
+- While editing a map, tap More → Export map at the top right; it's also in the preview page's More menu and on the full-screen viewer's top bar. Export as an image (PNG), PDF, XMind, Markdown, OPML or FreeMind, or copy it as an outline.
+- Each row has buttons to share or save as a file, and on phones images can also go to the gallery. Tapping the row shares (saves on computers).
+- XMind keeps topics, stickers, labels, notes, web links, collapsed branches and the structure. Images are drawn in the current light or dark look and color theme.
+
+## Importing and converting
+- More → Import from file, or the import button on the starter card: XMind (new and XMind 8), OPML, FreeMind (.mm), Markdown and plain-text outlines. If the map already has topics you're asked before it's replaced, and you can undo it.
+- In a text diary's preview page, More → Turn into mind map builds a new mind map diary from its headings and lists; the original diary stays as it is.
 
 ## Turning it off
 - Settings → Features → Mind maps (on by default). Turning it off hides the button on new diaries, "Mind map" in the "/" menu and "Has mind maps" for new filters. Existing maps still show and can still be edited.

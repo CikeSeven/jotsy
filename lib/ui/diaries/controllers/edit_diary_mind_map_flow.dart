@@ -171,6 +171,17 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
               onPressed: () => showMindMapStyleSheet(context, controller),
               child: Text(l10n.mindMapStyleSheetTitle),
             ),
+            ExpressiveMenuItem(
+              leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+              onPressed: () =>
+                  showMindMapExportSheet(context, controller.document),
+              child: Text(l10n.mindMapExport),
+            ),
+            ExpressiveMenuItem(
+              leadingIcon: const FaIcon(FontAwesomeIcons.fileImport),
+              onPressed: () => importMindMapFromFile(context, controller),
+              child: Text(l10n.mindMapImport),
+            ),
             if (reading != null) ..._readingMoreItems(reading),
           ],
         ),

@@ -21165,5 +21165,101 @@
   "mindMapMoveDown": "下移",
   "@mindMapMoveDown": {
     "description": "思维导图大纲：移到后一个同级主题之后。"
+  },
+  "mindMapExport": "导出导图",
+  "@mindMapExport": {
+    "description": "思维导图：把导图导出成图片、PDF、XMind 等文件的菜单项与面板标题。"
+  },
+  "mindMapExportSaved": "已保存",
+  "@mindMapExportSaved": {
+    "description": "导出导图：文件已保存。"
+  },
+  "mindMapExportSavedGallery": "已保存到相册",
+  "@mindMapExportSavedGallery": {
+    "description": "导出导图：图片已保存到相册。"
+  },
+  "mindMapExportFailed": "导出失败",
+  "@mindMapExportFailed": {
+    "description": "导出导图失败。"
+  },
+  "mindMapShare": "分享",
+  "@mindMapShare": {
+    "description": "导出导图面板：格式行上分享按钮的提示。"
+  },
+  "mindMapSaveFile": "保存为文件",
+  "@mindMapSaveFile": {
+    "description": "导出导图面板：格式行上保存为文件按钮的提示。"
+  },
+  "mindMapSaveGallery": "保存到相册",
+  "@mindMapSaveGallery": {
+    "description": "导出导图面板：图片行上保存到相册按钮的提示。"
+  },
+  "mindMapExportImage": "图片",
+  "@mindMapExportImage": {
+    "description": "导出导图面板：PNG 图片格式。"
+  },
+  "mindMapExportImageHint": "整张导图的 PNG，按两倍清晰度",
+  "@mindMapExportImageHint": {
+    "description": "导出导图面板：图片格式下的说明。"
+  },
+  "mindMapExportPdfHint": "一页，按导图大小",
+  "@mindMapExportPdfHint": {
+    "description": "导出导图面板：PDF 格式下的说明。"
+  },
+  "mindMapExportXmindHint": "可在 XMind 中打开，保留主题、图标与备注",
+  "@mindMapExportXmindHint": {
+    "description": "导出导图面板：XMind 格式下的说明。"
+  },
+  "mindMapExportMarkdownHint": "标题与嵌套列表",
+  "@mindMapExportMarkdownHint": {
+    "description": "导出导图面板：Markdown 格式下的说明。"
+  },
+  "mindMapExportOpmlHint": "大纲，适用于大纲类应用",
+  "@mindMapExportOpmlHint": {
+    "description": "导出导图面板：OPML 格式下的说明。"
+  },
+  "mindMapExportFreeMindHint": "可在 FreeMind、Freeplane 中打开",
+  "@mindMapExportFreeMindHint": {
+    "description": "导出导图面板：FreeMind 格式下的说明。"
+  },
+  "mindMapCopyOutline": "复制为大纲文字",
+  "@mindMapCopyOutline": {
+    "description": "导出导图面板：把导图复制成缩进文字。"
+  },
+  "mindMapCopyOutlineHint": "缩进文字，每个主题一行",
+  "@mindMapCopyOutlineHint": {
+    "description": "导出导图面板：复制为大纲文字下的说明。"
+  },
+  "mindMapCopied": "已复制",
+  "@mindMapCopied": {
+    "description": "思维导图：大纲文字已复制。"
+  },
+  "mindMapImport": "从文件导入",
+  "@mindMapImport": {
+    "description": "思维导图：从 XMind、OPML、FreeMind 或 Markdown 文件导入。"
+  },
+  "mindMapImported": "已导入",
+  "@mindMapImported": {
+    "description": "思维导图：文件已导入导图。"
+  },
+  "mindMapImportFailed": "读不出这个文件。支持 XMind、OPML、FreeMind（.mm）与 Markdown",
+  "@mindMapImportFailed": {
+    "description": "思维导图：选择的文件无法导入。"
+  },
+  "mindMapImportReplaceTitle": "替换当前导图？",
+  "@mindMapImportReplaceTitle": {
+    "description": "导入导图：导图已有内容时的确认标题。"
+  },
+  "mindMapImportReplaceBody": "导入的导图会替换这里的全部主题，可以撤销。",
+  "@mindMapImportReplaceBody": {
+    "description": "导入导图：确认说明。"
+  },
+  "mindMapImportReplaceConfirm": "替换",
+  "@mindMapImportReplaceConfirm": {
+    "description": "导入导图：确认按钮。"
+  },
+  "mindMapConvertFromDiary": "转为思维导图",
+  "@mindMapConvertFromDiary": {
+    "description": "日记更多菜单：按这篇日记的标题与列表生成一篇新的导图日记（原文保留）。"
   }
 }

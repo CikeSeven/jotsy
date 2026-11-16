@@ -21732,5 +21732,101 @@
   "mindMapMoveDown": "Вниз",
   "@mindMapMoveDown": {
     "description": "Mind map outline: move the topic below its next sibling."
+  },
+  "mindMapExport": "Экспорт карты",
+  "@mindMapExport": {
+    "description": "Mind map: menu item and panel title for exporting the map as an image, PDF, XMind and other files."
+  },
+  "mindMapExportSaved": "Сохранено",
+  "@mindMapExportSaved": {
+    "description": "Mind map export: the file was saved."
+  },
+  "mindMapExportSavedGallery": "Сохранено в галерею",
+  "@mindMapExportSavedGallery": {
+    "description": "Mind map export: the image was saved to the photo gallery."
+  },
+  "mindMapExportFailed": "Не удалось экспортировать карту",
+  "@mindMapExportFailed": {
+    "description": "Mind map export failed."
+  },
+  "mindMapShare": "Поделиться",
+  "@mindMapShare": {
+    "description": "Mind map export panel: tooltip of the share button on a format row."
+  },
+  "mindMapSaveFile": "Сохранить файл",
+  "@mindMapSaveFile": {
+    "description": "Mind map export panel: tooltip of the save-to-file button on a format row."
+  },
+  "mindMapSaveGallery": "Сохранить в галерею",
+  "@mindMapSaveGallery": {
+    "description": "Mind map export panel: tooltip of the save-to-gallery button on the image row."
+  },
+  "mindMapExportImage": "Изображение",
+  "@mindMapExportImage": {
+    "description": "Mind map export panel: the PNG image format."
+  },
+  "mindMapExportImageHint": "PNG всей карты в двойном разрешении",
+  "@mindMapExportImageHint": {
+    "description": "Mind map export panel: hint under the image format."
+  },
+  "mindMapExportPdfHint": "Одна страница по размеру карты",
+  "@mindMapExportPdfHint": {
+    "description": "Mind map export panel: hint under the PDF format."
+  },
+  "mindMapExportXmindHint": "Открывается в XMind с темами, значками и заметками",
+  "@mindMapExportXmindHint": {
+    "description": "Mind map export panel: hint under the XMind format."
+  },
+  "mindMapExportMarkdownHint": "Заголовки и вложенные списки",
+  "@mindMapExportMarkdownHint": {
+    "description": "Mind map export panel: hint under the Markdown format."
+  },
+  "mindMapExportOpmlHint": "Структура для приложений-аутлайнеров",
+  "@mindMapExportOpmlHint": {
+    "description": "Mind map export panel: hint under the OPML format."
+  },
+  "mindMapExportFreeMindHint": "Открывается в FreeMind и Freeplane",
+  "@mindMapExportFreeMindHint": {
+    "description": "Mind map export panel: hint under the FreeMind format."
+  },
+  "mindMapCopyOutline": "Копировать как структуру",
+  "@mindMapCopyOutline": {
+    "description": "Mind map export panel: copy the map as indented text."
+  },
+  "mindMapCopyOutlineHint": "Текст с отступами, по теме на строку",
+  "@mindMapCopyOutlineHint": {
+    "description": "Mind map export panel: hint under copy as outline."
+  },
+  "mindMapCopied": "Скопировано",
+  "@mindMapCopied": {
+    "description": "Mind map: the outline text was copied."
+  },
+  "mindMapImport": "Импорт из файла",
+  "@mindMapImport": {
+    "description": "Mind map: import a map from an XMind, OPML, FreeMind or Markdown file."
+  },
+  "mindMapImported": "Импортировано",
+  "@mindMapImported": {
+    "description": "Mind map: a file was imported into the map."
+  },
+  "mindMapImportFailed": "Не удалось прочитать файл. Поддерживаются XMind, OPML, FreeMind (.mm) и Markdown",
+  "@mindMapImportFailed": {
+    "description": "Mind map: the chosen file could not be imported."
+  },
+  "mindMapImportReplaceTitle": "Заменить эту карту?",
+  "@mindMapImportReplaceTitle": {
+    "description": "Mind map import: confirmation title when the map already has topics."
+  },
+  "mindMapImportReplaceBody": "Импортированная карта заменит все темы здесь. Это можно отменить.",
+  "@mindMapImportReplaceBody": {
+    "description": "Mind map import: confirmation body."
+  },
+  "mindMapImportReplaceConfirm": "Заменить",
+  "@mindMapImportReplaceConfirm": {
+    "description": "Mind map import: confirm button."
+  },
+  "mindMapConvertFromDiary": "Превратить в интеллект-карту",
+  "@mindMapConvertFromDiary": {
+    "description": "Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept)."
   }
 }

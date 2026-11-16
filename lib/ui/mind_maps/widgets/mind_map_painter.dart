@@ -3,7 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../layout/mind_map_scene.dart';
+import '../models/mind_map_markers.dart';
 import '../models/mind_map_options.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
 import '../viewmodels/mind_map_frame.dart';
@@ -286,28 +289,24 @@ void _paintNode(
         ..strokeWidth = 1.2,
     );
   }
-  if (options.editingId != scene.id) {
-    final text = scene.text;
-    final dx = visual.textAlign == TextAlign.center
-        ? (scene.rect.width - text.width) / 2
-        : visual.padding.left;
-    final dy =
-        (scene.rect.height - text.height) / 2 - (visual.underline ? 1 : 0);
-    canvas.save();
-    canvas.translate(rect.left, rect.top);
-    if (scale != 1) canvas.scale(scale);
-    if (opacity < 0.99) {
-      canvas.saveLayer(
-        Rect.fromLTWH(0, 0, scene.rect.width, scene.rect.height),
-        Paint()..color = Color.fromRGBO(0, 0, 0, opacity),
-      );
-      text.paint(canvas, Offset(dx, dy));
-      canvas.restore();
-    } else {
-      text.paint(canvas, Offset(dx, dy));
-    }
-    canvas.restore();
+  // 节点内容按布局尺寸画，缩放与淡入淡出整体施加（转场里长出 / 缩回）。
+  canvas.save();
+  canvas.translate(rect.left, rect.top);
+  if (scale != 1) canvas.scale(scale);
+  if (opacity < 0.99) {
+    canvas.saveLayer(
+      Offset.zero & scene.rect.size,
+      Paint()..color = Color.fromRGBO(0, 0, 0, opacity),
+    );
   }
+  _paintContent(
+    canvas,
+    scene,
+    options.palette,
+    drawText: options.editingId != scene.id,
+  );
+  if (opacity < 0.99) canvas.restore();
+  canvas.restore();
   if (scene.hiddenCount > 0) {
     _paintCollapsedBadge(canvas, node, opacity, options.palette);
   } else if (!ignoreSelection &&
@@ -495,4 +494,224 @@ class MindMapCanvasPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MindMapCanvasPainter oldDelegate) => true;
+}
+
+/// 节点框里的内容：待办框、贴纸、文字、进度 / 备注 / 链接标记、标签。
+/// 坐标相对节点左上角（布局尺寸）。
+void _paintContent(
+  Canvas canvas,
+  MindMapSceneNode scene,
+  MindMapPalette palette, {
+  required bool drawText,
+}) {
+  final content = scene.content;
+  final visual = scene.visual;
+  final ink = visual.textStyle.color ?? palette.onSurface;
+  // 有底色的节点上，标记用文字色；没有底色时用分支色，与连线呼应。
+  final accent = visual.fill == null ? visual.branchColor : ink;
+  if (content.checkbox case final box?) {
+    final rrect = RRect.fromRectAndRadius(
+      box.deflate(1),
+      Radius.circular(box.width * 0.26),
+    );
+    if (content.taskDone) {
+      canvas.drawRRect(rrect, Paint()..color = accent);
+      final check = Path()
+        ..moveTo(box.left + box.width * 0.27, box.top + box.height * 0.52)
+        ..lineTo(box.left + box.width * 0.44, box.top + box.height * 0.68)
+        ..lineTo(box.left + box.width * 0.74, box.top + box.height * 0.34);
+      canvas.drawPath(
+        check,
+        Paint()
+          ..color = visual.fill ?? palette.surface
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = box.width * 0.13
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+    } else {
+      canvas.drawRRect(
+        rrect,
+        Paint()
+          ..color = accent
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(1.5, box.width * 0.1),
+      );
+    }
+  }
+  for (final (marker, box) in content.markers) {
+    _paintMarker(canvas, marker, box, palette, visual.textStyle);
+  }
+  if (drawText) scene.text.paint(canvas, content.textRect.topLeft);
+  if (content.progress case final progress?) {
+    final box = progress.rect;
+    final center = box.center;
+    final radius = box.width / 2 - 1;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = accent.withValues(alpha: accent.a * 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2,
+    );
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      2 * math.pi * progress.done / progress.total,
+      false,
+      Paint()
+        ..color = accent
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+  if (content.note case final box?) {
+    _paintGlyph(
+      canvas,
+      FontAwesomeIcons.solidNoteSticky,
+      box,
+      ink.withValues(alpha: ink.a * 0.7),
+    );
+  }
+  if (content.link case final box?) {
+    _paintGlyph(
+      canvas,
+      content.diaryLink ? FontAwesomeIcons.bookOpen : FontAwesomeIcons.link,
+      box,
+      ink.withValues(alpha: ink.a * 0.7),
+    );
+  }
+  for (final (painter, box) in content.labels) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(box, Radius.circular(box.height / 2)),
+      Paint()..color = accent.withValues(alpha: accent.a * 0.16),
+    );
+    painter.paint(canvas, Offset(box.left + 6, box.top + 2));
+  }
+}
+
+void _paintMarker(
+  Canvas canvas,
+  MindMapMarker marker,
+  Rect box,
+  MindMapPalette palette,
+  TextStyle base,
+) {
+  switch (marker.look) {
+    case MindMapNumberLook(:final number, :final color):
+      final colors = palette.marker(color);
+      canvas.drawCircle(
+        box.center,
+        box.width / 2,
+        Paint()..color = colors.accent,
+      );
+      final text = _glyphText(
+        '$number',
+        TextStyle(
+          color: colors.onAccent,
+          fontSize: box.width * 0.62,
+          fontWeight: FontWeight.w800,
+          fontFamily: base.fontFamily,
+          fontFamilyFallback: base.fontFamilyFallback,
+          height: 1,
+        ),
+      );
+      text.paint(
+        canvas,
+        Offset(box.center.dx - text.width / 2, box.center.dy - text.height / 2),
+      );
+    case MindMapProgressLook(:final percent):
+      final colors = palette.marker(MindMapMarkerColor.blue);
+      final radius = box.width / 2;
+      canvas.drawCircle(
+        box.center,
+        radius,
+        Paint()..color = colors.accent.withValues(alpha: 0.16),
+      );
+      if (percent >= 100) {
+        canvas.drawCircle(box.center, radius, Paint()..color = colors.accent);
+        final check = Path()
+          ..moveTo(box.left + box.width * 0.28, box.top + box.height * 0.52)
+          ..lineTo(box.left + box.width * 0.44, box.top + box.height * 0.67)
+          ..lineTo(box.left + box.width * 0.73, box.top + box.height * 0.36);
+        canvas.drawPath(
+          check,
+          Paint()
+            ..color = colors.onAccent
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = box.width * 0.12
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round,
+        );
+      } else if (percent > 0) {
+        canvas.drawArc(
+          box.deflate(box.width * 0.14),
+          -math.pi / 2,
+          2 * math.pi * percent / 100,
+          true,
+          Paint()..color = colors.accent,
+        );
+      }
+      canvas.drawCircle(
+        box.center,
+        radius - 0.6,
+        Paint()
+          ..color = colors.accent
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2,
+      );
+    case MindMapGlyphLook(:final icon, :final color):
+      _paintGlyph(canvas, icon, box, palette.marker(color).accent);
+    case MindMapEmojiLook(:final emoji):
+      final text = _glyphText(
+        emoji,
+        TextStyle(
+          fontSize: box.width * 0.86,
+          fontFamily: base.fontFamily,
+          fontFamilyFallback: base.fontFamilyFallback,
+          height: 1,
+        ),
+      );
+      text.paint(
+        canvas,
+        Offset(box.center.dx - text.width / 2, box.center.dy - text.height / 2),
+      );
+  }
+}
+
+/// 在 [box] 里居中画一个 Font Awesome 字形。
+void _paintGlyph(Canvas canvas, FaIconData icon, Rect box, Color color) {
+  final text = _glyphText(
+    String.fromCharCode(icon.codePoint),
+    TextStyle(
+      color: color,
+      fontSize: box.width * 0.9,
+      fontFamily: icon.fontFamily,
+      package: icon.fontPackage,
+      height: 1,
+    ),
+  );
+  text.paint(
+    canvas,
+    Offset(box.center.dx - text.width / 2, box.center.dy - text.height / 2),
+  );
+}
+
+final Map<(String, TextStyle), TextPainter> _glyphTexts =
+    <(String, TextStyle), TextPainter>{};
+
+TextPainter _glyphText(String text, TextStyle style) {
+  final key = (text, style);
+  final cached = _glyphTexts.remove(key);
+  if (cached != null) return _glyphTexts[key] = cached;
+  while (_glyphTexts.length > 160) {
+    _glyphTexts.remove(_glyphTexts.keys.first)!.dispose();
+  }
+  return _glyphTexts[key] = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: TextDirection.ltr,
+    textScaler: TextScaler.noScaling,
+  )..layout();
 }

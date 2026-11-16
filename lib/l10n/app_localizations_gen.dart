@@ -28803,6 +28803,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn a new diary into a mind map, or insert one into the body'**
   String get settingsFeaturesMindMapsSubtitle;
+
+  /// Mind map panels: add the typed label / emoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get mindMapAdd;
+
+  /// Mind map: dock button and panel title for adding stickers, labels, a note, a link or a checkbox to a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert'**
+  String get mindMapInsert;
+
+  /// Mind map dock button that opens more actions for the selected topic.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get mindMapMore;
+
+  /// Mind map: stickers on a topic (priority, progress, flags, stars, faces, symbols).
+  ///
+  /// In en, this message translates to:
+  /// **'Stickers'**
+  String get mindMapMarkers;
+
+  /// Mind map: small labels under a topic's text.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get mindMapLabels;
+
+  /// Mind map: a longer note attached to a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get mindMapNote;
+
+  /// Mind map: a web link or a link to a diary on a topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get mindMapLink;
+
+  /// Mind map: turn a topic into a checkable task (or back).
+  ///
+  /// In en, this message translates to:
+  /// **'Checkbox'**
+  String get mindMapTask;
+
+  /// Title of the panel that styles one topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic style'**
+  String get mindMapNodeStyleTitle;
+
+  /// Topic style panel: section title for the topic shape.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape'**
+  String get mindMapShape;
+
+  /// Topic shape option.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounded'**
+  String get mindMapShapeRounded;
+
+  /// Topic shape option.
+  ///
+  /// In en, this message translates to:
+  /// **'Pill'**
+  String get mindMapShapePill;
+
+  /// Topic shape option.
+  ///
+  /// In en, this message translates to:
+  /// **'Square'**
+  String get mindMapShapeRect;
+
+  /// Topic shape option.
+  ///
+  /// In en, this message translates to:
+  /// **'Ellipse'**
+  String get mindMapShapeEllipse;
+
+  /// Topic shape option: only a line under the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Underline'**
+  String get mindMapShapeUnderline;
+
+  /// Topic shape option: no box or line.
+  ///
+  /// In en, this message translates to:
+  /// **'Text only'**
+  String get mindMapShapePlain;
+
+  /// Topic style panel: background color of the topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill'**
+  String get mindMapFill;
+
+  /// Topic style panel: text color.
+  ///
+  /// In en, this message translates to:
+  /// **'Text color'**
+  String get mindMapTextColor;
+
+  /// Topic style panel: color of this topic's whole branch (lines and subtopics).
+  ///
+  /// In en, this message translates to:
+  /// **'Branch color'**
+  String get mindMapBranchColor;
+
+  /// Topic style panel: use the theme's color.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get mindMapColorDefault;
+
+  /// Topic style panel: section title for bold, italic, strikethrough and size.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get mindMapTextStyle;
+
+  /// Topic style panel tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get mindMapBold;
+
+  /// Topic style panel tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Italic'**
+  String get mindMapItalic;
+
+  /// Topic style panel tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Strikethrough'**
+  String get mindMapStrike;
+
+  /// Topic text size option (very short).
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get mindMapSizeSmall;
+
+  /// Topic text size option (very short).
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get mindMapSizeMedium;
+
+  /// Topic text size option (very short).
+  ///
+  /// In en, this message translates to:
+  /// **'L'**
+  String get mindMapSizeLarge;
+
+  /// Topic text size option (very short).
+  ///
+  /// In en, this message translates to:
+  /// **'XL'**
+  String get mindMapSizeHuge;
+
+  /// Topic style panel: remove all custom styles from the topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset style'**
+  String get mindMapResetStyle;
+
+  /// Sticker group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get mindMapMarkerPriority;
+
+  /// Sticker group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get mindMapMarkerProgress;
+
+  /// Sticker group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Flags'**
+  String get mindMapMarkerFlag;
+
+  /// Sticker group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars'**
+  String get mindMapMarkerStar;
+
+  /// Sticker group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces'**
+  String get mindMapMarkerFace;
+
+  /// Sticker group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbols'**
+  String get mindMapMarkerSymbol;
+
+  /// Sticker panel: section for adding any emoji as a sticker.
+  ///
+  /// In en, this message translates to:
+  /// **'Any emoji'**
+  String get mindMapMarkerEmoji;
+
+  /// Sticker panel: hint of the emoji input.
+  ///
+  /// In en, this message translates to:
+  /// **'Type an emoji'**
+  String get mindMapEmojiHint;
+
+  /// Sticker panel: remove every sticker from the topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all stickers'**
+  String get mindMapClearMarkers;
+
+  /// Labels panel: hint of the input.
+  ///
+  /// In en, this message translates to:
+  /// **'New label'**
+  String get mindMapLabelHint;
+
+  /// Note panel: hint of the input.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a note…'**
+  String get mindMapNoteHint;
+
+  /// Link panel: link to a web address.
+  ///
+  /// In en, this message translates to:
+  /// **'Web link'**
+  String get mindMapLinkUrl;
+
+  /// Link panel: link to one of your diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary'**
+  String get mindMapLinkDiary;
+
+  /// Link panel: open the topic's current link.
+  ///
+  /// In en, this message translates to:
+  /// **'Open link'**
+  String get mindMapLinkOpen;
+
+  /// Link panel: remove the topic's link.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get mindMapLinkRemove;
+
+  /// Link panel: error when the typed web address can't be used.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid web address'**
+  String get mindMapLinkInvalid;
+
+  /// Mind map: copy the selected topic with its subtopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get mindMapCopy;
+
+  /// Mind map: cut the selected topic with its subtopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut'**
+  String get mindMapCut;
+
+  /// Mind map: paste copied topics (or lines of text) under the selected topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get mindMapPaste;
+
+  /// Mind map: switch to the outline (indented list) view.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline'**
+  String get mindMapOutline;
+
+  /// Mind map: switch back to the map canvas view.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get mindMapCanvasView;
+
+  /// Mind map outline: make the topic a subtopic of the one above.
+  ///
+  /// In en, this message translates to:
+  /// **'Indent'**
+  String get mindMapIndent;
+
+  /// Mind map outline: move the topic up one level.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdent'**
+  String get mindMapOutdent;
+
+  /// Mind map outline: move the topic above its previous sibling.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get mindMapMoveUp;
+
+  /// Mind map outline: move the topic below its next sibling.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get mindMapMoveDown;
 }
 
 class _AppLocalizationsDelegate

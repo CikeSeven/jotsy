@@ -11,6 +11,7 @@ import '../../../core/services/app_platform.dart';
 import '../controllers/mind_map_editing_controller.dart';
 import '../controllers/mind_map_viewport_controller.dart';
 import '../layout/mind_map_layout.dart';
+import '../layout/mind_map_node_content.dart';
 import '../layout/mind_map_scene.dart';
 import '../layout/mind_map_text_cache.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
@@ -43,6 +44,7 @@ class MindMapCanvas extends StatefulWidget {
     this.keyboardInset,
     this.onNodeMenu,
     this.onCanvasMenu,
+    this.onNodePart,
     this.interactive = true,
   });
 
@@ -61,6 +63,10 @@ class MindMapCanvas extends StatefulWidget {
 
   /// 空白处的右键菜单（全局坐标）。
   final void Function(Offset globalPosition)? onCanvasMenu;
+
+  /// 点了节点里的备注或链接标记（待办框在画布里直接勾选）。只读时也会
+  /// 调用（查看备注、打开链接）。
+  final void Function(String id, MindMapNodePart part)? onNodePart;
 
   /// 为假时只能平移缩放（只读查看）。
   final bool interactive;
@@ -320,6 +326,14 @@ class MindMapCanvasState extends State<MindMapCanvas>
     final hit = _hitAt(details.localPosition, touch: touch);
     final controller = widget.controller;
     switch (hit) {
+      case MindMapPartHit(:final id, :final part):
+        if (part == MindMapNodePart.checkbox) {
+          if (!widget.interactive) return;
+          unawaited(HapticFeedback.lightImpact());
+          controller.toggleTask(id);
+          return;
+        }
+        widget.onNodePart?.call(id, part);
       case MindMapToggleHit(:final id):
         if (!widget.interactive) return;
         controller.select(id);
@@ -371,7 +385,9 @@ class MindMapCanvasState extends State<MindMapCanvas>
     if (!widget.interactive) return;
     final hit = _hitAt(details.localPosition);
     switch (hit) {
-      case MindMapNodeHit(:final id) || MindMapToggleHit(:final id):
+      case MindMapNodeHit(:final id) ||
+          MindMapToggleHit(:final id) ||
+          MindMapPartHit(:final id):
         widget.controller.select(id);
         widget.onNodeMenu?.call(id, details.globalPosition);
       case MindMapEmptyHit():
@@ -386,7 +402,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
     if (details.kind == PointerDeviceKind.mouse ||
         details.kind == PointerDeviceKind.stylus && AppPlatform.isDesktop) {
       final hit = _hitAt(details.localFocalPoint);
-      if (hit case MindMapNodeHit(:final id)) {
+      if (hit case MindMapNodeHit(:final id) || MindMapPartHit(:final id)) {
         _beginDrag(id, details.localFocalPoint, haptic: false);
       }
     }
@@ -433,7 +449,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
     final hit = _hitAt(details.localPosition, touch: true);
     _longPressStart = details.localPosition;
     _longPressMoved = false;
-    if (hit case MindMapNodeHit(:final id)) {
+    if (hit case MindMapNodeHit(:final id) || MindMapPartHit(:final id)) {
       widget.controller.select(id);
       final isRoot = widget.controller.document.root.id == id;
       if (!isRoot) {
@@ -463,7 +479,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
     // 长按没挪动：放下节点，改为弹出菜单。
     _cancelDrag();
     final hit = _hitAt(details.localPosition, touch: true);
-    if (hit case MindMapNodeHit(:final id)) {
+    if (hit case MindMapNodeHit(:final id) || MindMapPartHit(:final id)) {
       widget.onNodeMenu?.call(id, details.globalPosition);
     }
   }
@@ -563,7 +579,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
     if (!widget.interactive) return;
     final hit = _hitAt(event.localPosition);
     final id = switch (hit) {
-      MindMapNodeHit(:final id) => id,
+      MindMapNodeHit(:final id) || MindMapPartHit(:final id) => id,
       _ => null,
     };
     if (id != _hoverId) {

@@ -208,6 +208,26 @@ class MindMapEditingController extends ChangeNotifier {
     );
   }
 
+  /// 改一个节点（样式、贴纸、标签、备注、链接、待办……），一步撤销；
+  /// [coalesce] 相同的连续改动（如备注打字）合并为一步。
+  void updateNode(
+    String id,
+    MindMapNode Function(MindMapNode node) update, {
+    Object? coalesce,
+  }) => commit(
+    MindMapOps.updateNode(_document, id, update),
+    coalesce: coalesce,
+    animate: coalesce == null,
+  );
+
+  /// 切换待办完成状态（不是待办的节点不动）。
+  void toggleTask(String id) => updateNode(id, (node) {
+    if (!node.isTask) return node;
+    return node.copyWith(
+      task: <String, Object?>{...?node.task, 'done': !node.taskDone},
+    );
+  });
+
   /// 改导图级的设置（结构、主题、连线、间距、彩虹、点阵）。
   void updateDocument(MindMapDocument Function(MindMapDocument) update) =>
       commit(update(_document));

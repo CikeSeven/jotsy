@@ -21516,5 +21516,221 @@
   "settingsFeaturesMindMapsSubtitle": "新しい日記をマップにしたり、本文にマップを挿入したりできます",
   "@settingsFeaturesMindMapsSubtitle": {
     "description": "Features page: subtitle of the mind maps switch."
+  },
+  "mindMapAdd": "追加",
+  "@mindMapAdd": {
+    "description": "Mind map panels: add the typed label / emoji."
+  },
+  "mindMapInsert": "挿入",
+  "@mindMapInsert": {
+    "description": "Mind map: dock button and panel title for adding stickers, labels, a note, a link or a checkbox to a topic."
+  },
+  "mindMapMore": "その他",
+  "@mindMapMore": {
+    "description": "Mind map dock button that opens more actions for the selected topic."
+  },
+  "mindMapMarkers": "アイコン",
+  "@mindMapMarkers": {
+    "description": "Mind map: stickers on a topic (priority, progress, flags, stars, faces, symbols)."
+  },
+  "mindMapLabels": "ラベル",
+  "@mindMapLabels": {
+    "description": "Mind map: small labels under a topic's text."
+  },
+  "mindMapNote": "メモ",
+  "@mindMapNote": {
+    "description": "Mind map: a longer note attached to a topic."
+  },
+  "mindMapLink": "リンク",
+  "@mindMapLink": {
+    "description": "Mind map: a web link or a link to a diary on a topic."
+  },
+  "mindMapTask": "チェック",
+  "@mindMapTask": {
+    "description": "Mind map: turn a topic into a checkable task (or back)."
+  },
+  "mindMapNodeStyleTitle": "トピックのスタイル",
+  "@mindMapNodeStyleTitle": {
+    "description": "Title of the panel that styles one topic."
+  },
+  "mindMapShape": "形",
+  "@mindMapShape": {
+    "description": "Topic style panel: section title for the topic shape."
+  },
+  "mindMapShapeRounded": "角丸",
+  "@mindMapShapeRounded": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapePill": "カプセル",
+  "@mindMapShapePill": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeRect": "四角",
+  "@mindMapShapeRect": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeEllipse": "楕円",
+  "@mindMapShapeEllipse": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeUnderline": "下線",
+  "@mindMapShapeUnderline": {
+    "description": "Topic shape option: only a line under the text."
+  },
+  "mindMapShapePlain": "文字のみ",
+  "@mindMapShapePlain": {
+    "description": "Topic shape option: no box or line."
+  },
+  "mindMapFill": "塗り",
+  "@mindMapFill": {
+    "description": "Topic style panel: background color of the topic."
+  },
+  "mindMapTextColor": "文字色",
+  "@mindMapTextColor": {
+    "description": "Topic style panel: text color."
+  },
+  "mindMapBranchColor": "ブランチの色",
+  "@mindMapBranchColor": {
+    "description": "Topic style panel: color of this topic's whole branch (lines and subtopics)."
+  },
+  "mindMapColorDefault": "デフォルト",
+  "@mindMapColorDefault": {
+    "description": "Topic style panel: use the theme's color."
+  },
+  "mindMapTextStyle": "文字",
+  "@mindMapTextStyle": {
+    "description": "Topic style panel: section title for bold, italic, strikethrough and size."
+  },
+  "mindMapBold": "太字",
+  "@mindMapBold": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapItalic": "斜体",
+  "@mindMapItalic": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapStrike": "取り消し線",
+  "@mindMapStrike": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapSizeSmall": "小",
+  "@mindMapSizeSmall": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeMedium": "中",
+  "@mindMapSizeMedium": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeLarge": "大",
+  "@mindMapSizeLarge": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeHuge": "特大",
+  "@mindMapSizeHuge": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapResetStyle": "スタイルをリセット",
+  "@mindMapResetStyle": {
+    "description": "Topic style panel: remove all custom styles from the topic."
+  },
+  "mindMapMarkerPriority": "優先度",
+  "@mindMapMarkerPriority": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerProgress": "進捗",
+  "@mindMapMarkerProgress": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerFlag": "旗",
+  "@mindMapMarkerFlag": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerStar": "星",
+  "@mindMapMarkerStar": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerFace": "表情",
+  "@mindMapMarkerFace": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerSymbol": "記号",
+  "@mindMapMarkerSymbol": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerEmoji": "任意の絵文字",
+  "@mindMapMarkerEmoji": {
+    "description": "Sticker panel: section for adding any emoji as a sticker."
+  },
+  "mindMapEmojiHint": "絵文字を入力",
+  "@mindMapEmojiHint": {
+    "description": "Sticker panel: hint of the emoji input."
+  },
+  "mindMapClearMarkers": "アイコンをすべて削除",
+  "@mindMapClearMarkers": {
+    "description": "Sticker panel: remove every sticker from the topic."
+  },
+  "mindMapLabelHint": "新しいラベル",
+  "@mindMapLabelHint": {
+    "description": "Labels panel: hint of the input."
+  },
+  "mindMapNoteHint": "メモを書く…",
+  "@mindMapNoteHint": {
+    "description": "Note panel: hint of the input."
+  },
+  "mindMapLinkUrl": "URL",
+  "@mindMapLinkUrl": {
+    "description": "Link panel: link to a web address."
+  },
+  "mindMapLinkDiary": "日記",
+  "@mindMapLinkDiary": {
+    "description": "Link panel: link to one of your diaries."
+  },
+  "mindMapLinkOpen": "リンクを開く",
+  "@mindMapLinkOpen": {
+    "description": "Link panel: open the topic's current link."
+  },
+  "mindMapLinkRemove": "リンクを削除",
+  "@mindMapLinkRemove": {
+    "description": "Link panel: remove the topic's link."
+  },
+  "mindMapLinkInvalid": "有効な URL を入力してください",
+  "@mindMapLinkInvalid": {
+    "description": "Link panel: error when the typed web address can't be used."
+  },
+  "mindMapCopy": "コピー",
+  "@mindMapCopy": {
+    "description": "Mind map: copy the selected topic with its subtopics."
+  },
+  "mindMapCut": "切り取り",
+  "@mindMapCut": {
+    "description": "Mind map: cut the selected topic with its subtopics."
+  },
+  "mindMapPaste": "貼り付け",
+  "@mindMapPaste": {
+    "description": "Mind map: paste copied topics (or lines of text) under the selected topic."
+  },
+  "mindMapOutline": "アウトライン",
+  "@mindMapOutline": {
+    "description": "Mind map: switch to the outline (indented list) view."
+  },
+  "mindMapCanvasView": "マップ",
+  "@mindMapCanvasView": {
+    "description": "Mind map: switch back to the map canvas view."
+  },
+  "mindMapIndent": "インデント",
+  "@mindMapIndent": {
+    "description": "Mind map outline: make the topic a subtopic of the one above."
+  },
+  "mindMapOutdent": "インデント解除",
+  "@mindMapOutdent": {
+    "description": "Mind map outline: move the topic up one level."
+  },
+  "mindMapMoveUp": "上へ",
+  "@mindMapMoveUp": {
+    "description": "Mind map outline: move the topic above its previous sibling."
+  },
+  "mindMapMoveDown": "下へ",
+  "@mindMapMoveDown": {
+    "description": "Mind map outline: move the topic below its next sibling."
   }
 }

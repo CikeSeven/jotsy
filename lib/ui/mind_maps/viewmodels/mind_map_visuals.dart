@@ -137,12 +137,17 @@ final class MindMapStyleResolver {
           textColor = palette.onSurface;
       }
     }
-    // 自定义底色：文字取与底色对比更强的一侧（画布文字色或卡片底色）。
+    // 自定义颜色存的是种子色，与主题一样按明暗换算：底色取它的容器色、
+    // 文字取容器上的文字色；单独设的文字色取强调色（亮色较深、暗色较浅）。
     if (style.fill case final custom? when shape.boxed) {
-      fill = custom;
-      textColor = _contrastOn(custom);
+      final colors = palette.custom(custom);
+      fill = colors.container;
+      textColor = colors.onContainer;
+      border = null;
     }
-    if (style.color case final custom?) textColor = custom;
+    if (style.color case final custom?) {
+      textColor = palette.custom(custom).accent;
+    }
 
     final fontSize = level.fontSize * size;
     return MindMapNodeVisual(
@@ -195,20 +200,6 @@ final class MindMapStyleResolver {
       current = index.parentOf(current);
     }
     return palette.branch(index.branchOf(node.id), rainbow: rainbow);
-  }
-
-  Color _contrastOn(Color background) {
-    final lum = background.computeLuminance();
-    final a = palette.onSurface;
-    final b = palette.surface;
-    double ratio(Color c) {
-      final l = c.computeLuminance();
-      final hi = l > lum ? l : lum;
-      final lo = l > lum ? lum : l;
-      return (hi + 0.05) / (lo + 0.05);
-    }
-
-    return ratio(a) >= ratio(b) ? a : b;
   }
 }
 

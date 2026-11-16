@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/painting.dart' show AxisDirection;
 
+import '../layout/mind_map_node_content.dart';
 import '../layout/mind_map_scene.dart';
 import 'mind_map_frame.dart';
 
@@ -17,6 +18,14 @@ final class MindMapNodeHit extends MindMapHit {
   const MindMapNodeHit(this.id);
 
   final String id;
+}
+
+/// 点在节点里的某个部件上（待办框、备注、链接标记）。
+final class MindMapPartHit extends MindMapHit {
+  const MindMapPartHit(this.id, this.part);
+
+  final String id;
+  final MindMapNodePart part;
 }
 
 /// 点在收起 / 展开徽标上。
@@ -53,6 +62,10 @@ MindMapHit hitTestMindMap(
   for (final node in frame.nodes.reversed) {
     if (node.opacity < 0.5) continue;
     if (node.rect.inflate(slop).contains(point)) {
+      final scale = node.scale <= 0 ? 1.0 : node.scale;
+      final local = (point - node.rect.topLeft) / scale;
+      final part = node.scene.content.partAt(local, slop: slop / scale);
+      if (part != null) return MindMapPartHit(node.id, part);
       return MindMapNodeHit(node.id);
     }
   }

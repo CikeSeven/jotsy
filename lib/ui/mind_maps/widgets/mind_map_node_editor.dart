@@ -104,7 +104,10 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
       listenable: widget.viewport,
       builder: (BuildContext context, Widget? _) {
         final scale = widget.viewport.scale;
-        final rect = widget.viewport.toScreenRect(widget.node.rect);
+        // 输入框只盖住文字区（节点里还有待办框、贴纸等时文字不在正中）。
+        final rect = widget.viewport.toScreenRect(
+          widget.node.content.textRect.shift(widget.node.rect.topLeft),
+        );
         // 比节点宽出一截：新打的字先在输入框里排开，节点下一帧再变宽，
         // 不会先折行再跳回来。
         final extra = 48 * scale;
@@ -113,7 +116,6 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
           fontSize: (visual.textStyle.fontSize ?? 14) * scale,
           decoration: TextDecoration.none,
         );
-        final padding = visual.padding * scale;
         return Positioned(
           left: centered ? rect.left - extra / 2 : rect.left,
           top: rect.top,
@@ -146,9 +148,9 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
                 focusedErrorBorder: InputBorder.none,
                 counterText: '',
                 filled: false,
-                // 输入框比节点宽 extra（居中时两侧各一半），内容区因此比
-                // 节点里的文字宽出这一截余量，不会卡着边折行。
-                contentPadding: padding,
+                // 输入框比文字区宽 extra（居中时两侧各一半），留出余量，
+                // 新打的字不会卡着边折行。
+                contentPadding: EdgeInsets.zero,
               ),
             ),
           ),

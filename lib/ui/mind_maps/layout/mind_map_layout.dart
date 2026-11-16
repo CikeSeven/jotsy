@@ -6,6 +6,7 @@ import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../models/mind_map_options.dart';
 import '../viewmodels/mind_map_visuals.dart';
+import 'mind_map_node_content.dart';
 import 'mind_map_scene.dart';
 import 'mind_map_text_cache.dart';
 
@@ -71,6 +72,7 @@ final class _Box {
     required this.placeholder,
     required this.size,
     required this.hidden,
+    required this.content,
   });
 
   final MindMapNode node;
@@ -81,6 +83,7 @@ final class _Box {
   final bool placeholder;
   final Size size;
   final int hidden;
+  final MindMapNodeContent content;
   final List<_Box> children = <_Box>[];
   Rect rect = Rect.zero;
   MindMapFlow flow = MindMapFlow.right;
@@ -99,6 +102,9 @@ final class _Engine {
   final Map<String, MindMapEdgeRoute> _routeOverrides =
       <String, MindMapEdgeRoute>{};
   final Set<String> _noEdge = <String>{};
+
+  late final Map<String, ({int done, int total})> _progress =
+      mindMapTaskProgress(document.root);
 
   MindMapScene run() {
     final index = document.index;
@@ -131,6 +137,7 @@ final class _Engine {
           placeholder: box.placeholder,
           flow: box.flow,
           hiddenCount: box.hidden,
+          content: box.content,
         ),
     ];
     final edges = <MindMapSceneEdge>[
@@ -169,11 +176,19 @@ final class _Engine {
     final display = empty
         ? (depth == 0 ? config.rootPlaceholder : config.nodePlaceholder)
         : node.text;
-    final style = empty
+    final base = empty
         ? visual.textStyle.copyWith(
             color: config.styles.placeholderColor(visual),
           )
         : visual.textStyle;
+    // 完成的待办：文字变淡并划掉。
+    final style = node.taskDone && !empty
+        ? base.copyWith(
+            color: base.color?.withValues(alpha: (base.color?.a ?? 1) * 0.55),
+            decoration: TextDecoration.lineThrough,
+            decorationColor: base.color?.withValues(alpha: 0.55),
+          )
+        : base;
     final text = config.texts.painterFor(
       display,
       style,
@@ -185,12 +200,14 @@ final class _Engine {
       1 => 44.0,
       _ => 20.0,
     };
-    var width = math.max(text.width, minText) + visual.padding.horizontal;
-    var height = text.height + visual.padding.vertical;
-    if (visual.shape == MindMapNodeShape.ellipse) {
-      width *= 1.22;
-      height *= 1.3;
-    }
+    final content = measureMindMapNodeContent(
+      node: node,
+      visual: visual,
+      text: text,
+      minTextWidth: minText,
+      texts: config.texts,
+      progress: _progress[node.id],
+    );
     final hidden = node.collapsed && node.children.isNotEmpty
         ? index.descendantCountOf(node.id)
         : 0;
@@ -201,8 +218,9 @@ final class _Engine {
       visual: visual,
       text: text,
       placeholder: empty,
-      size: Size(width.ceilToDouble(), height.ceilToDouble()),
+      size: content.size,
       hidden: hidden,
+      content: content,
     );
     _order.add(box);
     if (!node.collapsed) {

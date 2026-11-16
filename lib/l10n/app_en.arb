@@ -20949,5 +20949,221 @@
   "settingsFeaturesMindMapsSubtitle": "Turn a new diary into a mind map, or insert one into the body",
   "@settingsFeaturesMindMapsSubtitle": {
     "description": "Features page: subtitle of the mind maps switch."
+  },
+  "mindMapAdd": "Add",
+  "@mindMapAdd": {
+    "description": "Mind map panels: add the typed label / emoji."
+  },
+  "mindMapInsert": "Insert",
+  "@mindMapInsert": {
+    "description": "Mind map: dock button and panel title for adding stickers, labels, a note, a link or a checkbox to a topic."
+  },
+  "mindMapMore": "More",
+  "@mindMapMore": {
+    "description": "Mind map dock button that opens more actions for the selected topic."
+  },
+  "mindMapMarkers": "Stickers",
+  "@mindMapMarkers": {
+    "description": "Mind map: stickers on a topic (priority, progress, flags, stars, faces, symbols)."
+  },
+  "mindMapLabels": "Labels",
+  "@mindMapLabels": {
+    "description": "Mind map: small labels under a topic's text."
+  },
+  "mindMapNote": "Note",
+  "@mindMapNote": {
+    "description": "Mind map: a longer note attached to a topic."
+  },
+  "mindMapLink": "Link",
+  "@mindMapLink": {
+    "description": "Mind map: a web link or a link to a diary on a topic."
+  },
+  "mindMapTask": "Checkbox",
+  "@mindMapTask": {
+    "description": "Mind map: turn a topic into a checkable task (or back)."
+  },
+  "mindMapNodeStyleTitle": "Topic style",
+  "@mindMapNodeStyleTitle": {
+    "description": "Title of the panel that styles one topic."
+  },
+  "mindMapShape": "Shape",
+  "@mindMapShape": {
+    "description": "Topic style panel: section title for the topic shape."
+  },
+  "mindMapShapeRounded": "Rounded",
+  "@mindMapShapeRounded": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapePill": "Pill",
+  "@mindMapShapePill": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeRect": "Square",
+  "@mindMapShapeRect": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeEllipse": "Ellipse",
+  "@mindMapShapeEllipse": {
+    "description": "Topic shape option."
+  },
+  "mindMapShapeUnderline": "Underline",
+  "@mindMapShapeUnderline": {
+    "description": "Topic shape option: only a line under the text."
+  },
+  "mindMapShapePlain": "Text only",
+  "@mindMapShapePlain": {
+    "description": "Topic shape option: no box or line."
+  },
+  "mindMapFill": "Fill",
+  "@mindMapFill": {
+    "description": "Topic style panel: background color of the topic."
+  },
+  "mindMapTextColor": "Text color",
+  "@mindMapTextColor": {
+    "description": "Topic style panel: text color."
+  },
+  "mindMapBranchColor": "Branch color",
+  "@mindMapBranchColor": {
+    "description": "Topic style panel: color of this topic's whole branch (lines and subtopics)."
+  },
+  "mindMapColorDefault": "Default",
+  "@mindMapColorDefault": {
+    "description": "Topic style panel: use the theme's color."
+  },
+  "mindMapTextStyle": "Text",
+  "@mindMapTextStyle": {
+    "description": "Topic style panel: section title for bold, italic, strikethrough and size."
+  },
+  "mindMapBold": "Bold",
+  "@mindMapBold": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapItalic": "Italic",
+  "@mindMapItalic": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapStrike": "Strikethrough",
+  "@mindMapStrike": {
+    "description": "Topic style panel tooltip."
+  },
+  "mindMapSizeSmall": "S",
+  "@mindMapSizeSmall": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeMedium": "M",
+  "@mindMapSizeMedium": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeLarge": "L",
+  "@mindMapSizeLarge": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapSizeHuge": "XL",
+  "@mindMapSizeHuge": {
+    "description": "Topic text size option (very short)."
+  },
+  "mindMapResetStyle": "Reset style",
+  "@mindMapResetStyle": {
+    "description": "Topic style panel: remove all custom styles from the topic."
+  },
+  "mindMapMarkerPriority": "Priority",
+  "@mindMapMarkerPriority": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerProgress": "Progress",
+  "@mindMapMarkerProgress": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerFlag": "Flags",
+  "@mindMapMarkerFlag": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerStar": "Stars",
+  "@mindMapMarkerStar": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerFace": "Faces",
+  "@mindMapMarkerFace": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerSymbol": "Symbols",
+  "@mindMapMarkerSymbol": {
+    "description": "Sticker group title."
+  },
+  "mindMapMarkerEmoji": "Any emoji",
+  "@mindMapMarkerEmoji": {
+    "description": "Sticker panel: section for adding any emoji as a sticker."
+  },
+  "mindMapEmojiHint": "Type an emoji",
+  "@mindMapEmojiHint": {
+    "description": "Sticker panel: hint of the emoji input."
+  },
+  "mindMapClearMarkers": "Remove all stickers",
+  "@mindMapClearMarkers": {
+    "description": "Sticker panel: remove every sticker from the topic."
+  },
+  "mindMapLabelHint": "New label",
+  "@mindMapLabelHint": {
+    "description": "Labels panel: hint of the input."
+  },
+  "mindMapNoteHint": "Write a note…",
+  "@mindMapNoteHint": {
+    "description": "Note panel: hint of the input."
+  },
+  "mindMapLinkUrl": "Web link",
+  "@mindMapLinkUrl": {
+    "description": "Link panel: link to a web address."
+  },
+  "mindMapLinkDiary": "Diary",
+  "@mindMapLinkDiary": {
+    "description": "Link panel: link to one of your diaries."
+  },
+  "mindMapLinkOpen": "Open link",
+  "@mindMapLinkOpen": {
+    "description": "Link panel: open the topic's current link."
+  },
+  "mindMapLinkRemove": "Remove",
+  "@mindMapLinkRemove": {
+    "description": "Link panel: remove the topic's link."
+  },
+  "mindMapLinkInvalid": "Enter a valid web address",
+  "@mindMapLinkInvalid": {
+    "description": "Link panel: error when the typed web address can't be used."
+  },
+  "mindMapCopy": "Copy",
+  "@mindMapCopy": {
+    "description": "Mind map: copy the selected topic with its subtopics."
+  },
+  "mindMapCut": "Cut",
+  "@mindMapCut": {
+    "description": "Mind map: cut the selected topic with its subtopics."
+  },
+  "mindMapPaste": "Paste",
+  "@mindMapPaste": {
+    "description": "Mind map: paste copied topics (or lines of text) under the selected topic."
+  },
+  "mindMapOutline": "Outline",
+  "@mindMapOutline": {
+    "description": "Mind map: switch to the outline (indented list) view."
+  },
+  "mindMapCanvasView": "Map",
+  "@mindMapCanvasView": {
+    "description": "Mind map: switch back to the map canvas view."
+  },
+  "mindMapIndent": "Indent",
+  "@mindMapIndent": {
+    "description": "Mind map outline: make the topic a subtopic of the one above."
+  },
+  "mindMapOutdent": "Outdent",
+  "@mindMapOutdent": {
+    "description": "Mind map outline: move the topic up one level."
+  },
+  "mindMapMoveUp": "Move up",
+  "@mindMapMoveUp": {
+    "description": "Mind map outline: move the topic above its previous sibling."
+  },
+  "mindMapMoveDown": "Move down",
+  "@mindMapMoveDown": {
+    "description": "Mind map outline: move the topic below its next sibling."
   }
 }

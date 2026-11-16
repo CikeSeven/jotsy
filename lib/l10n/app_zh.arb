@@ -20949,5 +20949,221 @@
   "settingsFeaturesMindMapsSubtitle": "新建日记可以转成导图，正文里也能插入导图",
   "@settingsFeaturesMindMapsSubtitle": {
     "description": "功能管理页：思维导图开关的说明。"
+  },
+  "mindMapAdd": "添加",
+  "@mindMapAdd": {
+    "description": "思维导图面板：添加输入的标签或 emoji。"
+  },
+  "mindMapInsert": "插入",
+  "@mindMapInsert": {
+    "description": "思维导图：给主题加图标、标签、备注、链接或待办的工具坞按钮与面板标题。"
+  },
+  "mindMapMore": "更多",
+  "@mindMapMore": {
+    "description": "思维导图工具坞：选中主题的更多操作。"
+  },
+  "mindMapMarkers": "图标",
+  "@mindMapMarkers": {
+    "description": "思维导图：主题上的图标贴纸（优先级、进度、旗帜、星标、表情、符号）。"
+  },
+  "mindMapLabels": "标签",
+  "@mindMapLabels": {
+    "description": "思维导图：主题文字下方的小标签。"
+  },
+  "mindMapNote": "备注",
+  "@mindMapNote": {
+    "description": "思维导图：附在主题上的备注。"
+  },
+  "mindMapLink": "链接",
+  "@mindMapLink": {
+    "description": "思维导图：主题上的网址或日记链接。"
+  },
+  "mindMapTask": "待办",
+  "@mindMapTask": {
+    "description": "思维导图：把主题变成可勾选的待办（或取消）。"
+  },
+  "mindMapNodeStyleTitle": "主题样式",
+  "@mindMapNodeStyleTitle": {
+    "description": "设置单个主题样式的面板标题。"
+  },
+  "mindMapShape": "形状",
+  "@mindMapShape": {
+    "description": "主题样式面板：形状分组的标题。"
+  },
+  "mindMapShapeRounded": "圆角",
+  "@mindMapShapeRounded": {
+    "description": "主题形状选项。"
+  },
+  "mindMapShapePill": "胶囊",
+  "@mindMapShapePill": {
+    "description": "主题形状选项。"
+  },
+  "mindMapShapeRect": "方角",
+  "@mindMapShapeRect": {
+    "description": "主题形状选项。"
+  },
+  "mindMapShapeEllipse": "椭圆",
+  "@mindMapShapeEllipse": {
+    "description": "主题形状选项。"
+  },
+  "mindMapShapeUnderline": "下划线",
+  "@mindMapShapeUnderline": {
+    "description": "主题形状选项：只有文字下方一条线。"
+  },
+  "mindMapShapePlain": "纯文字",
+  "@mindMapShapePlain": {
+    "description": "主题形状选项：没有框也没有线。"
+  },
+  "mindMapFill": "底色",
+  "@mindMapFill": {
+    "description": "主题样式面板：主题的底色。"
+  },
+  "mindMapTextColor": "文字颜色",
+  "@mindMapTextColor": {
+    "description": "主题样式面板：文字颜色。"
+  },
+  "mindMapBranchColor": "分支颜色",
+  "@mindMapBranchColor": {
+    "description": "主题样式面板：这个主题整条分支（连线与子主题）的颜色。"
+  },
+  "mindMapColorDefault": "默认",
+  "@mindMapColorDefault": {
+    "description": "主题样式面板：使用配色主题的颜色。"
+  },
+  "mindMapTextStyle": "文字",
+  "@mindMapTextStyle": {
+    "description": "主题样式面板：粗体、斜体、删除线与字号分组的标题。"
+  },
+  "mindMapBold": "粗体",
+  "@mindMapBold": {
+    "description": "主题样式面板按钮提示。"
+  },
+  "mindMapItalic": "斜体",
+  "@mindMapItalic": {
+    "description": "主题样式面板按钮提示。"
+  },
+  "mindMapStrike": "删除线",
+  "@mindMapStrike": {
+    "description": "主题样式面板按钮提示。"
+  },
+  "mindMapSizeSmall": "小",
+  "@mindMapSizeSmall": {
+    "description": "主题字号选项（很短）。"
+  },
+  "mindMapSizeMedium": "中",
+  "@mindMapSizeMedium": {
+    "description": "主题字号选项（很短）。"
+  },
+  "mindMapSizeLarge": "大",
+  "@mindMapSizeLarge": {
+    "description": "主题字号选项（很短）。"
+  },
+  "mindMapSizeHuge": "特大",
+  "@mindMapSizeHuge": {
+    "description": "主题字号选项（很短）。"
+  },
+  "mindMapResetStyle": "恢复默认样式",
+  "@mindMapResetStyle": {
+    "description": "主题样式面板：去掉这个主题的全部自定义样式。"
+  },
+  "mindMapMarkerPriority": "优先级",
+  "@mindMapMarkerPriority": {
+    "description": "图标分组标题。"
+  },
+  "mindMapMarkerProgress": "进度",
+  "@mindMapMarkerProgress": {
+    "description": "图标分组标题。"
+  },
+  "mindMapMarkerFlag": "旗帜",
+  "@mindMapMarkerFlag": {
+    "description": "图标分组标题。"
+  },
+  "mindMapMarkerStar": "星标",
+  "@mindMapMarkerStar": {
+    "description": "图标分组标题。"
+  },
+  "mindMapMarkerFace": "表情",
+  "@mindMapMarkerFace": {
+    "description": "图标分组标题。"
+  },
+  "mindMapMarkerSymbol": "符号",
+  "@mindMapMarkerSymbol": {
+    "description": "图标分组标题。"
+  },
+  "mindMapMarkerEmoji": "任意 emoji",
+  "@mindMapMarkerEmoji": {
+    "description": "图标面板：把任意 emoji 加成图标的分组。"
+  },
+  "mindMapEmojiHint": "输入一个 emoji",
+  "@mindMapEmojiHint": {
+    "description": "图标面板：emoji 输入框的提示。"
+  },
+  "mindMapClearMarkers": "清除全部图标",
+  "@mindMapClearMarkers": {
+    "description": "图标面板：去掉这个主题的全部图标。"
+  },
+  "mindMapLabelHint": "新标签",
+  "@mindMapLabelHint": {
+    "description": "标签面板：输入框提示。"
+  },
+  "mindMapNoteHint": "写点备注…",
+  "@mindMapNoteHint": {
+    "description": "备注面板：输入框提示。"
+  },
+  "mindMapLinkUrl": "网址",
+  "@mindMapLinkUrl": {
+    "description": "链接面板：链接到一个网址。"
+  },
+  "mindMapLinkDiary": "日记",
+  "@mindMapLinkDiary": {
+    "description": "链接面板：链接到一篇日记。"
+  },
+  "mindMapLinkOpen": "打开链接",
+  "@mindMapLinkOpen": {
+    "description": "链接面板：打开主题当前的链接。"
+  },
+  "mindMapLinkRemove": "移除链接",
+  "@mindMapLinkRemove": {
+    "description": "链接面板：移除主题的链接。"
+  },
+  "mindMapLinkInvalid": "请输入有效的网址",
+  "@mindMapLinkInvalid": {
+    "description": "链接面板：输入的网址无效时的提示。"
+  },
+  "mindMapCopy": "复制",
+  "@mindMapCopy": {
+    "description": "思维导图：复制选中的主题（连同子主题）。"
+  },
+  "mindMapCut": "剪切",
+  "@mindMapCut": {
+    "description": "思维导图：剪切选中的主题（连同子主题）。"
+  },
+  "mindMapPaste": "粘贴",
+  "@mindMapPaste": {
+    "description": "思维导图：把复制的主题（或多行文字）粘贴到选中主题下。"
+  },
+  "mindMapOutline": "大纲",
+  "@mindMapOutline": {
+    "description": "思维导图：切换到大纲（缩进列表）视图。"
+  },
+  "mindMapCanvasView": "画布",
+  "@mindMapCanvasView": {
+    "description": "思维导图：切换回画布视图。"
+  },
+  "mindMapIndent": "缩进",
+  "@mindMapIndent": {
+    "description": "思维导图大纲：变成上一个主题的子主题。"
+  },
+  "mindMapOutdent": "取消缩进",
+  "@mindMapOutdent": {
+    "description": "思维导图大纲：提到上一层。"
+  },
+  "mindMapMoveUp": "上移",
+  "@mindMapMoveUp": {
+    "description": "思维导图大纲：移到前一个同级主题之前。"
+  },
+  "mindMapMoveDown": "下移",
+  "@mindMapMoveDown": {
+    "description": "思维导图大纲：移到后一个同级主题之后。"
   }
 }

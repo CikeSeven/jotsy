@@ -18406,4 +18406,166 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsFeaturesMindMapsSubtitle =>
       'Turn a new diary into a mind map, or insert one into the body';
+
+  @override
+  String get mindMapAdd => 'Add';
+
+  @override
+  String get mindMapInsert => 'Insert';
+
+  @override
+  String get mindMapMore => 'More';
+
+  @override
+  String get mindMapMarkers => 'Stickers';
+
+  @override
+  String get mindMapLabels => 'Labels';
+
+  @override
+  String get mindMapNote => 'Note';
+
+  @override
+  String get mindMapLink => 'Link';
+
+  @override
+  String get mindMapTask => 'Checkbox';
+
+  @override
+  String get mindMapNodeStyleTitle => 'Topic style';
+
+  @override
+  String get mindMapShape => 'Shape';
+
+  @override
+  String get mindMapShapeRounded => 'Rounded';
+
+  @override
+  String get mindMapShapePill => 'Pill';
+
+  @override
+  String get mindMapShapeRect => 'Square';
+
+  @override
+  String get mindMapShapeEllipse => 'Ellipse';
+
+  @override
+  String get mindMapShapeUnderline => 'Underline';
+
+  @override
+  String get mindMapShapePlain => 'Text only';
+
+  @override
+  String get mindMapFill => 'Fill';
+
+  @override
+  String get mindMapTextColor => 'Text color';
+
+  @override
+  String get mindMapBranchColor => 'Branch color';
+
+  @override
+  String get mindMapColorDefault => 'Default';
+
+  @override
+  String get mindMapTextStyle => 'Text';
+
+  @override
+  String get mindMapBold => 'Bold';
+
+  @override
+  String get mindMapItalic => 'Italic';
+
+  @override
+  String get mindMapStrike => 'Strikethrough';
+
+  @override
+  String get mindMapSizeSmall => 'S';
+
+  @override
+  String get mindMapSizeMedium => 'M';
+
+  @override
+  String get mindMapSizeLarge => 'L';
+
+  @override
+  String get mindMapSizeHuge => 'XL';
+
+  @override
+  String get mindMapResetStyle => 'Reset style';
+
+  @override
+  String get mindMapMarkerPriority => 'Priority';
+
+  @override
+  String get mindMapMarkerProgress => 'Progress';
+
+  @override
+  String get mindMapMarkerFlag => 'Flags';
+
+  @override
+  String get mindMapMarkerStar => 'Stars';
+
+  @override
+  String get mindMapMarkerFace => 'Faces';
+
+  @override
+  String get mindMapMarkerSymbol => 'Symbols';
+
+  @override
+  String get mindMapMarkerEmoji => 'Any emoji';
+
+  @override
+  String get mindMapEmojiHint => 'Type an emoji';
+
+  @override
+  String get mindMapClearMarkers => 'Remove all stickers';
+
+  @override
+  String get mindMapLabelHint => 'New label';
+
+  @override
+  String get mindMapNoteHint => 'Write a note…';
+
+  @override
+  String get mindMapLinkUrl => 'Web link';
+
+  @override
+  String get mindMapLinkDiary => 'Diary';
+
+  @override
+  String get mindMapLinkOpen => 'Open link';
+
+  @override
+  String get mindMapLinkRemove => 'Remove';
+
+  @override
+  String get mindMapLinkInvalid => 'Enter a valid web address';
+
+  @override
+  String get mindMapCopy => 'Copy';
+
+  @override
+  String get mindMapCut => 'Cut';
+
+  @override
+  String get mindMapPaste => 'Paste';
+
+  @override
+  String get mindMapOutline => 'Outline';
+
+  @override
+  String get mindMapCanvasView => 'Map';
+
+  @override
+  String get mindMapIndent => 'Indent';
+
+  @override
+  String get mindMapOutdent => 'Outdent';
+
+  @override
+  String get mindMapMoveUp => 'Move up';
+
+  @override
+  String get mindMapMoveDown => 'Move down';
 }

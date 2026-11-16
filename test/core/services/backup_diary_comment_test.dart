@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/rich_text/inline_rich_text.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/data_archive_service.dart';
 
@@ -55,6 +56,18 @@ void main() {
 
     expect(await comments(), original);
     expect(result.addedComments, 2);
+  });
+
+  test('comment formats survive a backup and restore', () async {
+    const runs = <InlineTextRun>[
+      InlineTextRun('粗', InlineTextMarks(bold: true)),
+      InlineTextRun('链', InlineTextMarks(href: 'https://example.com')),
+    ];
+    await db().addDiaryComment(diaryId: diaryId, content: '粗链', runs: runs);
+    final payload = await fixture.capturePayload();
+    await db().delete(db().diaryComments).go();
+    await importWith(payload, BackupImportMode.replaceAll);
+    expect((await comments()).single.textRuns, runs);
   });
 
   test(

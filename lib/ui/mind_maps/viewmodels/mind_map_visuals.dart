@@ -209,7 +209,7 @@ final class MindMapStyleResolver {
   /// 颜色的字也一样）。没有局部样式时就是一段纯文字。
   TextSpan textSpanOf(
     MindMapNodeVisual visual,
-    List<MindMapTextRun> runs, {
+    List<InlineTextRun> runs, {
     bool taskDone = false,
   }) {
     var base = visual.textStyleWithHighlight;
@@ -226,7 +226,7 @@ final class MindMapStyleResolver {
         decorationColor: color?.withValues(alpha: 0.55),
       );
     }
-    final text = mindMapRunsText(runs);
+    final text = inlineRunsText(runs);
     if (runs.every((run) => run.marks.isEmpty)) {
       return TextSpan(text: text, style: base);
     }
@@ -258,7 +258,7 @@ final class MindMapStyleResolver {
   /// 的墨色（[readableInk]）。整条样式（`style`）也可经
   /// [MindMapNodeStyle.textMarks] 走这里（大纲视图）。
   TextStyle? runStyle(
-    MindMapTextMarks marks, {
+    InlineTextMarks marks, {
     TextDecoration? base,
     Color? ink,
     Color? backdrop,
@@ -378,7 +378,7 @@ final class MindMapNodeStyle {
 
   /// 整条样式里与文字有关的几项，按局部样式的形状读出（大纲视图经
   /// [MindMapStyleResolver.runStyle] 画整条样式时用）。
-  MindMapTextMarks get textMarks => MindMapTextMarks(
+  InlineTextMarks get textMarks => InlineTextMarks(
     bold: bold,
     italic: italic,
     underline: underline,

@@ -12,11 +12,10 @@ import '../../diaries/models/diary_text_colors.dart';
 /// 里用过的颜色”给色板页的我的颜色一行。
 
 /// 面板目标对应的导图颜色。
-MindMapColorMark mindMapColorMarkOf(DiaryColorTarget target) =>
-    switch (target) {
-      DiaryColorTarget.text => MindMapColorMark.color,
-      DiaryColorTarget.background => MindMapColorMark.highlight,
-    };
+InlineColorMark mindMapColorMarkOf(DiaryColorTarget target) => switch (target) {
+  DiaryColorTarget.text => InlineColorMark.color,
+  DiaryColorTarget.background => InlineColorMark.highlight,
+};
 
 /// 这张导图里用过、但不是预设的 [target] 颜色（整条样式与局部样式都算，
 /// 按先序去重，读不懂的值跳过）。只在面板打开、切换目标与回到色板时整理。

@@ -12,20 +12,19 @@ import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/mind_map_editing_controller.dart';
-import '../controllers/mind_map_rich_text_controller.dart';
+import '../../widgets/rich_text/inline_rich_text_controller.dart';
 import '../models/mind_map_markers.dart';
 import '../viewmodels/mind_map_look.dart';
 import '../models/mind_map_themes.dart';
 import '../viewmodels/mind_map_palette.dart';
 import '../viewmodels/mind_map_visuals.dart';
-import 'mind_map_node_editor.dart' show mindMapFormatShortcut;
 
 /// 大纲视图：同一张导图的缩进列表，与画布编辑的是同一份文档、同一个
 /// 选中与编辑状态。
 ///
 /// - 点一行选中并编辑文字；行首圆点为分支色，有子主题时是可点的折叠箭头；
 ///   字号按层级，主题的文字样式（整条的与局部的）照画，编辑框同样经
-///   [MindMapRichTextController] 设局部样式（格式条与快捷键与画布相同）；
+///   [InlineRichTextController] 设局部样式（格式条与快捷键与画布相同）；
 /// - 编辑中：Enter 在后面加同级（行首回车加在前面），空行退格删除这一行并
 ///   编辑上一行；桌面另有 Tab / Shift + Tab 缩进与取消缩进、Alt + ↑ / ↓
 ///   上移下移；手机上这些操作在键盘上方的附件条里（由工作区提供）；
@@ -159,7 +158,7 @@ class _OutlineRow extends StatefulWidget {
 }
 
 class _OutlineRowState extends State<_OutlineRow> {
-  MindMapRichTextController? _text;
+  InlineRichTextController? _text;
   FocusNode? _focus;
 
   MindMapEditingController get _controller => widget.controller;
@@ -185,7 +184,7 @@ class _OutlineRowState extends State<_OutlineRow> {
 
   void _syncEditor() {
     if (_editing && _text == null) {
-      final text = MindMapRichTextController(
+      final text = InlineRichTextController(
         runs: mindMapRunsOf(widget.node),
         onChanged: _onChanged,
       )..selection = TextSelection.collapsed(offset: widget.node.text.length);
@@ -223,7 +222,7 @@ class _OutlineRowState extends State<_OutlineRow> {
 
   void _onChanged(
     String text,
-    List<MindMapTextRun> runs, {
+    List<InlineTextRun> runs, {
     bool format = false,
   }) => _controller.setRichText(widget.node.id, text, runs, format: format);
 
@@ -243,7 +242,7 @@ class _OutlineRowState extends State<_OutlineRow> {
     if (text == null || text.value.composing.isValid) {
       return KeyEventResult.ignored;
     }
-    if (mindMapFormatShortcut(event) case final mark?) {
+    if (inlineFormatShortcut(event) case final mark?) {
       text.toggle(mark);
       return KeyEventResult.handled;
     }
@@ -330,7 +329,7 @@ class _OutlineRowState extends State<_OutlineRow> {
         color: color.withValues(alpha: color.a * 0.55),
       );
     }
-    TextStyle? runStyle(MindMapTextMarks marks) => widget.styles.runStyle(
+    TextStyle? runStyle(InlineTextMarks marks) => widget.styles.runStyle(
       marks,
       base: style?.decoration,
       ink: style?.color,
@@ -339,7 +338,7 @@ class _OutlineRowState extends State<_OutlineRow> {
     );
     _text
       ?..runStyle = runStyle
-      ..base = mindMapBaseMarksOf(style);
+      ..base = inlineBaseMarksOf(style);
     final placeholder = depth == 0
         ? context.l10n.mindMapRootPlaceholder
         : context.l10n.mindMapNodePlaceholder;

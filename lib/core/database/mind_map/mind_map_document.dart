@@ -125,7 +125,7 @@ final class MindMapNode {
     kMindMapNodeTextKey: text,
     // 只写出与文字对得上、且确有样式的局部样式（旧版本改过文字留下的、
     // 已经对不上的那份随这次保存丢掉）。
-    if (delta case final delta? when mindMapDeltaMatches(delta, text))
+    if (delta case final delta? when inlineDeltaMatches(delta, text))
       kMindMapNodeDeltaKey: delta,
     if (children.isNotEmpty)
       kMindMapNodeChildrenKey: <Map<String, Object?>>[

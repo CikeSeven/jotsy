@@ -253,6 +253,23 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v23 留言表加 `delta`（可空，留言文字的格式，见
+  /// `diary_comment_rich_text.dart`）。
+  ///
+  /// 与 [_migrateDiaryCommentsAddImages] 同理，列已存在时跳过（从 v16 之前
+  /// 升级时按最新定义建表已带上它，降级后再升级时旧构建不会删列）；可空、
+  /// 没有默认值，旧行读成“没有格式”。降级后旧构建改了文字留下的格式与文字
+  /// 对不上，读取时按没有格式处理。
+  Future<void> _migrateDiaryCommentsAddDelta(Migrator migrator) async {
+    final columns = await customSelect(
+      'PRAGMA table_info(diary_comments)',
+    ).get();
+    final present = columns.any((row) => row.read<String>('name') == 'delta');
+    if (!present) {
+      await migrator.addColumn(diaryComments, diaryComments.delta);
+    }
+  }
+
   /// v20 AI 消息加 `steps`（智能体的工具步骤 JSON，默认 `[]`）。
   ///
   /// 与 [_migrateDiaryCommentsAddImages] 同理，列已存在时跳过：从 v17 之前

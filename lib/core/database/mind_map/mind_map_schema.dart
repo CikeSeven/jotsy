@@ -23,6 +23,8 @@
 /// mind_map_document.dart 的 `extra`）。
 library;
 
+import '../rich_text/inline_rich_text.dart';
+
 /// 当前文档版本。
 const int kMindMapVersion = 1;
 
@@ -82,19 +84,19 @@ const String kMindMapNodeBoundaryKey = 'boundary';
 // ---- 样式键 ----
 
 const String kMindMapStyleFillKey = 'fill';
-const String kMindMapStyleColorKey = 'color';
+const String kMindMapStyleColorKey = kInlineColorKey;
 const String kMindMapStyleBranchKey = 'branch';
 const String kMindMapStyleShapeKey = 'shape';
-const String kMindMapStyleBoldKey = 'bold';
-const String kMindMapStyleItalicKey = 'italic';
-const String kMindMapStyleStrikeKey = 'strike';
+const String kMindMapStyleBoldKey = kInlineBoldKey;
+const String kMindMapStyleItalicKey = kInlineItalicKey;
+const String kMindMapStyleStrikeKey = kInlineStrikeKey;
 
 /// 文字下划线（与形状里的“下划线”不同：那是节点下方的一条线）。
-const String kMindMapStyleUnderlineKey = 'underline';
+const String kMindMapStyleUnderlineKey = kInlineUnderlineKey;
 
 /// 文字高亮：字后面的底色（原色，可带透明度），与节点框的底色 `fill` 不同，
 /// 不带形状的主题也能用。
-const String kMindMapStyleHighlightKey = 'highlight';
+const String kMindMapStyleHighlightKey = kInlineHighlightKey;
 const String kMindMapStyleSizeKey = 'size';
 
 // ---- 正文块 data 键 ----

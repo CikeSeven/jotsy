@@ -38,44 +38,33 @@ Future<void> editDiaryLink(
     final href = controller.selectionAttributes['href'];
     initial = href is String ? href : null;
   }
-  final current = DiaryLinkTarget.tryParse(initial);
   final linkSource = controller.linkSource;
-  final notebooks = ProviderScope.containerOf(
+  final choice = await showDiaryLinkDialog(
     context,
-    listen: false,
-  ).read(appFeaturesProvider).notebooks;
-  final choice = await showAppDialog<_LinkChoice>(
-    context: context,
-    builder: (context) => _DiaryLinkDialog(
-      initialUrl: current == null ? initial ?? '' : '',
-      current: current,
-      hasLink: initial != null,
-      targets: linkSource == null || controller.readOnly
-          ? const []
-          : [DiaryLinkKind.diary, if (notebooks) DiaryLinkKind.notebook],
-      excludeDiaryId: linkSource?.diaryId,
-    ),
+    initialHref: initial,
+    linkTargets: linkSource != null && !controller.readOnly,
+    excludeDiaryId: linkSource?.diaryId,
   );
   if (choice == null || controller.state.isDisposed) return;
   switch (choice) {
-    case _WebLink(:final url) when selection.isCollapsed:
+    case DiaryWebLinkChoice(:final url) when selection.isCollapsed:
       controller.select(selection);
       if (url.isEmpty) {
         controller.linkTyping.end();
       } else {
         controller.linkTyping.begin(url);
       }
-    case _WebLink(:final url):
+    case DiaryWebLinkChoice(:final url):
       controller.select(selection);
       controller.format('href', url.isEmpty ? null : url);
-    case _RemoveLink() when selection.isCollapsed:
+    case DiaryRemoveLinkChoice() when selection.isCollapsed:
       // 只有链接输入会话里还没打字时，折叠光标会显示“移除链接”。
       controller.select(selection);
       controller.linkTyping.end();
-    case _RemoveLink():
+    case DiaryRemoveLinkChoice():
       controller.select(selection);
       controller.format('href', null);
-    case _TargetLink(:final candidate):
+    case DiaryTargetLinkChoice(:final candidate):
       applyDiaryLinkToSelection(
         controller,
         selection,
@@ -85,23 +74,57 @@ Future<void> editDiaryLink(
   }
 }
 
-/// 对话框的结果。
-sealed class _LinkChoice {
-  const _LinkChoice();
+/// 打开链接对话框（正文与写留言面板共用），返回选择；取消为 null。
+///
+/// [initialHref] 为选区现有的链接（网址或日记链接），有时才给“移除链接”；
+/// [linkTargets] 为 true 时顶部分“网址 / 日记 / 日记本”三页（日记本功能
+/// 关闭时没有第三页），否则只有网址；[excludeDiaryId] 为正在写的这篇，
+/// 不出现在候选里。网址经补全协议与校验（只接受 http(s)、mailto 与 tel），
+/// 空网址即移除链接。
+Future<DiaryLinkChoice?> showDiaryLinkDialog(
+  BuildContext context, {
+  String? initialHref,
+  required bool linkTargets,
+  String? excludeDiaryId,
+}) {
+  final current = DiaryLinkTarget.tryParse(initialHref);
+  final notebooks = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(appFeaturesProvider).notebooks;
+  return showAppDialog<DiaryLinkChoice>(
+    context: context,
+    builder: (context) => _DiaryLinkDialog(
+      initialUrl: current == null ? initialHref ?? '' : '',
+      current: current,
+      hasLink: initialHref != null,
+      targets: linkTargets
+          ? [DiaryLinkKind.diary, if (notebooks) DiaryLinkKind.notebook]
+          : const [],
+      excludeDiaryId: excludeDiaryId,
+    ),
+  );
+}
+
+/// 链接对话框的结果。
+sealed class DiaryLinkChoice {
+  const DiaryLinkChoice();
 }
 
 /// 网址（规整后；空字符串为移除链接）。
-class _WebLink extends _LinkChoice {
-  const _WebLink(this.url);
+class DiaryWebLinkChoice extends DiaryLinkChoice {
+  const DiaryWebLinkChoice(this.url);
   final String url;
 }
 
-class _RemoveLink extends _LinkChoice {
-  const _RemoveLink();
+/// 移除选区现有的链接。
+class DiaryRemoveLinkChoice extends DiaryLinkChoice {
+  const DiaryRemoveLinkChoice();
 }
 
-class _TargetLink extends _LinkChoice {
-  const _TargetLink(this.candidate);
+/// 选中的日记或日记本。
+class DiaryTargetLinkChoice extends DiaryLinkChoice {
+  const DiaryTargetLinkChoice(this.candidate);
   final DiaryLinkCandidate candidate;
 }
 
@@ -171,7 +194,7 @@ class _DiaryLinkDialogState extends State<_DiaryLinkDialog> {
         return;
       }
     }
-    Navigator.pop(context, _WebLink(value));
+    Navigator.pop(context, DiaryWebLinkChoice(value));
   }
 
   @override
@@ -196,7 +219,8 @@ class _DiaryLinkDialogState extends State<_DiaryLinkDialog> {
             ? DiaryLinkKind.notebook
             : DiaryLinkKind.diary,
         excludeDiaryId: widget.excludeDiaryId,
-        onPick: (candidate) => Navigator.pop(context, _TargetLink(candidate)),
+        onPick: (candidate) =>
+            Navigator.pop(context, DiaryTargetLinkChoice(candidate)),
       ),
     };
     return AlertDialog(
@@ -251,7 +275,8 @@ class _DiaryLinkDialogState extends State<_DiaryLinkDialog> {
       actions: [
         if (widget.hasLink)
           TextButton(
-            onPressed: () => Navigator.pop(context, const _RemoveLink()),
+            onPressed: () =>
+                Navigator.pop(context, const DiaryRemoveLinkChoice()),
             style: TextButton.styleFrom(foregroundColor: colors.error),
             child: Text(l10n.diaryLinkRemove),
           ),

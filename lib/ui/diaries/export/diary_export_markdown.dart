@@ -321,12 +321,25 @@ class DiaryMarkdownWriter {
       comment,
       unrenderedImages: sources.length - paths.length,
     );
+    // 有格式的留言按正文的行内写法写出，没有格式的照旧写纯文字。
+    final lines = labels.commentHasFormats(comment)
+        ? <String>[
+            for (final line in labels.commentLines(
+              comment,
+              unrenderedImages: sources.length - paths.length,
+            ))
+              _escapeLineStart(_inlines(line).trimRight()),
+          ]
+        : <String>[
+            for (final line in text.split('\n'))
+              _escapeLineStart(_escape(line.trimRight())),
+          ];
     return <String>[
       '- *${_escape(labels.commentMetaLine(entry, comment))}*',
-      for (final line in text.split('\n'))
+      for (final line in lines)
         if (line.trim().isNotEmpty)
           // 续行缩进两格，仍属于这一项。
-          '  ${_escapeLineStart(_escape(line.trimRight()))}',
+          '  $line',
       if (paths.isNotEmpty)
         '  ${paths.map((String path) => '![](${_destination(path)})').join(' ')}',
     ].join('\n\n');

@@ -6,7 +6,7 @@ import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../core/services/app_platform.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/mind_map_editing_controller.dart';
-import '../controllers/mind_map_rich_text_controller.dart';
+import '../../widgets/rich_text/inline_rich_text_controller.dart';
 import '../controllers/mind_map_viewport_controller.dart';
 import '../layout/mind_map_scene.dart';
 import '../viewmodels/mind_map_look.dart';
@@ -14,7 +14,7 @@ import '../viewmodels/mind_map_look.dart';
 /// 节点文字的输入框：叠在节点上，跟着视口缩放，字号、颜色与对齐和节点一致，
 /// 画布在这期间不画这个节点的文字。
 ///
-/// 输入即写（经 [MindMapRichTextController] → [MindMapEditingController.
+/// 输入即写（经 [InlineRichTextController] → [MindMapEditingController.
 /// setRichText]，局部样式跟着字走，同一节点连续输入合并为一步撤销）；
 /// 节点随字变宽时布局直接到位（不播转场），输入框按新矩形跟上。输入框
 /// 登记在 [MindMapEditingController.textSession]，格式条经它设局部样式。
@@ -39,7 +39,7 @@ class MindMapNodeEditor extends StatefulWidget {
 }
 
 class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
-  late final MindMapRichTextController _text = MindMapRichTextController(
+  late final InlineRichTextController _text = InlineRichTextController(
     runs: mindMapRunsOf(widget.node.node),
     onChanged: _onChanged,
   );
@@ -75,7 +75,7 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
 
   void _onChanged(
     String text,
-    List<MindMapTextRun> runs, {
+    List<InlineTextRun> runs, {
     bool format = false,
   }) =>
       widget.controller.setRichText(widget.node.id, text, runs, format: format);
@@ -97,7 +97,7 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
     final keys = HardwareKeyboard.instance;
     final key = event.logicalKey;
     if (_text.value.composing.isValid) return KeyEventResult.ignored;
-    if (mindMapFormatShortcut(event) case final mark?) {
+    if (inlineFormatShortcut(event) case final mark?) {
       _text.toggle(mark);
       return KeyEventResult.handled;
     }
@@ -130,7 +130,7 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
         ink: visual.textStyle.color,
         backdrop: visual.fill ?? styles.palette.surface,
       ))
-      ..base = mindMapBaseMarksOf(visual.textStyle);
+      ..base = inlineBaseMarksOf(visual.textStyle);
     return ListenableBuilder(
       listenable: widget.viewport,
       builder: (BuildContext context, Widget? _) {
@@ -190,22 +190,4 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
       },
     );
   }
-}
-
-/// 桌面上设局部样式的快捷键：Ctrl / ⌘ + B / I / U，Ctrl / ⌘ + Shift + S
-/// （与正文编辑器一致）。画布与大纲的输入框共用；不是快捷键时为 null。
-MindMapMark? mindMapFormatShortcut(KeyEvent event) {
-  if (!AppPlatform.isDesktop || event is! KeyDownEvent) return null;
-  final keys = HardwareKeyboard.instance;
-  if (!(keys.isControlPressed || keys.isMetaPressed) || keys.isAltPressed) {
-    return null;
-  }
-  final key = event.logicalKey;
-  if (keys.isShiftPressed) {
-    return key == LogicalKeyboardKey.keyS ? MindMapMark.strike : null;
-  }
-  if (key == LogicalKeyboardKey.keyB) return MindMapMark.bold;
-  if (key == LogicalKeyboardKey.keyI) return MindMapMark.italic;
-  if (key == LogicalKeyboardKey.keyU) return MindMapMark.underline;
-  return null;
 }

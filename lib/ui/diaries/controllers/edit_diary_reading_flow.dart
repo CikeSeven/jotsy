@@ -170,6 +170,7 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         diary: diary,
         sectionKey: _readingCommentsKey,
         onWrite: () => unawaited(writeDiaryComment(context, ref, diary: diary)),
+        fromEditor: true,
       );
 
   /// 信息栏（已包好点按，点开信息面板）；这篇在当前样式下没有可显示的信息

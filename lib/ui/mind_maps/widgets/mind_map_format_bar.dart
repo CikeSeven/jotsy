@@ -11,7 +11,9 @@ import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/widgets/diary_color_panel/diary_color_host.dart';
 import '../../diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import '../controllers/mind_map_editing_controller.dart';
-import '../controllers/mind_map_rich_text_controller.dart';
+import '../../widgets/rich_text/inline_format_button.dart';
+import '../../widgets/rich_text/inline_rich_text_controller.dart';
+import '../controllers/mind_map_text_session.dart';
 import '../viewmodels/mind_map_text_colors.dart';
 
 /// 编辑主题文字时的格式条（一行 [height] 高）：粗体、斜体、下划线、删除线
@@ -20,7 +22,7 @@ import '../viewmodels/mind_map_text_colors.dart';
 ///
 /// - 作用对象是 [MindMapEditingController.textSession] 里正在编辑的输入框：
 ///   有选区时改选中的字，没有时设“接下来打的字”的样式（见
-///   [MindMapRichTextController]）；按钮状态随选区实时刷新；
+///   [InlineRichTextController]）；按钮状态随选区实时刷新；
 /// - 两个颜色按钮在按钮行之上展开正文同款的颜色面板 [DiaryColorPanel]
 ///   （色板 + 我的颜色、色系、自定义），颜色按原色写入；两个按钮就是目标
 ///   切换，再点一次收起。面板不走路由或对话框，键盘与输入框的焦点都不动；
@@ -134,7 +136,7 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
     );
   }
 
-  Widget _panel(MindMapRichTextController text) {
+  Widget _panel(InlineRichTextController text) {
     final target = _target;
     if (target == null) {
       _report(0);
@@ -182,26 +184,29 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
     );
   }
 
-  Widget _buttons(MindMapRichTextController? text) {
+  Widget _buttons(InlineRichTextController? text) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    Widget toggle(FaIconData icon, String label, MindMapMark mark) =>
-        _FormatButton(
-          icon: icon,
-          label: label,
-          selected: text?.isActive(mark) ?? false,
-          onTap: text == null ? null : () => text.toggle(mark),
-        );
+    Widget toggle(FaIconData icon, String label, InlineMark mark) => Expanded(
+      child: InlineFormatButton(
+        icon: icon,
+        label: label,
+        selected: text?.isActive(mark) ?? false,
+        onTap: text == null ? null : () => text.toggle(mark),
+      ),
+    );
     Widget color(FaIconData icon, String label, DiaryColorTarget target) {
       final value = parseDiaryColorValue(
         text?.colorOf(mindMapColorMarkOf(target)),
       );
-      return _FormatButton(
-        icon: icon,
-        label: label,
-        selected: _target == target,
-        indicator: value ?? scheme.outlineVariant,
-        onTap: text == null ? null : () => _toggle(target),
+      return Expanded(
+        child: InlineFormatButton(
+          icon: icon,
+          label: label,
+          selected: _target == target,
+          indicator: value ?? scheme.outlineVariant,
+          onTap: text == null ? null : () => _toggle(target),
+        ),
       );
     }
 
@@ -209,21 +214,21 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
       height: MindMapFormatBar.height,
       child: Row(
         children: <Widget>[
-          toggle(FontAwesomeIcons.bold, l10n.mindMapBold, MindMapMark.bold),
+          toggle(FontAwesomeIcons.bold, l10n.mindMapBold, InlineMark.bold),
           toggle(
             FontAwesomeIcons.italic,
             l10n.mindMapItalic,
-            MindMapMark.italic,
+            InlineMark.italic,
           ),
           toggle(
             FontAwesomeIcons.underline,
             l10n.mindMapUnderline,
-            MindMapMark.underline,
+            InlineMark.underline,
           ),
           toggle(
             FontAwesomeIcons.strikethrough,
             l10n.mindMapStrike,
-            MindMapMark.strike,
+            InlineMark.strike,
           ),
           Container(
             width: 1,
@@ -247,12 +252,12 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
 }
 
 /// 颜色面板作用在正在编辑的主题文字上：有选区时改选中的字，没有时设接下来
-/// 打的字（见 [MindMapRichTextController.setColor]）。按输入框判等，每次
+/// 打的字（见 [InlineRichTextController.setColor]）。按输入框判等，每次
 /// 构建新建一个也不会让面板重新订阅。
 final class _RichTextColorHost implements DiaryColorHost {
   const _RichTextColorHost(this.text);
 
-  final MindMapRichTextController text;
+  final InlineRichTextController text;
 
   @override
   DiaryColorValue colorValue(DiaryColorTarget target) =>
@@ -279,85 +284,4 @@ final class _RichTextColorHost implements DiaryColorHost {
 
   @override
   int get hashCode => identityHashCode(text);
-}
-
-/// 格式条上的一格：开着的开关（或展开着面板的颜色按钮）铺次要容器色；
-/// 颜色按钮在图标下画一条当前颜色 [indicator]。
-class _FormatButton extends StatelessWidget {
-  const _FormatButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.selected = false,
-    this.indicator,
-  });
-
-  final FaIconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  final bool selected;
-  final Color? indicator;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final enabled = onTap != null;
-    final ink = !enabled
-        ? scheme.onSurface.withValues(alpha: 0.38)
-        : selected
-        ? scheme.onSecondaryContainer
-        : scheme.onSurface;
-    return Expanded(
-      child: Tooltip(
-        message: label,
-        child: Semantics(
-          button: true,
-          toggled: indicator == null ? selected : null,
-          selected: indicator == null ? null : selected,
-          label: label,
-          excludeSemantics: true,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Center(
-              child: AnimatedContainer(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  ExpressiveMotion.fast,
-                ),
-                curve: ExpressiveMotion.effects,
-                width: 36,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? scheme.secondaryContainer
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    FaIcon(icon, size: 15, color: ink),
-                    if (indicator case final color?) ...<Widget>[
-                      const SizedBox(height: 3),
-                      Container(
-                        width: 16,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: enabled
-                              ? color
-                              : color.withValues(alpha: 0.38),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

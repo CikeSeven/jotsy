@@ -10,10 +10,12 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/expressive_menu/expressive_menu.dart';
 import '../../viewmodels/diary_comment_timeline.dart';
 import 'diary_comment_images.dart';
+import 'diary_comment_text.dart';
 import 'diary_comments_section.dart';
 
 /// 留言时间线上的一条：左侧节点（心情 emoji 或小圆点）与向下延伸的竖线，
-/// 右侧“写下后 N 天 · 时间 · 已编辑”、留言文字与附带的图片（相册拼贴，
+/// 右侧“写下后 N 天 · 时间 · 已编辑”、留言文字（带格式，链接与直接写出
+/// 的网址可点，[DiaryCommentText]）与附带的图片（相册拼贴，
 /// [DiaryCommentImages]，点按一格进看图页）。只有图片的留言没有文字一行。
 ///
 /// 长按（桌面右键）在按下处打开菜单：编辑、复制（有文字时）、删除
@@ -28,6 +30,7 @@ class DiaryCommentItem extends StatefulWidget {
     required this.actions,
     this.textColor,
     this.appearing = false,
+    this.notebookLinks = true,
   });
 
   /// 左侧节点列的宽度；时间线下方各行的图标与它居中对齐。
@@ -41,6 +44,9 @@ class DiaryCommentItem extends StatefulWidget {
   final DiaryCommentActions? actions;
   final Color? textColor;
   final bool appearing;
+
+  /// 日记本功能是否开着（见 [DiaryCommentText.notebookLinks]）。
+  final bool notebookLinks;
 
   @override
   State<DiaryCommentItem> createState() => _DiaryCommentItemState();
@@ -128,12 +134,14 @@ class _DiaryCommentItemState extends State<DiaryCommentItem>
                     ),
                     if (comment.hasText) ...<Widget>[
                       const SizedBox(height: 4),
-                      Text(
-                        comment.content,
+                      DiaryCommentText(
+                        runs: comment.textRuns,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: widget.textColor ?? scheme.onSurface,
                           height: 1.55,
                         ),
+                        onOpenLink: widget.actions?.onOpenLink,
+                        notebookLinks: widget.notebookLinks,
                       ),
                     ],
                     if (images.isNotEmpty) ...<Widget>[

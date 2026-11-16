@@ -110,6 +110,8 @@ class DiaryHtmlBody {
 
   /// 留言区（没有留言时不写）：标题比日记标题低一级，每条留言为一行说明
   /// 加心情与文字；文字按原样换行（`pre-wrap`），不必把换行改写成 `<br>`。
+  /// 有格式的留言按正文的行内写法写出（[DiaryExportLabels.commentLines]），
+  /// 没有格式的照旧写纯文字。
   /// 留言图片在文字下面排成一行方形缩略图（[images] 里有的，即开启了媒体且
   /// 读得到的），其余在文字里写成占位（[DiaryExportLabels.commentText]）。
   void _writeComments(
@@ -135,7 +137,16 @@ class DiaryHtmlBody {
         '<div class="comment">'
         '<p class="meta">${_text(labels.commentMetaLine(entry, comment))}</p>',
       );
-      if (text.isNotEmpty) {
+      if (labels.commentHasFormats(comment)) {
+        final lines = labels.commentLines(
+          comment,
+          unrenderedImages: sources.length - shown.length,
+        );
+        out.write(
+          '<p class="comment-text">'
+          '${lines.map(markup.inlines).join('\n')}</p>',
+        );
+      } else if (text.isNotEmpty) {
         out.write('<p class="comment-text">${_text(text)}</p>');
       }
       if (shown.isNotEmpty) {

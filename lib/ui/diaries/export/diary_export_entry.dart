@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../core/database/rich_text/inline_rich_text.dart';
 import '../../../utils/text_stats.dart';
 import '../models/diary_context_info.dart';
 import 'diary_export_blocks.dart';
@@ -279,6 +280,46 @@ class DiaryExportLabels {
       if (text.isNotEmpty) text,
       if (missing > 0) commentImagesNote(missing),
     ].join('\n');
+  }
+
+  /// 留言有没有要写出的格式（粗体等或链接）：没有时各写出器照旧写
+  /// [commentText] 的纯文字，产物与加格式之前逐字节相同。
+  bool commentHasFormats(DiaryCommentRow comment) =>
+      comment.textRuns.any((InlineTextRun run) => !run.marks.isEmpty);
+
+  /// 带格式的写出器（网页 / EPUB、Markdown、Word、PDF）用的留言文字：按行
+  /// 切好的行内片段，口径同 [commentText]（心情在第一行开头、空一格；图片
+  /// 占位另起一行）。粗体、斜体、下划线、删除线与网址链接随文字带上，日记 /
+  /// 日记本链接只留文字（[ExportInline.fromAttributes]，与正文一致）。
+  List<List<ExportInline>> commentLines(
+    DiaryCommentRow comment, {
+    int? unrenderedImages,
+  }) {
+    final inlines = <ExportInline>[
+      if (comment.mood case final mood?)
+        ExportInline(comment.hasText ? '$mood ' : mood),
+      if (comment.hasText)
+        for (final run in comment.textRuns)
+          for (final (index, part)
+              in run.text.split('\n').indexed) ...<ExportInline>[
+            if (index > 0) ExportInline.lineBreak,
+            if (part.isNotEmpty)
+              ExportInline.fromAttributes(part, <String, dynamic>{
+                'bold': run.marks.bold == true,
+                'italic': run.marks.italic == true,
+                'underline': run.marks.underline == true,
+                'strike': run.marks.strike == true,
+                'href': ?run.marks.href,
+              }),
+          ],
+    ];
+    final missing = unrenderedImages ?? comment.imagePaths.length;
+    if (missing > 0) {
+      if (inlines.isNotEmpty) inlines.add(ExportInline.lineBreak);
+      inlines.add(ExportInline(commentImagesNote(missing)));
+    }
+    if (inlines.isEmpty) return const <List<ExportInline>>[];
+    return ExportBlock.tableCellParagraphs(inlines);
   }
 
   /// 留言里没有以图片写出的 [count] 张图片的占位：“[图片]”或“[图片 ×N]”。

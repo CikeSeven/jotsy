@@ -273,7 +273,7 @@ List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
 /// 同一套、按原色写出（半透明的高亮由各写出器叠在纸面上，同正文）。
 List<ExportInline> _mindMapInlines(MindMapNode node, {bool bold = false}) {
   final style = MindMapNodeStyle(node.style);
-  ExportInline inline(MindMapTextRun run) {
+  ExportInline inline(InlineTextRun run) {
     final marks = run.marks;
     return ExportInline(
       run.text,

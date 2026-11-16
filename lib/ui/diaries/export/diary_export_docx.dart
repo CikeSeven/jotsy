@@ -511,7 +511,21 @@ class DiaryDocxWriter {
         comment,
         unrenderedImages: comment.imagePaths.length - images.length,
       );
-      if (text.isNotEmpty) {
+      if (labels.commentHasFormats(comment)) {
+        // 有格式的留言按正文的行内写法写出（颜色本就不写，不必叠到纸面）。
+        final lines = labels.commentLines(
+          comment,
+          unrenderedImages: comment.imagePaths.length - images.length,
+        );
+        b.paragraph(
+          runs: <String>[
+            for (final (index, line) in lines.indexed) ...<String>[
+              if (index > 0) '<w:r><w:br/></w:r>',
+              ...b.inlines(line),
+            ],
+          ],
+        );
+      } else if (text.isNotEmpty) {
         b.paragraph(
           runs: <String>[
             for (final (index, line) in text.split('\n').indexed) ...<String>[

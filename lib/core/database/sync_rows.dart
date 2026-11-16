@@ -130,6 +130,7 @@ class SyncRawComment {
     required this.createdAt,
     required this.editedAt,
     this.images,
+    this.delta,
   });
 
   final int localId;
@@ -140,6 +141,9 @@ class SyncRawComment {
   final int createdAt;
   final int? editedAt;
   final String? images;
+
+  /// 文字格式列原文（`diary_comment_rich_text.dart`）。
+  final String? delta;
 }
 
 /// `diary_templates` 表的一行。时间为 Unix 秒。

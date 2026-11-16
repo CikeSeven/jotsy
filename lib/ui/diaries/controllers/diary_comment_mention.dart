@@ -12,7 +12,7 @@ import 'diary_link_search.dart';
 /// 写留言面板里的 `@` / `[[` 日记链接会话（输入框版，规则同正文的
 /// `DiaryMentionMenuController`）。
 ///
-/// 触发：在输入框里打出（不是粘贴、不在输入法组字中）——
+/// 触发：在输入框里打出（不是粘贴；组字中同样算，见 [_detect]）——
 /// - `@`：前一个字是空白或在开头；
 /// - 第二个 `[`（或中文输入法的 `【`）：前一个字正是同一个括号，不要求前面是
 ///   空白。
@@ -84,11 +84,9 @@ class DiaryCommentMentionController extends ChangeNotifier
   /// 刚打出的一个字是不是触发字：新文字正好是旧文字在光标前多了一个字。
   void _detect(TextEditingValue previous, TextEditingValue value) {
     final selection = value.selection;
-    if (!selection.isValid ||
-        !selection.isCollapsed ||
-        value.isComposingRangeValid) {
-      return;
-    }
+    // 组字中也照常判断：Gboard 等会把 `@` 算进正在组的词（邮箱写法），
+    // 要求不在组字中就永远触发不了。
+    if (!selection.isValid || !selection.isCollapsed) return;
     final caret = selection.end;
     final current = value.text;
     if (caret < 1 || current.length != previous.text.length + 1) return;

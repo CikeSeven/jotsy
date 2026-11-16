@@ -295,6 +295,74 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('untitled entries show the first body line, not "untitled" '
+      '(#291)', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final travel = await h.notebook('旅行');
+    Future<void> write(
+      String title,
+      String contentText, {
+      DateTime? unlockAt,
+    }) async {
+      await tester.runAsync(
+        () => h.database.createDiary(
+          title: title,
+          contentDocJson: '[]',
+          contentText: contentText,
+          metadataJson: '{}',
+          capsuleUnlockAt: unlockAt,
+          capsuleLockedAt: unlockAt == null ? null : DateTime.now(),
+          notebookIds: <String>[travel],
+        ),
+      );
+    }
+
+    await write('有标题', '正文');
+    await write('', '\n\n  555  \n第二行');
+    // 只有图片：纯文本里只剩空行。
+    await write('', '\n\n');
+    await write(
+      '',
+      '封存的正文',
+      unlockAt: DateTime.now().add(const Duration(days: 30)),
+    );
+    await write('', '长' * 2000);
+    await h.pump(NotebookContentsPage(notebookId: travel));
+    await h.settleAll();
+
+    // 查询只带正文开头一段，开头的空白与空行已去掉。
+    final rows = await contents(h, travel);
+    expect(rows[1].leadingText, '555  \n第二行');
+    expect(rows[2].leadingText, isEmpty);
+    expect(rows[4].leadingText.length, NotebookContentsEntry.leadingTextLength);
+
+    final tiles = tester
+        .widgetList<NotebookContentsEntryTile>(
+          find.byType(NotebookContentsEntryTile),
+        )
+        .map((tile) => (tile.title, tile.titleFromContent))
+        .toList();
+    expect(tiles, <(String, bool)>[
+      ('有标题', false),
+      ('555', true),
+      ('无标题', false),
+      ('无标题', false),
+      ('长' * 240, true),
+    ]);
+    expect(find.text('封存的正文'), findsNothing);
+
+    // 顶替来的正文首行用常规字重与次要颜色，真标题仍是 w600。
+    final scheme = Theme.of(tester.element(find.text('555'))).colorScheme;
+    final borrowed = tester.widget<Text>(find.text('555'));
+    expect(borrowed.style?.fontWeight, FontWeight.w400);
+    expect(borrowed.style?.color, scheme.onSurfaceVariant);
+    expect(
+      tester.widget<Text>(find.text('有标题')).style?.fontWeight,
+      FontWeight.w600,
+    );
+    await h.unmount();
+  });
+
   testWidgets('an empty notebook shows the empty hint', (tester) async {
     final (h, _, _) = await pumpContents(tester);
     expect(find.text('这本还没有日记'), findsOneWidget);

@@ -290,6 +290,7 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
         diaries.capsuleLockedAt,
         diaries.capsuleUnlockAt,
         diaryNotebooks.chapterId,
+        _notebookContentsLeadingText,
       ])
       ..orderBy(<OrderingTerm>[
         OrderingTerm.asc(diaryNotebooks.position),
@@ -310,9 +311,21 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
           capsuleLockedAt: row.read(diaries.capsuleLockedAt),
           capsuleUnlockAt: row.read(diaries.capsuleUnlockAt),
           chapterId: row.read(diaryNotebooks.chapterId),
+          leadingText: row.read(_notebookContentsLeadingText) ?? '',
         ),
     ]);
   }
+
+  /// 目录行没写标题时拿正文第一行顶替（见 [NotebookContentsEntry.leadingText]），
+  /// 这里只取正文开头一段：先去掉开头的空白与空行（只有图片的块在纯文本里
+  /// 是空行），再截 [NotebookContentsEntry.leadingTextLength] 个字符。不取
+  /// 整篇 `content_text`：目录、成书导出与统计页共用这个查询，大日记本每次
+  /// 推送都会复制全部正文。
+  static final Expression<String> _notebookContentsLeadingText =
+      CustomExpression<String>(
+        'substr(ltrim("diaries"."content_text", '
+        'char(32, 9, 10, 13)), 1, ${NotebookContentsEntry.leadingTextLength})',
+      );
 
   /// 本子成员 × 日记 × 日记本的只取列查询（调用方再加列与排序）。
   JoinedSelectStatement<HasResultSet, dynamic> _notebookEntryColumnsQuery(
@@ -522,7 +535,12 @@ class NotebookContentsEntry {
     required this.chapterId,
     this.capsuleLockedAt,
     this.capsuleUnlockAt,
+    this.leadingText = '',
   });
+
+  /// [leadingText] 最多取的字符数：够日记卡片标题行的上限（240）再留些余量
+  /// 给开头的全角空格等 SQL 没去掉的空白行。
+  static const int leadingTextLength = 512;
 
   final String diaryId;
   final String title;
@@ -534,4 +552,8 @@ class NotebookContentsEntry {
 
   /// 原始 `chapter_id`；不在章节列表里时算“未分章”。
   final String? chapterId;
+
+  /// 正文纯文本的开头一段（去掉了开头的空白与空行，最多 [leadingTextLength]
+  /// 个字符），只够没写标题时取第一行顶替标题；不是完整正文。
+  final String leadingText;
 }

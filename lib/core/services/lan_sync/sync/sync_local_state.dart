@@ -10,6 +10,7 @@ import 'sync_canonical_settings.dart';
 import 'sync_hash_cache.dart';
 import 'sync_manifest_builder.dart';
 import 'sync_model.dart';
+import 'sync_settings_fonts.dart';
 import 'sync_state_files.dart';
 import 'sync_state_fold.dart';
 import 'sync_state_json.dart';
@@ -18,8 +19,9 @@ import 'sync_state_model.dart';
 /// 本机同步状态（规格 §3）：检查点、分面历史、墓碑、标签改名与哈希缓存。
 ///
 /// - 输入（构造注入）：数据库、状态目录 `stateDir`、设置服务（只在请求
-///   settings 时使用）、时钟；不在内部解析任何真实目录，测试里同一进程可以
-///   跑两台“设备”；
+///   settings 时使用）、导入字体的指纹（settings 里的字体 id 换成跨设备引用，
+///   见 sync_settings_fonts.dart）、时钟；不在内部解析任何真实目录，测试里
+///   同一进程可以跑两台“设备”；
 /// - 输出：[refreshCheckpoint] 给出当前清单与规划器要查的历史 / 墓碑 / 改名；
 ///   [buildRecords] 给出完整规范记录；
 /// - 副作用：读写 `stateDir` 下的 `checkpoint.json.gz`、`history.json.gz`、
@@ -37,6 +39,7 @@ class SyncLocalState {
     required this.database,
     required Directory stateDir,
     this.settings,
+    this.fontFingerprints,
     DateTime Function()? clock,
   }) : _files = SyncStateFiles(stateDir),
        _clock = clock ?? DateTime.now;
@@ -49,6 +52,9 @@ class SyncLocalState {
 
   final AppDatabase database;
   final SettingsService? settings;
+
+  /// 本机导入字体的指纹；没给时（测试）字体 id 原样同步。
+  final SyncFontFingerprints? fontFingerprints;
   final SyncStateFiles _files;
   final DateTime Function() _clock;
 
@@ -114,9 +120,30 @@ class SyncLocalState {
     final captured =
         withSettings ||
             wanted.contains(const SyncKey(SyncEntity.prefs, kSyncPrefsId))
-        ? syncCaptureSettings(_requireSettings(), includeSettings: withSettings)
+        ? syncCaptureSettings(
+            _requireSettings(),
+            includeSettings: withSettings,
+            fontRefs: withSettings ? await fontRefs() : const {},
+          )
         : null;
     return _buildInIsolate(rows, captured, wanted);
+  }
+
+  /// 本机导入字体的 id → 跨设备引用（[syncFontRefsOf]），settings 参与时
+  /// 取值与写入都要用。不经 [_serialized]：只读字体清单（必要时补算指纹），
+  /// 不碰同步状态与数据库，写入层可以在开事务之前调用。
+  ///
+  /// 没给 [fontFingerprints] 或读取失败时为空表：字体 id 原样同步，与修复前
+  /// 的行为相同，不因读不了字体目录而让整次同步失败。
+  Future<Map<String, String>> fontRefs() async {
+    final fingerprints = fontFingerprints;
+    if (fingerprints == null) return const <String, String>{};
+    try {
+      return syncFontRefsOf(await fingerprints());
+    } on Object catch (error, stack) {
+      debugPrint('LAN sync font fingerprints unavailable: $error\n$stack');
+      return const <String, String>{};
+    }
   }
 
   /// 不刷新、直接给出最近一次检查点及历史 / 墓碑 / 改名（没有检查点时清单为空）。
@@ -165,7 +192,11 @@ class SyncLocalState {
     final service = includeSettings ? _requireSettings() : settings;
     final captured = service == null
         ? null
-        : syncCaptureSettings(service, includeSettings: includeSettings);
+        : syncCaptureSettings(
+            service,
+            includeSettings: includeSettings,
+            fontRefs: includeSettings ? await fontRefs() : const {},
+          );
     return _observe(rows, settingsCaptured: captured);
   }
 

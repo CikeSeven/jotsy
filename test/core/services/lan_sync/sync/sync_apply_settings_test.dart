@@ -11,6 +11,7 @@ import 'package:node_diary/core/services/lan_sync/sync/sync_apply.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_media.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_model.dart';
+import 'package:node_diary/core/services/lan_sync/sync/sync_settings_fonts.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/tag_order_codec.dart';
 import 'package:path/path.dart' as p;
@@ -220,6 +221,51 @@ void main() {
     expect(settings.themeModeNotifier.value, isNot(ThemeMode.dark));
     expect(result.manifest![settingsKey], before.hashes);
     expect(result.manifest!.containsKey(mood.key), isTrue);
+  });
+
+  test('导入字体的引用写入时换回本机同一文件的字体 id，写入后的清单与目标相同'
+      '（#288）', () async {
+    final hash = 'c' * 64;
+    final ref = '$kSyncFontRefPrefix$hash';
+    final fontRig = SyncApplyRig(
+      device,
+      settings: settings,
+      fontFingerprints: () async => <String, String>{'fB': hash},
+    );
+    // 本机停在修复前同步过来的、本机没有的 id 上（界面显示内置字体）。
+    await settings.setDiaryTypography(
+      const DiaryTypography(fontSize: 20).copyWith(fontId: 'fA'),
+    );
+    final captured = syncCaptureSettings(
+      settings,
+      includeSettings: true,
+      fontRefs: await fontRig.state.fontRefs(),
+    );
+    final current = (await fontRig.records(settings: captured))[settingsKey]!;
+    final typography =
+        ((current.facets['diaryTypography']! as Map)['value']! as Map)
+            .cast<String, Object?>();
+    expect(typography['fontId'], 'fA');
+    final target = SyncRecord(settingsKey, {
+      ...current.facets,
+      'diaryTypography': {
+        'value': {...typography, 'fontId': ref},
+      },
+    });
+
+    final result = await fontRig.applier.apply(
+      await fontRig.planFor([target], settings: captured),
+      includeSettings: true,
+    );
+
+    expect(result.skipped, isEmpty);
+    expect(settings.diaryTypography.fontId, 'fB');
+    expect(settings.diaryTypography.fontSize, 20);
+    // 写入后的观测按同一张表换算：与目标相同，下次同步不再判成差异。
+    expect(result.manifest![settingsKey], target.hashes);
+    // 发给对方的完整记录同样是引用，不是本机 id。
+    final sent = await fontRig.state.buildRecords([settingsKey]);
+    expect(sent.single.hashes, target.hashes);
   });
 
   test('背景图从暂存目录就位，设置里还原成文件名', () async {

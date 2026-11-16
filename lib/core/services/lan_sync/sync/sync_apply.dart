@@ -16,6 +16,7 @@ import 'sync_local_state.dart';
 import 'sync_media.dart';
 import 'sync_model.dart';
 import 'sync_plan.dart';
+import 'sync_settings_fonts.dart';
 
 part 'sync_apply_result.dart';
 part 'sync_apply_settings.dart';
@@ -174,7 +175,10 @@ class SyncApplier {
     };
     final observed = await state.observeRows(
       await database.readSyncRows(),
-      settingsCaptured: _capture(includeSettings),
+      settingsCaptured: _capture(
+        includeSettings,
+        includeSettings ? await state.fontRefs() : const {},
+      ),
     );
     final records = await state.buildRecords(observed.manifest.keys);
     final writes = <SyncWrite>[];
@@ -198,12 +202,21 @@ class SyncApplier {
   }
 
   /// 本次观测要带的设置原值：有设置服务就带（prefs 总是参与），
-  /// [includeSettings] 时连 settings 一起；没有设置服务（测试）为 null。
-  SyncSettingsCapture? _capture(bool includeSettings) {
+  /// [includeSettings] 时连 settings 一起（[fontRefs] 为
+  /// [SyncLocalState.fontRefs]，调用方事先取好：这里在事务里同步调用）；
+  /// 没有设置服务（测试）为 null。
+  SyncSettingsCapture? _capture(
+    bool includeSettings,
+    Map<String, String> fontRefs,
+  ) {
     final service = settings;
     return service == null
         ? null
-        : syncCaptureSettings(service, includeSettings: includeSettings);
+        : syncCaptureSettings(
+            service,
+            includeSettings: includeSettings,
+            fontRefs: fontRefs,
+          );
   }
 
   /// 第 3–5 步，在 [DataArchiveService.runSerialized] 里执行：与备份导入、
@@ -247,13 +260,19 @@ class SyncApplier {
       }
     }
 
+    // 导入字体的引用表在开事务之前取好（要读字体清单，第一次还要算指纹），
+    // 事务里的取值、写入后的观测与设置写入共用同一份。
+    final fontRefs = withSettings
+        ? await state.fontRefs()
+        : const <String, String>{};
+
     // 3. 单个事务。当前清单在事务里由刚读出的行算出（哈希缓存命中时很便宜），
     //    前置条件与写入看到的是同一份状态；写完再读一次行，提交后的库就是它。
     final settingsService = settings;
     final outcome = await database.transaction(() async {
       final current = await state.observeRows(
         await database.readSyncRows(),
-        settingsCaptured: _capture(withSettings),
+        settingsCaptured: _capture(withSettings, fontRefs),
       );
       return _runWrites(
         database,
@@ -283,6 +302,7 @@ class SyncApplier {
           for (final tag in outcome.rowsAfter.tags)
             syncTagRecordName(tag): tag.localId,
         },
+        fontIdsByRef: syncFontIdsByRef(fontRefs),
         dataRoot: dataRoot.path,
       );
       if (ok) {
@@ -298,7 +318,7 @@ class SyncApplier {
     //    现在，不能套用另一侧的确立时间（规格 §4.1.1）。
     final after = await state.observeRows(
       outcome.rowsAfter,
-      settingsCaptured: _capture(withSettings),
+      settingsCaptured: _capture(withSettings, fontRefs),
     );
     await state.recordAppliedState(
       after,

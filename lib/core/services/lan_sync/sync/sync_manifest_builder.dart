@@ -289,7 +289,10 @@ class _SyncRowIndex {
       if (settings.includeSettings) {
         yield _SyncSource(
           const SyncKey(SyncEntity.settings, kSyncSettingsId),
-          fresh: () => syncSettingsRecord(settings.values).facets,
+          fresh: () => syncSettingsRecord(
+            settings.values,
+            fontRefs: settings.fontRefs,
+          ).facets,
         );
       }
     }

@@ -9,6 +9,7 @@ import '../../settings_service.dart';
 import '../../tag_order_codec.dart';
 import 'sync_media_refs.dart';
 import 'sync_model.dart';
+import 'sync_settings_fonts.dart';
 
 /// 设置 ↔ 规范记录（规格 §2.2 的 settings 与 prefs 行）。
 ///
@@ -24,7 +25,9 @@ import 'sync_model.dart';
 ///   每个键一个分面 `{"value": …}`；`appFeaturesRaw` 只留界面类开关
 ///   （[kSyncUiFeatures]：日历 Tab、探索 Tab、侧滑归档），值为字段 → bool 的
 ///   对象；`appSurfaceRaw` 里的背景文件名换成媒体引用
-///   `jotsy-media:app_backgrounds/<文件名>`；
+///   `jotsy-media:app_backgrounds/<文件名>`；排版与代码块样式里导入字体的
+///   本机 id 换成按文件内容的引用 `jotsy-font:<sha256>`（见
+///   sync_settings_fonts.dart，写入时换回本机 id）；
 /// - 反向（[syncSettingsRestoreNode] / [syncPrefsRestoreNode]）：给出
 ///   `BackupSettings.restore` 能直接使用的部分节点，只含调用方要应用的分面；
 ///   功能开关与本机当前的开关合并成整份 `appFeaturesRaw`（另一类开关保持
@@ -71,21 +74,36 @@ const String _kAppFeaturesRawKey = 'appFeaturesRaw';
 /// 开启“同步设置”）时生成。
 @immutable
 class SyncSettingsCapture {
-  const SyncSettingsCapture(this.values, {required this.includeSettings});
+  const SyncSettingsCapture(
+    this.values, {
+    required this.includeSettings,
+    this.fontRefs = const <String, String>{},
+  });
 
   /// 参与同步的设置键 → 原值（[BackupSettings.capture] 的口径）。
   final Map<String, Object?> values;
   final bool includeSettings;
+
+  /// 本机导入字体的 id → 跨设备引用（[syncFontRefsOf]），生成 settings 记录
+  /// 时用；为空时字体 id 原样同步。
+  final Map<String, String> fontRefs;
 }
 
-/// 读出参与同步的设置原值。
+/// 读出参与同步的设置原值。[fontRefs] 见 [SyncSettingsCapture.fontRefs]，
+/// 只在 [includeSettings] 时有用。
 SyncSettingsCapture syncCaptureSettings(
   SettingsService settings, {
   required bool includeSettings,
-}) => SyncSettingsCapture(<String, Object?>{
-  for (final entry in BackupSettings.capture(settings).entries)
-    if (!kSyncExcludedSettingsKeys.contains(entry.key)) entry.key: entry.value,
-}, includeSettings: includeSettings);
+  Map<String, String> fontRefs = const <String, String>{},
+}) => SyncSettingsCapture(
+  <String, Object?>{
+    for (final entry in BackupSettings.capture(settings).entries)
+      if (!kSyncExcludedSettingsKeys.contains(entry.key))
+        entry.key: entry.value,
+  },
+  includeSettings: includeSettings,
+  fontRefs: fontRefs,
+);
 
 /// 由 [syncCaptureSettings] 的原值生成 prefs 记录。[tagNamesById] 为本机标签
 /// 本地 id → 名称。
@@ -110,7 +128,11 @@ SyncRecord syncPrefsRecord(
 }
 
 /// 由 [syncCaptureSettings] 的原值生成 settings 记录（不含 prefs 的内容）。
-SyncRecord syncSettingsRecord(Map<String, Object?> captured) {
+/// [fontRefs] 为本机导入字体的 id → 引用（[SyncSettingsCapture.fontRefs]）。
+SyncRecord syncSettingsRecord(
+  Map<String, Object?> captured, {
+  Map<String, String> fontRefs = const <String, String>{},
+}) {
   final facets = <String, Object?>{};
   for (final entry in captured.entries) {
     if (kSyncExcludedSettingsKeys.contains(entry.key)) continue;
@@ -124,7 +146,9 @@ SyncRecord syncSettingsRecord(Map<String, Object?> captured) {
       };
       continue;
     }
-    var value = syncNormalizeMediaRefs(entry.value);
+    var value = syncNormalizeMediaRefs(
+      syncFontIdsToRefs(entry.key, entry.value, fontRefs),
+    );
     if (entry.key == _kAppSurfaceRawKey && value is String) {
       value = _mapAppSurfaceImages(value, _backgroundNameToRef);
     }
@@ -141,7 +165,8 @@ SyncRecord syncSettingsRecord(Map<String, Object?> captured) {
 /// [facets] 为要应用的分面（规划出的“本次有变化的键”）；为 null 时给出全部。
 /// [dataRoot] 用于还原设置值里可能出现的日记媒体引用。界面类功能开关与
 /// [localAppFeaturesRaw]（本机当前的原文）合并成整份原文，数据类开关保持
-/// 本机值；合并后与本机相同时不放进节点。
+/// 本机值；合并后与本机相同时不放进节点。导入字体的引用经 [fontIdsByRef]
+/// （[syncFontIdsByRef]）换回本机 id，本机没有的保持引用。
 ///
 /// 注意 `BackupSettings.restore` 对部分键的空值不做任何事（如
 /// `diarySortModeRaw` 为 null 时保留本机值），写入层需要单独处理“清空”这种
@@ -151,6 +176,7 @@ Map<String, Object?> syncSettingsRestoreNode(
   Iterable<String>? facets,
   required String dataRoot,
   required String? localAppFeaturesRaw,
+  Map<String, String> fontIdsByRef = const <String, String>{},
 }) {
   if (record.key.entity != SyncEntity.settings) {
     throw ArgumentError.value(record.key, 'record', '不是设置记录');
@@ -175,7 +201,11 @@ Map<String, Object?> syncSettingsRestoreNode(
     if (entry.key == _kAppSurfaceRawKey && restored is String) {
       restored = _mapAppSurfaceImages(restored, _backgroundRefToName);
     }
-    node[entry.key] = syncRebindMediaRefs(restored, dataRoot);
+    node[entry.key] = syncFontRefsToIds(
+      entry.key,
+      syncRebindMediaRefs(restored, dataRoot),
+      fontIdsByRef,
+    );
   }
   return node;
 }

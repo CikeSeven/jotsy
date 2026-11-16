@@ -204,6 +204,7 @@ class DiaryCardBlocks extends StatelessWidget {
     return DiaryCardMetaIndicators(
       moodEmoji: meta.showMood ? viewData.moodEmoji : null,
       weatherCode: meta.showWeather ? viewData.weatherIconCode : null,
+      weatherText: meta.showWeather ? viewData.weather : null,
       compact: resolved.compact,
       plain: meta.indicatorStyle == DiaryCardIndicatorStyle.plain,
       fill: onCover

@@ -19477,12 +19477,16 @@
   "@storageMgmtBusyEditing": {"description": "Shown when deleting or compressing is refused because an editor is open."},
   "storageMgmtBusyUndo": "「元に戻す」の表示が消えてからもう一度お試しください",
   "@storageMgmtBusyUndo": {"description": "Shown when an undo prompt is still open."},
+  "storageMgmtBusyMediaWrites": "同期中または画像を変換中です。しばらくしてからもう一度お試しください",
+  "@storageMgmtBusyMediaWrites": {"description": "Shown when LAN sync or HEIC repair is still placing files, so delete and clean up must wait."},
   "storageMgmtCannotDelete": "日記のほかのデータが参照しているため、ここでは削除できません",
   "@storageMgmtCannotDelete": {"description": "Shown for files the storage page cannot remove references to."},
   "storageMgmtDeleteTitle": "{count} 個のファイルを削除しますか？",
   "@storageMgmtDeleteTitle": {"description": "Title of the delete confirmation.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteBody": "{size} を解放します。次の場所から取り除かれます：",
   "@storageMgmtDeleteBody": {"description": "Delete confirmation: first line, followed by the places.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtDeleteUnusedBody": "{size} を解放します。これらのファイルはどこにも使われていません。",
+  "@storageMgmtDeleteUnusedBody": {"description": "Delete confirmation first line when every selected file is unused.", "placeholders": {"size": {"type": "String"}}},
   "storageMgmtDeleteFromDiaries": "日記 {count} 件",
   "@storageMgmtDeleteFromDiaries": {"description": "Delete confirmation: entries affected.", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteFromNotebooks": "ノートの表紙 {count} 件",
@@ -19573,6 +19577,8 @@
   "@storageMgmtFilterCompressible": {"description": "Media filter chip: compressible."},
   "storageMgmtFilterTrash": "ごみ箱のみ",
   "@storageMgmtFilterTrash": {"description": "Media filter chip: used only by entries in the trash."},
+  "storageMgmtFilterUnused": "未使用",
+  "@storageMgmtFilterUnused": {"description": "Media filter chip: files nothing uses (deleted entries, comments, drafts, AI chats)."},
   "storageMgmtSort": "並べ替え",
   "@storageMgmtSort": {"description": "Tooltip of the sort menu."},
   "storageMgmtSortLargest": "大きい順",
@@ -19627,6 +19633,8 @@
   "@storageMgmtMaskedCapsule": {"description": "Placeholder title for media in sealed capsules."},
   "storageMgmtUsedIn": "{count} か所で使用",
   "@storageMgmtUsedIn": {"description": "Detail sheet heading over the list of places.", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtUnusedNote": "日記・コメント・下書き・日記帳の表紙・AI チャットのどれにも使われていないファイルです。削除してもほかの内容には影響しません。",
+  "@storageMgmtUnusedNote": {"description": "Detail sheet text for an unused file, shown instead of the list of places."},
   "diaryTagFilterMultiSelectSemanticHint": "複数のタグを選択",
   "@diaryTagFilterMultiSelectSemanticHint": {"description": "Screen reader long-press hint on a home tag filter chip: long-pressing adds or removes the tag while keeping the others selected."},
   "diaryTagFilterMultiSelectTip": "タグを長押しすると複数選択できます",
@@ -21728,6 +21736,14 @@
   "mindMapStrike": "取り消し線",
   "@mindMapStrike": {
     "description": "Topic style panel tooltip."
+  },
+  "mindMapUnderline": "下線",
+  "@mindMapUnderline": {
+    "description": "Topic style panel and text format bar tooltip: underline the text (not the underline shape)."
+  },
+  "mindMapHighlight": "ハイライト",
+  "@mindMapHighlight": {
+    "description": "Topic style panel section and text format bar button: background color behind the text."
   },
   "mindMapSizeSmall": "小",
   "@mindMapSizeSmall": {

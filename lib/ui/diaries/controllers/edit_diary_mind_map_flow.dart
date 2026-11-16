@@ -10,8 +10,9 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 ///   正文控制器被换掉——回填详情、续写草稿——时重建会话）；
 /// - 外框：不构建文字编辑器、悬浮工具栏与录音面板，整页是导图工作区
 ///   （[MindMapWorkspace]），顶栏是返回、撤销 / 重做、发布（新建）或保存
-///   （手动保存）与“更多”；编辑已有日记时“更多”沿用阅读式编辑页的菜单
-///   （信息、分享、导出、留言、删除……），信息面板照常从底部升起；
+///   （手动保存）与“更多”；“更多”只有导图自己的样式、导出导图与导入，
+///   编辑已有日记时再加分享、编辑器设置与删除（见
+///   [_EditDiaryReadingActions._mindMapDiaryMoreItems]），没有信息面板；
 /// - 写回：导图的每次改动经 [_EditDiaryMindMapSession] 写进正文里那一块
 ///   （不进正文的撤销栈，导图有自己的撤销），正文控制器随之通知，草稿与
 ///   编辑的自动保存、手动保存、发布都沿用文字日记的链路；中心主题的文字
@@ -86,10 +87,9 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
     _mindMapSession = created;
   }
 
-  /// 中心主题的文字就是这篇日记的标题（压成一行，标题列最长 200 字）。
+  /// 中心主题的文字就是这篇日记的标题（见 [mindMapDiaryTitle]）。
   void _syncTitleFromMindMap(MindMapDocument map) {
-    var title = map.root.text.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();
-    if (title.length > 200) title = title.substring(0, 200);
+    final title = mindMapDiaryTitle(map);
     if (_titleController.text != title) _titleController.text = title;
   }
 
@@ -137,7 +137,6 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
   Widget _buildMindMapScaffold(
     BuildContext context, {
     required _ReadingFrame? reading,
-    required bool showEditMetaPanel,
   }) {
     final session = _mindMapSession!;
     final l10n = context.l10n;
@@ -182,7 +181,7 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
               onPressed: () => importMindMapFromFile(context, controller),
               child: Text(l10n.mindMapImport),
             ),
-            if (reading != null) ..._readingMoreItems(reading),
+            if (reading != null) ..._mindMapDiaryMoreItems(reading),
           ],
         ),
         if (_isCreateEntry)
@@ -203,14 +202,6 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
           ),
         ),
       ),
-      overlay: showEditMetaPanel
-          ? Positioned.fill(
-              key: const ValueKey<String>('edit-meta-panel'),
-              child: _metaPanelColumn(
-                (bool wide) => _buildMetaPanel(fillWidth: wide),
-              ),
-            )
-          : null,
     );
   }
 }

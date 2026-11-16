@@ -10,8 +10,9 @@ import '../viewmodels/storage_labels.dart';
 import '../viewmodels/storage_media_view.dart';
 
 /// 媒体页列表上方：一行可横向滑动的筛选（类别单选 + 大文件 / 可压缩 /
-/// 回收站三个可叠加的条件），下面是“共 N 项 · X”，有打码的私密项时再加
-/// 一行说明与“显示”。
+/// 回收站 / 未使用几个条件，“未使用”与可压缩、回收站互斥，见
+/// [StorageMediaFilter.toggleUnused]），下面是“共 N 项 · X”，有打码的私密项
+/// 时再加一行说明与“显示”。
 class StorageFilterBar extends StatelessWidget {
   const StorageFilterBar({
     super.key,
@@ -76,12 +77,17 @@ class StorageFilterBar extends StatelessWidget {
                   toggle(
                     l10n.storageMgmtFilterCompressible,
                     filter.compressibleOnly,
-                    filter.copyWith(compressibleOnly: !filter.compressibleOnly),
+                    filter.toggleCompressible(),
                   ),
                 toggle(
                   l10n.storageMgmtFilterTrash,
                   filter.trashOnly,
-                  filter.copyWith(trashOnly: !filter.trashOnly),
+                  filter.toggleTrash(),
+                ),
+                toggle(
+                  l10n.storageMgmtFilterUnused,
+                  filter.unusedOnly,
+                  filter.toggleUnused(),
                 ),
               ],
             ),

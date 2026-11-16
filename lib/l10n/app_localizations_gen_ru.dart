@@ -16294,6 +16294,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Дождитесь, пока исчезнет подсказка «Отменить», и повторите';
 
   @override
+  String get storageMgmtBusyMediaWrites =>
+      'Идёт синхронизация или преобразование изображений. Повторите чуть позже';
+
+  @override
   String get storageMgmtCannotDelete =>
       'На файл ссылаются другие данные, удалить его здесь нельзя';
 
@@ -16313,6 +16317,11 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String storageMgmtDeleteBody(String size) {
     return 'Освободится $size. Файлы будут удалены из:';
+  }
+
+  @override
+  String storageMgmtDeleteUnusedBody(String size) {
+    return 'Освободится $size. Эти файлы нигде не используются.';
   }
 
   @override
@@ -16623,6 +16632,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get storageMgmtFilterTrash => 'Только корзина';
 
   @override
+  String get storageMgmtFilterUnused => 'Неиспользуемые';
+
+  @override
   String get storageMgmtSort => 'Сортировка';
 
   @override
@@ -16746,6 +16758,10 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get storageMgmtUnusedNote =>
+      'Файл не используется ни в записях, ни в комментариях, ни в черновиках, ни на обложках дневников, ни в чатах ИИ. Удаление ничего больше не затронет.';
 
   @override
   String get diaryTagFilterMultiSelectSemanticHint => 'выбрать несколько тегов';
@@ -19271,6 +19287,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get mindMapStrike => 'Зачёркнутый';
+
+  @override
+  String get mindMapUnderline => 'Подчёркнутый';
+
+  @override
+  String get mindMapHighlight => 'Выделение цветом';
 
   @override
   String get mindMapSizeSmall => 'S';

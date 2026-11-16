@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'mind_map_document.dart';
+import 'mind_map_rich_text.dart';
 import 'mind_map_schema.dart';
 
 /// 导图的编辑操作（纯函数）：输入文档，返回新文档，不改动输入。
@@ -23,20 +24,123 @@ abstract final class MindMapOps {
     return document.copyWith(root: _replaceAlongPath(index, id, replaced));
   }
 
-  /// 改节点文字（超长截断）。
+  /// 改节点文字（超长截断）。有局部样式时按改动把样式挪到新文字上
+  /// （[remapRunsAfterEdit]），大纲、粘贴等任何改字路径都不错位。
   static MindMapDocument setText(
     MindMapDocument document,
     String id,
     String text,
   ) {
-    final clipped = text.length > kMindMapMaxTextLength
-        ? text.substring(0, kMindMapMaxTextLength)
-        : text;
-    return updateNode(
+    final clipped = _clip(text);
+    return updateNode(document, id, (node) {
+      if (node.text == clipped) return node;
+      if (!mindMapHasRichText(node)) {
+        return node.copyWith(text: clipped, delta: null);
+      }
+      return node.copyWith(
+        text: clipped,
+        delta: encodeMindMapDelta(
+          remapRunsAfterEdit(mindMapRunsOf(node), clipped),
+        ),
+      );
+    });
+  }
+
+  /// 同时改文字与局部样式（输入框里打字、设样式）。[runs] 拼起来必须是
+  /// [text]，对不上时只改文字并按 [setText] 挪样式；超长时样式一并截断。
+  static MindMapDocument setRichText(
+    MindMapDocument document,
+    String id,
+    String text,
+    List<MindMapTextRun> runs,
+  ) {
+    if (mindMapRunsText(runs) != text) return setText(document, id, text);
+    final clipped = _clip(text);
+    final delta = encodeMindMapDelta(
+      clipped.length == text.length
+          ? runs
+          : sliceMindMapRuns(runs, 0, clipped.length),
+    );
+    return updateNode(document, id, (node) {
+      if (node.text == clipped &&
+          _sameDelta(mindMapHasRichText(node) ? node.delta : null, delta)) {
+        return node;
+      }
+      return node.copyWith(text: clipped, delta: delta);
+    });
+  }
+
+  /// 用 [update] 改节点文字 [start, end) 的局部样式。
+  static MindMapDocument formatText(
+    MindMapDocument document,
+    String id,
+    int start,
+    int end,
+    MindMapTextMarks Function(MindMapTextMarks marks) update,
+  ) {
+    final node = document.index[id];
+    if (node == null) return document;
+    return setRichText(
       document,
       id,
-      (node) => node.text == clipped ? node : node.copyWith(text: clipped),
+      node.text,
+      formatRuns(mindMapRunsOf(node), start, end, update),
     );
+  }
+
+  /// 整条样式里与文字有关、局部样式里也有的几项（见 [setStyle]）。
+  static const Set<String> textStyleKeys = <String>{
+    kMindMapStyleBoldKey,
+    kMindMapStyleItalicKey,
+    kMindMapStyleUnderlineKey,
+    kMindMapStyleStrikeKey,
+    kMindMapStyleColorKey,
+    kMindMapStyleHighlightKey,
+  };
+
+  /// 把节点整条样式里的 [key] 设为 [value]（null 为去掉）。[textStyleKeys]
+  /// 里的项同时去掉同名的局部样式：整条设置就是整条生效，不留被局部盖住
+  /// 的字。
+  static MindMapDocument setStyle(
+    MindMapDocument document,
+    String id,
+    String key,
+    Object? value,
+  ) => updateNode(document, id, (node) {
+    if (node.style[key] == value && !mindMapHasRichText(node)) return node;
+    final style = <String, Object?>{...node.style};
+    if (value == null) {
+      style.remove(key);
+    } else {
+      style[key] = value;
+    }
+    if (!textStyleKeys.contains(key) || !mindMapHasRichText(node)) {
+      return node.copyWith(style: style);
+    }
+    return node.copyWith(
+      style: style,
+      delta: encodeMindMapDelta(clearMindMapMark(mindMapRunsOf(node), key)),
+    );
+  });
+
+  static String _clip(String text) => text.length > kMindMapMaxTextLength
+      ? text.substring(0, kMindMapMaxTextLength)
+      : text;
+
+  static bool _sameDelta(
+    List<Map<String, Object?>>? a,
+    List<Map<String, Object?>>? b,
+  ) {
+    if (a == null || b == null) return a == b;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i]['insert'] != b[i]['insert'] ||
+          MindMapTextMarks.fromJson(a[i]['attributes']) !=
+              MindMapTextMarks.fromJson(b[i]['attributes'])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   static MindMapDocument setCollapsed(

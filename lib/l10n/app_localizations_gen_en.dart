@@ -15723,6 +15723,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Wait for the undo prompt to disappear, then try again.';
 
   @override
+  String get storageMgmtBusyMediaWrites =>
+      'Syncing or converting images. Try again in a moment.';
+
+  @override
   String get storageMgmtCannotDelete =>
       'Other data refers to this file, so it can\'t be deleted here.';
 
@@ -15740,6 +15744,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String storageMgmtDeleteBody(String size) {
     return 'Frees $size. They will be removed from:';
+  }
+
+  @override
+  String storageMgmtDeleteUnusedBody(String size) {
+    return 'Frees $size. Nothing uses these files.';
   }
 
   @override
@@ -16019,6 +16028,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storageMgmtFilterTrash => 'Trash only';
 
   @override
+  String get storageMgmtFilterUnused => 'Unused';
+
+  @override
   String get storageMgmtSort => 'Sort';
 
   @override
@@ -16136,6 +16148,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get storageMgmtUnusedNote =>
+      'No entry, comment, draft, notebook cover or AI chat uses this file. Deleting it changes nothing else.';
 
   @override
   String get diaryTagFilterMultiSelectSemanticHint =>
@@ -18570,6 +18586,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mindMapStrike => 'Strikethrough';
+
+  @override
+  String get mindMapUnderline => 'Underline';
+
+  @override
+  String get mindMapHighlight => 'Highlight';
 
   @override
   String get mindMapSizeSmall => 'S';

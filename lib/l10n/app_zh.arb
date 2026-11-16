@@ -18910,12 +18910,16 @@
   "@storageMgmtBusyEditing": {"description": "有编辑页开着、拒绝删除或压缩时的提示。"},
   "storageMgmtBusyUndo": "请等撤销提示消失后再试",
   "@storageMgmtBusyUndo": {"description": "撤销提示还开着时的提示。"},
+  "storageMgmtBusyMediaWrites": "正在同步或处理图片，请稍后再试",
+  "@storageMgmtBusyMediaWrites": {"description": "局域网同步或 HEIC 修复正在放文件、写库，删除与清理要等它结束时的提示。"},
   "storageMgmtCannotDelete": "它被日记的其他数据引用着，不能在这里删除",
   "@storageMgmtCannotDelete": {"description": "存储管理无法改写其引用的文件的说明。"},
   "storageMgmtDeleteTitle": "删除 {count} 个文件？",
   "@storageMgmtDeleteTitle": {"description": "删除确认对话框标题。", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteBody": "将释放 {size}，并从以下位置移除：",
   "@storageMgmtDeleteBody": {"description": "删除确认的第一行，后面列出位置。", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtDeleteUnusedBody": "将释放 {size}。这些文件没有任何地方在用。",
+  "@storageMgmtDeleteUnusedBody": {"description": "删除确认的第一行：选中的全是未使用的文件时使用。", "placeholders": {"size": {"type": "String"}}},
   "storageMgmtDeleteFromDiaries": "{count} 篇日记",
   "@storageMgmtDeleteFromDiaries": {"description": "删除确认：受影响的日记篇数。", "placeholders": {"count": {"type": "int"}}},
   "storageMgmtDeleteFromNotebooks": "{count} 个日记本封面",
@@ -19006,6 +19010,8 @@
   "@storageMgmtFilterCompressible": {"description": "筛选：可压缩。"},
   "storageMgmtFilterTrash": "仅回收站",
   "@storageMgmtFilterTrash": {"description": "筛选：仅回收站。"},
+  "storageMgmtFilterUnused": "未使用",
+  "@storageMgmtFilterUnused": {"description": "筛选：没有任何地方在用的文件（删掉的日记、留言、草稿、AI 对话留下的）。"},
   "storageMgmtSort": "排序",
   "@storageMgmtSort": {"description": "排序菜单的提示。"},
   "storageMgmtSortLargest": "从大到小",
@@ -19060,6 +19066,8 @@
   "@storageMgmtMaskedCapsule": {"description": "未解封胶囊里的媒体的占位标题。"},
   "storageMgmtUsedIn": "用在 {count} 处",
   "@storageMgmtUsedIn": {"description": "详情面板“用在”标题。", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtUnusedNote": "没有日记、留言、草稿、日记本封面或 AI 对话在用这个文件，删除它不影响其他内容。",
+  "@storageMgmtUnusedNote": {"description": "详情面板：未使用的文件在“用在”位置显示的说明。"},
   "diaryTagFilterMultiSelectSemanticHint": "同时选中多个标签",
   "@diaryTagFilterMultiSelectSemanticHint": {"description": "首页标签筛选胶囊的读屏长按说明：长按在已选的标签里加上或去掉它，其余保留。"},
   "diaryTagFilterMultiSelectTip": "长按标签可以同时选多个",
@@ -21161,6 +21169,14 @@
   "mindMapStrike": "删除线",
   "@mindMapStrike": {
     "description": "主题样式面板按钮提示。"
+  },
+  "mindMapUnderline": "文字下划线",
+  "@mindMapUnderline": {
+    "description": "主题样式面板与文字格式条的按钮提示：给文字加下划线（不是形状里的“下划线”）。"
+  },
+  "mindMapHighlight": "文字高亮",
+  "@mindMapHighlight": {
+    "description": "主题样式面板的分组标题与文字格式条的按钮：文字后面的底色。"
   },
   "mindMapSizeSmall": "小",
   "@mindMapSizeSmall": {

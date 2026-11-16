@@ -122,7 +122,7 @@ List<Widget> diaryPreviewMoreItems(
         diaryMoreMenuEntry(
           FontAwesomeIcons.sitemap,
           l10n.mindMapConvertFromDiary,
-          () => openMindMapFromDiary(context, detail.diary),
+          () => openMindMapFromDiary(context, ref, detail.diary),
         ),
         if (aiWriting)
           diaryMoreMenuEntry(

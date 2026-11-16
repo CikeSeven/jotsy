@@ -4,10 +4,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_ops.dart';
+import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
-import '../../diaries/models/diary_mood_palette.dart';
 import '../../diaries/widgets/diary_link/diary_link_search_view.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_button_group.dart';
@@ -19,6 +20,8 @@ import '../models/mind_map_options.dart';
 import '../models/mind_map_themes.dart';
 import '../viewmodels/mind_map_palette.dart';
 import '../viewmodels/mind_map_visuals.dart';
+import '../widgets/mind_map_color_swatches.dart';
+import 'mind_map_text_color_section.dart';
 
 /// 单个主题的面板：样式、图标贴纸、标签、备注、链接与“插入”总入口。
 ///
@@ -266,11 +269,11 @@ class _ActionCell extends StatelessWidget {
 
 // ---------------- 样式 ----------------
 
-/// 主题的自定义颜色可选的种子色（与心情色同一组十个色相 + 一个中性灰），
-/// 显示与写入都经 [MindMapPalette.custom] 按明暗换算。
-const List<int> _colorSeeds = <int>[...kDiaryMoodDefaultColors, 0xFF757575];
-
-/// 一个主题的样式：形状、底色、文字颜色、分支颜色、粗 / 斜 / 删除线、字号。
+/// 一个主题的样式：形状、底色、文字颜色与文字高亮（正文同款的颜色面板，
+/// 见 [MindMapTextColorSection]）、分支颜色、粗 / 斜 / 下划线 / 删除线、
+/// 字号。改动经 [MindMapOps.setStyle]：文字有关的几项改的是整条，同名的
+/// 局部样式随之去掉；重置样式连局部样式一起清掉。底色与分支色是主题配色，
+/// 仍是按明暗换算的种子色。
 Future<void> showMindMapNodeStyleSheet(
   BuildContext context,
   MindMapEditingController controller,
@@ -284,37 +287,31 @@ Future<void> showMindMapNodeStyleSheet(
     builder: (BuildContext context, MindMapNode node) {
       final l10n = context.l10n;
       final style = MindMapNodeStyle(node.style);
-      void set(String key, Object? value) => controller.updateNode(id, (n) {
-        final next = <String, Object?>{...n.style};
-        if (value == null) {
-          next.remove(key);
-        } else {
-          next[key] = value;
-        }
-        return n.copyWith(style: next);
-      });
+      void set(String key, Object? value) => controller.updateDocument(
+        (document) => MindMapOps.setStyle(document, id, key, value),
+      );
       Color? seed(Object? raw) =>
           MindMapNodeStyle(<String, Object?>{kMindMapStyleFillKey: raw}).fill;
-      // 底色预览容器色（节点上实际的样子），文字色与分支色预览强调色。
-      Widget colors(String key, {bool container = false}) => _ColorRow(
-        seeds: _colorSeeds,
-        selected: seed(node.style[key]),
-        preview: (c) {
-          final colors = palette.custom(c);
-          return container
-              ? MindMapBranchColors(
-                  accent: colors.container,
-                  onAccent: colors.onContainer,
-                  container: colors.container,
-                  onContainer: colors.onContainer,
-                )
-              : colors;
-        },
-        onPick: (color) => set(
-          key,
-          color == null ? null : MindMapNodeStyle.encodeColor(color),
-        ),
-      );
+      // 底色预览容器色（节点上实际的样子），分支色预览强调色。
+      Widget colors(String key, {bool container = false}) =>
+          MindMapColorSwatches(
+            selected: seed(node.style[key]),
+            preview: (c) {
+              final colors = palette.custom(c);
+              return container
+                  ? MindMapBranchColors(
+                      accent: colors.container,
+                      onAccent: colors.onContainer,
+                      container: colors.container,
+                      onContainer: colors.onContainer,
+                    )
+                  : colors;
+            },
+            onPick: (color) => set(
+              key,
+              color == null ? null : MindMapNodeStyle.encodeColor(color),
+            ),
+          );
       return _SheetBody(
         title: l10n.mindMapNodeStyleTitle,
         children: <Widget>[
@@ -334,8 +331,9 @@ Future<void> showMindMapNodeStyleSheet(
           ),
           _SectionLabel(l10n.mindMapFill),
           colors(kMindMapStyleFillKey, container: true),
-          _SectionLabel(l10n.mindMapTextColor),
-          colors(kMindMapStyleColorKey),
+          // 文字颜色 / 文字高亮的切换就是这一节的标题。
+          const SizedBox(height: 16),
+          MindMapTextColorSection(controller: controller, id: id),
           _SectionLabel(l10n.mindMapBranchColor),
           colors(kMindMapStyleBranchKey),
           _SectionLabel(l10n.mindMapTextStyle),
@@ -355,6 +353,15 @@ Future<void> showMindMapNodeStyleSheet(
                 onTap: () => set(
                   kMindMapStyleItalicKey,
                   style.italic == true ? null : true,
+                ),
+              ),
+              _ToggleIcon(
+                icon: FontAwesomeIcons.underline,
+                tooltip: l10n.mindMapUnderline,
+                selected: style.underline == true,
+                onTap: () => set(
+                  kMindMapStyleUnderlineKey,
+                  style.underline == true ? null : true,
                 ),
               ),
               _ToggleIcon(
@@ -388,11 +395,14 @@ Future<void> showMindMapNodeStyleSheet(
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
-              onPressed: node.style.isEmpty
+              onPressed: node.style.isEmpty && !mindMapHasRichText(node)
                   ? null
                   : () => controller.updateNode(
                       id,
-                      (n) => n.copyWith(style: const <String, Object?>{}),
+                      (n) => n.copyWith(
+                        style: const <String, Object?>{},
+                        delta: null,
+                      ),
                     ),
               icon: const FaIcon(FontAwesomeIcons.arrowRotateLeft, size: 14),
               label: Text(l10n.mindMapResetStyle),
@@ -421,91 +431,6 @@ String _sizeLabel(AppLocalizations l10n, MindMapTextSize size) =>
       MindMapTextSize.large => l10n.mindMapSizeLarge,
       MindMapTextSize.huge => l10n.mindMapSizeHuge,
     };
-
-/// 一排色块：首个是“默认”（斜线），其余按 [preview] 换算后的颜色画。
-class _ColorRow extends StatelessWidget {
-  const _ColorRow({
-    required this.seeds,
-    required this.selected,
-    required this.preview,
-    required this.onPick,
-  });
-
-  final List<int> seeds;
-  final Color? selected;
-  final MindMapBranchColors Function(Color seed) preview;
-  final ValueChanged<Color?> onPick;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    Widget swatch({
-      required Color? seed,
-      required bool active,
-      required String label,
-    }) {
-      final color = seed == null ? null : preview(seed).accent;
-      return Semantics(
-        button: true,
-        selected: active,
-        label: label,
-        child: InkResponse(
-          onTap: () => onPick(seed),
-          radius: 22,
-          child: AnimatedContainer(
-            duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: color ?? scheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: active ? scheme.primary : scheme.outlineVariant,
-                width: active ? 2.5 : 1,
-              ),
-            ),
-            child: seed == null
-                ? Center(
-                    child: FaIcon(
-                      FontAwesomeIcons.slash,
-                      size: 12,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  )
-                : active
-                ? Center(
-                    child: FaIcon(
-                      FontAwesomeIcons.check,
-                      size: 13,
-                      color: preview(seed).onAccent,
-                    ),
-                  )
-                : null,
-          ),
-        ),
-      );
-    }
-
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: <Widget>[
-        swatch(
-          seed: null,
-          active: selected == null,
-          label: l10n.mindMapColorDefault,
-        ),
-        for (final value in seeds)
-          swatch(
-            seed: Color(value),
-            active: selected?.toARGB32() == value,
-            label: '#${value.toRadixString(16).toUpperCase()}',
-          ),
-      ],
-    );
-  }
-}
 
 class _ToggleIcon extends StatelessWidget {
   const _ToggleIcon({

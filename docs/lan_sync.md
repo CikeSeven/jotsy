@@ -267,7 +267,7 @@ class SyncManifest {
 入口：`SyncApplier.apply(sidePlan, {staging, includeSettings})`，结果 `SyncApplyResult{status: applied|deferred, skipped: [{key, reason}], rekeys, manifest（写入后）, counts（实际执行的新增 / 更新 / 删除）, summary（实际执行的条数按 `syncSummaryEntityOf` 归类，界面的“其他”）, mediaFiles, mediaBytes}`；跳过原因 `precondition` / `invalidRecord` / `missingDependency` / `settingsFailed`。冲突副本数取计划的 `SyncPlan.conflictCopies`。
 
 1. 等待撤销窗口结束（`EditingSessionRegistry.waitForUndoWindows`，默认 15 秒）：超时返回 `deferred`，什么都不写（暂存件一并丢弃，下次重新传）。撤销提示开着时写入，用户点“撤销”会把旧内容写回、覆盖同步刚写入的值。
-2. 媒体（`SyncMediaStaging`，在开事务**之前**就位：记录落库那一刻文件必须已经在）：
+2. 媒体（`SyncMediaStaging`，在开事务**之前**就位：记录落库那一刻文件必须已经在）。第 2–3 步（就位到写库提交）与 `adoptMediaRekeys` 整段经托管媒体写入闸门 `ManagedMediaWriteGate.write`：这段时间里刚就位的文件在库里还没有引用，存储管理的立即删除与清理要等它结束（docs/rules/storage.md）：
    - 会话层把来件流式写进 `<dataRoot>/.lan_sync_staging/<会话>/<键>`（与数据根同一文件系统，就位用改名、原子），写完按声明的大小与 sha256 `verify`，不符即删除暂存件并拒收；
    - 就位规则（`place`）：目标键不存在 → 改名就位，修改时间设为现在（不沿用发送方的时间，媒体回收的 24 小时宽限期才对新到的文件生效）；目标键已有同样 sha256 → 复用、丢掉暂存件；目标键已是**另一份文件**（托管目录是随机的 `createTemp('media_')`，几乎只会因巧合出现）→ 绝不覆盖，放到同目录的派生键 `<文件名>.<sha256 前 12 位>.<扩展名>`（`syncDerivedMediaKey`；派生键上已有同样内容即复用，再被占用时改用完整 64 位），并把本次这一侧**所有**写入记录里的 `jotsy-media:<旧键>` 改写为新键（含嵌在 JSON 字符串里的，改过才按规范 JSON 重新编码），改写过的分面不再继承历史时间（不再是另一侧的原值）；
    - 改键随结果报告（`SyncMediaRekey{old, new, sha256}`），会话层发给来源一侧，来源一侧在**自己的 `apply` 之后**调用 `adoptMediaRekeys`：本机 `oldKey` 仍是那个 sha256 时拷一份到 `newKey`（先写同目录临时文件再改名），再把本机所有引用 `oldKey` 的记录改写为 `newKey`，经同一条写入路径（前置条件 = 现在的哈希、单事务、写入后折叠）。两边由此得到逐字节相同的规范记录；旧文件不删，没人引用后由媒体回收收走；

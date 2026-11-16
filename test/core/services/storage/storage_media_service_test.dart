@@ -8,7 +8,9 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/services/diary_media_cleanup_service.dart';
+import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/editing_session_registry.dart';
+import 'package:node_diary/core/services/managed_media_write_gate.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/storage/media_compressor.dart';
 import 'package:node_diary/core/services/storage/storage_compress_plan.dart';
@@ -86,7 +88,9 @@ void main() {
     for (final media in diaryContentMedia(diary.content)) media.path,
   ];
 
-  StorageMediaService service() => StorageMediaService(
+  StorageMediaService service({
+    Duration mediaWritesTimeout = const Duration(seconds: 8),
+  }) => StorageMediaService(
     database: database,
     settings: () async => settings,
     mediaCleanup: DiaryMediaCleanupService(
@@ -101,6 +105,7 @@ void main() {
     temporaryDirectory: () async => temp,
     fontsPath: () async => null,
     clock: () => now,
+    mediaWritesTimeout: mediaWritesTimeout,
   );
 
   setUp(() async {
@@ -169,7 +174,14 @@ void main() {
       expect(report.bytesOf(StorageCategory.backgrounds), 50);
       expect(report.orphanFiles, 2);
       expect(report.orphanBytes, 500);
-      expect(report.clearableOrphanBytes, 300);
+      // 未使用的文件逐个列出（大的在前），刚写入的也在其中、一样可清。
+      expect(report.unused.map((e) => e.key), [
+        'diary_images/m1/orphan_old.jpg',
+        'diary_images/m1/orphan_new.jpg',
+      ]);
+      expect(report.unused.every((e) => e.refs.isEmpty), isTrue);
+      expect(report.unused.first.category, StorageCategory.images);
+      expect(report.reclaimableBytes, 700 + 500);
       expect(report.cacheBytes, 800);
       expect(report.clearableCacheBytes, 700);
       expect(report.videoInfo['diary_videos/m2/clip.mp4']?.shortSide, 2160);
@@ -233,6 +245,19 @@ void main() {
       final draft = await database.select(database.diaryDrafts).getSingle();
       expect(draft.payload, isNot(contains('big.jpg')));
       await replaced.future;
+    });
+
+    test('deletes an unused file right away, however new', () async {
+      final orphan = await put('diary_videos/m1/new.mp4', 9000, modified: now);
+      final keep = await put('diary_images/m1/keep.jpg', 100, modified: now);
+      await createDiary([keep]);
+
+      final result = await service().deleteMedia({'diary_videos/m1/new.mp4'});
+
+      expect(result.deletedFiles, 1);
+      expect(result.freedBytes, 9000);
+      expect(File(orphan).existsSync(), isFalse);
+      expect(File(keep).existsSync(), isTrue);
     });
 
     test('refuses while an editor holds a copy', () async {
@@ -360,23 +385,112 @@ void main() {
     );
   });
 
-  test('cleanUp clears idle cache and old orphans only', () async {
-    final oldOrphan = await put('diary_images/m1/old.jpg', 300);
-    final newOrphan = await put('diary_images/m1/new.jpg', 200, modified: now);
-    final oldCache = await put('diary_share/1/x.jpg', 700, base: temp);
-    final newCache = await put(
-      'diary_share/2/y.jpg',
-      100,
-      base: temp,
-      modified: now,
+  group('cleanUp', () {
+    test(
+      'clears idle cache and every unused file, even one just written',
+      () async {
+        final used = await put('diary_images/m1/used.jpg', 50, modified: now);
+        await createDiary([used]);
+        final oldOrphan = await put('diary_images/m1/old.jpg', 300);
+        // 刚导入、日记随即彻底删除留下的文件：修改时间就是现在。
+        final newOrphan = await put(
+          'diary_videos/m2/new.mp4',
+          200,
+          modified: now,
+        );
+        final oldCache = await put('diary_share/1/x.jpg', 700, base: temp);
+        final newCache = await put(
+          'diary_share/2/y.jpg',
+          100,
+          base: temp,
+          modified: now,
+        );
+
+        final freed = await service().cleanUp();
+
+        expect(freed, 1200);
+        expect(File(used).existsSync(), isTrue);
+        expect(File(oldOrphan).existsSync(), isFalse);
+        expect(File(newOrphan).existsSync(), isFalse);
+        expect(File(oldCache).existsSync(), isFalse);
+        expect(File(newCache).existsSync(), isTrue);
+        expect((await service().scan()).unused, isEmpty);
+      },
     );
 
-    final freed = await service().cleanUp();
+    test(
+      'clearing unused files leaves picker caches to the cache rule',
+      () async {
+        final picked = await put(
+          '${DiaryMediaStorageService.pickerCacheDirectoryNames.first}/a.jpg',
+          400,
+          base: temp,
+        );
+        final orphan = await put('diary_images/m1/orphan.jpg', 300);
 
-    expect(freed, 1000);
-    expect(File(oldOrphan).existsSync(), isFalse);
-    expect(File(newOrphan).existsSync(), isTrue);
-    expect(File(oldCache).existsSync(), isFalse);
-    expect(File(newCache).existsSync(), isTrue);
+        final freed = await service().cleanUp(cache: false, database: false);
+
+        expect(freed, 300);
+        expect(File(orphan).existsSync(), isFalse);
+        expect(File(picked).existsSync(), isTrue);
+      },
+    );
+
+    test(
+      'waits for a file being placed and keeps it once referenced',
+      () async {
+        final placed = Completer<void>();
+        final release = Completer<void>();
+        late String file;
+        final writer = ManagedMediaWriteGate.write(() async {
+          // 像局域网同步一样：先把文件放进托管目录，稍后才写库引用它。
+          file = await put('diary_images/sync/in.jpg', 300, modified: now);
+          placed.complete();
+          await release.future;
+          await createDiary([file]);
+        });
+        await placed.future;
+
+        var cleaned = false;
+        final cleaning = service().cleanUp().then((_) => cleaned = true);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(cleaned, isFalse);
+        expect(File(file).existsSync(), isTrue);
+
+        release.complete();
+        await writer;
+        await cleaning;
+
+        expect(File(file).existsSync(), isTrue);
+      },
+    );
+
+    test('is busy when a writer does not finish in time', () async {
+      final orphan = await put('diary_images/m1/orphan.jpg', 300);
+      final release = Completer<void>();
+      final writer = ManagedMediaWriteGate.write(() => release.future);
+      addTearDown(() async {
+        if (!release.isCompleted) release.complete();
+        await writer;
+      });
+
+      await expectLater(
+        service(mediaWritesTimeout: const Duration(milliseconds: 50)).cleanUp(),
+        throwsA(
+          isA<StorageBusyException>().having(
+            (e) => e.reason,
+            'reason',
+            StorageBusyReason.mediaWrites,
+          ),
+        ),
+      );
+      expect(File(orphan).existsSync(), isTrue);
+
+      // 写入者结束后照常可以清理。
+      release.complete();
+      await writer;
+      await service().cleanUp();
+      expect(File(orphan).existsSync(), isFalse);
+    });
   });
 }

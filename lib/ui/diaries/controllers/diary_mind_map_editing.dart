@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,11 +19,14 @@ import '../../mind_maps/controllers/mind_map_ai_scope.dart';
 import '../../mind_maps/controllers/mind_map_ai_session.dart';
 import '../../mind_maps/sections/mind_map_ai_sheet.dart';
 import '../../mind_maps/pages/mind_map_editor_page.dart';
-import '../models/edit_diary_create_seed.dart';
-import '../pages/edit_diary_page.dart';
+import '../../settings/providers/app_features_provider.dart';
+import '../models/new_diary_draft.dart';
+import 'diary_card_menu_flows.dart';
 import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
 import 'diary_link_editing.dart';
+import 'diary_open_flow.dart';
+import 'publish_new_diary_directly.dart';
 
 /// 正文里嵌入导图（`mind_map` 块）的写入：插入、全屏编辑后写回、删除。
 ///
@@ -88,19 +93,24 @@ Future<void> editDiaryMindMap(
 void deleteDiaryMindMap(DiaryEditorController controller, af.Node node) =>
     deleteDiaryLinkCard(controller, node);
 
-/// 把文字日记 [diary] 按标题与列表的层级转成一张新的导图日记，打开新建页
-/// （原文不动；什么都没改就离开时不留草稿，同“另存为日记”）。
-Future<void> openMindMapFromDiary(BuildContext context, Diary diary) =>
-    openMindMapDiaryDraft(
-      context,
-      mindMapFromDiaryBlocks(
-        decodeStoredDiaryBlocks(diary.content),
-        title: diary.title,
-      ),
-    );
+/// 把文字日记 [diary] 按标题与列表的层级转成一张新的导图日记，直接存好并
+/// 打开它的编辑页（见 [saveMindMapAsDiary]；原文不动）。
+Future<void> openMindMapFromDiary(
+  BuildContext context,
+  WidgetRef ref,
+  Diary diary,
+) => saveMindMapAsDiary(
+  context,
+  ref,
+  mindMapFromDiaryBlocks(
+    decodeStoredDiaryBlocks(diary.content),
+    title: diary.title,
+  ),
+);
 
 /// 让 AI 把文字日记 [diary] 整理成一张新的导图日记（预览页“更多”）：私密
-/// 日记在用户没允许时只提示原因；面板里确认后打开新建页，原文不动。
+/// 日记在用户没允许时只提示原因；面板里点“存为导图日记”后直接存好并打开
+/// 它的编辑页（见 [saveMindMapAsDiary]），原文不动。
 Future<void> openMindMapAiFromDiary(
   BuildContext context,
   WidgetRef ref,
@@ -116,7 +126,7 @@ Future<void> openMindMapAiFromDiary(
     task: MindMapAiTask.fromDiary,
     diary: material,
     onOpenAsDiary: (map) {
-      if (context.mounted) openMindMapDiaryDraft(context, map);
+      if (context.mounted) unawaited(saveMindMapAsDiary(context, ref, map));
     },
   );
 }
@@ -153,20 +163,48 @@ Future<bool> _aiAllowedFor(
   return allowed;
 }
 
-/// 带着导图 [map] 打开一篇新的导图日记的新建页（标题为中心主题）。
-Future<void> openMindMapDiaryDraft(
+/// 把导图 [map] 直接存成一篇新的导图日记，再打开它的编辑页（整页是导图
+/// 工作区）。不经新建页与发布页：由日记生成的导图本来就是成品，用户要的是
+/// 存下来接着改，而不是先看一遍再点发布。
+///
+/// 标题为中心主题（[mindMapDiaryTitle]），发表时间为现在，不带心情、标签与
+/// 日记本；与“返回时直接发表”同一条写库链路（[publishNewDiaryDirectly]）。
+/// 不触发 AI 自动回应：导图日记没有显示回应的地方。写库失败时提示“发表
+/// 失败”，什么都不打开。在编辑页里删掉了它时给撤销（[offerDeletedDiaryUndo]）。
+Future<void> saveMindMapAsDiary(
   BuildContext context,
+  WidgetRef ref,
   MindMapDocument map,
 ) async {
-  await Navigator.of(context).push<Object?>(
-    MaterialPageRoute<Object?>(
-      builder: (_) => EditDiaryPage(
-        entryMode: EditDiaryEntryMode.create,
-        createSeed: EditDiaryCreateSeed(
-          title: map.root.text,
-          contentDocJson: encodeDiaryBlocks(mindMapDiaryDocument(map)),
-        ),
+  final features = ref.read(appFeaturesProvider);
+  final document = mindMapDiaryDocument(map);
+  final String diaryId;
+  try {
+    diaryId = await publishNewDiaryDirectly(
+      database: ref.read(appDatabaseProvider),
+      draft: NewDiaryDraft(
+        title: mindMapDiaryTitle(map),
+        contentDocJson: encodeDiaryBlocks(document),
+        contentText: diaryBlocksPlainText(document),
       ),
-    ),
-  );
+      timeCapsulesEnabled: features.timeCapsules,
+      notebooksEnabled: features.notebooks,
+    );
+  } catch (error) {
+    debugPrint('Saving mind map as diary failed: $error');
+    if (context.mounted) {
+      unawaited(
+        HomeHintVisibilityScope.showTrackedSnackBar(
+          context: context,
+          snackBar: SnackBar(content: Text(context.l10n.publishFailed)),
+        ),
+      );
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  final result = await openDiaryPage(context, ref, diaryId: diaryId);
+  final deletedId = result?.diaryId;
+  if (deletedId == null || !context.mounted) return;
+  await offerDeletedDiaryUndo(context, ref, deletedId);
 }

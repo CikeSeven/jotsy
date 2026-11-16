@@ -19,9 +19,13 @@ class _DiaryColorPanelHeader extends StatelessWidget {
     required this.mode,
     required this.columns,
     required this.onModeChanged,
+    this.title,
   });
 
   final DiaryColorTarget target;
+
+  /// 覆盖目标标题（缺省为工具栏按钮名）。
+  final String? title;
   final DiaryColorPanelMode mode;
   final int columns;
   final ValueChanged<DiaryColorPanelMode> onModeChanged;
@@ -64,7 +68,7 @@ class _DiaryColorPanelHeader extends StatelessWidget {
 
   Widget _buildTitle(BuildContext context, double available) {
     final colors = Theme.of(context).colorScheme;
-    final title = _targetItem.label(context.l10n);
+    final title = this.title ?? _targetItem.label(context.l10n);
     final style = TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,

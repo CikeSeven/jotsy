@@ -247,6 +247,8 @@ class _StorageMediaPageState extends ConsumerState<StorageMediaPage>
                 child: Text(
                   _selecting
                       ? l10n.storageMgmtSelectedCount(_selected.length)
+                      : _filter.unusedOnly
+                      ? l10n.storageMgmtCategoryUnused
                       : _filter.category?.label(l10n) ??
                             l10n.storageMgmtAllMedia,
                   key: ValueKey<int>(_selecting ? _selected.length : -1),

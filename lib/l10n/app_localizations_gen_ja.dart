@@ -14107,6 +14107,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storageMgmtBusyUndo => '「元に戻す」の表示が消えてからもう一度お試しください';
 
   @override
+  String get storageMgmtBusyMediaWrites => '同期中または画像を変換中です。しばらくしてからもう一度お試しください';
+
+  @override
   String get storageMgmtCannotDelete => '日記のほかのデータが参照しているため、ここでは削除できません';
 
   @override
@@ -14117,6 +14120,11 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String storageMgmtDeleteBody(String size) {
     return '$size を解放します。次の場所から取り除かれます：';
+  }
+
+  @override
+  String storageMgmtDeleteUnusedBody(String size) {
+    return '$size を解放します。これらのファイルはどこにも使われていません。';
   }
 
   @override
@@ -14301,6 +14309,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storageMgmtFilterTrash => 'ごみ箱のみ';
 
   @override
+  String get storageMgmtFilterUnused => '未使用';
+
+  @override
   String get storageMgmtSort => '並べ替え';
 
   @override
@@ -14399,6 +14410,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String storageMgmtUsedIn(int count) {
     return '$count か所で使用';
   }
+
+  @override
+  String get storageMgmtUnusedNote =>
+      '日記・コメント・下書き・日記帳の表紙・AI チャットのどれにも使われていないファイルです。削除してもほかの内容には影響しません。';
 
   @override
   String get diaryTagFilterMultiSelectSemanticHint => '複数のタグを選択';
@@ -16489,6 +16504,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mindMapStrike => '取り消し線';
+
+  @override
+  String get mindMapUnderline => '下線';
+
+  @override
+  String get mindMapHighlight => 'ハイライト';
 
   @override
   String get mindMapSizeSmall => '小';

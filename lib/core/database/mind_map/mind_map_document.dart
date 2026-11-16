@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
 
+import 'mind_map_rich_text.dart';
 import 'mind_map_schema.dart';
 
 /// 思维导图文档的不可变模型与容错编解码（纯 Dart）。
@@ -27,6 +28,7 @@ final class MindMapNode {
   const MindMapNode({
     required this.id,
     this.text = '',
+    this.delta,
     this.children = const <MindMapNode>[],
     this.collapsed = false,
     this.side,
@@ -43,6 +45,10 @@ final class MindMapNode {
 
   final String id;
   final String text;
+
+  /// 文字的局部样式原文（[kMindMapNodeDeltaKey]）；null 为没有。只存原文
+  /// （认不出的属性不丢），解析、校验与改写只经 mind_map_rich_text.dart。
+  final List<Map<String, Object?>>? delta;
   final List<MindMapNode> children;
 
   /// 子节点是否收起（没有子节点时无意义，照样保存）。
@@ -75,6 +81,7 @@ final class MindMapNode {
   MindMapNode copyWith({
     String? id,
     String? text,
+    Object? delta = _unset,
     List<MindMapNode>? children,
     bool? collapsed,
     Object? side = _unset,
@@ -90,6 +97,9 @@ final class MindMapNode {
   }) => MindMapNode(
     id: id ?? this.id,
     text: text ?? this.text,
+    delta: identical(delta, _unset)
+        ? this.delta
+        : delta as List<Map<String, Object?>>?,
     children: children ?? this.children,
     collapsed: collapsed ?? this.collapsed,
     side: identical(side, _unset) ? this.side : side as String?,
@@ -113,6 +123,10 @@ final class MindMapNode {
     ...extra,
     kMindMapNodeIdKey: id,
     kMindMapNodeTextKey: text,
+    // 只写出与文字对得上、且确有样式的局部样式（旧版本改过文字留下的、
+    // 已经对不上的那份随这次保存丢掉）。
+    if (delta case final delta? when mindMapDeltaMatches(delta, text))
+      kMindMapNodeDeltaKey: delta,
     if (children.isNotEmpty)
       kMindMapNodeChildrenKey: <Map<String, Object?>>[
         for (final child in children) child.toJson(),
@@ -132,6 +146,7 @@ final class MindMapNode {
   static const Set<String> _knownKeys = <String>{
     kMindMapNodeIdKey,
     kMindMapNodeTextKey,
+    kMindMapNodeDeltaKey,
     kMindMapNodeChildrenKey,
     kMindMapNodeCollapsedKey,
     kMindMapNodeSideKey,
@@ -330,9 +345,11 @@ MindMapNode _decodeNode(
     }
   }
   final side = _string(map[kMindMapNodeSideKey]);
+  final delta = _objectList(map[kMindMapNodeDeltaKey]);
   return MindMapNode(
     id: id,
     text: _string(map[kMindMapNodeTextKey]) ?? '',
+    delta: delta.isEmpty ? null : delta,
     children: List<MindMapNode>.unmodifiable(children),
     collapsed: map[kMindMapNodeCollapsedKey] == true,
     side: side == kMindMapSideLeft || side == kMindMapSideRight ? side : null,

@@ -16,9 +16,9 @@
 ///  "relations": […], "summaries": […]}
 /// ```
 ///
-/// 节点：`{"id", "text", "children": [节点…], "collapsed", "side", "style",
-/// "icons", "labels", "note", "href", "image", "task", "boundary"}`，空值与
-/// 缺省值不落盘。结构、主题、连线与间距存原文字符串：新版本写出的取值旧版本
+/// 节点：`{"id", "text", "delta", "children": [节点…], "collapsed", "side",
+/// "style", "icons", "labels", "note", "href", "image", "task", "boundary"}`，
+/// 空值与缺省值不落盘。结构、主题、连线与间距存原文字符串：新版本写出的取值旧版本
 /// 认不出时按缺省显示，但原样写回，不丢。认不出的键同样原样保留（见
 /// mind_map_document.dart 的 `extra`）。
 library;
@@ -43,6 +43,15 @@ const String kMindMapSummariesKey = 'summaries';
 
 const String kMindMapNodeIdKey = 'id';
 const String kMindMapNodeTextKey = 'text';
+
+/// 文字的局部样式：AppFlowy delta 同形的
+/// `[{"insert": 文字, "attributes": {样式}}…]`，各段 insert 拼起来必须等于
+/// `text`（对不上就当没有：旧版本改了文字后不显示错位的样式）。属性名与
+/// `style` 同一套（`bold` / `italic` / `underline` / `strike` 为三态：false
+/// 是在整条样式之上局部取消；`color` / `highlight` 存种子色）。读写只经
+/// mind_map_rich_text.dart；`text` 仍是唯一的权威文字（搜索、字数、AI、
+/// 大纲与各文件格式都只读它）。
+const String kMindMapNodeDeltaKey = 'delta';
 const String kMindMapNodeChildrenKey = 'children';
 const String kMindMapNodeCollapsedKey = 'collapsed';
 
@@ -52,8 +61,9 @@ const String kMindMapNodeSideKey = 'side';
 const String kMindMapSideLeft = 'l';
 const String kMindMapSideRight = 'r';
 
-/// 节点样式覆盖（对象）：`fill` / `color` / `branch`（`#AARRGGBB`）、`shape`、
-/// `bold` / `italic` / `strike`（bool）、`size`（s / m / l / xl）。
+/// 节点样式覆盖（对象）：`fill` / `color` / `branch` / `highlight`
+/// （`#AARRGGBB` 种子色）、`shape`、`bold` / `italic` / `underline` / `strike`
+/// （bool）、`size`（s / m / l / xl）。
 const String kMindMapNodeStyleKey = 'style';
 const String kMindMapNodeIconsKey = 'icons';
 const String kMindMapNodeLabelsKey = 'labels';
@@ -77,6 +87,13 @@ const String kMindMapStyleShapeKey = 'shape';
 const String kMindMapStyleBoldKey = 'bold';
 const String kMindMapStyleItalicKey = 'italic';
 const String kMindMapStyleStrikeKey = 'strike';
+
+/// 文字下划线（与形状里的“下划线”不同：那是节点下方的一条线）。
+const String kMindMapStyleUnderlineKey = 'underline';
+
+/// 文字高亮：字后面的底色（种子色，显示取容器色），与节点框的底色 `fill`
+/// 不同，不带形状的主题也能用。
+const String kMindMapStyleHighlightKey = 'highlight';
 const String kMindMapStyleSizeKey = 'size';
 
 // ---- 正文块 data 键 ----

@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
-/// 节点文字的排版缓存：同一文字 + 样式 + 最大宽度只排版一次。
+/// 节点文字的排版缓存：同一文字片段（文字 + 样式，含局部样式）+ 最大宽度
+/// 只排版一次。
 ///
 /// 布局测量与绘制共用同一个 [TextPainter]，画布逐帧绘制时不再排版。按“代”
 /// 回收：每次布局开始调 [beginGeneration]，布局中用到的条目记为这一代；
@@ -32,16 +33,28 @@ final class MindMapTextCache {
     TextStyle style, {
     required double maxWidth,
     TextAlign align = TextAlign.start,
+  }) => painterForSpan(
+    TextSpan(text: text, style: style),
+    maxWidth: maxWidth,
+    align: align,
+  );
+
+  /// 排好版的一段带样式的文字（主题文字有局部样式时）。以片段的值相等
+  /// 判断命中（`TextSpan` 的 `==` 逐段比较文字与样式）。
+  TextPainter painterForSpan(
+    InlineSpan span, {
+    required double maxWidth,
+    TextAlign align = TextAlign.start,
   }) {
     assert(!_disposed);
-    final key = _TextKey(text, style, maxWidth, align);
+    final key = _TextKey(span, maxWidth, align);
     final cached = _entries[key];
     if (cached != null) {
       cached.generation = _generation;
       return cached.painter;
     }
     final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
+      text: span,
       textAlign: align,
       textDirection: TextDirection.ltr,
       textScaler: TextScaler.noScaling,
@@ -67,21 +80,19 @@ final class _TextEntry {
 }
 
 final class _TextKey {
-  const _TextKey(this.text, this.style, this.maxWidth, this.align);
+  const _TextKey(this.span, this.maxWidth, this.align);
 
-  final String text;
-  final TextStyle style;
+  final InlineSpan span;
   final double maxWidth;
   final TextAlign align;
 
   @override
   bool operator ==(Object other) =>
       other is _TextKey &&
-      other.text == text &&
-      other.style == style &&
+      other.span == span &&
       other.maxWidth == maxWidth &&
       other.align == align;
 
   @override
-  int get hashCode => Object.hash(text, style, maxWidth, align);
+  int get hashCode => Object.hash(span, maxWidth, align);
 }

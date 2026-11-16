@@ -88,7 +88,7 @@ final class MindMapPalette {
   /// 节点自定义的分支色（`style.branch`）换算出的一组颜色。
   MindMapBranchColors custom(Color seed) {
     final key = (seed.toARGB32(), surface.computeLuminance() < 0.5);
-    return _customCache[key] ??= _seedColors(
+    return _customCache[key] ??= seedColors(
       seed,
       surface.computeLuminance() < 0.5 ? Brightness.dark : Brightness.light,
     );
@@ -132,7 +132,7 @@ final class MindMapPalette {
       branches = <MindMapBranchColors>[
         appColors,
         for (var i = 1; i < 8; i++)
-          _seedColors(
+          seedColors(
             base
                 .withHue((base.hue + 47.0 * i) % 360)
                 .withSaturation(base.saturation.clamp(0.45, 0.85))
@@ -142,7 +142,7 @@ final class MindMapPalette {
       ];
     } else {
       branches = <MindMapBranchColors>[
-        for (final seed in spec.seeds) _seedColors(Color(seed), brightness),
+        for (final seed in spec.seeds) seedColors(Color(seed), brightness),
       ];
     }
     final single = spec.monochrome
@@ -150,12 +150,12 @@ final class MindMapPalette {
         : spec.seeds.isEmpty
         ? appColors
         : spec.rootSeed != null
-        ? _seedColors(Color(spec.rootSeed!), brightness)
+        ? seedColors(Color(spec.rootSeed!), brightness)
         : branches.first;
     final root = spec.monochrome
         ? neutral
         : spec.rootSeed != null
-        ? _seedColors(Color(spec.rootSeed!), brightness)
+        ? seedColors(Color(spec.rootSeed!), brightness)
         : spec.seeds.isEmpty
         ? appColors
         : branches.first;
@@ -178,7 +178,9 @@ final class MindMapPalette {
     );
   }
 
-  static MindMapBranchColors _seedColors(Color seed, Brightness brightness) {
+  /// 种子色按明暗换算出的一组颜色（`ColorScheme.fromSeed` 的 fidelity
+  /// 变体）。导出不跟随当前界面，按亮色取（见 diary_export_native_blocks）。
+  static MindMapBranchColors seedColors(Color seed, Brightness brightness) {
     final scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: brightness,

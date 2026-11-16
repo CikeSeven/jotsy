@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/painting.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../models/mind_map_options.dart';
 import '../viewmodels/mind_map_visuals.dart';
@@ -176,22 +177,22 @@ final class _Engine {
     final display = empty
         ? (depth == 0 ? config.rootPlaceholder : config.nodePlaceholder)
         : node.text;
-    final base = empty
-        ? visual.textStyle.copyWith(
-            color: config.styles.placeholderColor(visual),
+    // 有字时按局部样式排（完成的待办整段变淡并划掉，见
+    // MindMapStyleResolver.textSpanOf），占位文字是一段纯文字。
+    final span = empty
+        ? TextSpan(
+            text: display,
+            style: visual.textStyle.copyWith(
+              color: config.styles.placeholderColor(visual),
+            ),
           )
-        : visual.textStyle;
-    // 完成的待办：文字变淡并划掉。
-    final style = node.taskDone && !empty
-        ? base.copyWith(
-            color: base.color?.withValues(alpha: (base.color?.a ?? 1) * 0.55),
-            decoration: TextDecoration.lineThrough,
-            decorationColor: base.color?.withValues(alpha: 0.55),
-          )
-        : base;
-    final text = config.texts.painterFor(
-      display,
-      style,
+        : config.styles.textSpanOf(
+            visual,
+            mindMapRunsOf(node),
+            taskDone: node.taskDone,
+          );
+    final text = config.texts.painterForSpan(
+      span,
       maxWidth: visual.maxTextWidth,
       align: visual.textAlign,
     );

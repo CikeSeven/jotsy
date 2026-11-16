@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../models/mind_map_options.dart';
 import '../models/mind_map_themes.dart';
@@ -20,6 +21,7 @@ final class MindMapNodeVisual {
     required this.lineWidth,
     required this.maxTextWidth,
     required this.textAlign,
+    this.highlight,
   });
 
   final MindMapNodeShape shape;
@@ -42,6 +44,15 @@ final class MindMapNodeVisual {
   final double lineWidth;
   final double maxTextWidth;
   final TextAlign textAlign;
+
+  /// 整条文字的高亮底色；null 为没有。不放进 [textStyle]：标签胶囊与贴纸
+  /// 也从它派生，不该跟着铺底色。文字片段经 [textStyleWithHighlight] 取用。
+  final Color? highlight;
+
+  /// 主题文字本身的样式（含整条高亮）。
+  TextStyle get textStyleWithHighlight => highlight == null
+      ? textStyle
+      : textStyle.copyWith(backgroundColor: highlight);
 
   bool get underline => shape == MindMapNodeShape.underline;
 
@@ -145,6 +156,14 @@ final class MindMapStyleResolver {
       textColor = colors.onContainer;
       border = null;
     }
+    // 整条高亮：字后面铺种子色的容器色，没单独设文字色时文字取容器上的
+    // 文字色（实心底色的节点上也看得清）。
+    Color? highlight;
+    if (style.highlight case final custom?) {
+      final colors = palette.custom(custom);
+      highlight = colors.container;
+      textColor = colors.onContainer;
+    }
     if (style.color case final custom?) {
       textColor = palette.custom(custom).accent;
     }
@@ -161,12 +180,14 @@ final class MindMapStyleResolver {
         fontWeight: weight,
         height: 1.3,
         fontStyle: style.italic == true ? FontStyle.italic : FontStyle.normal,
-        decoration: style.strike == true
-            ? TextDecoration.lineThrough
-            : TextDecoration.none,
+        decoration: _decoration(
+          underline: style.underline == true,
+          strike: style.strike == true,
+        ),
         decorationColor: textColor,
         letterSpacing: 0,
       ),
+      highlight: highlight,
       padding: level.padding * (0.5 + size / 2),
       branchColor: depth == 0 ? (fill ?? palette.root.accent) : branch.accent,
       lineWidth: switch (depth) {
@@ -182,6 +203,114 @@ final class MindMapStyleResolver {
       textAlign: shape.boxed ? TextAlign.center : TextAlign.start,
     );
   }
+
+  /// 节点文字的排版片段：整条样式（[MindMapNodeVisual.textStyle]）为根，
+  /// 局部样式逐段经 [runStyle] 覆盖；完成的待办整段变淡并划掉（局部设了
+  /// 颜色的字也一样）。没有局部样式时就是一段纯文字。
+  TextSpan textSpanOf(
+    MindMapNodeVisual visual,
+    List<MindMapTextRun> runs, {
+    bool taskDone = false,
+  }) {
+    var base = visual.textStyleWithHighlight;
+    if (taskDone) {
+      final color = base.color;
+      base = base.copyWith(
+        color: color?.withValues(alpha: (color.a) * 0.55),
+        decoration: TextDecoration.combine(<TextDecoration>[
+          base.decoration ?? TextDecoration.none,
+          TextDecoration.lineThrough,
+        ]),
+        decorationColor: color?.withValues(alpha: 0.55),
+      );
+    }
+    final text = mindMapRunsText(runs);
+    if (runs.every((run) => run.marks.isEmpty)) {
+      return TextSpan(text: text, style: base);
+    }
+    return TextSpan(
+      style: base,
+      children: <InlineSpan>[
+        for (final run in runs)
+          TextSpan(
+            text: run.text,
+            style: runStyle(
+              run.marks,
+              base: base.decoration,
+              taskDone: taskDone,
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// 一段样式在底下那层样式之上要覆盖的部分（只含粗细、斜体、装饰线、
+  /// 颜色与高亮，不含字号：编辑框按视口缩放字号、大纲按层级定字号，这里
+  /// 的覆盖照样适用）。[base] 为底下那层的装饰线（只改下划线时保留删除线，
+  /// 反之亦然）。没有可覆盖的为 null。
+  ///
+  /// 颜色与整条一样存种子色、经 [MindMapPalette.custom] 按明暗换算：文字色
+  /// 取强调色，高亮取容器色，只设了高亮的字取容器上的文字色。整条样式
+  /// （`style`）也可经 [MindMapNodeStyle.textMarks] 走这里（大纲视图）。
+  TextStyle? runStyle(
+    MindMapTextMarks marks, {
+    TextDecoration? base,
+    bool taskDone = false,
+  }) {
+    if (marks.isEmpty) return null;
+    final below = base ?? TextDecoration.none;
+    TextDecoration? decoration;
+    if (marks.underline != null || marks.strike != null) {
+      decoration = _decoration(
+        underline: marks.underline ?? below.contains(TextDecoration.underline),
+        strike:
+            taskDone ||
+            (marks.strike ?? below.contains(TextDecoration.lineThrough)),
+      );
+    }
+    Color? color;
+    Color? background;
+    if (MindMapNodeStyle.parseColor(marks.highlight) case final seed?) {
+      final colors = palette.custom(seed);
+      background = colors.container;
+      color = colors.onContainer;
+    }
+    if (MindMapNodeStyle.parseColor(marks.color) case final seed?) {
+      color = palette.custom(seed).accent;
+    }
+    if (taskDone && color != null) {
+      color = color.withValues(alpha: color.a * 0.55);
+    }
+    final bold = marks.bold;
+    final italic = marks.italic;
+    if (bold == null &&
+        italic == null &&
+        decoration == null &&
+        color == null &&
+        background == null) {
+      return null;
+    }
+    return TextStyle(
+      fontWeight: bold == null
+          ? null
+          : (bold ? FontWeight.w700 : FontWeight.w400),
+      fontStyle: italic == null
+          ? null
+          : (italic ? FontStyle.italic : FontStyle.normal),
+      decoration: decoration,
+      color: color,
+      decorationColor: color,
+      backgroundColor: background,
+    );
+  }
+
+  static TextDecoration _decoration({
+    required bool underline,
+    required bool strike,
+  }) => TextDecoration.combine(<TextDecoration>[
+    if (underline) TextDecoration.underline,
+    if (strike) TextDecoration.lineThrough,
+  ]);
 
   /// 占位文字的颜色（节点还没写字时）。
   Color placeholderColor(MindMapNodeVisual visual) =>
@@ -220,8 +349,27 @@ final class MindMapNodeStyle {
       : null;
   bool? get italic => raw[kMindMapStyleItalicKey] == true ? true : null;
   bool? get strike => raw[kMindMapStyleStrikeKey] == true ? true : null;
+  bool? get underline => raw[kMindMapStyleUnderlineKey] == true ? true : null;
+  Color? get highlight => _color(raw[kMindMapStyleHighlightKey]);
+
+  /// 整条样式里与文字有关的几项，按局部样式的形状读出（大纲视图经
+  /// [MindMapStyleResolver.runStyle] 画整条样式时用）。
+  MindMapTextMarks get textMarks => MindMapTextMarks(
+    bold: bold,
+    italic: italic,
+    underline: underline,
+    strike: strike,
+    color: _string(raw[kMindMapStyleColorKey]),
+    highlight: _string(raw[kMindMapStyleHighlightKey]),
+  );
+
+  static String? _string(Object? value) =>
+      value is String && _color(value) != null ? value : null;
   MindMapTextSize get size =>
       MindMapTextSize.resolve(raw[kMindMapStyleSizeKey]);
+
+  /// 解析 `#AARRGGBB` / `#RRGGBB`；坏值为 null。
+  static Color? parseColor(Object? value) => _color(value);
 
   static Color? _color(Object? value) {
     if (value is! String) return null;

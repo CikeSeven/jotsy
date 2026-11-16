@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_ops.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_rich_text.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_blocks.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_entry.dart';
@@ -44,6 +46,37 @@ void main() {
       ],
     );
     expect(blocks.first.inlines.single.bold, isTrue);
+  });
+
+  test('topic text styles go out with the outline: local marks win, the '
+      'rest follows the whole-topic style', () {
+    final plan = map.root.children.first;
+    var styled = MindMapOps.formatText(
+      map,
+      plan.id,
+      0,
+      2,
+      (marks) => marks
+          .withFlag(MindMapMark.bold, true)
+          .withColor(MindMapColorMark.highlight, '#FFFDD835'),
+    );
+    styled = MindMapOps.updateNode(
+      styled,
+      plan.id,
+      (node) => node.copyWith(style: <String, Object?>{'italic': true}),
+    );
+    final blocks = ExportBlockParser.parseDocument(<String, Object?>{
+      'document': <String, Object?>{
+        'type': 'page',
+        'children': <Object?>[mindMapBlockNode(styled)],
+      },
+    });
+    final inlines = blocks[1].inlines;
+    expect(inlines.map((inline) => inline.text), <String>['Pl', 'an']);
+    expect(inlines.map((inline) => inline.bold), <bool>[true, false]);
+    expect(inlines.map((inline) => inline.italic), <bool>[true, true]);
+    expect(inlines.first.background, isNotNull);
+    expect(inlines.last.background, isNull);
   });
 
   test('a mind map diary leaves the title to the entry and writes the '

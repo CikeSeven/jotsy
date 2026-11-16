@@ -16308,4 +16308,140 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mindMapConvertFromDiary => '转为思维导图';
+
+  @override
+  String get aiPromptMindMapSystem =>
+      '你擅长整理出清晰、有条理的思维导图。每个主题是一个简短的词组（通常 2 到 12 个字），不写成完整的句子；同级主题互不重叠，合起来覆盖它们的上级。除非被要求，不给主题编号，也不加 emoji。';
+
+  @override
+  String get aiPromptMindMapFormat =>
+      '只输出大纲，不要开场白、解释或代码围栏：第一行是“# ”加中心主题，之后每个主题一行，写成“- ”开头的列表项，每深一级缩进两个空格。';
+
+  @override
+  String get aiPromptMindMapExpandFormat =>
+      '只输出新的子主题，写成“- ”开头的列表（它们可以再带下一级，每深一级缩进两个空格），不要标题、开场白、解释或代码围栏。';
+
+  @override
+  String aiPromptMindMapGenerate(String topic) {
+    return '以此为中心主题整理一张思维导图：$topic';
+  }
+
+  @override
+  String aiPromptMindMapDepth(int levels) {
+    return '中心主题以下的层数：$levels。一级分支 4 到 7 个。';
+  }
+
+  @override
+  String get aiPromptMindMapStyleDivergent => '发散地想：覆盖不同的角度、可能性和出人意料的想法。';
+
+  @override
+  String get aiPromptMindMapStyleStructured => '像计划或分析那样有逻辑地组织：类别清楚，步骤与优先级分明。';
+
+  @override
+  String get aiPromptMindMapStyleStudy => '像学习笔记那样组织：核心概念、定义、例子以及它们之间的关系。';
+
+  @override
+  String aiPromptMindMapExtra(String text) {
+    return '用户的补充要求：$text';
+  }
+
+  @override
+  String aiPromptMindMapExpand(String topic) {
+    return '在主题“$topic”下添加 3 到 7 个新的子主题，不要与它已有的子主题重复。';
+  }
+
+  @override
+  String aiPromptMindMapPath(String path) {
+    return '它在导图中的位置：$path';
+  }
+
+  @override
+  String aiPromptMindMapCurrent(String outline) {
+    return '目前整张导图：\n$outline';
+  }
+
+  @override
+  String get aiPromptMindMapFromDiary =>
+      '把下面这篇日记整理成思维导图：中心主题是这篇日记的简短标题，分支概括其中的主要事件、想法、感受与收获。';
+
+  @override
+  String get aiPromptMindMapSummarize =>
+      '用几段简短的文字总结下面这张思维导图：它的核心意思、每个一级分支的要点，以及结论或下一步。用普通的 Markdown，不要标题。';
+
+  @override
+  String get mindMapAi => 'AI';
+
+  @override
+  String get mindMapAiGenerate => 'AI 生成导图';
+
+  @override
+  String get mindMapAiTile => 'AI 生成';
+
+  @override
+  String get mindMapAiExpand => 'AI 展开';
+
+  @override
+  String get mindMapAiSummarize => 'AI 总结导图';
+
+  @override
+  String get mindMapAiFromDiary => 'AI 生成思维导图';
+
+  @override
+  String get mindMapAiFromDiaryHint => 'AI 会把这篇日记整理成一篇新的导图日记，原文不变。';
+
+  @override
+  String mindMapAiExpandHint(String topic) {
+    return '在“$topic”下添加子主题';
+  }
+
+  @override
+  String get mindMapAiReplaceHint => '会替换当前的导图，可以撤销。';
+
+  @override
+  String get mindMapAiTopicHint => '想梳理什么？例如：搬家计划';
+
+  @override
+  String get mindMapAiExtraHint => '补充要求（可选）';
+
+  @override
+  String get mindMapAiDepth => '层数';
+
+  @override
+  String get mindMapAiStyle => '风格';
+
+  @override
+  String get mindMapAiStyleDivergent => '发散';
+
+  @override
+  String get mindMapAiStyleStructured => '结构化';
+
+  @override
+  String get mindMapAiStyleStudy => '学习笔记';
+
+  @override
+  String get mindMapAiRun => '生成';
+
+  @override
+  String get mindMapAiRegenerate => '重新生成';
+
+  @override
+  String get mindMapAiGenerating => '正在生成…';
+
+  @override
+  String get mindMapAiUse => '使用这张导图';
+
+  @override
+  String get mindMapAiAdd => '添加到导图';
+
+  @override
+  String get mindMapAiOpenAsDiary => '存为导图日记';
+
+  @override
+  String get mindMapAiToNote => '写进备注';
+
+  @override
+  String get mindMapAiNoteAdded => '已写进中心主题的备注';
+
+  @override
+  String get mindMapAiEmpty => 'AI 没有给出可用的主题，换个说法再生成一次试试。';
 }

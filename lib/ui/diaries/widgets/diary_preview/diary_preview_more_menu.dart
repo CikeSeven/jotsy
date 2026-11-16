@@ -9,6 +9,8 @@ import '../../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../../core/database/mind_map/mind_map_blocks.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../ai/models/ai_preference_parts.dart';
+import '../../../ai/providers/ai_providers.dart';
 import '../../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../../anniversaries/models/anniversary_draft.dart';
 import '../../../todos/widgets/todo_convert_sheet.dart';
@@ -45,7 +47,9 @@ List<Widget> diaryPreviewMoreItems(
   final features = ref.watch(appFeaturesProvider);
   final settings = ref.watch(settingsServiceProvider).asData?.value;
   final todoItems = features.todos ? viewData.todoItems : null;
-  // 导图日记：导出导图（图片、XMind 等）；有文字的普通日记：转为思维导图。
+  final aiWriting = ref.watch(aiModuleAvailableProvider(AiModule.writing));
+  // 导图日记：导出导图（图片、XMind 等）、AI 总结；有文字的普通日记：转为
+  // 思维导图、AI 生成思维导图。
   final content = detail.diary.content;
   final map = storedContentMayHaveMindMap(content)
       ? diaryMindMapPage(decodeStoredDiaryBlocks(content))
@@ -96,18 +100,32 @@ List<Widget> diaryPreviewMoreItems(
             ),
           ),
     tools: <Widget>[
-      if (map != null)
+      if (map != null) ...<Widget>[
         diaryMoreMenuEntry(
           FontAwesomeIcons.fileExport,
           l10n.mindMapExport,
           () => showMindMapExportSheet(context, map),
-        )
-      else if (features.mindMaps && detail.diary.contentText.trim().isNotEmpty)
+        ),
+        if (aiWriting)
+          diaryMoreMenuEntry(
+            FontAwesomeIcons.wandMagicSparkles,
+            l10n.mindMapAiSummarize,
+            () => openMindMapAiSummary(context, ref, detail.diary, map),
+          ),
+      ] else if (features.mindMaps &&
+          detail.diary.contentText.trim().isNotEmpty) ...<Widget>[
         diaryMoreMenuEntry(
           FontAwesomeIcons.sitemap,
           l10n.mindMapConvertFromDiary,
           () => openMindMapFromDiary(context, detail.diary),
         ),
+        if (aiWriting)
+          diaryMoreMenuEntry(
+            FontAwesomeIcons.wandMagicSparkles,
+            l10n.mindMapAiFromDiary,
+            () => openMindMapAiFromDiary(context, ref, detail.diary),
+          ),
+      ],
     ],
     onDelete: onDelete,
   );

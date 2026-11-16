@@ -21261,5 +21261,196 @@
   "mindMapConvertFromDiary": "转为思维导图",
   "@mindMapConvertFromDiary": {
     "description": "日记更多菜单：按这篇日记的标题与列表生成一篇新的导图日记（原文保留）。"
+  },
+  "aiPromptMindMapSystem": "你擅长整理出清晰、有条理的思维导图。每个主题是一个简短的词组（通常 2 到 12 个字），不写成完整的句子；同级主题互不重叠，合起来覆盖它们的上级。除非被要求，不给主题编号，也不加 emoji。",
+  "@aiPromptMindMapSystem": {
+    "description": "AI 提示词：生成思维导图的系统说明，发给模型，不在界面显示。"
+  },
+  "aiPromptMindMapFormat": "只输出大纲，不要开场白、解释或代码围栏：第一行是“# ”加中心主题，之后每个主题一行，写成“- ”开头的列表项，每深一级缩进两个空格。",
+  "@aiPromptMindMapFormat": {
+    "description": "AI 提示词：整张导图的输出格式要求。"
+  },
+  "aiPromptMindMapExpandFormat": "只输出新的子主题，写成“- ”开头的列表（它们可以再带下一级，每深一级缩进两个空格），不要标题、开场白、解释或代码围栏。",
+  "@aiPromptMindMapExpandFormat": {
+    "description": "AI 提示词：添加子主题时的输出格式要求。"
+  },
+  "aiPromptMindMapGenerate": "以此为中心主题整理一张思维导图：{topic}",
+  "@aiPromptMindMapGenerate": {
+    "description": "AI 提示词：按用户给的主题生成导图。",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapDepth": "中心主题以下的层数：{levels}。一级分支 4 到 7 个。",
+  "@aiPromptMindMapDepth": {
+    "description": "AI 提示词：生成导图的层数。",
+    "placeholders": {
+      "levels": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptMindMapStyleDivergent": "发散地想：覆盖不同的角度、可能性和出人意料的想法。",
+  "@aiPromptMindMapStyleDivergent": {
+    "description": "AI 提示词：发散风格。"
+  },
+  "aiPromptMindMapStyleStructured": "像计划或分析那样有逻辑地组织：类别清楚，步骤与优先级分明。",
+  "@aiPromptMindMapStyleStructured": {
+    "description": "AI 提示词：结构化风格。"
+  },
+  "aiPromptMindMapStyleStudy": "像学习笔记那样组织：核心概念、定义、例子以及它们之间的关系。",
+  "@aiPromptMindMapStyleStudy": {
+    "description": "AI 提示词：学习笔记风格。"
+  },
+  "aiPromptMindMapExtra": "用户的补充要求：{text}",
+  "@aiPromptMindMapExtra": {
+    "description": "AI 提示词：用户对导图的补充要求。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapExpand": "在主题“{topic}”下添加 3 到 7 个新的子主题，不要与它已有的子主题重复。",
+  "@aiPromptMindMapExpand": {
+    "description": "AI 提示词：给一个主题添加子主题。",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapPath": "它在导图中的位置：{path}",
+  "@aiPromptMindMapPath": {
+    "description": "AI 提示词：从中心主题到要展开的主题的路径。",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapCurrent": "目前整张导图：\n{outline}",
+  "@aiPromptMindMapCurrent": {
+    "description": "AI 提示词：当前导图的大纲。",
+    "placeholders": {
+      "outline": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapFromDiary": "把下面这篇日记整理成思维导图：中心主题是这篇日记的简短标题，分支概括其中的主要事件、想法、感受与收获。",
+  "@aiPromptMindMapFromDiary": {
+    "description": "AI 提示词：由一篇日记生成导图。"
+  },
+  "aiPromptMindMapSummarize": "用几段简短的文字总结下面这张思维导图：它的核心意思、每个一级分支的要点，以及结论或下一步。用普通的 Markdown，不要标题。",
+  "@aiPromptMindMapSummarize": {
+    "description": "AI 提示词：总结一张导图。"
+  },
+  "mindMapAi": "AI",
+  "@mindMapAi": {
+    "description": "思维导图工具坞上打开 AI 操作的按钮（很短）。"
+  },
+  "mindMapAiGenerate": "AI 生成导图",
+  "@mindMapAiGenerate": {
+    "description": "思维导图：按主题用 AI 生成整张导图（菜单项与面板标题）。"
+  },
+  "mindMapAiTile": "AI 生成",
+  "@mindMapAiTile": {
+    "description": "思维导图起步卡：模板前那一格 AI 的短名称。"
+  },
+  "mindMapAiExpand": "AI 展开",
+  "@mindMapAiExpand": {
+    "description": "思维导图：让 AI 给选中的主题添加子主题。"
+  },
+  "mindMapAiSummarize": "AI 总结导图",
+  "@mindMapAiSummarize": {
+    "description": "思维导图：让 AI 总结整张导图。"
+  },
+  "mindMapAiFromDiary": "AI 生成思维导图",
+  "@mindMapAiFromDiary": {
+    "description": "日记更多菜单：让 AI 按这篇日记生成一篇新的导图日记。"
+  },
+  "mindMapAiFromDiaryHint": "AI 会把这篇日记整理成一篇新的导图日记，原文不变。",
+  "@mindMapAiFromDiaryHint": {
+    "description": "导图 AI 面板：由日记生成导图时的说明。"
+  },
+  "mindMapAiExpandHint": "在“{topic}”下添加子主题",
+  "@mindMapAiExpandHint": {
+    "description": "导图 AI 面板：新子主题加在哪个主题下。",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "mindMapAiReplaceHint": "会替换当前的导图，可以撤销。",
+  "@mindMapAiReplaceHint": {
+    "description": "导图 AI 面板：导图已有内容时，生成会替换它。"
+  },
+  "mindMapAiTopicHint": "想梳理什么？例如：搬家计划",
+  "@mindMapAiTopicHint": {
+    "description": "导图 AI 面板：主题输入框的提示。"
+  },
+  "mindMapAiExtraHint": "补充要求（可选）",
+  "@mindMapAiExtraHint": {
+    "description": "导图 AI 面板：可选的补充要求输入框提示。"
+  },
+  "mindMapAiDepth": "层数",
+  "@mindMapAiDepth": {
+    "description": "导图 AI 面板：生成几层。"
+  },
+  "mindMapAiStyle": "风格",
+  "@mindMapAiStyle": {
+    "description": "导图 AI 面板：生成风格的分组标题。"
+  },
+  "mindMapAiStyleDivergent": "发散",
+  "@mindMapAiStyleDivergent": {
+    "description": "导图 AI 风格选项（短）。"
+  },
+  "mindMapAiStyleStructured": "结构化",
+  "@mindMapAiStyleStructured": {
+    "description": "导图 AI 风格选项（短）。"
+  },
+  "mindMapAiStyleStudy": "学习笔记",
+  "@mindMapAiStyleStudy": {
+    "description": "导图 AI 风格选项（短）。"
+  },
+  "mindMapAiRun": "生成",
+  "@mindMapAiRun": {
+    "description": "导图 AI 面板：开始生成。"
+  },
+  "mindMapAiRegenerate": "重新生成",
+  "@mindMapAiRegenerate": {
+    "description": "导图 AI 面板：重新生成。"
+  },
+  "mindMapAiGenerating": "正在生成…",
+  "@mindMapAiGenerating": {
+    "description": "导图 AI 面板：主题陆续生成时的状态。"
+  },
+  "mindMapAiUse": "使用这张导图",
+  "@mindMapAiUse": {
+    "description": "导图 AI 面板：把生成的导图放到画布上。"
+  },
+  "mindMapAiAdd": "添加到导图",
+  "@mindMapAiAdd": {
+    "description": "导图 AI 面板：把生成的子主题加进导图。"
+  },
+  "mindMapAiOpenAsDiary": "存为导图日记",
+  "@mindMapAiOpenAsDiary": {
+    "description": "导图 AI 面板：把生成的导图作为新的导图日记打开。"
+  },
+  "mindMapAiToNote": "写进备注",
+  "@mindMapAiToNote": {
+    "description": "导图 AI 面板：把总结追加到中心主题的备注。"
+  },
+  "mindMapAiNoteAdded": "已写进中心主题的备注",
+  "@mindMapAiNoteAdded": {
+    "description": "导图 AI：总结已写进备注。"
+  },
+  "mindMapAiEmpty": "AI 没有给出可用的主题，换个说法再生成一次试试。",
+  "@mindMapAiEmpty": {
+    "description": "导图 AI 面板：回复读不出主题。"
   }
 }

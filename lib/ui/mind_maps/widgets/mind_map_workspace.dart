@@ -19,12 +19,17 @@ import '../../settings/widgets/external_link.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/keyboard_visibility.dart';
+import '../../ai/models/ai_preference_parts.dart';
+import '../../ai/providers/ai_providers.dart';
+import '../controllers/mind_map_ai_scope.dart';
+import '../controllers/mind_map_ai_session.dart';
 import '../controllers/mind_map_clipboard.dart';
 import '../controllers/mind_map_editing_controller.dart';
 import '../controllers/mind_map_io_flow.dart';
 import '../controllers/mind_map_viewport_controller.dart';
 import '../models/mind_map_templates.dart';
 import '../layout/mind_map_node_content.dart';
+import '../sections/mind_map_ai_sheet.dart';
 import '../sections/mind_map_node_sheets.dart';
 import '../sections/mind_map_style_sheet.dart';
 import '../viewmodels/mind_map_hit_test.dart';
@@ -143,6 +148,30 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
     _controller.stopEditing();
     final look = MindMapLook.of(context, _controller.document);
     showMindMapNodeStyleSheet(context, _controller, id, look.palette);
+  }
+
+  /// AI 入口在这里可用：宿主提供了私密判断（[MindMapAiScope]）、AI 写作
+  /// 模块可用、不是只读。
+  bool _aiReady(BuildContext context) =>
+      !widget.readOnly &&
+      MindMapAiScope.maybeOf(context) != null &&
+      ref.watch(aiModuleAvailableProvider(AiModule.writing));
+
+  /// 先经宿主判断这篇日记能不能用 AI（不能时宿主自己提示），再打开面板。
+  Future<void> _openAi(MindMapAiTask task, {String? nodeId}) async {
+    final scope = MindMapAiScope.maybeOf(context);
+    if (scope == null) return;
+    _controller.stopEditing();
+    if (!await scope.allowed() || !mounted) return;
+    await showMindMapAiSheet(
+      context,
+      task: task,
+      controller: _controller,
+      nodeId: nodeId,
+    );
+    if (mounted && task == MindMapAiTask.generate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => fitToScreen());
+    }
   }
 
   void _openInsert(String id) {
@@ -346,6 +375,12 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
         onPressed: () => _openNodeStyle(node.id),
         child: Text(l10n.mindMapNodeStyleTitle),
       ),
+      if (_aiReady(context))
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.wandMagicSparkles),
+          onPressed: () => _openAi(MindMapAiTask.expand, nodeId: node.id),
+          child: Text(l10n.mindMapAiExpand),
+        ),
       ExpressiveMenuItem(
         leadingIcon: const FaIcon(FontAwesomeIcons.copy),
         onPressed: () {
@@ -403,6 +438,7 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
     final keyboardUp = KeyboardVisibility.of(context);
     // 还只有中心主题时浮出模板起步卡（中心主题写了字也一样：套用模板保留它）。
     final onlyRoot = mindMapHasOnlyRoot(controller.document);
+    final aiReady = _aiReady(context);
     final showStarter = !widget.readOnly && onlyRoot && !editing && !keyboardUp;
     final showDock = !widget.readOnly && !(editing && !AppPlatform.isDesktop);
     final bottomSafe = MediaQuery.paddingOf(context).bottom;
@@ -484,6 +520,9 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                             onConvertBack: widget.onConvertBack,
                             onImport: () =>
                                 importMindMapFromFile(context, controller),
+                            onAiGenerate: aiReady
+                                ? () => _openAi(MindMapAiTask.generate)
+                                : null,
                           ),
                           const SizedBox(height: 10),
                         ],
@@ -499,6 +538,16 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                             onCopy: _copy,
                             onCut: _cut,
                             onPaste: _paste,
+                            onAiGenerate: aiReady
+                                ? () => _openAi(MindMapAiTask.generate)
+                                : null,
+                            onAiSummarize: aiReady
+                                ? () => _openAi(MindMapAiTask.summarize)
+                                : null,
+                            onAiExpand: aiReady
+                                ? (id) =>
+                                      _openAi(MindMapAiTask.expand, nodeId: id)
+                                : null,
                           ),
                       ],
                     ),

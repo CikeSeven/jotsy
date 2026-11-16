@@ -27,6 +27,9 @@ class MindMapDock extends StatelessWidget {
     required this.onCopy,
     required this.onCut,
     required this.onPaste,
+    this.onAiGenerate,
+    this.onAiSummarize,
+    this.onAiExpand,
   });
 
   final MindMapEditingController controller;
@@ -37,6 +40,12 @@ class MindMapDock extends StatelessWidget {
   final VoidCallback onCopy;
   final VoidCallback onCut;
   final VoidCallback onPaste;
+
+  /// AI 入口（AI 写作可用且宿主允许时才有）：没选中时“AI”按钮弹出生成 /
+  /// 总结，选中时“AI 展开”。
+  final VoidCallback? onAiGenerate;
+  final VoidCallback? onAiSummarize;
+  final ValueChanged<String>? onAiExpand;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +78,26 @@ class MindMapDock extends StatelessWidget {
                     label: l10n.mindMapFit,
                     onPressed: onFit,
                   ),
+                if (onAiGenerate != null && onAiSummarize != null)
+                  ExpressiveMenuAnchor(
+                    menuChildren: <Widget>[
+                      ExpressiveMenuItem(
+                        leadingIcon: const FaIcon(FontAwesomeIcons.sitemap),
+                        onPressed: onAiGenerate,
+                        child: Text(l10n.mindMapAiGenerate),
+                      ),
+                      ExpressiveMenuItem(
+                        leadingIcon: const FaIcon(FontAwesomeIcons.alignLeft),
+                        onPressed: onAiSummarize,
+                        child: Text(l10n.mindMapAiSummarize),
+                      ),
+                    ],
+                    builder: (context, menu, _) => _DockButton(
+                      icon: FontAwesomeIcons.wandMagicSparkles,
+                      label: l10n.mindMapAi,
+                      onPressed: menu.toggle,
+                    ),
+                  ),
               ]
             : <Widget>[
                 _DockButton(
@@ -91,6 +120,12 @@ class MindMapDock extends StatelessWidget {
                   label: l10n.mindMapStyle,
                   onPressed: () => onNodeStyle(node.id),
                 ),
+                if (onAiExpand case final expand?)
+                  _DockButton(
+                    icon: FontAwesomeIcons.wandMagicSparkles,
+                    label: l10n.mindMapAiExpand,
+                    onPressed: () => expand(node.id),
+                  ),
                 _DockButton(
                   icon: FontAwesomeIcons.trashCan,
                   label: l10n.mindMapDelete,

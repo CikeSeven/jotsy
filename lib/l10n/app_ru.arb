@@ -21828,5 +21828,196 @@
   "mindMapConvertFromDiary": "Превратить в интеллект-карту",
   "@mindMapConvertFromDiary": {
     "description": "Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept)."
+  },
+  "aiPromptMindMapSystem": "Ты составляешь понятные, хорошо организованные интеллект-карты. Каждая тема — короткая фраза (обычно 2–8 слов), а не полное предложение. Соседние темы не пересекаются и вместе охватывают родительскую. Не нумеруй темы и не добавляй эмодзи, если об этом не просят.",
+  "@aiPromptMindMapSystem": {
+    "description": "AI prompt: system instruction for mind map generation. Sent to the model, not shown in the UI."
+  },
+  "aiPromptMindMapFormat": "Выведи только структуру, без вступления, пояснений и блоков кода: первая строка — «# » и центральная тема, затем по одной теме на строку в виде пункта списка «- », с отступом в два пробела на каждый уровень.",
+  "@aiPromptMindMapFormat": {
+    "description": "AI prompt: required output format for a whole mind map."
+  },
+  "aiPromptMindMapExpandFormat": "Выведи только новые подтемы списком с «- » (у них могут быть свои подтемы с отступом в два пробела на уровень), без заголовка, вступления, пояснений и блоков кода.",
+  "@aiPromptMindMapExpandFormat": {
+    "description": "AI prompt: required output format when adding subtopics."
+  },
+  "aiPromptMindMapGenerate": "Составь интеллект-карту на тему: {topic}",
+  "@aiPromptMindMapGenerate": {
+    "description": "AI prompt: ask for a mind map about the user's topic.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapDepth": "Уровней ниже центральной темы: {levels}. Главных ветвей — от 4 до 7.",
+  "@aiPromptMindMapDepth": {
+    "description": "AI prompt: how deep the generated mind map should be.",
+    "placeholders": {
+      "levels": {
+        "type": "int"
+      }
+    }
+  },
+  "aiPromptMindMapStyleDivergent": "Мысли широко: охвати разные углы зрения, возможности и неожиданные идеи.",
+  "@aiPromptMindMapStyleDivergent": {
+    "description": "AI prompt: brainstorm style for mind map generation."
+  },
+  "aiPromptMindMapStyleStructured": "Выстрой всё логично, как план или анализ: чёткие категории, шаги и приоритеты.",
+  "@aiPromptMindMapStyleStructured": {
+    "description": "AI prompt: structured style for mind map generation."
+  },
+  "aiPromptMindMapStyleStudy": "Оформи как учебный конспект: ключевые понятия, определения, примеры и связи между ними.",
+  "@aiPromptMindMapStyleStudy": {
+    "description": "AI prompt: study-notes style for mind map generation."
+  },
+  "aiPromptMindMapExtra": "Дополнительные пожелания пользователя: {text}",
+  "@aiPromptMindMapExtra": {
+    "description": "AI prompt: the user's extra requirements for the mind map.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapExpand": "Добавь от 3 до 7 новых подтем к теме «{topic}». Не повторяй уже существующие подтемы.",
+  "@aiPromptMindMapExpand": {
+    "description": "AI prompt: ask for new subtopics under a topic.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapPath": "Её место в карте: {path}",
+  "@aiPromptMindMapPath": {
+    "description": "AI prompt: the path from the central topic to the topic being expanded.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapCurrent": "Вся карта на данный момент:\n{outline}",
+  "@aiPromptMindMapCurrent": {
+    "description": "AI prompt: the current mind map as an outline.",
+    "placeholders": {
+      "outline": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptMindMapFromDiary": "Преврати запись ниже в интеллект-карту: центральная тема — короткий заголовок записи, а ветви отражают главные события, мысли, чувства и выводы.",
+  "@aiPromptMindMapFromDiary": {
+    "description": "AI prompt: build a mind map from a diary entry."
+  },
+  "aiPromptMindMapSummarize": "Кратко перескажи интеллект-карту ниже в нескольких абзацах: главная мысль, ключевые моменты каждой главной ветви и выводы или следующие шаги. Используй обычный Markdown без заголовков.",
+  "@aiPromptMindMapSummarize": {
+    "description": "AI prompt: summarize a mind map."
+  },
+  "mindMapAi": "ИИ",
+  "@mindMapAi": {
+    "description": "Mind map dock button that opens the AI actions (very short)."
+  },
+  "mindMapAiGenerate": "Создать с ИИ",
+  "@mindMapAiGenerate": {
+    "description": "Mind map: generate a whole map from a topic with AI (menu item and panel title)."
+  },
+  "mindMapAiTile": "С ИИ",
+  "@mindMapAiTile": {
+    "description": "Mind map starter card: short name of the AI tile before the templates."
+  },
+  "mindMapAiExpand": "Развернуть с ИИ",
+  "@mindMapAiExpand": {
+    "description": "Mind map: let AI add subtopics under the selected topic."
+  },
+  "mindMapAiSummarize": "Пересказать с ИИ",
+  "@mindMapAiSummarize": {
+    "description": "Mind map: let AI summarize the whole map."
+  },
+  "mindMapAiFromDiary": "Интеллект-карта с ИИ",
+  "@mindMapAiFromDiary": {
+    "description": "Diary more menu: let AI build a new mind map diary from this diary."
+  },
+  "mindMapAiFromDiaryHint": "ИИ превратит эту запись в новую запись-карту. Сама запись не изменится.",
+  "@mindMapAiFromDiaryHint": {
+    "description": "Mind map AI panel: explanation when building a map from a diary."
+  },
+  "mindMapAiExpandHint": "Новые подтемы для «{topic}»",
+  "@mindMapAiExpandHint": {
+    "description": "Mind map AI panel: which topic gets the new subtopics.",
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "mindMapAiReplaceHint": "Заменит текущую карту. Это можно отменить.",
+  "@mindMapAiReplaceHint": {
+    "description": "Mind map AI panel: generating replaces a map that already has topics."
+  },
+  "mindMapAiTopicHint": "О чём карта? Например: переезд",
+  "@mindMapAiTopicHint": {
+    "description": "Mind map AI panel: hint of the topic field."
+  },
+  "mindMapAiExtraHint": "Пожелания (необязательно)",
+  "@mindMapAiExtraHint": {
+    "description": "Mind map AI panel: hint of the optional requirements field."
+  },
+  "mindMapAiDepth": "Уровни",
+  "@mindMapAiDepth": {
+    "description": "Mind map AI panel: how many levels to generate."
+  },
+  "mindMapAiStyle": "Стиль",
+  "@mindMapAiStyle": {
+    "description": "Mind map AI panel: section title for the generation style."
+  },
+  "mindMapAiStyleDivergent": "Идеи",
+  "@mindMapAiStyleDivergent": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiStyleStructured": "Структура",
+  "@mindMapAiStyleStructured": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiStyleStudy": "Конспект",
+  "@mindMapAiStyleStudy": {
+    "description": "Mind map AI style option (short)."
+  },
+  "mindMapAiRun": "Создать",
+  "@mindMapAiRun": {
+    "description": "Mind map AI panel: start generating."
+  },
+  "mindMapAiRegenerate": "Заново",
+  "@mindMapAiRegenerate": {
+    "description": "Mind map AI panel: generate again."
+  },
+  "mindMapAiGenerating": "Создаём…",
+  "@mindMapAiGenerating": {
+    "description": "Mind map AI panel: status while topics stream in."
+  },
+  "mindMapAiUse": "Использовать",
+  "@mindMapAiUse": {
+    "description": "Mind map AI panel: put the generated map on the canvas."
+  },
+  "mindMapAiAdd": "Добавить в карту",
+  "@mindMapAiAdd": {
+    "description": "Mind map AI panel: add the generated subtopics to the map."
+  },
+  "mindMapAiOpenAsDiary": "Открыть как запись-карту",
+  "@mindMapAiOpenAsDiary": {
+    "description": "Mind map AI panel: open the generated map as a new mind map diary."
+  },
+  "mindMapAiToNote": "В заметку",
+  "@mindMapAiToNote": {
+    "description": "Mind map AI panel: append the summary to the central topic's note."
+  },
+  "mindMapAiNoteAdded": "Добавлено в заметку центральной темы",
+  "@mindMapAiNoteAdded": {
+    "description": "Mind map AI: the summary was added to the note."
+  },
+  "mindMapAiEmpty": "ИИ не вернул ни одной темы. Попробуйте переформулировать и создать заново.",
+  "@mindMapAiEmpty": {
+    "description": "Mind map AI panel: the reply couldn't be read as topics."
   }
 }

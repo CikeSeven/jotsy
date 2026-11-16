@@ -6,6 +6,7 @@ import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../controllers/mind_map_ai_scope.dart';
 import '../controllers/mind_map_editing_controller.dart';
 import '../controllers/mind_map_io_flow.dart';
 import '../sections/mind_map_export_sheet.dart';
@@ -25,10 +26,14 @@ class MindMapEditorPage extends StatefulWidget {
     super.key,
     required this.document,
     required this.onChanged,
+    this.aiAllowed,
   });
 
   final MindMapDocument document;
   final ValueChanged<MindMapDocument> onChanged;
+
+  /// 宿主日记能不能用 AI（为 null 时没有 AI 入口），见 [MindMapAiScope]。
+  final Future<bool> Function()? aiAllowed;
 
   @override
   State<MindMapEditorPage> createState() => _MindMapEditorPageState();
@@ -93,8 +98,16 @@ class _MindMapEditorPageState extends State<MindMapEditorPage> {
             ],
           ),
         ],
-        body: (BuildContext context, double topInset) =>
-            MindMapWorkspace(controller: _controller, topInset: topInset),
+        body: (BuildContext context, double topInset) {
+          final workspace = MindMapWorkspace(
+            controller: _controller,
+            topInset: topInset,
+          );
+          final allowed = widget.aiAllowed;
+          return allowed == null
+              ? workspace
+              : MindMapAiScope(allowed: allowed, child: workspace);
+        },
       ),
     );
     return AppPlatform.isDesktop
@@ -108,11 +121,15 @@ Future<MindMapDocument> openMindMapEditor(
   BuildContext context,
   MindMapDocument document, {
   required ValueChanged<MindMapDocument> onChanged,
+  Future<bool> Function()? aiAllowed,
 }) async {
   final result = await Navigator.of(context).push<MindMapDocument>(
     MaterialPageRoute<MindMapDocument>(
-      builder: (_) =>
-          MindMapEditorPage(document: document, onChanged: onChanged),
+      builder: (_) => MindMapEditorPage(
+        document: document,
+        onChanged: onChanged,
+        aiAllowed: aiAllowed,
+      ),
     ),
   );
   return result ?? document;

@@ -5,7 +5,7 @@ summary: Turning a new diary into a mind map, inserting maps into the text, edit
 features: [mindMaps]
 platforms: []
 destinations: [tab_diaries, settings_features]
-keywords: [mind map, mindmap, map, outline, stickers, priority, progress, flag, note, label, link, checkbox, copy paste, topic style, central topic, subtopic, sibling, collapse, expand, drag topic, logic chart, org chart, tree, timeline, fishbone, color theme, rainbow branches, lines, spacing, dot grid, template, brainstorm, SWOT, book notes, mind map diary, insert mind map, has mind maps, smart notebook filter, export map, XMind, OPML, FreeMind, Markdown, import map, turn into mind map, map image]
+keywords: [mind map, mindmap, map, outline, stickers, priority, progress, flag, note, label, link, checkbox, copy paste, topic style, central topic, subtopic, sibling, collapse, expand, drag topic, logic chart, org chart, tree, timeline, fishbone, color theme, rainbow branches, lines, spacing, dot grid, template, brainstorm, SWOT, book notes, mind map diary, insert mind map, has mind maps, smart notebook filter, export map, XMind, OPML, FreeMind, Markdown, import map, turn into mind map, map image, generate with AI, expand with AI, summarize with AI, mind map with AI]
 ---
 A mind map is a kind of diary: it lives in the same list as your other diaries, has a date, mood, tags and notebooks, and is backed up, synced and searched along with them.
 
@@ -49,6 +49,14 @@ Open Style in the dock (or More → Mind map style in the top bar) to change:
 - List cards show a thumbnail of the map and its main topics. The preview page shows the map large; tap it to view full screen with pan and zoom.
 - Smart notebooks and search filters have "Has mind maps" under media, matching mind map diaries and diaries with a map inside.
 - Search, word counts, diary exports and shared text include every topic, written as an outline.
+
+## Mapping with AI
+- With the AI assistant on and "Writing assistant" enabled, mind maps get AI entries:
+  - While a map has only its central topic, the starter card begins with "AI map": enter a topic, pick the levels (2–4) and a style (brainstorm, structured, study notes), and optionally add requirements. Topics grow in the preview as they're generated; tap "Use this map" when you like it. If the map already has topics it's replaced, and you can undo it.
+  - Select a topic and tap "Expand with AI" in the dock or the right-click menu: the AI looks at where it sits and at the whole map, then suggests 3–7 subtopics, added only when you tap "Add to map".
+  - With nothing selected, the dock's "AI" also has "Summarize with AI": copy the summary, add it to the central topic's note, or save it as a diary.
+- A text diary's preview page has "Mind map with AI" under More, which builds a new mind map diary and leaves the original alone; a mind map diary's More menu has "Summarize with AI".
+- You can stop at any time while it's generating. Diaries in private notebooks need "Allow AI on private entries" in AI privacy.
 
 ## Exporting a map
 - While editing a map, tap More → Export map at the top right; it's also in the preview page's More menu and on the full-screen viewer's top bar. Export as an image (PNG), PDF, XMind, Markdown, OPML or FreeMind, or copy it as an outline.

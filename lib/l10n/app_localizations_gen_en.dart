@@ -7353,14 +7353,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookPrivacyHidden => 'Hide from All entries';
 
   @override
-  String get notebookPrivacyHiddenHint => 'Only visible inside this notebook';
+  String get notebookPrivacyHiddenHint =>
+      'Only listed inside this notebook, but still found by search';
 
   @override
   String get notebookPrivacyLocked => 'Lock';
 
   @override
   String get notebookPrivacyLockedHint =>
-      'Verify your identity to open, and hide from All entries';
+      'Verify your identity to open; hidden from All entries and search';
 
   @override
   String get notebookSortLabel => 'Default order';

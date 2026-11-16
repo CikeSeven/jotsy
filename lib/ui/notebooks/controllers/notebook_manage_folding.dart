@@ -9,7 +9,7 @@ import '../viewmodels/notebook_view.dart';
 /// 管理页的收起与拖动折叠：这一帧藏起哪些行、拖动有子本的本子时整组收进来、
 /// 本子到了收起的上级下面时自动展开。
 ///
-/// - 输入：每次构建的书架树与用户的收起状态（`notebookManageCollapsedProvider`）；
+/// - 输入：每次构建的书架树与用户的收起状态（`notebookTreeCollapsedProvider`）；
 ///   列表的拿起 / 松手 / 放下；
 /// - 输出：[resolve] 给出这一帧按哪些本子收起来排、藏起哪些行；
 /// - 副作用：要自动展开的上级在这一帧之后经 [onReveal] 写回（构建期间不能

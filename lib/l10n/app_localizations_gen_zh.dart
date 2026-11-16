@@ -6609,13 +6609,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookPrivacyHidden => '不在全部日记中显示';
 
   @override
-  String get notebookPrivacyHiddenHint => '只在这本里看到';
+  String get notebookPrivacyHiddenHint => '只在这本里看到，搜索时仍能找到';
 
   @override
   String get notebookPrivacyLocked => '上锁';
 
   @override
-  String get notebookPrivacyLockedHint => '打开时验证身份，并且不在全部日记中显示';
+  String get notebookPrivacyLockedHint => '打开时验证身份，不在全部日记中显示，也搜不到';
 
   @override
   String get notebookSortLabel => '默认排序';

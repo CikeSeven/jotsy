@@ -20,7 +20,9 @@ import 'package:node_diary/ui/explore/widgets/gallery_rows_sliver.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_time_range_cells.dart';
 import 'package:node_diary/ui/explore/widgets/gallery_time_range_picker.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_tree_toggle.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
+import 'package:node_diary/ui/widgets/list_item_presence.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -30,10 +32,12 @@ void main() {
   Future<(AppDatabase, AppLocalizations)> pump(
     WidgetTester tester, {
     AppFeatures features = AppFeatures.defaults,
+    bool subBook = false,
   }) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
     final open = await db.createNotebook(name: 'Open book');
+    if (subBook) await db.createNotebook(name: 'Sub book', parentId: open);
     final locked = await db.createNotebook(
       name: 'Locked book',
       visibility: NotebookVisibility.locked,
@@ -207,6 +211,53 @@ void main() {
     await tester.tap(find.text(l10n.exploreGalleryNotebookUnfiled));
     await tester.pumpAndSettle();
     expect(sources(tester), <String>['/old.jpg']);
+    await unmount(tester);
+  });
+
+  testWidgets('sub-notebooks in the notebook filter fold under their parent '
+      'without changing the choice', (tester) async {
+    final (_, l10n) = await pump(tester, subBook: true);
+    await openMenu(tester);
+    await tester.tap(find.text(l10n.exploreGalleryNotebookFilter));
+    await tester.pumpAndSettle();
+    Finder rowOf(String name) => find.ancestor(
+      of: find.text(name),
+      matching: find.byType(ExpressiveMenuItem),
+    );
+    final sub = find.ancestor(
+      of: rowOf('Sub book'),
+      matching: find.byType(ListItemPresence),
+    );
+    bool subShown() =>
+        tester.widget<ListItemPresence>(sub).visible &&
+        tester.getSize(sub).height > 0;
+    // 子本缩在上级下面；只有上级有箭头。
+    expect(
+      tester.getTopLeft(find.text('Sub book')).dx,
+      greaterThan(tester.getTopLeft(find.text('Open book')).dx),
+    );
+    final chevron = find.byType(NotebookTreeChevron);
+    expect(chevron, findsOneWidget);
+    expect(subShown(), isTrue);
+
+    // 点箭头只收起，不选那一本、菜单不关。
+    await tester.tap(chevron);
+    await tester.pumpAndSettle();
+    expect(subShown(), isFalse);
+    expect(sources(tester), <String>['/today.jpg', '/old.jpg']);
+    expect(find.text(l10n.exploreGalleryNotebookAll), findsOneWidget);
+    expect(
+      tester.widget<ExpressiveMenuItem>(rowOf('Open book')).selected,
+      false,
+    );
+
+    await tester.tap(chevron);
+    await tester.pumpAndSettle();
+    expect(subShown(), isTrue);
+    await tester.tap(find.text('Sub book'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<ExpressiveMenuItem>(rowOf('Sub book')).selected, true);
+    expect(sources(tester), isEmpty);
     await unmount(tester);
   });
 

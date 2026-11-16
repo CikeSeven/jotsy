@@ -12099,7 +12099,7 @@ abstract class AppLocalizations {
   /// Description of the hide-from-All-entries option.
   ///
   /// In en, this message translates to:
-  /// **'Only visible inside this notebook'**
+  /// **'Only listed inside this notebook, but still found by search'**
   String get notebookPrivacyHiddenHint;
 
   /// Privacy option: opening the notebook needs authentication.
@@ -12111,7 +12111,7 @@ abstract class AppLocalizations {
   /// Description of the lock option.
   ///
   /// In en, this message translates to:
-  /// **'Verify your identity to open, and hide from All entries'**
+  /// **'Verify your identity to open; hidden from All entries and search'**
   String get notebookPrivacyLockedHint;
 
   /// Title of the default entry order group.

@@ -5,8 +5,11 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
+import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
+import '../widgets/notebook_foldable_rows.dart';
+import '../widgets/notebook_tree_toggle.dart';
 
 /// 对一个日记本可做的操作（书架长按菜单与管理页“更多”面板共用）。
 ///
@@ -157,10 +160,11 @@ Future<NotebookAction?> showNotebookActionsSheet(
   });
 }
 
-/// “合并到…”：列出其他普通日记本，点一本返回它；关闭返回 null。
+/// “合并到…”：列出其他普通日记本（[candidates]，树序、每层缩进，有子本的
+/// 行可收起 / 展开，见 [NotebookFoldableRows]），点一本返回它；关闭返回 null。
 Future<NotebookView?> showNotebookMergeTargetSheet(
   BuildContext context, {
-  required List<NotebookView> candidates,
+  required List<NotebookTreeRow> candidates,
   required Map<String, int> counts,
 }) {
   return _showSheet<NotebookView>(context, (BuildContext sheetContext) {
@@ -188,24 +192,35 @@ Future<NotebookView?> showNotebookMergeTargetSheet(
                   ),
                 ),
               ),
-            for (final notebook in candidates)
-              ListTile(
-                titleAlignment: ListTileTitleAlignment.center,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                  vertical: AppSpacing.xs,
-                ),
-                leading: NotebookCoverTile.miniFromView(notebook),
-                title: Text(
-                  notebook.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  l10n.notebookEntryCount(counts[notebook.id] ?? 0),
-                ),
-                onTap: () => Navigator.of(sheetContext).pop(notebook),
-              ),
+            NotebookFoldableRows(
+              rows: candidates,
+              itemBuilder: (context, row, toggle) {
+                final notebook = row.notebook;
+                return ListTile(
+                  key: ValueKey<String>('notebook_merge_${notebook.id}'),
+                  titleAlignment: ListTileTitleAlignment.center,
+                  contentPadding: EdgeInsetsDirectional.only(
+                    start: AppSpacing.xl + row.indent * notebookTreeIndentStep,
+                    end: toggle == null ? AppSpacing.xl : AppSpacing.m,
+                    top: AppSpacing.xs,
+                    bottom: AppSpacing.xs,
+                  ),
+                  leading: NotebookCoverTile.miniFromView(notebook),
+                  title: Text(
+                    notebook.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    l10n.notebookEntryCount(counts[notebook.id] ?? 0),
+                  ),
+                  trailing: toggle == null
+                      ? null
+                      : NotebookTreeToggleButton(toggle: toggle),
+                  onTap: () => Navigator.of(sheetContext).pop(notebook),
+                );
+              },
+            ),
           ],
         );
       },

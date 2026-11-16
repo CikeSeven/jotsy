@@ -20,6 +20,7 @@ import '../viewmodels/notebook_labels.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
+import '../widgets/notebook_tree_toggle.dart';
 
 /// 管理页的一个分组：按住左侧手柄（或长按整行）拖动排序，点按编辑，行尾
 /// “更多”打开操作面板。删除时这一行先收起（[collapsing]），撤销后从 0 高度
@@ -229,26 +230,9 @@ class NotebookManageRow extends StatelessWidget {
               ),
             ),
             if (toggle != null)
-              IconButton(
+              NotebookTreeToggleButton(
                 key: ValueKey<String>('notebook_toggle_${notebook.id}'),
-                tooltip: expanded
-                    ? l10n.notebookSubCollapse
-                    : l10n.notebookSubExpand,
-                onPressed: toggle,
-                // 与书架“已合上”同一组图标：收起时向下（点开），展开时向上。
-                icon: AnimatedRotation(
-                  turns: expanded ? 0.5 : 0,
-                  duration: ExpressiveMotion.duration(
-                    context,
-                    ExpressiveMotion.medium,
-                  ),
-                  curve: ExpressiveMotion.spatial,
-                  child: FaIcon(
-                    FontAwesomeIcons.angleDown,
-                    size: 16,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
+                toggle: NotebookRowToggle(expanded: expanded, onToggle: toggle),
               ),
             IconButton(
               tooltip: l10n.notebookMoreActions,

@@ -20,10 +20,11 @@ import '../../diaries/controllers/diary_link_open_flow.dart';
 import '../../notebooks/models/notebook_scope_resolver.dart';
 import '../../notebooks/providers/notebook_insights_providers.dart';
 import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/sections/notebook_choice_sheet.dart';
+import '../../notebooks/viewmodels/notebook_tree_rows.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../../settings/widgets/settings_card_group.dart';
-import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/expressive_loading_indicator.dart';
 import '../controllers/ai_recap_controller.dart';
 import '../controllers/ai_save_as_diary_flow.dart';
@@ -148,22 +149,38 @@ class _AiRecapPageState extends ConsumerState<AiRecapPage> {
     });
   }
 
+  /// 选日记本：全部日记 + 可见、没合上的日记本（树序缩进、可收起；上级没
+  /// 列出时子本往外提一级）。
   Future<void> _pickNotebook() async {
+    final l10n = context.l10n;
     final tree = ref.read(notebookTreeProvider);
-    final candidates = <NotebookView>[
-      for (final view in tree?.depthFirst ?? const <NotebookView>[])
-        if (!view.isPrivate && !view.isClosed) view,
-    ];
-    final picked = await showAppModalBottomSheet<AiRecapScope>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      constraints: const BoxConstraints(maxWidth: 560),
-      builder: (BuildContext sheetContext) =>
-          _NotebookSheet(candidates: candidates, selected: _scope),
+    final picked = await showNotebookChoiceSheet(
+      context,
+      title: l10n.aiRecapNotebookPick,
+      rows: tree == null
+          ? const <NotebookTreeRow>[]
+          : notebookTreeRows(
+              tree,
+              include: (NotebookView view) => !view.isPrivate && !view.isClosed,
+            ),
+      selectedId: _scope.notebookId,
+      lead: NotebookChoiceLead(
+        label: l10n.aiRecapAllNotebooks,
+        icon: FontAwesomeIcons.layerGroup,
+      ),
+      leadSelected: _scope.isAll,
+      iconOf: (NotebookView view) => view.kind == NotebookKind.smart
+          ? FontAwesomeIcons.wandMagicSparkles
+          : view.icon.data,
     );
     if (!mounted || picked == null) return;
-    setState(() => _scope = picked);
+    final id = picked.notebookId;
+    final view = id == null ? null : tree?[id];
+    setState(
+      () => _scope = view == null
+          ? const AiRecapScope.all()
+          : AiRecapScope.notebook(notebookId: view.id, notebookName: view.name),
+    );
   }
 
   Future<void> _pickPersona() async {
@@ -435,82 +452,6 @@ class _AiRecapPageState extends ConsumerState<AiRecapPage> {
           ),
         ],
       ],
-    );
-  }
-}
-
-/// 日记本面板（只负责挑选）：全部日记 + 可见的日记本（按树序缩进）。
-class _NotebookSheet extends StatelessWidget {
-  const _NotebookSheet({required this.candidates, required this.selected});
-
-  final List<NotebookView> candidates;
-  final AiRecapScope selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    Widget tile({
-      required FaIconData icon,
-      required String title,
-      required bool checked,
-      required AiRecapScope value,
-      int depth = 0,
-    }) => ListTile(
-      contentPadding: EdgeInsetsDirectional.only(
-        start: 24.0 + depth * 20,
-        end: 16,
-      ),
-      leading: FaIcon(icon, size: 16, color: colors.primary),
-      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: checked
-          ? FaIcon(FontAwesomeIcons.check, size: 14, color: colors.primary)
-          : null,
-      onTap: () => Navigator.of(context).pop(value),
-    );
-    return SafeArea(
-      top: false,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.7,
-        ),
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.only(bottom: 16),
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-              child: Text(
-                l10n.aiRecapNotebookPick,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            tile(
-              icon: FontAwesomeIcons.layerGroup,
-              title: l10n.aiRecapAllNotebooks,
-              checked: selected.isAll,
-              value: const AiRecapScope.all(),
-            ),
-            for (final view in candidates)
-              tile(
-                icon: view.kind == NotebookKind.smart
-                    ? FontAwesomeIcons.wandMagicSparkles
-                    : view.icon.data,
-                title: view.name,
-                checked: selected.notebookId == view.id,
-                value: AiRecapScope.notebook(
-                  notebookId: view.id,
-                  notebookName: view.name,
-                ),
-                depth: view.depth,
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -39,7 +39,7 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// 书架面板同一套流程；删除时这一行先收起再删，撤销后重新展开。
 ///
 /// 收起子本：有子本的行尾可收起 / 展开，顶栏“全部收起 / 全部展开”；收起
-/// 状态在 [notebookManageCollapsedProvider]（本次运行的内存）。拖动一本有
+/// 状态在 [notebookTreeCollapsedProvider]（本次运行的内存）。拖动一本有
 /// 子本的本子时，它的子孙在拖动期间收进来、放下后在新位置展开，看起来整组
 /// 一起移动；本子换了上级或新出现在收起的上级下面时，那些上级自动展开。
 class NotebooksPage extends ConsumerStatefulWidget {
@@ -59,7 +59,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
   late final NotebookManageFolding _folding = NotebookManageFolding(
     onReveal: (Set<String> ids) {
       if (!mounted) return;
-      ref.read(notebookManageCollapsedProvider.notifier).expand(ids);
+      ref.read(notebookTreeCollapsedProvider.notifier).expand(ids);
     },
   );
 
@@ -79,7 +79,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     final notebooks = ref.watch(notebooksProvider).value;
     final counts =
         ref.watch(notebookEntryCountsProvider).value ?? const <String, int>{};
-    final collapsed = ref.watch(notebookManageCollapsedProvider);
+    final collapsed = ref.watch(notebookTreeCollapsedProvider);
     // 按（可能是拖动后暂定的）书架顺序重建层级：子本顺序随之。
     final tree = notebooks == null || notebooks.isEmpty
         ? null
@@ -115,7 +115,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
                       : l10n.notebookCollapseAll,
                   onPressed: () {
                     final notifier = ref.read(
-                      notebookManageCollapsedProvider.notifier,
+                      notebookTreeCollapsedProvider.notifier,
                     );
                     allCollapsed
                         ? notifier.expand(parents)
@@ -175,7 +175,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
                 unawaited(openNotebookEditor(context, ref, notebook)),
             onMore: (notebook) => unawaited(_more(notebook)),
             onToggle: (notebook) => ref
-                .read(notebookManageCollapsedProvider.notifier)
+                .read(notebookTreeCollapsedProvider.notifier)
                 .toggle(notebook.id),
             onReorder: (oldIndex, newIndex) =>
                 _reorder(notebooks, tree, rows, oldIndex, newIndex),

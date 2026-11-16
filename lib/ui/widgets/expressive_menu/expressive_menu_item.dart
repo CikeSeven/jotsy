@@ -15,6 +15,10 @@ import 'expressive_menu_row.dart';
 /// 给了 [trailingIcon] 时由它占据这一格。[destructive] 文字与图标为 `error`；
 /// 禁用时 38% 的 `onSurface`。
 ///
+/// [secondary]：行尾（对勾格之前）的独立小按钮，如树形列表的展开 / 收起：
+/// 点在它上面执行 [onSecondaryPressed]，不执行 [onPressed]、菜单不关；读屏
+/// 为这一行上名为 [secondaryLabel] 的自定义动作。
+///
 /// 点按：RawMenuAnchor 不会替条目关闭菜单，这里先经锚点关闭（收起途中的
 /// 点按直接忽略，动作不会执行两次）再执行 [onPressed]。[closeOnActivate] 为
 /// false 时只执行动作、菜单保持打开（要连着调的单选项）。不在锚点里（如
@@ -32,6 +36,9 @@ class ExpressiveMenuItem extends StatelessWidget {
     this.closeOnActivate = true,
     this.highlighted = false,
     this.focusNode,
+    this.secondary,
+    this.onSecondaryPressed,
+    this.secondaryLabel,
   });
 
   /// 为 null 时条目禁用。
@@ -66,6 +73,16 @@ class ExpressiveMenuItem extends StatelessWidget {
   /// 行的焦点（二级菜单入口用它在收起时把焦点还给自己）。
   final FocusNode? focusNode;
 
+  /// 对勾格之前的独立小按钮（通常是一个图标，由条目统一颜色，尺寸自定）；
+  /// 点按区为它左右各外扩 [ExpressiveMenuRowMetrics.secondaryPadding] 的整列。
+  final Widget? secondary;
+
+  /// [secondary] 的点按；为 null 时 [secondary] 只是装饰。
+  final VoidCallback? onSecondaryPressed;
+
+  /// [secondary] 在读屏里的动作名（如“收起子本”）。
+  final String? secondaryLabel;
+
   void _activate(BuildContext context) {
     if (!context.mounted) return;
     final anchor = ExpressiveMenuAnchorState.maybeOf(context);
@@ -79,6 +96,14 @@ class ExpressiveMenuItem extends StatelessWidget {
       FocusManager.instance.applyFocusChangesIfNeeded();
     }
     onPressed?.call();
+  }
+
+  /// 小按钮的点按：菜单不关；收起途中的点按忽略（同 [_activate]）。
+  void _activateSecondary(BuildContext context, VoidCallback action) {
+    if (!context.mounted) return;
+    final anchor = ExpressiveMenuAnchorState.maybeOf(context);
+    if (anchor != null && !anchor.interactive) return;
+    action();
   }
 
   @override
@@ -100,11 +125,17 @@ class ExpressiveMenuItem extends StatelessWidget {
                       )
                     : null,
               ));
+    final secondary = this.secondary;
+    final onSecondary = onSecondaryPressed;
     return ExpressiveMenuRowInk(
       onTap: enabled ? () => _activate(context) : null,
       focusNode: focusNode,
       highlighted: highlighted,
       selected: selected,
+      onSecondaryTap: enabled && onSecondary != null
+          ? () => _activateSecondary(context, onSecondary)
+          : null,
+      secondaryLabel: secondaryLabel,
       child: ExpressiveMenuRowContent(
         enabled: enabled,
         selected: isSelected,
@@ -112,6 +143,16 @@ class ExpressiveMenuItem extends StatelessWidget {
         leadingIcon: leadingIcon,
         summary: summary,
         trailing: trailing,
+        secondary: secondary == null
+            ? null
+            : ExpressiveMenuRowSecondary(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ExpressiveMenuRowMetrics.secondaryPadding,
+                  ),
+                  child: secondary,
+                ),
+              ),
         child: child,
       ),
     );
@@ -130,10 +171,15 @@ class ExpressiveMenuRowContent extends StatelessWidget {
     this.destructive = false,
     this.leadingIcon,
     this.summary,
+    this.secondary,
   });
 
   final Widget child;
   final Widget? trailing;
+
+  /// 行尾格之前的独立小按钮（已包好点按区），与文字之间不另加间距：
+  /// 它自带的内边距就是间距。
+  final Widget? secondary;
   final bool enabled;
   final bool selected;
   final bool destructive;
@@ -160,6 +206,7 @@ class ExpressiveMenuRowContent extends StatelessWidget {
     final leading = leadingIcon;
     final summary = this.summary;
     final trailing = this.trailing;
+    final secondary = this.secondary;
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -221,10 +268,20 @@ class ExpressiveMenuRowContent extends StatelessWidget {
               ),
             ),
           ),
+          if (secondary != null)
+            IconTheme.merge(
+              data: IconThemeData(
+                size: ExpressiveMenuRowMetrics.checkSize,
+                color: enabled ? colors.onSurfaceVariant : disabled,
+              ),
+              child: secondary,
+            ),
           if (trailing != null)
             Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: ExpressiveMenuRowMetrics.trailingGap,
+              padding: EdgeInsetsDirectional.only(
+                start: secondary == null
+                    ? ExpressiveMenuRowMetrics.trailingGap
+                    : 0,
               ),
               child: IconTheme.merge(
                 data: IconThemeData(

@@ -28,7 +28,7 @@ class DiarySearchController extends ChangeNotifier {
   DiarySearchController({
     String initialKeyword = '',
     Set<int> initialTagIds = const <int>{},
-    this._scope = DiaryListScope.all,
+    this._scope = DiaryListScope.globalSearch,
   }) : _tagIds = <int>{...initialTagIds},
        _keyword = initialKeyword.trim(),
        _input = initialKeyword.trim() {
@@ -155,10 +155,14 @@ class DiarySearchController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 移除日记本条件：改为在全部日记中搜索（不影响首页所在的范围）。
+  /// 是否不限日记本（全局搜索，含隐藏日记本里的日记，见
+  /// [DiaryGlobalSearchScope]）。
+  bool get isGlobalScope => _scope is DiaryGlobalSearchScope;
+
+  /// 移除日记本条件：改为全局搜索（不影响首页所在的范围）。
   void removeScope() {
-    if (_scope == DiaryListScope.all) return;
-    _scope = DiaryListScope.all;
+    if (isGlobalScope) return;
+    _scope = DiaryListScope.globalSearch;
     notifyListeners();
   }
 

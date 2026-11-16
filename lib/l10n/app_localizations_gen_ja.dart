@@ -6732,13 +6732,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notebookPrivacyHidden => '「すべての日記」に表示しない';
 
   @override
-  String get notebookPrivacyHiddenHint => 'この日記帳の中でのみ表示されます';
+  String get notebookPrivacyHiddenHint => 'この日記帳の中でのみ表示されますが、検索では見つかります';
 
   @override
   String get notebookPrivacyLocked => 'ロック';
 
   @override
-  String get notebookPrivacyLockedHint => '開くときに本人確認が必要になり、「すべての日記」にも表示されません';
+  String get notebookPrivacyLockedHint =>
+      '開くときに本人確認が必要になり、「すべての日記」にも検索にも表示されません';
 
   @override
   String get notebookSortLabel => 'デフォルトの並び順';

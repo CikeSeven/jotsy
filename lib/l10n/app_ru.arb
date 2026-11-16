@@ -9438,7 +9438,7 @@
   "@notebookPrivacyHidden": {
     "description": "Privacy option: entries do not appear in All entries."
   },
-  "notebookPrivacyHiddenHint": "Записи видны только внутри этого блокнота",
+  "notebookPrivacyHiddenHint": "Записи видны только внутри этого блокнота, но находятся поиском",
   "@notebookPrivacyHiddenHint": {
     "description": "Description of the hide-from-All-entries option."
   },
@@ -9446,7 +9446,7 @@
   "@notebookPrivacyLocked": {
     "description": "Privacy option: opening the notebook needs authentication."
   },
-  "notebookPrivacyLockedHint": "Для открытия нужно подтвердить личность; записи скрыты из раздела «Все записи»",
+  "notebookPrivacyLockedHint": "Для открытия нужно подтвердить личность; записи скрыты из раздела «Все записи» и из поиска",
   "@notebookPrivacyLockedHint": {
     "description": "Description of the lock option."
   },

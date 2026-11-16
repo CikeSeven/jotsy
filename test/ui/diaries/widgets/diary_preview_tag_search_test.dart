@@ -106,7 +106,7 @@ void main() {
 
     final search = tester.widget<DiarySearchPage>(find.byType(DiarySearchPage));
     expect(search.initialTagIds, <int>{sea});
-    expect(search.scope, DiaryListScope.all);
+    expect(search.scope, DiaryListScope.globalSearch);
     await h.unmount();
   });
 }

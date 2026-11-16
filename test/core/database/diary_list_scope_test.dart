@@ -386,6 +386,124 @@ void main() {
       expect(await db.isDiaryPrivate('nope'), isFalse);
     });
 
+    test(
+      'global search finds hidden-notebook diaries, never locked ones',
+      () async {
+        const scope = DiaryListScope.globalSearch;
+        Future<Set<String>> searched({bool includeArchived = false}) async {
+          final rows = await db
+              .watchDiaries(
+                keyword: 'body',
+                scope: scope,
+                includeArchived: includeArchived,
+              )
+              .first;
+          return rows.map((row) => row.diary.diaryId).toSet();
+        }
+
+        expect(await searched(), <String>{normal, private});
+        expect(await searched(includeArchived: true), <String>{
+          normal,
+          private,
+          privateArchived,
+        });
+        // 计数、预览翻页的 id 序列与常用标签同一口径。
+        expect(
+          await db.watchActiveDiaryCount(keyword: 'body', scope: scope).first,
+          2,
+        );
+        expect(
+          (await db.getActiveDiaryIds(keyword: 'body', scope: scope)).toSet(),
+          <String>{normal, private},
+        );
+        final usages = await db.watchTagUsageCounts(scope: scope).first;
+        expect(usages.map((usage) => usage.tagId).toSet(), <int>{1, 2});
+        // 全部日记的时间线仍不含隐藏本里的日记。
+        expect(await db.watchScopedDiaryCount(DiaryListScope.all).first, 1);
+      },
+    );
+
+    test('global search treats inherited and mixed locks as locked', () async {
+      // 上锁本下面的隐藏子本：生效可见性为上锁。
+      final hiddenUnderLock = await db.createNotebook(
+        name: '锁下的藏',
+        visibility: NotebookVisibility.hidden,
+        parentId: lockedBook,
+      );
+      final underLock = await diary(
+        'under-lock',
+        notebookIds: <String>[hiddenUnderLock],
+      );
+      // 同在隐藏本与上锁本里：按上锁处理。
+      final both = await diary(
+        'both',
+        notebookIds: <String>[hiddenBook, lockedBook],
+      );
+      // 隐藏本下面的普通子本：继承隐藏，搜得到。
+      final normalUnderHidden = await db.createNotebook(
+        name: '藏下的普通',
+        parentId: hiddenBook,
+      );
+      final underHidden = await diary(
+        'under-hidden',
+        notebookIds: <String>[normalUnderHidden],
+      );
+      // 认不出的可见性（更新版本写入）按上锁解读。
+      final futureBook = await notebook(
+        '未来',
+        visibility: NotebookVisibility.hidden,
+      );
+      final future = await diary('future', notebookIds: <String>[futureBook]);
+      await db.customUpdate(
+        "UPDATE notebooks SET visibility = 'sealed' WHERE notebook_id = ?",
+        variables: <Variable<Object>>[Variable<String>(futureBook)],
+        updates: <TableInfo>{db.notebooks},
+      );
+
+      final found =
+          (await db
+                  .watchDiaries(
+                    keyword: 'body',
+                    scope: DiaryListScope.globalSearch,
+                  )
+                  .first)
+              .map((row) => row.diary.diaryId)
+              .toSet();
+      expect(found, <String>{normal, private, underHidden});
+      expect(found, isNot(contains(underLock)));
+      expect(found, isNot(contains(both)));
+      expect(found, isNot(contains(future)));
+      expect(found, isNot(contains(locked)));
+    });
+
+    test('global search re-emits when a hidden notebook is locked', () async {
+      final results = StreamIterator(
+        db.watchDiaries(keyword: 'body', scope: DiaryListScope.globalSearch),
+      );
+      addTearDown(results.cancel);
+      Matcher has(String id, {bool present = true}) {
+        final matcher = predicate<List<DiaryWithTags>>(
+          (rows) => rows.any((row) => row.diary.diaryId == id),
+        );
+        return present ? matcher : isNot(matcher);
+      }
+
+      await expectEventually(results, has(private));
+      await db.updateNotebook(
+        hiddenBook,
+        visibility: NotebookVisibility.locked,
+      );
+      await expectEventually(results, has(private, present: false));
+      await db.updateNotebook(
+        hiddenBook,
+        visibility: NotebookVisibility.hidden,
+      );
+      await expectEventually(results, has(private));
+      // 加进上锁本 → 从全局搜索消失。
+      await db.addDiariesToNotebook(lockedBook, <String>[private]);
+      await expectEventually(results, has(private, present: false));
+    });
+
     test('streams re-emit when membership or visibility changes', () async {
       final list = StreamIterator(db.watchDiaries());
       final markers = StreamIterator(db.watchDiaryMarkersByMonth(day));
@@ -473,6 +591,8 @@ void main() {
 
   test('scopes compare by value', () {
     expect(DiaryListScope.all, const DiaryAllScope());
+    expect(DiaryListScope.globalSearch, const DiaryGlobalSearchScope());
+    expect(DiaryListScope.globalSearch, isNot(DiaryListScope.all));
     expect(
       const DiaryNotebookScope(notebookId: 'n', chapterOrder: <String>['a']),
       DiaryNotebookScope(notebookId: 'n', chapterOrder: <String>['a']),

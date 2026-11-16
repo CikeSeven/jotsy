@@ -45,6 +45,21 @@ List<Widget> exploreModuleOptionTiles(
             onSelected: (String name) => controller.setOption(id, option, name),
           ),
         ),
+        ExploreCountOption(slider: true) => SettingsSliderTile(
+          nested: true,
+          title: ExploreLayoutLabels.optionTitle(l10n, option),
+          value: config.count(option).toDouble(),
+          min: option.min.toDouble(),
+          max: option.max.toDouble(),
+          divisions: option.max - option.min,
+          valueLabel: (double value) =>
+              ExploreLayoutLabels.count(l10n, option, value.round()),
+          // 拖动中只预览，松手才写盘。
+          onChanged: (double value) =>
+              controller.previewOption(id, option, value.round()),
+          onChangeEnd: (double value) =>
+              controller.setOption(id, option, value.round()),
+        ),
         ExploreCountOption() => SettingsChoiceTile(
           nested: true,
           title: ExploreLayoutLabels.optionTitle(l10n, option),

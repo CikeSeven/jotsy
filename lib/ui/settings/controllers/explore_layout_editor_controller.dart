@@ -71,6 +71,13 @@ class ExploreLayoutEditorController
     Object value,
   ) => setModule(style.module(id).withOption(option, value));
 
+  /// 滑块类选项拖动中的即时预览，不写盘（松手时经 [setOption] 保存）。
+  void previewOption(
+    ExploreModuleId id,
+    ExploreOptionSpec option,
+    Object value,
+  ) => preview(style.withModule(style.module(id).withOption(option, value)));
+
   /// 已知卡片列表里第 [oldIndex] 张移到 [newIndex]（移除后的位置）。
   Future<void> moveModule(int oldIndex, int newIndex) =>
       commit(style.moveModule(oldIndex, newIndex));

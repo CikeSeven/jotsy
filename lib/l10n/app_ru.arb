@@ -16761,6 +16761,122 @@
   "@aiToolDone": {
     "description": "AI step card: the change is done."
   },
+  "aiToolListTemplates": "Просмотр шаблонов записей",
+  "@aiToolListTemplates": {
+    "description": "AI tool card: list diary templates."
+  },
+  "aiToolTemplateCount": "{count, plural, one{{count} шаблон} few{{count} шаблона} many{{count} шаблонов} other{{count} шаблона}}",
+  "@aiToolTemplateCount": {
+    "description": "AI tool card result: number of templates found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetTemplates": "Чтение шаблонов",
+  "@aiToolGetTemplates": {
+    "description": "AI tool card: read the full content of templates."
+  },
+  "aiToolGetTemplate": "Чтение шаблона «{name}»",
+  "@aiToolGetTemplate": {
+    "description": "AI tool card: read one template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTemplate": "Новый шаблон",
+  "@aiToolCreateTemplate": {
+    "description": "AI tool card: create a diary template (name not known yet)."
+  },
+  "aiToolCreateTemplateNamed": "Новый шаблон: {name}",
+  "@aiToolCreateTemplateNamed": {
+    "description": "AI tool card: create a diary template with this name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTemplate": "Изменение шаблона",
+  "@aiToolUpdateTemplate": {
+    "description": "AI tool card: edit a diary template."
+  },
+  "aiToolUpdateTemplateNamed": "Изменение шаблона: {name}",
+  "@aiToolUpdateTemplateNamed": {
+    "description": "AI tool card: edit this diary template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTemplate": "Удаление шаблона",
+  "@aiToolDeleteTemplate": {
+    "description": "AI tool card: delete a diary template."
+  },
+  "aiToolDeleteTemplateNamed": "Удалить шаблон «{name}»",
+  "@aiToolDeleteTemplateNamed": {
+    "description": "AI tool card and confirmation: delete this template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTemplateAuto": "Настройки автоприменения для него тоже удалятся",
+  "@aiToolDeleteTemplateAuto": {
+    "description": "AI delete-template confirmation: the template is used by auto-apply."
+  },
+  "aiToolResetTemplate": "Восстановить исходный шаблон",
+  "@aiToolResetTemplate": {
+    "description": "AI tool card: reset an edited built-in template."
+  },
+  "aiToolResetTemplateNamed": "Восстановить исходный шаблон «{name}»",
+  "@aiToolResetTemplateNamed": {
+    "description": "AI tool card and confirmation: reset this built-in template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRestoreTemplates": "{count, plural, one{Восстановить {count} удалённый встроенный шаблон} few{Восстановить {count} удалённых встроенных шаблона} many{Восстановить {count} удалённых встроенных шаблонов} other{Восстановить {count} удалённого встроенного шаблона}}",
+  "@aiToolRestoreTemplates": {
+    "description": "AI tool card: bring deleted built-in templates back.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReorderTemplates": "Порядок шаблонов",
+  "@aiToolReorderTemplates": {
+    "description": "AI tool card: reorder the user's templates."
+  },
+  "aiToolSetTemplateAutoApply": "Шаблон для новых записей",
+  "@aiToolSetTemplateAutoApply": {
+    "description": "AI tool card: change the template auto-apply settings."
+  },
+  "aiToolSetNotebookTemplate": "Шаблон блокнота",
+  "@aiToolSetNotebookTemplate": {
+    "description": "AI tool card: set the template new entries in a notebook start with."
+  },
+  "aiToolWriteWithTemplate": "Запись по шаблону «{name}»",
+  "@aiToolWriteWithTemplate": {
+    "description": "AI tool card and page card: write a new entry from this template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiDestinationNewDiary": "Новая запись",
+  "@aiDestinationNewDiary": {
+    "description": "AI page card: open the new-entry editor."
+  },
   "aiToolListTodoLists": "Списки задач",
   "@aiToolListTodoLists": {
     "description": "AI step card: listing to-do lists."
@@ -20040,7 +20156,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} arg_images{Фото} arg_attachments{Фото из чата} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} arg_images{Фото} arg_attachments{Фото из чата} arg_kind_template{Шаблон} arg_add_rules{Добавить интервалы} arg_remove_rules{Удалить интервалы} arg_clear_rules{Удалить все интервалы} arg_default_template_id{Шаблон по умолчанию} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

@@ -60,7 +60,7 @@ final userDiaryTemplatesProvider = StreamProvider<List<DiaryTemplate>>((
   Ref ref,
 ) {
   final database = ref.watch(appDatabaseProvider);
-  return database.watchDiaryTemplates().map(_parseTemplateRows);
+  return database.watchDiaryTemplates().map(parseDiaryTemplateRows);
 });
 
 /// 模板行的一次性读取，新建编辑页的建议条与模板面板用它。
@@ -71,10 +71,11 @@ final userDiaryTemplatesProvider = StreamProvider<List<DiaryTemplate>>((
 final userDiaryTemplatesSnapshotProvider =
     FutureProvider.autoDispose<List<DiaryTemplate>>((Ref ref) async {
       final rows = await ref.watch(appDatabaseProvider).getDiaryTemplates();
-      return _parseTemplateRows(rows);
+      return parseDiaryTemplateRows(rows);
     });
 
-List<DiaryTemplate> _parseTemplateRows(List<DiaryTemplateRow> rows) {
+/// 数据库里的模板行解析成模板（解析不了的行跳过）；AI 的模板工具也经它读。
+List<DiaryTemplate> parseDiaryTemplateRows(List<DiaryTemplateRow> rows) {
   final templates = <DiaryTemplate>[];
   for (final row in rows) {
     final template = DiaryTemplateJson.fromPayload(

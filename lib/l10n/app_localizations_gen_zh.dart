@@ -11668,6 +11668,79 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiToolDone => '已完成';
 
   @override
+  String get aiToolListTemplates => '查看日记模板';
+
+  @override
+  String aiToolTemplateCount(int count) {
+    return '$count 个模板';
+  }
+
+  @override
+  String get aiToolGetTemplates => '查看模板内容';
+
+  @override
+  String aiToolGetTemplate(String name) {
+    return '查看模板「$name」';
+  }
+
+  @override
+  String get aiToolCreateTemplate => '新建模板';
+
+  @override
+  String aiToolCreateTemplateNamed(String name) {
+    return '新建模板：$name';
+  }
+
+  @override
+  String get aiToolUpdateTemplate => '修改模板';
+
+  @override
+  String aiToolUpdateTemplateNamed(String name) {
+    return '修改模板：$name';
+  }
+
+  @override
+  String get aiToolDeleteTemplate => '删除模板';
+
+  @override
+  String aiToolDeleteTemplateNamed(String name) {
+    return '删除模板「$name」';
+  }
+
+  @override
+  String get aiToolDeleteTemplateAuto => '自动套用里指向它的设置会一并去掉';
+
+  @override
+  String get aiToolResetTemplate => '恢复模板的默认内容';
+
+  @override
+  String aiToolResetTemplateNamed(String name) {
+    return '恢复「$name」的默认内容';
+  }
+
+  @override
+  String aiToolRestoreTemplates(int count) {
+    return '恢复 $count 个已删除的内置模板';
+  }
+
+  @override
+  String get aiToolReorderTemplates => '调整模板顺序';
+
+  @override
+  String get aiToolSetTemplateAutoApply => '设置新建日记自动套用的模板';
+
+  @override
+  String get aiToolSetNotebookTemplate => '设置日记本的默认模板';
+
+  @override
+  String aiToolWriteWithTemplate(String name) {
+    return '用「$name」写日记';
+  }
+
+  @override
+  String get aiDestinationNewDiary => '写日记';
+
+  @override
   String get aiToolListTodoLists => '查看待办清单';
 
   @override
@@ -14977,6 +15050,11 @@ class AppLocalizationsZh extends AppLocalizations {
       'arg_kind_todoList': '待办清单',
       'arg_images': '图片',
       'arg_attachments': '对话里的图片',
+      'arg_kind_template': '模板',
+      'arg_add_rules': '添加时间段',
+      'arg_remove_rules': '删除时间段',
+      'arg_clear_rules': '清除全部时间段',
+      'arg_default_template_id': '默认模板',
       'other': '',
     });
     return '$_temp0';

@@ -11870,6 +11870,79 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiToolDone => '完了しました';
 
   @override
+  String get aiToolListTemplates => '日記テンプレートを確認';
+
+  @override
+  String aiToolTemplateCount(int count) {
+    return 'テンプレート $count 件';
+  }
+
+  @override
+  String get aiToolGetTemplates => 'テンプレートの内容を確認';
+
+  @override
+  String aiToolGetTemplate(String name) {
+    return 'テンプレート「$name」を確認';
+  }
+
+  @override
+  String get aiToolCreateTemplate => 'テンプレートを作成';
+
+  @override
+  String aiToolCreateTemplateNamed(String name) {
+    return 'テンプレートを作成：$name';
+  }
+
+  @override
+  String get aiToolUpdateTemplate => 'テンプレートを編集';
+
+  @override
+  String aiToolUpdateTemplateNamed(String name) {
+    return 'テンプレートを編集：$name';
+  }
+
+  @override
+  String get aiToolDeleteTemplate => 'テンプレートを削除';
+
+  @override
+  String aiToolDeleteTemplateNamed(String name) {
+    return 'テンプレート「$name」を削除';
+  }
+
+  @override
+  String get aiToolDeleteTemplateAuto => 'このテンプレートの自動適用の設定も削除されます';
+
+  @override
+  String get aiToolResetTemplate => 'テンプレートを初期状態に戻す';
+
+  @override
+  String aiToolResetTemplateNamed(String name) {
+    return '「$name」を初期状態に戻す';
+  }
+
+  @override
+  String aiToolRestoreTemplates(int count) {
+    return '削除した組み込みテンプレートを $count 件復元';
+  }
+
+  @override
+  String get aiToolReorderTemplates => 'テンプレートを並べ替え';
+
+  @override
+  String get aiToolSetTemplateAutoApply => '新しい日記に自動適用するテンプレートを設定';
+
+  @override
+  String get aiToolSetNotebookTemplate => '日記帳のテンプレートを設定';
+
+  @override
+  String aiToolWriteWithTemplate(String name) {
+    return '「$name」で日記を書く';
+  }
+
+  @override
+  String get aiDestinationNewDiary => '日記を書く';
+
+  @override
   String get aiToolListTodoLists => 'ToDo リストを確認';
 
   @override
@@ -15234,6 +15307,11 @@ class AppLocalizationsJa extends AppLocalizations {
       'arg_kind_todoList': 'リスト',
       'arg_images': '画像',
       'arg_attachments': 'チャットの画像',
+      'arg_kind_template': 'テンプレート',
+      'arg_add_rules': '時間帯を追加',
+      'arg_remove_rules': '時間帯を削除',
+      'arg_clear_rules': '時間帯をすべて削除',
+      'arg_default_template_id': '既定のテンプレート',
       'other': '',
     });
     return '$_temp0';

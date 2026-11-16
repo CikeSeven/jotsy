@@ -143,6 +143,7 @@ void main() {
         'add_comment': {'id'},
         'create_todo': {'diary_id'},
         'update_todos': {'diary_id'},
+        'create_template': {'from_diary_id'},
       };
       for (final tool in aiTools) {
         final keys = tool.schema.properties.keys.toSet();

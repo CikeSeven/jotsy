@@ -28,13 +28,15 @@ import '../../diaries/models/diary_preview_style/diary_preview_settings.dart';
 import '../../diaries/providers/diary_create_prefs_provider.dart';
 import '../../diaries/providers/diary_edit_prefs_provider.dart';
 import '../../diaries/providers/diary_preview_style_provider.dart';
+import '../../diary_templates/models/diary_template_prefs.dart';
+import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../todos/models/todo_settings.dart';
 import '../../todos/models/todo_view.dart';
 import '../../todos/providers/todo_providers.dart';
 import '../../todos/widgets/todo_labels.dart';
 
 /// 设置所在的页面（卡片上写作“页面 · 设置名”）。
-enum AiSettingPage { editor, preview, calendar, todos }
+enum AiSettingPage { editor, templates, preview, calendar, todos }
 
 /// 一项 AI 能改的设置。
 class AiSettingSpec {
@@ -86,6 +88,7 @@ class AiSettingSpec {
   /// 卡片上的全名：“待办 · 显示已完成”。
   String label(AppLocalizations l10n) => l10n.aiToolSettingName(switch (page) {
     AiSettingPage.editor => l10n.settingsEditor,
+    AiSettingPage.templates => l10n.diaryTemplatesTitle,
     AiSettingPage.preview => l10n.diaryPreviewStyleTitle,
     AiSettingPage.calendar => l10n.navCalendar,
     AiSettingPage.todos => l10n.navTodos,
@@ -305,6 +308,26 @@ final List<AiSettingSpec> aiSettingSpecs = <AiSettingSpec>[
     set: (settings, value) => settings.setDiaryToolbarAlwaysVisible(value),
     // 桌面没有软键盘，工具栏一直显示（设置页也不显示这个开关）。
     onPlatform: () => !AppPlatform.isDesktop,
+  ),
+  // 日记模板（自动套用的模板与时间段经 `set_template_auto_apply`）。
+  AiSettingSpec(
+    key: 'template_suggestions',
+    page: AiSettingPage.templates,
+    schema: const AiBooleanSchema(
+      description:
+          'Show "Start from a template" suggestions under the title of a '
+          'new blank entry.',
+    ),
+    name: (l10n) => l10n.diaryTemplatesStripSwitch,
+    feature: (features) => features.templates,
+    read: (settings) =>
+        DiaryTemplatePrefs.decode(settings.diaryTemplatePrefsRaw).showStrip,
+    write: (settings, value) => saveDiaryTemplatePrefs(
+      settings,
+      DiaryTemplatePrefs.decode(
+        settings.diaryTemplatePrefsRaw,
+      ).withStrip(value! as bool),
+    ),
   ),
   // 日记预览页。
   _previewBool(

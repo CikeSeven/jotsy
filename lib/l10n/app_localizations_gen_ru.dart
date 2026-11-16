@@ -13663,6 +13663,96 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiToolDone => 'Готово';
 
   @override
+  String get aiToolListTemplates => 'Просмотр шаблонов записей';
+
+  @override
+  String aiToolTemplateCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count шаблона',
+      many: '$count шаблонов',
+      few: '$count шаблона',
+      one: '$count шаблон',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolGetTemplates => 'Чтение шаблонов';
+
+  @override
+  String aiToolGetTemplate(String name) {
+    return 'Чтение шаблона «$name»';
+  }
+
+  @override
+  String get aiToolCreateTemplate => 'Новый шаблон';
+
+  @override
+  String aiToolCreateTemplateNamed(String name) {
+    return 'Новый шаблон: $name';
+  }
+
+  @override
+  String get aiToolUpdateTemplate => 'Изменение шаблона';
+
+  @override
+  String aiToolUpdateTemplateNamed(String name) {
+    return 'Изменение шаблона: $name';
+  }
+
+  @override
+  String get aiToolDeleteTemplate => 'Удаление шаблона';
+
+  @override
+  String aiToolDeleteTemplateNamed(String name) {
+    return 'Удалить шаблон «$name»';
+  }
+
+  @override
+  String get aiToolDeleteTemplateAuto =>
+      'Настройки автоприменения для него тоже удалятся';
+
+  @override
+  String get aiToolResetTemplate => 'Восстановить исходный шаблон';
+
+  @override
+  String aiToolResetTemplateNamed(String name) {
+    return 'Восстановить исходный шаблон «$name»';
+  }
+
+  @override
+  String aiToolRestoreTemplates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Восстановить $count удалённого встроенного шаблона',
+      many: 'Восстановить $count удалённых встроенных шаблонов',
+      few: 'Восстановить $count удалённых встроенных шаблона',
+      one: 'Восстановить $count удалённый встроенный шаблон',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolReorderTemplates => 'Порядок шаблонов';
+
+  @override
+  String get aiToolSetTemplateAutoApply => 'Шаблон для новых записей';
+
+  @override
+  String get aiToolSetNotebookTemplate => 'Шаблон блокнота';
+
+  @override
+  String aiToolWriteWithTemplate(String name) {
+    return 'Запись по шаблону «$name»';
+  }
+
+  @override
+  String get aiDestinationNewDiary => 'Новая запись';
+
+  @override
   String get aiToolListTodoLists => 'Списки задач';
 
   @override
@@ -17851,6 +17941,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'arg_kind_todoList': 'Список задач',
       'arg_images': 'Фото',
       'arg_attachments': 'Фото из чата',
+      'arg_kind_template': 'Шаблон',
+      'arg_add_rules': 'Добавить интервалы',
+      'arg_remove_rules': 'Удалить интервалы',
+      'arg_clear_rules': 'Удалить все интервалы',
+      'arg_default_template_id': 'Шаблон по умолчанию',
       'other': '',
     });
     return '$_temp0';

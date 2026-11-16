@@ -13227,6 +13227,93 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiToolDone => 'Done';
 
   @override
+  String get aiToolListTemplates => 'Look at diary templates';
+
+  @override
+  String aiToolTemplateCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count templates',
+      one: '1 template',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolGetTemplates => 'Read templates';
+
+  @override
+  String aiToolGetTemplate(String name) {
+    return 'Read template “$name”';
+  }
+
+  @override
+  String get aiToolCreateTemplate => 'Create a template';
+
+  @override
+  String aiToolCreateTemplateNamed(String name) {
+    return 'Create template: $name';
+  }
+
+  @override
+  String get aiToolUpdateTemplate => 'Edit a template';
+
+  @override
+  String aiToolUpdateTemplateNamed(String name) {
+    return 'Edit template: $name';
+  }
+
+  @override
+  String get aiToolDeleteTemplate => 'Delete a template';
+
+  @override
+  String aiToolDeleteTemplateNamed(String name) {
+    return 'Delete template “$name”';
+  }
+
+  @override
+  String get aiToolDeleteTemplateAuto =>
+      'Its auto-apply settings are removed too';
+
+  @override
+  String get aiToolResetTemplate => 'Restore a template\'s original';
+
+  @override
+  String aiToolResetTemplateNamed(String name) {
+    return 'Restore the original “$name”';
+  }
+
+  @override
+  String aiToolRestoreTemplates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restore $count deleted built-in templates',
+      one: 'Restore a deleted built-in template',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolReorderTemplates => 'Reorder templates';
+
+  @override
+  String get aiToolSetTemplateAutoApply =>
+      'Set which template new entries start with';
+
+  @override
+  String get aiToolSetNotebookTemplate => 'Set a notebook\'s template';
+
+  @override
+  String aiToolWriteWithTemplate(String name) {
+    return 'Write with “$name”';
+  }
+
+  @override
+  String get aiDestinationNewDiary => 'Write a new entry';
+
+  @override
   String get aiToolListTodoLists => 'List to-do lists';
 
   @override
@@ -17184,6 +17271,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'arg_kind_todoList': 'To-do list',
       'arg_images': 'Photos',
       'arg_attachments': 'Chat photos',
+      'arg_kind_template': 'Template',
+      'arg_add_rules': 'Add time ranges',
+      'arg_remove_rules': 'Remove time ranges',
+      'arg_clear_rules': 'Remove all time ranges',
+      'arg_default_template_id': 'Default template',
       'other': '',
     });
     return '$_temp0';

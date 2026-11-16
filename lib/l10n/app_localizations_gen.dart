@@ -21192,6 +21192,120 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get aiToolDone;
 
+  /// AI tool card: list diary templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at diary templates'**
+  String get aiToolListTemplates;
+
+  /// AI tool card result: number of templates found.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 template} other{{count} templates}}'**
+  String aiToolTemplateCount(int count);
+
+  /// AI tool card: read the full content of templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Read templates'**
+  String get aiToolGetTemplates;
+
+  /// AI tool card: read one template.
+  ///
+  /// In en, this message translates to:
+  /// **'Read template “{name}”'**
+  String aiToolGetTemplate(String name);
+
+  /// AI tool card: create a diary template (name not known yet).
+  ///
+  /// In en, this message translates to:
+  /// **'Create a template'**
+  String get aiToolCreateTemplate;
+
+  /// AI tool card: create a diary template with this name.
+  ///
+  /// In en, this message translates to:
+  /// **'Create template: {name}'**
+  String aiToolCreateTemplateNamed(String name);
+
+  /// AI tool card: edit a diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit a template'**
+  String get aiToolUpdateTemplate;
+
+  /// AI tool card: edit this diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit template: {name}'**
+  String aiToolUpdateTemplateNamed(String name);
+
+  /// AI tool card: delete a diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete a template'**
+  String get aiToolDeleteTemplate;
+
+  /// AI tool card and confirmation: delete this template.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete template “{name}”'**
+  String aiToolDeleteTemplateNamed(String name);
+
+  /// AI delete-template confirmation: the template is used by auto-apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Its auto-apply settings are removed too'**
+  String get aiToolDeleteTemplateAuto;
+
+  /// AI tool card: reset an edited built-in template.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore a template\'s original'**
+  String get aiToolResetTemplate;
+
+  /// AI tool card and confirmation: reset this built-in template.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore the original “{name}”'**
+  String aiToolResetTemplateNamed(String name);
+
+  /// AI tool card: bring deleted built-in templates back.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Restore a deleted built-in template} other{Restore {count} deleted built-in templates}}'**
+  String aiToolRestoreTemplates(int count);
+
+  /// AI tool card: reorder the user's templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder templates'**
+  String get aiToolReorderTemplates;
+
+  /// AI tool card: change the template auto-apply settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Set which template new entries start with'**
+  String get aiToolSetTemplateAutoApply;
+
+  /// AI tool card: set the template new entries in a notebook start with.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a notebook\'s template'**
+  String get aiToolSetNotebookTemplate;
+
+  /// AI tool card and page card: write a new entry from this template.
+  ///
+  /// In en, this message translates to:
+  /// **'Write with “{name}”'**
+  String aiToolWriteWithTemplate(String name);
+
+  /// AI page card: open the new-entry editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a new entry'**
+  String get aiDestinationNewDiary;
+
   /// AI step card: listing to-do lists.
   ///
   /// In en, this message translates to:
@@ -26797,7 +26911,7 @@ abstract class AppLocalizations {
   /// Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.
   ///
   /// In en, this message translates to:
-  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} other{}}'**
+  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} other{}}'**
   String aiToolArgName(String key);
 
   /// Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.

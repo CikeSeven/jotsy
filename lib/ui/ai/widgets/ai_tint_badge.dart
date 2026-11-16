@@ -40,7 +40,7 @@ import '../tools/ai_tool.dart';
 
 AiTint aiGroupTint(AiToolGroup? group) => switch (group) {
   AiToolGroup.diaries => AiTint.primary,
-  AiToolGroup.organize => AiTint.tertiary,
+  AiToolGroup.organize || AiToolGroup.templates => AiTint.tertiary,
   AiToolGroup.calendar => AiTint.secondary,
   AiToolGroup.navigation => AiTint.primary,
   AiToolGroup.app || AiToolGroup.settings || null => AiTint.neutral,
@@ -50,6 +50,7 @@ FaIconData aiGroupIcon(AiToolGroup? group) => switch (group) {
   AiToolGroup.app => FontAwesomeIcons.circleInfo,
   AiToolGroup.diaries => FontAwesomeIcons.bookOpen,
   AiToolGroup.organize => FontAwesomeIcons.tags,
+  AiToolGroup.templates => FontAwesomeIcons.layerGroup,
   AiToolGroup.calendar => FontAwesomeIcons.calendarDays,
   AiToolGroup.settings => FontAwesomeIcons.sliders,
   AiToolGroup.navigation => FontAwesomeIcons.arrowUpRightFromSquare,
@@ -58,7 +59,9 @@ FaIconData aiGroupIcon(AiToolGroup? group) => switch (group) {
 
 AiTint aiSubjectTint(AiSubjectKind kind) => switch (kind) {
   AiSubjectKind.diary => AiTint.primary,
-  AiSubjectKind.notebook || AiSubjectKind.tag => AiTint.tertiary,
+  AiSubjectKind.notebook ||
+  AiSubjectKind.tag ||
+  AiSubjectKind.template => AiTint.tertiary,
   AiSubjectKind.todo ||
   AiSubjectKind.todoList ||
   AiSubjectKind.anniversary ||
@@ -73,6 +76,7 @@ FaIconData aiSubjectIcon(AiSubjectKind kind) => switch (kind) {
   AiSubjectKind.todoList => FontAwesomeIcons.listCheck,
   AiSubjectKind.anniversary => FontAwesomeIcons.cakeCandles,
   AiSubjectKind.day => FontAwesomeIcons.calendarDay,
+  AiSubjectKind.template => FontAwesomeIcons.layerGroup,
 };
 
 /// 领域色徽标：[size] 见方，[circle] 为圆形（时间线），否则为

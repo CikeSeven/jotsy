@@ -171,6 +171,8 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `list_anniversaries` | 纪念日与下一次日期、还有几天（纪念日功能开启时） | `AnniversaryCountdown` |
 | `list_tags` | 标签与使用篇数（排除的标签不列） | `watchAllTags`、`watchTagUsageCounts` |
 | `list_notebooks` | 日记本树（私密 / 上锁本与排除的本子不列） | `notebookTreeProvider` |
+| `list_templates` | 日记模板（我的在前、内置在后，不含正文）、已删除的内置模板、自动套用（默认模板与时间段规则）、建议条开关、日记本的默认模板、各变量在界面语言里的写法（模板功能开启时） | `DiaryTemplateLibrary`（与管理页同一口径）、`DiaryTemplatePrefs` |
+| `get_template` | 模板的全部设置与正文（模板 Markdown，见下），原样交回 `update_template` 不算改动 | `aiTemplateMarkdownOf` |
 | `get_settings` | `change_settings` 能改的各项设置的当前值（与参数同一写法；功能关着的不列），以及主题、主题色、字号、界面语言 | `aiSettingSpecs` |
 | `open_page` | 给用户一个“前往”按钮；用户明确说“打开”时（`now`）本轮结束后自动打开 | `AiDestination` |
 
@@ -194,8 +196,17 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `create_todo_list` / `rename_todo_list` / `delete_todo_list`（**确认**，连同其中的待办） | 待办清单（按名称，不重名、不叫 Inbox；颜色与图标不动） | 清单 ops | 删掉（已放进待办时先报冲突，强制时把待办移回收集箱再删）/ 改回 / `restoreTodoList` |
 | `create_anniversary` / `delete_anniversary`（**确认**） | 纪念日（不重复 / 每年 / 农历每年） | `AnniversaryEditController.save` / `deleteAnniversary` | 删掉 / `restoreAnniversary` |
 | `set_day_mood` | 这天的心情（或清空） | `setDayMood` / `clearDayMood` | 恢复原来的心情或清空 |
+| `create_template` | 新建模板：从零、复制模板（`from_template_id`）或从日记（`from_diary_id`，只经 `aiWritableDiary`，媒体去掉），给出的字段覆盖复制来的；正文为模板 Markdown | `DiaryTemplatesController.save` | 删掉（之后被改过时先报冲突） |
+| `update_template` | 改模板的任意字段（内置模板改后存为改过的版本；`body` 整段替换，与现在的写法逐字相同时不动） | `DiaryTemplatesController.save` | 写回原 payload（内置模板原为默认内容时删掉那一行）；之后被改过时先报冲突 |
+| `delete_template`（**确认**）/ `reset_template`（**确认**）/ `restore_templates` | 删除模板（内置模板只记进偏好、可找回，一并撤下指向它的自动套用）/ 改过的内置模板恢复默认 / 找回已删除的内置模板 | `delete` · `deleteBuiltIn` / `resetBuiltIn` / `restoreBuiltIns` | `restore` · `undoDeleteBuiltIn`（同 id 又有了内容时先报冲突）/ 再删掉 |
+| `reorder_templates` | 调整我的模板的顺序（内置模板顺序固定） | `DiaryTemplatesController.reorder` | 按原顺序写回 |
+| `set_template_auto_apply` | 默认模板（`""` 关掉）与按时间段的规则：添加、按原样删除、清空，最多 12 条 | `DiaryTemplatePrefs`（在最新的偏好上只改这两项） | 写回原来的默认模板与规则 |
+| `set_notebook_template` | 日记本的默认模板（`""` 清除；私密与排除的本子不碰） | `updateNotebook`（payload 的 `templateId`） | 写回原值 |
+| `create_diary_from_template` | 按模板写一篇：变量按日记日期替换，带上模板的标签、心情（只认心情选项）、精力与时间胶囊（功能开着时），正文为填好的模板 Markdown；记一次“最近使用” | `DiaryTemplateVariableValues` + `publishNewDiaryDirectly` | 同 `create_diary` |
 | `set_theme` / `set_app_language` / `set_font_scale` / `set_feature_enabled` | 明暗与主题色 / 界面语言 / 字体大小 / 功能开关（不含 AI 本身；有私密本时不关日记本） | `SettingsService` / `saveAppFeatures` | 写回原值 |
-| `change_settings` | 一次改一项或几项设置，每个参数是一项（清单只在 `ai_setting_specs.dart` 的 `aiSettingSpecs`）：编辑器（打开日记时直接编辑、返回时直接发表新日记、手动保存修改、自动显示当天照片、始终显示工具栏）、日记预览页（左右滑动切换、允许勾选待办、长按选字、双击编辑）、日历（一周起始日、周末着色、周数、农历与节气、法定节假日、月度概览、那年今日、这天的心情、显示待办、纪念日）、待办（显示已完成、排序、打开时显示、默认清单（按名称）、智能识别、全天待办的提醒时刻、稍后提醒时长、锁屏隐藏内容）；本平台没有的项不进 schema，所属功能关着的整次拒绝；全部校验通过才写，值相同的不写 | 各设置自己的模型与保存函数（在最新的存储值上只改这一项） | 逐项写回改动前的值（同一页里之后改的别的设置不受影响） |
+| `change_settings` | 一次改一项或几项设置，每个参数是一项（清单只在 `ai_setting_specs.dart` 的 `aiSettingSpecs`）：编辑器（打开日记时直接编辑、返回时直接发表新日记、手动保存修改、自动显示当天照片、始终显示工具栏）、日记模板（新建时提示选择模板）、日记预览页（左右滑动切换、允许勾选待办、长按选字、双击编辑）、日历（一周起始日、周末着色、周数、农历与节气、法定节假日、月度概览、那年今日、这天的心情、显示待办、纪念日）、待办（显示已完成、排序、打开时显示、默认清单（按名称）、智能识别、全天待办的提醒时刻、稍后提醒时长、锁屏隐藏内容）；本平台没有的项不进 schema，所属功能关着的整次拒绝；全部校验通过才写，值相同的不写 | 各设置自己的模型与保存函数（在最新的存储值上只改这一项） | 逐项写回改动前的值（同一页里之后改的别的设置不受影响） |
+
+**模板 Markdown**（`ai_template_markdown*.dart`）：模板正文进出智能体的唯一写法，与模板白名单（`sanitizeDiaryTemplateBlocks`）一一对应、读写对称（全部内置模板与全格式样本往返逐字不变，`ai_template_markdown_test.dart` 兜底）。一行一个块，空行是空段落（留给用户填写）；`#` 标题、`- ` / `1. ` / `- [ ] ` 列表与待办、`> ` 引用、`---`、代码围栏、GFM 表格（上一行 `<!-- no header row -->` 表示无表头，格内多段以 `<br>` 分开）、`<callout icon tone>` 提示块、`<toggle collapsed|open>` 折叠块；子块缩进两格；行尾 `{align= indent= list=}` 为块属性；行内 `**` `*` `~~` `` ` `` 链接与 `<u>` `<sup>` `<sub>` `<span style="color / background-color / font-size">`，颜色优先写颜色面板的预设名（亮暗主题都清楚）。`*` 与 `~~` 按成对的开关读（不用 CommonMark 的左右侧规则，中文全角标点旁的粗体照样认），`_` 一律是文字（填空线）。读出后再经白名单，媒体、不安全的链接一律去掉。
 
 **设置清单**（`aiSettingSpecs`）：每项一个稳定的参数名、schema（说明写在 schema 里）、设置页里的名称（卡片写作“页面 · 设置名”，经工具的 `argLabel` 显示在可读详情里，不另进 `aiToolArgName`）、按存储口径的读写函数、依附的功能开关与平台，以及可选的取值说法与写前校验。只收用户在设置页里点一下就能改、改错了也无伤的开关与选项；AI 助手自己的设置（权限、隐私、服务商）一律不收，应用锁与密码、备份 / 网盘 / 同步 / 存储、各样式页只给前往。
 
@@ -205,9 +216,9 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 **只给前往、不提供工具的**：彻底删除与清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、局域网同步配对、应用锁与密码、私密与上锁日记本的设置、AI 服务商与密钥以及 AI 助手自己的其他设置、存储清理，以及关闭 AI 助手本身；各样式页（背景、导航栏、日记卡片、预览页样式、探索页布局、代码块样式）也只给前往。
 
-工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示前往卡片、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`）。`AiDestination` 写明类别、位置（首页 / 设置）、图标与色调；会关掉对话页的目标（首页各 Tab 与日记本，`leavesChat`）打开前登记 `aiChatReturnProvider`，首页与日记页的返回键、以及落地后的提示条据此重新打开那段对话（打开后对话页仍在栈里就撤销登记）。`open_page` 打开具体的一篇 / 一本 / 一项前核对存在且 AI 可以碰（私密与 AI 隐私排除的按找不到），名称只给界面。
+工具的名称、说明与参数 schema 是接口定义，用英文写在工具类里（不进 ARB，说明只写作用、参数含义与必要限制）；卡片标题与结果说明走 l10n。schema 只用四家都认的子集（type / properties / required / enum / items / description / minimum / maximum）。工具不持有 BuildContext：要打开页面时返回 `AiToolNavigation`，由对话页显示前往卡片、经 `AiDestination` 的统一入口打开（日记经 `openDiaryLinkTarget`、日记本经 `openNotebookFromAnywhere`、各 Tab 经 `homeTabRequestProvider`、模板经 `openAiTemplate` 打开编辑页、`new_diary` 经 `runDiaryCreateEntryFlow`（可带模板））。`AiDestination` 写明类别、位置（首页 / 设置）、图标与色调；会关掉对话页的目标（首页各 Tab 与日记本，`leavesChat`）打开前登记 `aiChatReturnProvider`，首页与日记页的返回键、以及落地后的提示条据此重新打开那段对话（打开后对话页仍在栈里就撤销登记）。`open_page` 打开具体的一篇 / 一本 / 一项前核对存在且 AI 可以碰（私密与 AI 隐私排除的按找不到），名称只给界面。
 
-**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、待办清单、纪念日、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面；只调了 `open_page` 的那一步之前说的话不算过渡句（模型常先写完回答再附卡片），作为正文露在外面。
+**涉及对象与可读详情**：工具执行时顺手记下涉及的对象（`AiToolOutcome.subjects`：日记、日记本、标签、待办、待办清单、纪念日、日记模板、某一天；参数指向的标 `input`），存进调用记录（单个调用最多 12 个，其余计数），改动类工具成功时必须给。界面据此写出具体标题（`AiTool.labelWith`）、列出可点的对象胶囊；详情经 `aiToolFacts` 把原始参数写成“标签 — 值”（日期范围合并、枚举译名、id 换成对象名，绝不显示 UUID），个别参数由工具的 `describeArg` 给读法。回答的分段只经 `buildAiAnswerSegments`：思考、过渡句、只读与失败的调用折进“思考过程”，前往、改动、确认卡片与正文露在外面；只调了 `open_page` 的那一步之前说的话不算过渡句（模型常先写完回答再附卡片），作为正文露在外面。
 
 **导出对话**（`aiChatExportText`，对话页 ⋮ 或历史抽屉进入）：标题与“导出于 … · 共 N 条消息”，然后逐条写选中的消息——问题为“你 · 时间”、附图张数（“[N 张图片]”）与原文；回答为“人设名 · 时间”，可选的思考过程（各步与最后一段）、可选的过程与操作（调用前说的话，每个调用的具体标题 `labelWith`、结果说明与涉及的对象；撤销过、取消、失败、中断照实写）、正文、参考的日记（编号、标题、日期）、出错原因或“已停止”。Markdown 保留正文原样与 `[Dn]`；纯文本把正文经块文档转成纯文字并去掉引用编号。JSON（`aiChatExportJson`，`format: jotsy-ai-chat`、`version: 1`）为对话信息（id、标题、署名、创建与更新时间）与逐条消息：id、角色、署名、时间、状态、正文（Markdown 原文）、附图（编号与托管目录里的定位键，被删的标 removed，不写本机绝对路径）、引用（编号、日记 id、标题、日期）、模型与思考强度、出错原因，按选项带思考与步骤（调用前说的话、思考时长，每个调用的工具名、界面标题、状态、是否撤销、参数、结果说明、错误与涉及的对象）；撤销用的内部数据不导出。文件名为“标题 日期.md / .txt / .json”（去掉文件名不能用的字符）。
 

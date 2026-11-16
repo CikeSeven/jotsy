@@ -1,5 +1,5 @@
 // 工具调用“涉及的对象”：哪几篇日记、哪个日记本、哪些标签 / 待办 / 待办清单 /
-// 纪念日。
+// 纪念日 / 日记模板。
 //
 // 工具执行时顺手记下（数据都是现成的，不另查库），存进步骤记录
 // （`AiAgentCallRecord.subjects`），界面据此：
@@ -12,7 +12,16 @@
 
 import 'package:flutter/foundation.dart';
 
-enum AiSubjectKind { diary, notebook, tag, todo, todoList, anniversary, day }
+enum AiSubjectKind {
+  diary,
+  notebook,
+  tag,
+  todo,
+  todoList,
+  anniversary,
+  day,
+  template,
+}
 
 @immutable
 class AiToolSubject {
@@ -53,6 +62,10 @@ class AiToolSubject {
 
   const AiToolSubject.anniversary(String id, String title, {DateTime? date})
     : this(kind: AiSubjectKind.anniversary, id: id, title: title, date: date);
+
+  /// 日记模板（id 为模板 id，内置模板为 `builtin.*`）。
+  const AiToolSubject.template(String id, String name, {bool input = false})
+    : this(kind: AiSubjectKind.template, id: id, title: name, input: input);
 
   /// 某一天（日历、这天的心情）。
   AiToolSubject.day(DateTime day)

@@ -9,6 +9,7 @@ import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../controllers/notebook_lock_flow.dart';
 import '../pages/notebook_editor_page.dart';
 import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_action_sheets.dart';
 import 'notebook_dialogs.dart';
@@ -209,15 +210,19 @@ Future<void> _merge(
 ) async {
   final l10n = context.l10n;
   final controller = ref.read(notebooksControllerProvider);
-  final all = ref.read(notebooksProvider).value ?? const <NotebookView>[];
+  final tree = ref.read(notebookTreeProvider);
   final counts =
       ref.read(notebookEntryCountsProvider).value ?? const <String, int>{};
   final target = await showNotebookMergeTargetSheet(
     context,
-    candidates: <NotebookView>[
-      for (final notebook in all)
-        if (notebook.isManual && notebook.id != source.id) notebook,
-    ],
+    // 树序缩进、可收起；上级没列出（智能本、源本自己）时子本往外提一级。
+    candidates: tree == null
+        ? const <NotebookTreeRow>[]
+        : notebookTreeRows(
+            tree,
+            include: (NotebookView notebook) =>
+                notebook.isManual && notebook.id != source.id,
+          ),
     counts: counts,
   );
   if (target == null || !context.mounted) return;

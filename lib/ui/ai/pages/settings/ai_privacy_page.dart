@@ -14,6 +14,11 @@ import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../notebooks/providers/notebook_providers.dart';
+import '../../../notebooks/viewmodels/notebook_tree.dart';
+import '../../../notebooks/viewmodels/notebook_tree_rows.dart';
+import '../../../notebooks/viewmodels/notebook_view.dart';
+import '../../../notebooks/widgets/notebook_foldable_rows.dart';
+import '../../../notebooks/widgets/notebook_tree_toggle.dart';
 import '../../../settings/widgets/settings_card_group.dart';
 import '../../../settings/widgets/settings_option_tiles.dart';
 import '../../../widgets/app_modal/app_modal_bottom_sheet.dart';
@@ -43,16 +48,21 @@ class AiPrivacyPage extends ConsumerWidget {
     Future<void> pickNotebooks() async {
       final notebooks = await ref.read(notebooksProvider.future);
       if (!context.mounted) return;
+      // 树序缩进、可收起；上级没列出（智能本、私密）时子本往外提一级。
+      final rows = notebookTreeRows(
+        NotebookTree.fromViews(notebooks),
+        // 只有手动本有成员行可以排除；私密本本来就永远不会发送。
+        include: (NotebookView notebook) =>
+            notebook.kind == NotebookKind.manual &&
+            notebook.effectiveVisibility == NotebookVisibility.normal,
+      );
       final picked = await _showMultiPicker(
         context,
         title: l10n.aiPrivacyPickNotebooks,
         options: <String, String>{
-          for (final notebook in notebooks)
-            // 只有手动本有成员行可以排除；私密本本来就永远不会发送。
-            if (notebook.kind == NotebookKind.manual &&
-                notebook.effectiveVisibility == NotebookVisibility.normal)
-              notebook.id: notebook.name,
+          for (final row in rows) row.notebook.id: row.notebook.name,
         },
+        notebookRows: rows,
         selected: privacy.excludedNotebookIds,
       );
       if (picked != null) {
@@ -296,19 +306,28 @@ class _ChoiceSliderState extends State<_ChoiceSlider> {
 }
 
 /// 多选面板：[options] 为 值 → 显示名；返回新的选中集合，关掉为 null。
+///
+/// 给了 [notebookRows]（日记本，值为业务 id）时按树序缩进列出，有子本的行
+/// 可收起 / 展开（`NotebookFoldableRows`，与管理页共用收起状态），已选的本子
+/// 所在的上级打开时按展开排。
 Future<Set<String>?> _showMultiPicker(
   BuildContext context, {
   required String title,
   required Map<String, String> options,
   required Set<String> selected,
+  List<NotebookTreeRow>? notebookRows,
 }) {
   return showAppModalBottomSheet<Set<String>>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
     constraints: const BoxConstraints(maxWidth: 640),
-    builder: (BuildContext sheetContext) =>
-        _MultiPicker(title: title, options: options, initial: selected),
+    builder: (BuildContext sheetContext) => _MultiPicker(
+      title: title,
+      options: options,
+      initial: selected,
+      notebookRows: notebookRows,
+    ),
   );
 }
 
@@ -317,11 +336,13 @@ class _MultiPicker extends StatefulWidget {
     required this.title,
     required this.options,
     required this.initial,
+    this.notebookRows,
   });
 
   final String title;
   final Map<String, String> options;
   final Set<String> initial;
+  final List<NotebookTreeRow>? notebookRows;
 
   @override
   State<_MultiPicker> createState() => _MultiPickerState();
@@ -330,9 +351,14 @@ class _MultiPicker extends StatefulWidget {
 class _MultiPickerState extends State<_MultiPicker> {
   late final Set<String> _selected = {...widget.initial};
 
+  void _flip(String value) => setState(() {
+    if (!_selected.remove(value)) _selected.add(value);
+  });
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final notebookRows = widget.notebookRows;
     final theme = Theme.of(context);
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -367,19 +393,31 @@ class _MultiPickerState extends State<_MultiPicker> {
                 : ListView(
                     shrinkWrap: true,
                     children: <Widget>[
-                      for (final entry in widget.options.entries)
-                        CheckboxListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 24,
+                      if (notebookRows != null)
+                        NotebookFoldableRows(
+                          rows: notebookRows,
+                          reveal: widget.initial,
+                          itemBuilder: (context, row, toggle) =>
+                              _NotebookCheckTile(
+                                key: ValueKey<String>(
+                                  'ai_privacy_notebook_${row.notebook.id}',
+                                ),
+                                row: row,
+                                toggle: toggle,
+                                checked: _selected.contains(row.notebook.id),
+                                onChanged: () => _flip(row.notebook.id),
+                              ),
+                        )
+                      else
+                        for (final entry in widget.options.entries)
+                          CheckboxListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                            ),
+                            value: _selected.contains(entry.key),
+                            title: Text(entry.value),
+                            onChanged: (_) => _flip(entry.key),
                           ),
-                          value: _selected.contains(entry.key),
-                          title: Text(entry.value),
-                          onChanged: (bool? value) => setState(() {
-                            value == true
-                                ? _selected.add(entry.key)
-                                : _selected.remove(entry.key);
-                          }),
-                        ),
                     ],
                   ),
           ),
@@ -392,6 +430,44 @@ class _MultiPickerState extends State<_MultiPicker> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 排除日记本面板的一行：按层缩进的名称，行尾为展开 / 收起（有列出来的
+/// 子本时）与勾选框；点整行切换勾选。
+class _NotebookCheckTile extends StatelessWidget {
+  const _NotebookCheckTile({
+    super.key,
+    required this.row,
+    required this.toggle,
+    required this.checked,
+    required this.onChanged,
+  });
+
+  final NotebookTreeRow row;
+  final NotebookRowToggle? toggle;
+  final bool checked;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final toggle = this.toggle;
+    return ListTile(
+      contentPadding: EdgeInsetsDirectional.only(
+        start: 24 + row.indent * notebookTreeIndentStep,
+        end: 12,
+      ),
+      title: Text(row.notebook.name),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          if (toggle != null)
+            NotebookTreeToggleButton(toggle: toggle, compact: true),
+          Checkbox(value: checked, onChanged: (_) => onChanged()),
+        ],
+      ),
+      onTap: onChanged,
     );
   }
 }

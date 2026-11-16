@@ -14,6 +14,7 @@ import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
+import '../widgets/notebook_foldable_rows.dart';
 import '../widgets/notebook_pick_row.dart';
 import 'notebook_quick_create_dialog.dart';
 
@@ -91,6 +92,10 @@ String? notebookPrivateAddedHint(
 
 /// 收录选择器面板的内容：标题、“＋ 新建日记本”、日记本列表与底部“完成”。
 /// 高度随内容，最高约屏高的 75%，列表在其中滚动。
+///
+/// 有子本的行可收起 / 展开（[NotebookFoldableRows]，与管理页共用收起状态）；
+/// 打开时已勾上（全部或部分收进）的本子所在的上级按展开排，新建后勾上的
+/// 同样露出来。
 class NotebookPickerSheet extends ConsumerStatefulWidget {
   const NotebookPickerSheet({
     super.key,
@@ -115,6 +120,12 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
     widget.initial,
   );
 
+  /// 要露出来的本子：打开时已（部分）收进的，与在面板里新建后勾上的。
+  late final Set<String> _reveal = <String>{
+    for (final MapEntry(:key, :value) in widget.initial.entries)
+      if (value != NotebookPickState.none) key,
+  };
+
   bool get _single => widget.mode == NotebookPickerMode.single;
 
   void _tap(String notebookId) {
@@ -136,7 +147,10 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
       Navigator.of(context).pop(NotebookPickerResult(add: <String>{id}));
       return;
     }
-    setState(() => _selection.select(id));
+    setState(() {
+      _selection.select(id);
+      _reveal.add(id);
+    });
   }
 
   void _done() {
@@ -185,16 +199,20 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
                 ),
               ),
             ),
-          for (final NotebookTreeRow(:notebook, :indent) in candidates)
-            NotebookPickRow(
-              key: ValueKey<String>('notebook_pick_${notebook.id}'),
-              notebook: notebook,
-              indent: indent,
-              count: counts[notebook.id] ?? 0,
-              state: _selection.stateOf(notebook.id),
+          NotebookFoldableRows(
+            rows: candidates,
+            reveal: _reveal,
+            itemBuilder: (context, row, toggle) => NotebookPickRow(
+              key: ValueKey<String>('notebook_pick_${row.notebook.id}'),
+              notebook: row.notebook,
+              indent: row.indent,
+              count: counts[row.notebook.id] ?? 0,
+              state: _selection.stateOf(row.notebook.id),
               showCheck: !_single,
-              onTap: () => _tap(notebook.id),
+              toggle: toggle,
+              onTap: () => _tap(row.notebook.id),
             ),
+          ),
         ],
       );
     }

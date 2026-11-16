@@ -93,6 +93,59 @@ void main() {
     expect(notebookFoldedIds(tree, <String>{'读书', '已删除'}), isEmpty);
   });
 
+  group('foldable picker rows', () {
+    test('only rows with listed children are parents; collapsing hides '
+        'their listed descendants', () {
+      final rows = notebookTreeRows(tree);
+      final open = notebookRowsFold(rows, const <String>{});
+      expect(open.parents, <String>{'旅行', '2025'});
+      expect(open.folded, isEmpty);
+
+      final travel = notebookRowsFold(rows, <String>{'旅行'});
+      expect(travel.folded, <String>{'2025', '东京', '2024', '照片'});
+      // 只收起中间一层：兄弟与上级照常。
+      expect(notebookRowsFold(rows, <String>{'2025'}).folded, <String>{'东京'});
+      // 没有列出来的子本的行收起了也不藏任何行。
+      expect(notebookRowsFold(rows, <String>{'读书', '已删除'}).folded, isEmpty);
+    });
+
+    test('children lifted past an excluded parent follow the listed one', () {
+      // 2025 不列出：东京提到旅行下面一层，跟着旅行收起。
+      final rows = notebookTreeRows(
+        tree,
+        include: (notebook) => notebook.id != '2025',
+      );
+      final fold = notebookRowsFold(rows, <String>{'旅行', '2025'});
+      expect(fold.parents, <String>{'旅行'});
+      expect(fold.folded, <String>{'东京', '2024', '照片'});
+      expect(notebookRowAncestors(rows, '东京'), <String>['旅行']);
+    });
+
+    test('a parent whose children are all excluded has no toggle', () {
+      // 选本面板只列普通、没合上的：旅行下面剩 2025 > 东京，读书没有子本。
+      final rows = notebookTreeRows(
+        tree,
+        include: (notebook) =>
+            notebook.isManual && !notebook.isClosed && notebook.id != '2025',
+      );
+      expect(_flat(rows), <(String, int)>[('旅行', 0), ('东京', 1), ('读书', 0)]);
+      expect(notebookRowsFold(rows, const <String>{}).parents, <String>{'旅行'});
+      final onlyTravel = notebookTreeRows(
+        tree,
+        include: (notebook) => notebook.id == '旅行' || notebook.id == '读书',
+      );
+      expect(notebookRowsFold(onlyTravel, const <String>{}).parents, isEmpty);
+    });
+
+    test('row ancestors list the listed chain from the top', () {
+      final rows = notebookTreeRows(tree);
+      expect(notebookRowAncestors(rows, '东京'), <String>['旅行', '2025']);
+      expect(notebookRowAncestors(rows, '2024'), <String>['旅行']);
+      expect(notebookRowAncestors(rows, '读书'), isEmpty);
+      expect(notebookRowAncestors(rows, '不存在'), isEmpty);
+    });
+  });
+
   group('sibling order after a drag', () {
     final ids = <String>['旅行', '2025', '东京', '2024', '照片', '读书'];
     String? parentOf(String id) => tree[id]!.parentId;

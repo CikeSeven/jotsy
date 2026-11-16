@@ -135,11 +135,13 @@ final notebookContentsProvider = StreamProvider.autoDispose
           ref.watch(appDatabaseProvider).watchNotebookContents(notebookId),
     );
 
-/// 管理页里收起了子本的日记本（业务 id）。
+/// 树形列表里收起了子本的日记本（业务 id）：管理页与各处选本列表（选本
+/// 面板、发布面板子页、上级选择面板、画廊筛选等，见 `NotebookFoldableRows`）
+/// 共用一份，在哪里收起，别处也按收起排。
 ///
-/// 只在内存里：本次运行期间离开管理页再回来仍保持，重启应用后全部展开，
-/// 不加设置键。已删除的本子留在集合里无害（没有行认它）。
-final notebookManageCollapsedProvider =
+/// 只在内存里：本次运行期间离开再回来仍保持，重启应用后全部展开，不加
+/// 设置键。已删除的本子留在集合里无害（没有行认它）。
+final notebookTreeCollapsedProvider =
     NotifierProvider<NotebookCollapsedIdsNotifier, Set<String>>(
       NotebookCollapsedIdsNotifier.new,
     );

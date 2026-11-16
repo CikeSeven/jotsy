@@ -4,9 +4,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/sections/notebook_choice_sheet.dart';
+import '../../notebooks/viewmodels/notebook_tree.dart';
+import '../../notebooks/viewmodels/notebook_tree_rows.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../settings/widgets/settings_nav_tile.dart';
-import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 
 /// 快速记录“写日记”写进哪个日记本：一行显示当前选择，点开底部面板挑选。
 ///
@@ -27,82 +29,44 @@ class HomeWidgetNotebookChoice extends ConsumerWidget {
   static bool _writable(NotebookView notebook) =>
       notebook.isManual && !notebook.isPrivate && !notebook.isClosed;
 
+  /// 挑选：“不指定”与能写进去的本子（树序缩进、可收起；上级不能写时子本
+  /// 往外提一级）。
   Future<void> _pick(
     BuildContext context,
-    List<NotebookView> notebooks,
+    NotebookTree? tree,
     String? current,
   ) async {
     final l10n = context.l10n;
-    // 空串表示“不指定”：底部面板被划掉关闭时返回 null，要与之区分。
-    final picked = await showAppModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      constraints: const BoxConstraints(maxWidth: 640),
-      builder: (BuildContext sheetContext) {
-        final theme = Theme.of(sheetContext);
-        final colors = theme.colorScheme;
-        Widget check(bool selected) => selected
-            ? FaIcon(FontAwesomeIcons.check, size: 14, color: colors.primary)
-            : const SizedBox.shrink();
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.8,
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.only(bottom: 24),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(
-                  l10n.homeWidgetQuickNotebook,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const FaIcon(FontAwesomeIcons.ban, size: 16),
-                title: Text(l10n.homeWidgetQuickNotebookNone),
-                trailing: check(current == null),
-                onTap: () => Navigator.of(sheetContext).pop(''),
-              ),
-              for (final notebook in notebooks)
-                ListTile(
-                  contentPadding: EdgeInsetsDirectional.only(
-                    start: 24.0 + notebook.depth * 16,
-                    end: 24,
-                  ),
-                  leading: const FaIcon(FontAwesomeIcons.book, size: 16),
-                  title: Text(notebook.name),
-                  trailing: check(notebook.id == current),
-                  onTap: () => Navigator.of(sheetContext).pop(notebook.id),
-                ),
-            ],
-          ),
-        );
-      },
+    final picked = await showNotebookChoiceSheet(
+      context,
+      title: l10n.homeWidgetQuickNotebook,
+      rows: tree == null
+          ? const <NotebookTreeRow>[]
+          : notebookTreeRows(tree, include: _writable),
+      selectedId: current,
+      lead: NotebookChoiceLead(
+        label: l10n.homeWidgetQuickNotebookNone,
+        icon: FontAwesomeIcons.ban,
+      ),
+      leadSelected: current == null,
+      iconOf: (_) => FontAwesomeIcons.book,
     );
     if (picked == null) return;
-    onChanged(picked.isEmpty ? null : picked);
+    onChanged(picked.notebookId);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final notebooks = <NotebookView>[
-      for (final notebook in ref.watch(notebooksProvider).value ?? const [])
-        if (_writable(notebook)) notebook,
-    ];
-    final current = notebooks.where((n) => n.id == notebookId).firstOrNull;
+    final tree = ref.watch(notebookTreeProvider);
+    final id = notebookId;
+    final selected = id == null ? null : tree?[id];
+    final current = selected != null && _writable(selected) ? selected : null;
     return SettingsNavTile(
       icon: FontAwesomeIcons.book,
       title: l10n.homeWidgetQuickNotebook,
       value: current?.name ?? l10n.homeWidgetQuickNotebookNone,
-      onTap: () => _pick(context, notebooks, current?.id),
+      onTap: () => _pick(context, tree, current?.id),
     );
   }
 }

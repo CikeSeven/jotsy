@@ -4,8 +4,8 @@ title: Diary templates
 summary: Start entries from a template, manage and edit templates, use template variables, apply templates by time of day
 features: [templates]
 platforms: []
-destinations: [settings_templates]
-keywords: [template, diary templates, start from a template, choose a template, switch template, built-in templates, my templates, save as template, template variables, insert a variable, question of the day, lunar date, solar term, apply automatically, time range, default template, template code, import a template code]
+destinations: [settings_templates, new_diary]
+keywords: [template, diary templates, start from a template, choose a template, switch template, built-in templates, my templates, save as template, template variables, insert a variable, question of the day, lunar date, solar term, apply automatically, time range, default template, template code, import a template code, AI templates, ask AI to make a template]
 ---
 Diary templates are ready-made formats you can apply to a blank new entry with one tap. A template can also set tags, mood and a time capsule. There are 8 built-in templates (Daily journal, Morning pages, Evening review, Gratitude journal, Question of the day, Weekly review, Untangle a feeling, Reading notes), and you can make your own.
 
@@ -41,6 +41,10 @@ In Settings → Diary templates → Apply automatically:
 - "By time of day": set a start and end time (it can run overnight), days (leave all unselected for every day) and a template. Up to 12 time ranges; they only apply when writing for today.
 - "Other times" → Default template: used outside every time range and when writing for another day.
 - An automatically applied template can be undone too. Each notebook can also have a "Template for new entries" that applies when you write in that notebook.
+
+## Ask the AI
+
+With the AI assistant on and "Let the AI use tools" on in chat, the AI can work on templates for you: create a template from your description (colored section labels, callouts, toggles and tables included), change a template's body or presets, save an entry as a template, copy, delete or reorder templates, restore an edited built-in template's original, bring deleted built-in templates back, and set the auto-apply time ranges, the default template and notebooks' templates. It can also write an entry from a template for you, or open a new entry with a template applied for you to write. Every step can be undone on its card; deleting and restoring originals are confirmed first.
 
 ## Good to know
 

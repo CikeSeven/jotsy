@@ -36,7 +36,15 @@ import '../viewmodels/ai_prompt_builder.dart';
 import '../viewmodels/ai_task_prompts.dart';
 
 /// 工具所属的领域：决定卡片图标的分组，也是设置里“可用的工具”的单位。
-enum AiToolGroup { app, diaries, organize, calendar, settings, navigation }
+enum AiToolGroup {
+  app,
+  diaries,
+  organize,
+  templates,
+  calendar,
+  settings,
+  navigation,
+}
 
 /// 工具的效果，决定确认与撤销口径。
 enum AiToolEffect {

@@ -43,6 +43,10 @@ typedef DiaryCreateEntryResult = ({bool opened, String? createdDiaryId});
 /// （新建空白不删除任何草稿），编辑页入场后立即开始拍照或录音。用户点它就是要
 /// 马上拍，先选草稿只会耽误。
 ///
+/// [template]（AI 助手“用某个模板写日记”的前往按钮）：不弹草稿面板，直接
+/// 新建并套用这个模板（与草稿面板里“从模板新建”选好后同一条路径）；日记
+/// 模板功能关闭时忽略，按普通新建处理。
+///
 /// 功能管理（[appFeaturesProvider]）关闭的功能隐藏入口，数据保留：
 /// - 日记模板关闭：草稿面板没有“从模板新建”，新建空白不套用日记本的默认
 ///   模板（`templateId` 原样留在日记本里，重新开启即恢复）；
@@ -56,6 +60,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   String? notebookId,
   String? chapterId,
   DiaryCreateInitialAction? initialAction,
+  DiaryTemplateSelection? template,
 }) async {
   const dismissed = (opened: false, createdDiaryId: null);
   final database = ref.read(appDatabaseProvider);
@@ -99,6 +104,9 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
     return openEditor(null, template: template);
   }
 
+  if (template != null && features.templates) {
+    return openEditor(null, template: template);
+  }
   if (recent.isEmpty || initialAction != null) return openBlank();
 
   final pick = await showDiaryDraftPickerSheet(

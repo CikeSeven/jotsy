@@ -24,6 +24,8 @@ import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../app_surface/widgets/app_glass_field.dart';
 import '../../../diaries/providers/diary_link_providers.dart';
+import '../../../diary_templates/providers/diary_template_providers.dart';
+import '../../../diary_templates/viewmodels/diary_template_auto_labels.dart';
 import '../../../notebooks/providers/notebook_providers.dart';
 import '../../../settings/providers/app_features_provider.dart';
 import '../../../todos/providers/todo_providers.dart';
@@ -232,6 +234,29 @@ class AiDestinationCard extends ConsumerWidget {
         return _Target(
           title: query.isEmpty ? page : l10n.aiCardSearchFor(query),
           subtitle: query.isEmpty ? '' : page,
+        );
+      case AiDestinationKind.template || AiDestinationKind.newDiary:
+        final id = param('template_id');
+        final library = id.isEmpty
+            ? null
+            : watchDiaryTemplateLibrary(ref, l10n, live: true);
+        final template = library?.library.byId(id);
+        final name = template == null
+            ? snapshot?.title
+            : diaryTemplateDisplayName(l10n, template);
+        final missing = (library?.loaded ?? false) && template == null;
+        if (destination.kind == AiDestinationKind.newDiary) {
+          return _Target(
+            title: name == null || name.isEmpty
+                ? page
+                : l10n.aiToolWriteWithTemplate(name),
+            subtitle: name == null || name.isEmpty ? '' : page,
+          );
+        }
+        return _Target(
+          title: name ?? page,
+          subtitle: kind('kind_template'),
+          missing: missing,
         );
       case AiDestinationKind.tab || AiDestinationKind.page:
         return _Target(

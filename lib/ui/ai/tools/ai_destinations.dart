@@ -25,7 +25,12 @@ import '../../diaries/pages/archived_diaries_page.dart';
 import '../../diaries/pages/diary_drafts_page.dart';
 import '../../diaries/pages/diary_export_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
+import '../../diaries/controllers/diary_create_entry_flow.dart';
+import '../../diary_templates/models/diary_template.dart';
+import '../../diary_templates/models/diary_template_selection.dart';
+import '../../diary_templates/pages/diary_template_editor_page.dart';
 import '../../diary_templates/pages/diary_templates_page.dart';
+import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../home/models/home_tab.dart';
 import '../../home/providers/home_tab_request_provider.dart';
 import '../../lan_sync/pages/lan_sync_page.dart';
@@ -33,6 +38,7 @@ import '../../notebooks/controllers/notebook_navigation.dart';
 import '../../notebooks/pages/notebooks_page.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../settings/pages/about_page.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../settings/pages/app_features_page.dart';
 import '../../settings/pages/app_surface_page.dart';
 import '../../settings/pages/app_update_page.dart';
@@ -67,7 +73,20 @@ typedef AiDestinationOpener =
 
 /// 前往的目标是什么：决定卡片的标题怎么取（具体一篇 / 一本 / 一项的名称，
 /// 还是页面名）。
-enum AiDestinationKind { tab, diary, notebook, todo, search, page }
+enum AiDestinationKind {
+  tab,
+  diary,
+  notebook,
+  todo,
+  search,
+  page,
+
+  /// 一个日记模板（编辑页）。
+  template,
+
+  /// 新建一篇日记（可带模板）。
+  newDiary,
+}
 
 /// 页面在应用里的位置（卡片副标题写成“首页 › 日历”“设置 › 外观”）。
 enum AiDestinationSection { none, home, settings }
@@ -141,6 +160,39 @@ AiDestinationOpener _tab(HomeTab tab) => (context, ref, params) async {
 String? _param(Map<String, Object?> params, String key) {
   final value = params[key];
   return value is String && value.trim().isNotEmpty ? value.trim() : null;
+}
+
+/// 按 id 读一个可用的模板（被删除的内置模板与已删的模板为 null）。
+Future<DiaryTemplate?> _template(
+  BuildContext context,
+  WidgetRef ref,
+  String? id,
+) async {
+  if (id == null || !ref.read(appFeaturesProvider).templates) return null;
+  return loadDiaryTemplate(
+    ref.read(appDatabaseProvider),
+    context.l10n,
+    id,
+    deletedBuiltIns: ref.read(diaryTemplatePrefsProvider).hiddenBuiltIns,
+  );
+}
+
+/// 打开一个模板的编辑页（对话里的模板胶囊与前往卡片共用）；模板已不在时
+/// 打开模板管理页。日记模板功能关着时什么也不做（入口都已隐藏）。
+Future<void> openAiTemplate(
+  BuildContext context,
+  WidgetRef ref,
+  String templateId,
+) async {
+  if (!ref.read(appFeaturesProvider).templates) return;
+  final template = await _template(context, ref, templateId);
+  if (!context.mounted) return;
+  await _push(
+    context,
+    template == null
+        ? const DiaryTemplatesPage()
+        : DiaryTemplateEditorPage(template: template),
+  );
 }
 
 /// 全部可前往的页面（顺序即 `open_page` 说明里的顺序）。
@@ -230,6 +282,37 @@ final List<AiDestination> aiDestinations = <AiDestination>[
     available: (env) => env.features.todos,
     open: (context, ref, params) =>
         openTodoDetail(context, _param(params, 'todo_id')!),
+  ),
+  AiDestination(
+    'template',
+    kind: AiDestinationKind.template,
+    icon: FontAwesomeIcons.layerGroup,
+    tint: AiTint.tertiary,
+    title: (l10n) => l10n.diaryTemplateEditorEditTitle,
+    requires: const <String>{'template_id'},
+    available: (env) => env.features.templates,
+    open: (context, ref, params) =>
+        openAiTemplate(context, ref, _param(params, 'template_id')!),
+  ),
+  AiDestination(
+    'new_diary',
+    kind: AiDestinationKind.newDiary,
+    icon: FontAwesomeIcons.penNib,
+    tint: AiTint.primary,
+    title: (l10n) => l10n.aiDestinationNewDiary,
+    open: (context, ref, params) async {
+      final template = await _template(
+        context,
+        ref,
+        _param(params, 'template_id'),
+      );
+      if (!context.mounted) return;
+      await runDiaryCreateEntryFlow(
+        context,
+        ref,
+        template: template == null ? null : DiaryTemplateSelection(template),
+      );
+    },
   ),
   AiDestination(
     'search',

@@ -16761,6 +16761,122 @@
   "@aiToolDone": {
     "description": "AI step card: the change is done."
   },
+  "aiToolListTemplates": "日記テンプレートを確認",
+  "@aiToolListTemplates": {
+    "description": "AI tool card: list diary templates."
+  },
+  "aiToolTemplateCount": "テンプレート {count} 件",
+  "@aiToolTemplateCount": {
+    "description": "AI tool card result: number of templates found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolGetTemplates": "テンプレートの内容を確認",
+  "@aiToolGetTemplates": {
+    "description": "AI tool card: read the full content of templates."
+  },
+  "aiToolGetTemplate": "テンプレート「{name}」を確認",
+  "@aiToolGetTemplate": {
+    "description": "AI tool card: read one template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolCreateTemplate": "テンプレートを作成",
+  "@aiToolCreateTemplate": {
+    "description": "AI tool card: create a diary template (name not known yet)."
+  },
+  "aiToolCreateTemplateNamed": "テンプレートを作成：{name}",
+  "@aiToolCreateTemplateNamed": {
+    "description": "AI tool card: create a diary template with this name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolUpdateTemplate": "テンプレートを編集",
+  "@aiToolUpdateTemplate": {
+    "description": "AI tool card: edit a diary template."
+  },
+  "aiToolUpdateTemplateNamed": "テンプレートを編集：{name}",
+  "@aiToolUpdateTemplateNamed": {
+    "description": "AI tool card: edit this diary template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTemplate": "テンプレートを削除",
+  "@aiToolDeleteTemplate": {
+    "description": "AI tool card: delete a diary template."
+  },
+  "aiToolDeleteTemplateNamed": "テンプレート「{name}」を削除",
+  "@aiToolDeleteTemplateNamed": {
+    "description": "AI tool card and confirmation: delete this template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteTemplateAuto": "このテンプレートの自動適用の設定も削除されます",
+  "@aiToolDeleteTemplateAuto": {
+    "description": "AI delete-template confirmation: the template is used by auto-apply."
+  },
+  "aiToolResetTemplate": "テンプレートを初期状態に戻す",
+  "@aiToolResetTemplate": {
+    "description": "AI tool card: reset an edited built-in template."
+  },
+  "aiToolResetTemplateNamed": "「{name}」を初期状態に戻す",
+  "@aiToolResetTemplateNamed": {
+    "description": "AI tool card and confirmation: reset this built-in template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolRestoreTemplates": "削除した組み込みテンプレートを {count} 件復元",
+  "@aiToolRestoreTemplates": {
+    "description": "AI tool card: bring deleted built-in templates back.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolReorderTemplates": "テンプレートを並べ替え",
+  "@aiToolReorderTemplates": {
+    "description": "AI tool card: reorder the user's templates."
+  },
+  "aiToolSetTemplateAutoApply": "新しい日記に自動適用するテンプレートを設定",
+  "@aiToolSetTemplateAutoApply": {
+    "description": "AI tool card: change the template auto-apply settings."
+  },
+  "aiToolSetNotebookTemplate": "日記帳のテンプレートを設定",
+  "@aiToolSetNotebookTemplate": {
+    "description": "AI tool card: set the template new entries in a notebook start with."
+  },
+  "aiToolWriteWithTemplate": "「{name}」で日記を書く",
+  "@aiToolWriteWithTemplate": {
+    "description": "AI tool card and page card: write a new entry from this template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiDestinationNewDiary": "日記を書く",
+  "@aiDestinationNewDiary": {
+    "description": "AI page card: open the new-entry editor."
+  },
   "aiToolListTodoLists": "ToDo リストを確認",
   "@aiToolListTodoLists": {
     "description": "AI step card: listing to-do lists."
@@ -20040,7 +20156,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} arg_kind_template{テンプレート} arg_add_rules{時間帯を追加} arg_remove_rules{時間帯を削除} arg_clear_rules{時間帯をすべて削除} arg_default_template_id{既定のテンプレート} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

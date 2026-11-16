@@ -22151,5 +22151,93 @@
   "mindMapAiEmpty": "AI から使えるトピックが返ってきませんでした。言い方を変えてもう一度お試しください。",
   "@mindMapAiEmpty": {
     "description": "Mind map AI panel: the reply couldn't be read as topics."
+  },
+  "diaryFindReplace": "検索と置換",
+  "@diaryFindReplace": {
+    "description": "Diary editor more menu: open the find bar that floats above the keyboard, with replace."
+  },
+  "diaryFind": "検索",
+  "@diaryFind": {
+    "description": "Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page."
+  },
+  "diaryFindClose": "検索を閉じる",
+  "@diaryFindClose": {
+    "description": "Find bar: tooltip of the back button that closes the find bar."
+  },
+  "diaryFindHint": "本文を検索",
+  "@diaryFindHint": {
+    "description": "Find bar: placeholder of the find field (searches the diary body)."
+  },
+  "diaryFindPrevious": "前の一致",
+  "@diaryFindPrevious": {
+    "description": "Find bar: tooltip of the button that jumps to the previous match."
+  },
+  "diaryFindNext": "次の一致",
+  "@diaryFindNext": {
+    "description": "Find bar: tooltip of the button that jumps to the next match."
+  },
+  "diaryFindPosition": "{current}/{total}",
+  "@diaryFindPosition": {
+    "description": "Find bar: which match is current out of how many, shown at the end of the find field. total may end with + when there are too many to list.",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "3"
+      },
+      "total": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "diaryFindNoResults": "一致なし",
+  "@diaryFindNoResults": {
+    "description": "Find bar: shown at the end of the find field when nothing matches."
+  },
+  "diaryFindInvalidRegex": "正規表現が無効",
+  "@diaryFindInvalidRegex": {
+    "description": "Find bar: shown at the end of the find field when the regular expression can't be compiled."
+  },
+  "diaryFindOptionRegex": "正規表現",
+  "@diaryFindOptionRegex": {
+    "description": "Find bar option chip: interpret the find text as a regular expression."
+  },
+  "diaryFindOptionMatchCase": "大/小文字",
+  "@diaryFindOptionMatchCase": {
+    "description": "Find bar option chip: case-sensitive matching."
+  },
+  "diaryFindOptionWholeWord": "単語単位",
+  "@diaryFindOptionWholeWord": {
+    "description": "Find bar option chip: only match whole words (not inside longer words)."
+  },
+  "diaryFindOptionReplace": "置換",
+  "@diaryFindOptionReplace": {
+    "description": "Find bar chip: show or hide the replace row."
+  },
+  "diaryReplaceHint": "置換後の文字",
+  "@diaryReplaceHint": {
+    "description": "Find bar: placeholder of the replace field."
+  },
+  "diaryReplaceHintRegex": "置換後（$1 で 1 番目のグループ）",
+  "@diaryReplaceHintRegex": {
+    "description": "Find bar: placeholder of the replace field when regex is on; $1 is literal replacement syntax that refers to the first capture group."
+  },
+  "diaryReplaceOne": "置換",
+  "@diaryReplaceOne": {
+    "description": "Find bar button: replace the current match and go to the next one."
+  },
+  "diaryReplaceAll": "すべて置換",
+  "@diaryReplaceAll": {
+    "description": "Find bar button: replace every match at once (one undo step)."
+  },
+  "diaryReplaceAllDone": "{count} 件置換しました",
+  "@diaryReplaceAllDone": {
+    "description": "Snack bar after replace all: how many matches were replaced (with an undo action).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
   }
 }

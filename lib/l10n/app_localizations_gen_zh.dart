@@ -16543,4 +16543,62 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mindMapAiEmpty => 'AI 没有给出可用的主题，换个说法再生成一次试试。';
+
+  @override
+  String get diaryFindReplace => '查找和替换';
+
+  @override
+  String get diaryFind => '查找';
+
+  @override
+  String get diaryFindClose => '关闭查找';
+
+  @override
+  String get diaryFindHint => '在正文中查找';
+
+  @override
+  String get diaryFindPrevious => '上一个';
+
+  @override
+  String get diaryFindNext => '下一个';
+
+  @override
+  String diaryFindPosition(String current, String total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get diaryFindNoResults => '无结果';
+
+  @override
+  String get diaryFindInvalidRegex => '正则有误';
+
+  @override
+  String get diaryFindOptionRegex => '正则';
+
+  @override
+  String get diaryFindOptionMatchCase => '大小写';
+
+  @override
+  String get diaryFindOptionWholeWord => '全词';
+
+  @override
+  String get diaryFindOptionReplace => '替换';
+
+  @override
+  String get diaryReplaceHint => '替换为';
+
+  @override
+  String get diaryReplaceHintRegex => '替换为（\$1 引用第 1 组）';
+
+  @override
+  String get diaryReplaceOne => '替换';
+
+  @override
+  String get diaryReplaceAll => '全部替换';
+
+  @override
+  String diaryReplaceAllDone(int count) {
+    return '已替换 $count 处';
+  }
 }

@@ -21584,5 +21584,93 @@
   "mindMapAiEmpty": "AI 没有给出可用的主题，换个说法再生成一次试试。",
   "@mindMapAiEmpty": {
     "description": "导图 AI 面板：回复读不出主题。"
+  },
+  "diaryFindReplace": "查找和替换",
+  "@diaryFindReplace": {
+    "description": "Diary editor more menu: open the find bar that floats above the keyboard, with replace."
+  },
+  "diaryFind": "查找",
+  "@diaryFind": {
+    "description": "Diary preview more menu: open the find bar (no replace) that floats at the bottom of the page."
+  },
+  "diaryFindClose": "关闭查找",
+  "@diaryFindClose": {
+    "description": "查找栏：左侧返回按钮的提示，关闭查找栏。"
+  },
+  "diaryFindHint": "在正文中查找",
+  "@diaryFindHint": {
+    "description": "查找栏：查找输入框的占位文字（在正文里查找）。"
+  },
+  "diaryFindPrevious": "上一个",
+  "@diaryFindPrevious": {
+    "description": "查找栏：跳到上一处匹配的按钮提示。"
+  },
+  "diaryFindNext": "下一个",
+  "@diaryFindNext": {
+    "description": "查找栏：跳到下一处匹配的按钮提示。"
+  },
+  "diaryFindPosition": "{current}/{total}",
+  "@diaryFindPosition": {
+    "description": "查找栏：当前是第几处 / 共几处，显示在查找框行尾；太多时 total 以 + 结尾。",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "3"
+      },
+      "total": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "diaryFindNoResults": "无结果",
+  "@diaryFindNoResults": {
+    "description": "查找栏：没有匹配时显示在查找框行尾。"
+  },
+  "diaryFindInvalidRegex": "正则有误",
+  "@diaryFindInvalidRegex": {
+    "description": "查找栏：正则表达式写错、编译不过时显示在查找框行尾。"
+  },
+  "diaryFindOptionRegex": "正则",
+  "@diaryFindOptionRegex": {
+    "description": "查找栏的选项胶囊：把查找文字当作正则表达式。"
+  },
+  "diaryFindOptionMatchCase": "大小写",
+  "@diaryFindOptionMatchCase": {
+    "description": "查找栏的选项胶囊：区分大小写。"
+  },
+  "diaryFindOptionWholeWord": "全词",
+  "@diaryFindOptionWholeWord": {
+    "description": "查找栏的选项胶囊：只匹配完整的词（不匹配长词里的一截）。"
+  },
+  "diaryFindOptionReplace": "替换",
+  "@diaryFindOptionReplace": {
+    "description": "查找栏的胶囊：展开或收起替换一行。"
+  },
+  "diaryReplaceHint": "替换为",
+  "@diaryReplaceHint": {
+    "description": "查找栏：替换输入框的占位文字。"
+  },
+  "diaryReplaceHintRegex": "替换为（$1 引用第 1 组）",
+  "@diaryReplaceHintRegex": {
+    "description": "查找栏：开着正则时替换输入框的占位文字；$1 是替换写法本身（引用第 1 个分组），原样显示。"
+  },
+  "diaryReplaceOne": "替换",
+  "@diaryReplaceOne": {
+    "description": "查找栏按钮：替换当前这一处并跳到下一处。"
+  },
+  "diaryReplaceAll": "全部替换",
+  "@diaryReplaceAll": {
+    "description": "查找栏按钮：一次替换全部匹配（一步撤销）。"
+  },
+  "diaryReplaceAllDone": "已替换 {count} 处",
+  "@diaryReplaceAllDone": {
+    "description": "全部替换后的提示条：替换了几处（带撤销按钮）。",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
   }
 }

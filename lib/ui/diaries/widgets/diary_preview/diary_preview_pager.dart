@@ -11,11 +11,13 @@ import '../../../widgets/image_viewer_hero.dart';
 import '../../../widgets/route_entrance_waiter.dart';
 import '../../controllers/diary_audio_player_controller.dart';
 import '../../controllers/diary_video_player_controller.dart';
+import '../../models/diary_find_query.dart';
 import '../../models/diary_preview_sequence.dart';
 import '../../providers/diary_detail_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../diary_card/diary_card.dart' show diaryCardTransitionTag;
 import 'diary_pager_view.dart';
+import 'diary_preview_find.dart';
 import 'diary_preview_neighbors.dart';
 import 'diary_preview_view.dart';
 
@@ -49,12 +51,17 @@ class DiaryPreviewPager extends ConsumerStatefulWidget {
     required this.diaryId,
     this.initialDetail,
     this.coverHero,
+    this.initialFind,
   });
 
   final DiaryPreviewSequence sequence;
   final String diaryId;
   final DiaryWithTags? initialDetail;
   final ImageViewerHero? coverHero;
+
+  /// 每一篇打开时带着的正文查找条件（从搜索结果打开：翻到的每一篇都是
+  /// 搜索结果，都标出搜索词）；null 时不查找。
+  final DiaryFindQuery? initialFind;
 
   @override
   ConsumerState<DiaryPreviewPager> createState() => _DiaryPreviewPagerState();
@@ -243,6 +250,7 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
         titleAt: (int index) => _detailOf(_ids[index])?.diary.title,
       ),
       onBusyChanged: (bool busy) => _setBusy(id, busy),
+      initialFind: widget.initialFind,
     );
     _pages
       ..[index] = _PageMemo(inputs, page)
@@ -258,17 +266,21 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
     final navigation = ref.watch(
       diaryPreviewStyleProvider.select((style) => style.navigation),
     );
-    return DiaryPagerView(
-      itemCount: _ids.length,
-      initialPage: _initialIndex,
-      navigation: navigation,
-      behavior: behavior,
-      locked: _busy.isNotEmpty,
-      cacheNeighbors: _entered,
-      desktopControls: true,
-      onPageChanged: _handlePageChanged,
-      itemBuilder: (BuildContext context, DiaryPagerPosition position) =>
-          _pageAt(l10n, position),
+    // Ctrl / ⌘ + F 在翻页器（含 DesktopPageKeys）外面接住，交给当前这一篇。
+    return DiaryPreviewFindShortcuts(
+      currentDiaryId: () => _ids[_current],
+      child: DiaryPagerView(
+        itemCount: _ids.length,
+        initialPage: _initialIndex,
+        navigation: navigation,
+        behavior: behavior,
+        locked: _busy.isNotEmpty,
+        cacheNeighbors: _entered,
+        desktopControls: true,
+        onPageChanged: _handlePageChanged,
+        itemBuilder: (BuildContext context, DiaryPagerPosition position) =>
+            _pageAt(l10n, position),
+      ),
     );
   }
 }

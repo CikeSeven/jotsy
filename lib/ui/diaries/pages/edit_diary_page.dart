@@ -14,6 +14,9 @@ import '../controllers/diary_editor_controller.dart' as editor;
 import '../models/diary_link_candidate.dart';
 import '../models/diary_create_initial_action.dart';
 import '../widgets/diary_editor/diary_editor.dart';
+import '../models/diary_find_query.dart';
+import '../widgets/diary_find_bar/diary_find_bar.dart';
+import '../widgets/diary_find_bar/diary_floating_find_transitions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -160,6 +163,7 @@ part '../controllers/edit_diary_ai_flow.dart';
 part '../controllers/edit_diary_reading_flow.dart';
 part '../controllers/edit_diary_reading_actions.dart';
 part '../controllers/edit_diary_mind_map_flow.dart';
+part '../controllers/edit_diary_find_flow.dart';
 
 /// 日记编辑页。
 ///
@@ -181,6 +185,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.createNotebookChapterId,
     this.createInitialAction,
     this.initialCaret,
+    this.initialFind,
     this.initialDetail,
     this.coverHero,
   });
@@ -222,6 +227,10 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   /// 照常从文首打开、不聚焦。新建模式不使用。
   final editor.Position? initialCaret;
 
+  /// 编辑已有日记时打开后带着的查找条件（从搜索结果直接进编辑页）：打开
+  /// 查找、跳到第一处，不弹键盘；正文里没有匹配时不打开。新建模式不使用。
+  final DiaryFindQuery? initialFind;
+
   /// 编辑模式下入口已持有的同一篇日记：详情查询返回前直接用它回填，路由
   /// 滑入时就是完整的页面（头图共享元素才有落点）。
   final DiaryWithTags? initialDetail;
@@ -259,6 +268,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   // 悬浮工具栏「更多」面板的目标高度（收起为 0），驱动正文末尾的额外留白。
   final ValueNotifier<double> _toolbarPanelExtent = ValueNotifier<double>(0);
+  // 查找栏（见 edit_diary_find_flow）：页面经它把焦点交回查找框 / 替换框；
+  // 这一次打开时焦点先给替换框（替换的快捷键）、或不取焦点（从搜索进来）；
+  // 关闭后卡片还在收起的过渡里。
+  final GlobalKey<DiaryFindBarState> _findBarKey =
+      GlobalKey<DiaryFindBarState>();
+  bool _findFocusReplace = false;
+  bool _findAutofocus = true;
+  bool _findExitPending = false;
   // 悬浮工具栏面板最多占的高度，布局时按可用高度写入（见
   // DiaryToolbarPanelLimit），工具栏只在面板展开时跟随。
   final ValueNotifier<double> _toolbarMaxPanelExtent = ValueNotifier<double>(
@@ -708,7 +725,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   }
 
   void _onBlockModeChanged() {
-    if (mounted) setState(() {});
+    if (mounted) setState(_yieldFindToBlockMode);
   }
 
   /// 阅读式版式重建页面：面板草稿变化（信息栏、头图、配色基调）与编辑焦点
@@ -744,13 +761,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   }
 
   /// 正文滚动容器的底部占位，也就是视口底部被浮层盖住、光标要让开的部分：
-  /// 悬浮工具栏（连同光标上方的空隙）/录音面板优先；否则编辑模式在信息
-  /// 面板挂着时按展开进度在 140~460 之间插值，面板不在时只留阅读版式的页尾
-  /// 留白（与预览页相同，再让开系统导航条）。
+  /// 查找栏（按它量好的高度，见 [_findBottomSpacer]）最先；其次悬浮工具栏
+  /// （连同光标上方的空隙）/录音面板；否则编辑模式在信息面板挂着时按展开
+  /// 进度在 140~460 之间插值，面板不在时只留阅读版式的页尾留白（与预览页
+  /// 相同，再让开系统导航条）。
   double _editorBottomSpacer(
     double panelProgress, {
     required bool showFloatingToolbar,
   }) {
+    if (_findOpen) return _findBottomSpacer();
     if (showFloatingToolbar) {
       if (_recordingPanelOpen) return _recordingPanelReservedSpace;
       if (_aiPanelOpen) {
@@ -999,11 +1018,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       children: [
         ?readingTrailing,
         DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
-        ValueListenableBuilder<double>(
-          valueListenable: _editPanelExpandProgress,
-          builder: (context, progress, _) => SizedBox(
+        // 查找栏量好高度（展开 / 收起替换一行）时同样刷新这一层。
+        ListenableBuilder(
+          listenable: Listenable.merge(<Listenable>[
+            _editPanelExpandProgress,
+            _contentController.find.barHeight,
+          ]),
+          builder: (context, _) => SizedBox(
             key: const ValueKey('diary-editor-page-reserve'),
-            height: resolveBottomSpacer(progress),
+            height: resolveBottomSpacer(_editPanelExpandProgress.value),
           ),
         ),
       ],
@@ -1019,10 +1042,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         // 「更多」等面板展开 / 收起时只重建这一层，把新的遮挡高度交给正文：
         // 光标与选区避让（DiaryEditorViewport）、选区菜单与把手的边缘滚动都
         // 按面板上沿计算（#221）。面板只在展开 / 收起时报告一次目标高度，
-        // 不逐帧重建。
-        child: ValueListenableBuilder<double>(
-          valueListenable: _toolbarPanelExtent,
-          builder: (context, _, _) => MindMapAiScope(
+        // 不逐帧重建；查找栏同样只在量好新高度时报告一次。
+        child: ListenableBuilder(
+          listenable: Listenable.merge(<Listenable>[
+            _toolbarPanelExtent,
+            _contentController.find.barHeight,
+          ]),
+          builder: (context, _) => MindMapAiScope(
             allowed: _controller._aiAllowed,
             child: DiaryEditor(
               controller: _contentController,
@@ -1165,6 +1191,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (caretSelection != null) {
       _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
     }
+    // 从搜索结果进来：带着搜索词打开查找（这一帧之后，正文会话已换好）。
+    final initialFind = reload ? null : widget.initialFind;
+    if (initialFind != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _openInitialFind(initialFind),
+      );
+    }
     try {
       _metadataJson = prettyMetadataJson(detail.diary.metadata);
     } catch (_) {
@@ -1246,7 +1279,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         (enabledToolbarOrder.isNotEmpty || blockMode) &&
         (rawShowFloatingToolbar ||
             (_hasFloatingToolbar && _bottomPanelOpen && !_metaPanelOpen));
-    _floatingToolbarShown = showFloatingToolbar;
+    // 查找开着时悬浮卡片里放查找栏（键盘收着也显示，见 edit_diary_find_flow）；
+    // 关上后工具栏会显示时直接在卡片里淡化回工具栏，否则卡片降下淡出、
+    // 播完才拿掉。
+    final findOpen = _findOpen;
+    if (_findExitPending && (showFloatingToolbar || findOpen)) {
+      _findExitPending = false;
+    }
+    final findCardShown = findOpen || _findExitPending;
+    final showFloatingSlot = showFloatingToolbar || findCardShown;
+    _floatingToolbarShown = showFloatingSlot;
     // 悬浮工具栏、录音面板与元数据面板同属“工具栏”材质。玻璃时它们外面的
     // 入场与淡出都改用 GlassReveal（见 ExpressiveEntrance.glass），不再套
     // Opacity——透明度层里的玻璃采不到下面的正文。只影响外观，遮挡高度与
@@ -1441,6 +1483,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                   child: Text(context.l10n.aiSuggestMeta),
                                 ),
                               ],
+                              ExpressiveMenuItem(
+                                leadingIcon: const FaIcon(
+                                  FontAwesomeIcons.magnifyingGlass,
+                                ),
+                                onPressed: _saving ? null : _openFind,
+                                child: Text(context.l10n.diaryFindReplace),
+                              ),
                               if (templatesEnabled)
                                 ExpressiveMenuItem(
                                   leadingIcon: const FaIcon(
@@ -1515,7 +1564,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                           (bool wide) => _buildMetaPanel(fillWidth: wide),
                         ),
                       ),
-                    if (showFloatingToolbar)
+                    if (showFloatingSlot)
                       Positioned(
                         key: const ValueKey<String>('edit-floating-toolbar'),
                         left: kDiaryFloatingToolbarInset,
@@ -1538,8 +1587,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                           // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
                           child: CenteredContent(
                             maxWidth: AppContentWidth.editor,
-                            child: ExpressiveEntrance(
+                            // 出现时升起淡入；只剩收起中的查找栏时反向
+                            // 离场，播完拿掉（见 edit_diary_find_flow）。
+                            child: DiaryFloatingPresence(
                               glass: toolbarGlass,
+                              visible: showFloatingToolbar || findOpen,
+                              onHidden: _onFindCardHidden,
                               child: SafeArea(
                                 top: false,
                                 minimum: const EdgeInsets.only(bottom: 8),
@@ -1556,14 +1609,24 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       DiaryFloatingToolbarSurface(
-                                        child: Focus(
-                                          focusNode: _toolbarFocusNode,
-                                          // 焦点在正文与颜色代码输入框之间交接
-                                          // 时，按新的焦点重新判断工具栏是否显示。
-                                          onFocusChange: (_) => setState(() {}),
-                                          child: _buildFloatingToolbar(
-                                            enabledToolbarOrder,
-                                          ),
+                                        // 工具栏与查找栏在同一张卡片里交叉
+                                        // 淡化，卡片高度随外层补间。
+                                        child: DiaryFloatingContentSwap(
+                                          showSecond: findCardShown,
+                                          first: showFloatingToolbar
+                                              ? Focus(
+                                                  focusNode: _toolbarFocusNode,
+                                                  // 焦点在正文与颜色代码输入
+                                                  // 框之间交接时，按新的焦点
+                                                  // 重新判断工具栏是否显示。
+                                                  onFocusChange: (_) =>
+                                                      setState(() {}),
+                                                  child: _buildFloatingToolbar(
+                                                    enabledToolbarOrder,
+                                                  ),
+                                                )
+                                              : null,
+                                          second: _buildFindBar(),
                                         ),
                                       ),
                                       if (_recordingPanelOpen) ...[
@@ -1625,7 +1688,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                     !_isEditEntry &&
                     !_bottomPanelOpen &&
                     !publishOnLeave &&
-                    !_contentController.blockSelection.isActive,
+                    !_contentController.blockSelection.isActive &&
+                    !_findOpen,
                 onPopInvokedWithResult: (didPop, result) {
                   if (!didPop) {
                     unawaited(_controller.attemptExit());
@@ -1635,20 +1699,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
                 },
                 // 桌面上 Esc 与顶栏返回按钮相同（补存、先收起面板与录音）；
-                // 手动保存时 Ctrl / ⌘ + S 与顶栏“保存”相同。
-                child: DesktopPageKeys(
-                  onEscape: () => unawaited(_controller.attemptExit()),
-                  child: AppPlatform.isDesktop
-                      ? CallbackShortcuts(
-                          bindings: <ShortcutActivator, VoidCallback>{
-                            if (_controller.manualEditSave)
-                              primaryShortcut(LogicalKeyboardKey.keyS): () =>
-                                  unawaited(_controller.saveEditManually()),
-                          },
+                // 手动保存时 Ctrl / ⌘ + S 与顶栏“保存”相同。页面快捷键包在
+                // DesktopPageKeys 外面：它自带一个 autofocus 的 Focus，正文
+                // 与输入框都没有焦点时按键从那里起冒泡，包在里面就收不到。
+                child: AppPlatform.isDesktop
+                    ? CallbackShortcuts(
+                        bindings: <ShortcutActivator, VoidCallback>{
+                          if (_controller.manualEditSave)
+                            primaryShortcut(LogicalKeyboardKey.keyS): () =>
+                                unawaited(_controller.saveEditManually()),
+                          // Ctrl / ⌘ + F 查找、Ctrl + H 替换（导图日记没有）。
+                          if (_mindMapSession == null) ..._findShortcuts,
+                        },
+                        child: DesktopPageKeys(
+                          onEscape: () => unawaited(_controller.attemptExit()),
                           child: scaffold,
-                        )
-                      : scaffold,
-                ),
+                        ),
+                      )
+                    : DesktopPageKeys(
+                        onEscape: () => unawaited(_controller.attemptExit()),
+                        child: scaffold,
+                      ),
               );
             },
           );

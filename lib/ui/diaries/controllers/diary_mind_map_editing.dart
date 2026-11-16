@@ -1,11 +1,16 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
+import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 import '../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../core/database/mind_map/mind_map_blocks.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_from_blocks.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../mind_maps/pages/mind_map_editor_page.dart';
+import '../models/edit_diary_create_seed.dart';
+import '../pages/edit_diary_page.dart';
 import 'diary_editor_controller.dart';
 import 'diary_editor_insert.dart';
 import 'diary_link_editing.dart';
@@ -73,3 +78,23 @@ Future<void> editDiaryMindMap(
 /// 文字块开头）。
 void deleteDiaryMindMap(DiaryEditorController controller, af.Node node) =>
     deleteDiaryLinkCard(controller, node);
+
+/// 把文字日记 [diary] 按标题与列表的层级转成一张新的导图日记，打开新建页
+/// （原文不动；什么都没改就离开时不留草稿，同“另存为日记”）。
+Future<void> openMindMapFromDiary(BuildContext context, Diary diary) async {
+  final map = mindMapFromDiaryBlocks(
+    decodeStoredDiaryBlocks(diary.content),
+    title: diary.title,
+  );
+  await Navigator.of(context).push<Object?>(
+    MaterialPageRoute<Object?>(
+      builder: (_) => EditDiaryPage(
+        entryMode: EditDiaryEntryMode.create,
+        createSeed: EditDiaryCreateSeed(
+          title: map.root.text,
+          contentDocJson: encodeDiaryBlocks(mindMapDiaryDocument(map)),
+        ),
+      ),
+    ),
+  );
+}

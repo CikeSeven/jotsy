@@ -5,17 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/diary_blocks/diary_blocks_codec.dart';
+import '../../../../core/database/mind_map/mind_map_blocks.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../../anniversaries/models/anniversary_draft.dart';
 import '../../../todos/widgets/todo_convert_sheet.dart';
 import '../../../todos/widgets/todo_quick_add_sheet.dart';
+import '../../../mind_maps/sections/mind_map_export_sheet.dart';
 import '../../../notebooks/controllers/diary_notebook_pick_flow.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/expressive_menu/expressive_menu.dart';
+import '../../controllers/diary_mind_map_editing.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 
@@ -41,6 +45,11 @@ List<Widget> diaryPreviewMoreItems(
   final features = ref.watch(appFeaturesProvider);
   final settings = ref.watch(settingsServiceProvider).asData?.value;
   final todoItems = features.todos ? viewData.todoItems : null;
+  // 导图日记：导出导图（图片、XMind 等）；有文字的普通日记：转为思维导图。
+  final content = detail.diary.content;
+  final map = storedContentMayHaveMindMap(content)
+      ? diaryMindMapPage(decodeStoredDiaryBlocks(content))
+      : null;
   return diaryMoreMenuItems(
     l10n,
     onExport: () => export.exportDiary(context, ref, detail: detail),
@@ -86,6 +95,20 @@ List<Widget> diaryPreviewMoreItems(
               ),
             ),
           ),
+    tools: <Widget>[
+      if (map != null)
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.fileExport,
+          l10n.mindMapExport,
+          () => showMindMapExportSheet(context, map),
+        )
+      else if (features.mindMaps && detail.diary.contentText.trim().isNotEmpty)
+        diaryMoreMenuEntry(
+          FontAwesomeIcons.sitemap,
+          l10n.mindMapConvertFromDiary,
+          () => openMindMapFromDiary(context, detail.diary),
+        ),
+    ],
     onDelete: onDelete,
   );
 }

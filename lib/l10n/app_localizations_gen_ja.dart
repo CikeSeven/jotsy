@@ -16501,4 +16501,77 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mindMapMoveDown => '下へ';
+
+  @override
+  String get mindMapExport => 'マップを書き出す';
+
+  @override
+  String get mindMapExportSaved => '保存しました';
+
+  @override
+  String get mindMapExportSavedGallery => '写真に保存しました';
+
+  @override
+  String get mindMapExportFailed => '書き出せませんでした';
+
+  @override
+  String get mindMapShare => '共有';
+
+  @override
+  String get mindMapSaveFile => 'ファイルに保存';
+
+  @override
+  String get mindMapSaveGallery => '写真に保存';
+
+  @override
+  String get mindMapExportImage => '画像';
+
+  @override
+  String get mindMapExportImageHint => 'マップ全体の PNG（2 倍の解像度）';
+
+  @override
+  String get mindMapExportPdfHint => 'マップの大きさに合わせた 1 ページ';
+
+  @override
+  String get mindMapExportXmindHint => 'XMind で開けます（トピック・アイコン・メモ付き）';
+
+  @override
+  String get mindMapExportMarkdownHint => '見出しと入れ子のリスト';
+
+  @override
+  String get mindMapExportOpmlHint => 'アウトライナー向けのアウトライン';
+
+  @override
+  String get mindMapExportFreeMindHint => 'FreeMind・Freeplane で開けます';
+
+  @override
+  String get mindMapCopyOutline => 'アウトラインとしてコピー';
+
+  @override
+  String get mindMapCopyOutlineHint => 'インデント付きテキスト（1 行に 1 トピック）';
+
+  @override
+  String get mindMapCopied => 'コピーしました';
+
+  @override
+  String get mindMapImport => 'ファイルから読み込む';
+
+  @override
+  String get mindMapImported => '読み込みました';
+
+  @override
+  String get mindMapImportFailed =>
+      'このファイルを読み込めません。対応形式：XMind・OPML・FreeMind（.mm）・Markdown';
+
+  @override
+  String get mindMapImportReplaceTitle => 'このマップを置き換えますか？';
+
+  @override
+  String get mindMapImportReplaceBody => '読み込んだマップでここのトピックがすべて置き換わります。元に戻せます。';
+
+  @override
+  String get mindMapImportReplaceConfirm => '置き換える';
+
+  @override
+  String get mindMapConvertFromDiary => 'マインドマップに変換';
 }

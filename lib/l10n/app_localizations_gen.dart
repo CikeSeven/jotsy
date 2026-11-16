@@ -29127,6 +29127,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move down'**
   String get mindMapMoveDown;
+
+  /// Mind map: menu item and panel title for exporting the map as an image, PDF, XMind and other files.
+  ///
+  /// In en, this message translates to:
+  /// **'Export map'**
+  String get mindMapExport;
+
+  /// Mind map export: the file was saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get mindMapExportSaved;
+
+  /// Mind map export: the image was saved to the photo gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to gallery'**
+  String get mindMapExportSavedGallery;
+
+  /// Mind map export failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t export the map'**
+  String get mindMapExportFailed;
+
+  /// Mind map export panel: tooltip of the share button on a format row.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get mindMapShare;
+
+  /// Mind map export panel: tooltip of the save-to-file button on a format row.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as file'**
+  String get mindMapSaveFile;
+
+  /// Mind map export panel: tooltip of the save-to-gallery button on the image row.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to gallery'**
+  String get mindMapSaveGallery;
+
+  /// Mind map export panel: the PNG image format.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get mindMapExportImage;
+
+  /// Mind map export panel: hint under the image format.
+  ///
+  /// In en, this message translates to:
+  /// **'PNG of the whole map, sharp at twice the size'**
+  String get mindMapExportImageHint;
+
+  /// Mind map export panel: hint under the PDF format.
+  ///
+  /// In en, this message translates to:
+  /// **'One page sized to the map'**
+  String get mindMapExportPdfHint;
+
+  /// Mind map export panel: hint under the XMind format.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in XMind with topics, stickers and notes'**
+  String get mindMapExportXmindHint;
+
+  /// Mind map export panel: hint under the Markdown format.
+  ///
+  /// In en, this message translates to:
+  /// **'Headings and nested lists'**
+  String get mindMapExportMarkdownHint;
+
+  /// Mind map export panel: hint under the OPML format.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline for outliner apps'**
+  String get mindMapExportOpmlHint;
+
+  /// Mind map export panel: hint under the FreeMind format.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in FreeMind and Freeplane'**
+  String get mindMapExportFreeMindHint;
+
+  /// Mind map export panel: copy the map as indented text.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as outline'**
+  String get mindMapCopyOutline;
+
+  /// Mind map export panel: hint under copy as outline.
+  ///
+  /// In en, this message translates to:
+  /// **'Indented text, one topic per line'**
+  String get mindMapCopyOutlineHint;
+
+  /// Mind map: the outline text was copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get mindMapCopied;
+
+  /// Mind map: import a map from an XMind, OPML, FreeMind or Markdown file.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from file'**
+  String get mindMapImport;
+
+  /// Mind map: a file was imported into the map.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported'**
+  String get mindMapImported;
+
+  /// Mind map: the chosen file could not be imported.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read this file. Supported: XMind, OPML, FreeMind (.mm), Markdown'**
+  String get mindMapImportFailed;
+
+  /// Mind map import: confirmation title when the map already has topics.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace this map?'**
+  String get mindMapImportReplaceTitle;
+
+  /// Mind map import: confirmation body.
+  ///
+  /// In en, this message translates to:
+  /// **'The imported map replaces all topics here. You can undo it.'**
+  String get mindMapImportReplaceBody;
+
+  /// Mind map import: confirm button.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get mindMapImportReplaceConfirm;
+
+  /// Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept).
+  ///
+  /// In en, this message translates to:
+  /// **'Turn into mind map'**
+  String get mindMapConvertFromDiary;
 }
 
 class _AppLocalizationsDelegate

@@ -21,6 +21,7 @@ import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/keyboard_visibility.dart';
 import '../controllers/mind_map_clipboard.dart';
 import '../controllers/mind_map_editing_controller.dart';
+import '../controllers/mind_map_io_flow.dart';
 import '../controllers/mind_map_viewport_controller.dart';
 import '../models/mind_map_templates.dart';
 import '../layout/mind_map_node_content.dart';
@@ -481,6 +482,8 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                           MindMapStarterCard(
                             onTemplate: _applyTemplate,
                             onConvertBack: widget.onConvertBack,
+                            onImport: () =>
+                                importMindMapFromFile(context, controller),
                           ),
                           const SizedBox(height: 10),
                         ],

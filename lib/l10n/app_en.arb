@@ -21165,5 +21165,101 @@
   "mindMapMoveDown": "Move down",
   "@mindMapMoveDown": {
     "description": "Mind map outline: move the topic below its next sibling."
+  },
+  "mindMapExport": "Export map",
+  "@mindMapExport": {
+    "description": "Mind map: menu item and panel title for exporting the map as an image, PDF, XMind and other files."
+  },
+  "mindMapExportSaved": "Saved",
+  "@mindMapExportSaved": {
+    "description": "Mind map export: the file was saved."
+  },
+  "mindMapExportSavedGallery": "Saved to gallery",
+  "@mindMapExportSavedGallery": {
+    "description": "Mind map export: the image was saved to the photo gallery."
+  },
+  "mindMapExportFailed": "Couldn't export the map",
+  "@mindMapExportFailed": {
+    "description": "Mind map export failed."
+  },
+  "mindMapShare": "Share",
+  "@mindMapShare": {
+    "description": "Mind map export panel: tooltip of the share button on a format row."
+  },
+  "mindMapSaveFile": "Save as file",
+  "@mindMapSaveFile": {
+    "description": "Mind map export panel: tooltip of the save-to-file button on a format row."
+  },
+  "mindMapSaveGallery": "Save to gallery",
+  "@mindMapSaveGallery": {
+    "description": "Mind map export panel: tooltip of the save-to-gallery button on the image row."
+  },
+  "mindMapExportImage": "Image",
+  "@mindMapExportImage": {
+    "description": "Mind map export panel: the PNG image format."
+  },
+  "mindMapExportImageHint": "PNG of the whole map, sharp at twice the size",
+  "@mindMapExportImageHint": {
+    "description": "Mind map export panel: hint under the image format."
+  },
+  "mindMapExportPdfHint": "One page sized to the map",
+  "@mindMapExportPdfHint": {
+    "description": "Mind map export panel: hint under the PDF format."
+  },
+  "mindMapExportXmindHint": "Opens in XMind with topics, stickers and notes",
+  "@mindMapExportXmindHint": {
+    "description": "Mind map export panel: hint under the XMind format."
+  },
+  "mindMapExportMarkdownHint": "Headings and nested lists",
+  "@mindMapExportMarkdownHint": {
+    "description": "Mind map export panel: hint under the Markdown format."
+  },
+  "mindMapExportOpmlHint": "Outline for outliner apps",
+  "@mindMapExportOpmlHint": {
+    "description": "Mind map export panel: hint under the OPML format."
+  },
+  "mindMapExportFreeMindHint": "Opens in FreeMind and Freeplane",
+  "@mindMapExportFreeMindHint": {
+    "description": "Mind map export panel: hint under the FreeMind format."
+  },
+  "mindMapCopyOutline": "Copy as outline",
+  "@mindMapCopyOutline": {
+    "description": "Mind map export panel: copy the map as indented text."
+  },
+  "mindMapCopyOutlineHint": "Indented text, one topic per line",
+  "@mindMapCopyOutlineHint": {
+    "description": "Mind map export panel: hint under copy as outline."
+  },
+  "mindMapCopied": "Copied",
+  "@mindMapCopied": {
+    "description": "Mind map: the outline text was copied."
+  },
+  "mindMapImport": "Import from file",
+  "@mindMapImport": {
+    "description": "Mind map: import a map from an XMind, OPML, FreeMind or Markdown file."
+  },
+  "mindMapImported": "Imported",
+  "@mindMapImported": {
+    "description": "Mind map: a file was imported into the map."
+  },
+  "mindMapImportFailed": "Couldn't read this file. Supported: XMind, OPML, FreeMind (.mm), Markdown",
+  "@mindMapImportFailed": {
+    "description": "Mind map: the chosen file could not be imported."
+  },
+  "mindMapImportReplaceTitle": "Replace this map?",
+  "@mindMapImportReplaceTitle": {
+    "description": "Mind map import: confirmation title when the map already has topics."
+  },
+  "mindMapImportReplaceBody": "The imported map replaces all topics here. You can undo it.",
+  "@mindMapImportReplaceBody": {
+    "description": "Mind map import: confirmation body."
+  },
+  "mindMapImportReplaceConfirm": "Replace",
+  "@mindMapImportReplaceConfirm": {
+    "description": "Mind map import: confirm button."
+  },
+  "mindMapConvertFromDiary": "Turn into mind map",
+  "@mindMapConvertFromDiary": {
+    "description": "Diary more menu: create a new mind map diary from this diary's headings and lists (the original is kept)."
   }
 }

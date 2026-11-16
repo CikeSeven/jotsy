@@ -930,6 +930,8 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
 - **主题样式面板**（`showMindMapNodeStyleSheet`）：形状（六个 `ChoiceChip`）、底色 / 文字颜色 / 分支颜色（各一排 34dp 圆形色块，首个“默认”为斜线；十个心情色相 + 中性灰，底色预览容器色、其余预览强调色，选中 2.5dp `primary` 环 + 对勾）、文字（粗 / 斜 / 删除线 `IconButton.filledTonal`，下一行字号 `ExpressiveButtonGroup` 小 / 中 / 大 / 特大）、“恢复默认样式”。
 - **标签 / 备注 / 链接面板**：标签为可删的 `InputChip` + 输入框（回车添加，最长 40）；备注为 4–12 行输入框，边打边写（同一节点合并为一步撤销），只读时为可选中文字；链接顶部为“打开链接”（tonal）与“移除链接”（`error` 文字按钮），下面“网址 | 日记”切换：网址输入框（自动补 `https://`，无效时提示），日记为与链接对话框相同的搜索列表（360 高）。
 - **大纲视图**（`MindMapOutlineView`）：每级缩进 22；行首 28dp 格里有子主题时是分支色 `angleRight`（展开转 90°，`fast`），否则为分支色圆点（中心 10、其余 7）；中心主题 `titleLarge` w700、一级 `titleMedium` w600、其余 `bodyLarge`；待办为分支色 `square` / `solidSquareCheck`，贴纸小号排在文字前，备注 / 链接标记在行尾，收起的行尾为分支色“+N”。选中行为 `secondaryContainer` 12 圆角。点行即编辑：Enter 加同级（行首回车加在前面）、空行退格删除并编辑上一行；桌面 Tab / Shift + Tab、Alt + ↑ / ↓；手机键盘上方附件条为取消缩进（`outdent`）、缩进（`indent`）、上移、下移、完成。
+- **导出面板**（`showMindMapExportSheet`，底部面板）：标题“导出导图”`titleLarge` w700；每种格式一行（16 圆角水波纹，40dp `secondaryContainer` 12 圆角图标格 + `titleSmall` w600 名称 + 两行内 `bodySmall` `onSurfaceVariant` 说明），行尾是去处 `IconButton`（16dp：相册 `images` 只在图片行、分享 `shareNodes` 只在能系统分享的平台、保存 `download`）；点整行走默认去处（能分享时分享，否则保存）。依次为图片（`solidImage`）、PDF（`solidFilePdf`）、XMind（`sitemap`）、Markdown（`markdown`）、OPML（`listUl`）、FreeMind（`diagramProject`），末行“复制为大纲文字”（`copy`，没有去处按钮）。选好即关面板，生成期间盖动作等待遮罩，结果用提示条告知。入口：导图日记与嵌入导图编辑页的“更多”（导图样式、导出导图、从文件导入）、查看页顶栏 `fileExport` 16、预览页“更多”的工具组。
+- **导入与转换**：起步卡眉行右侧有 `fileImport` 15 `onSurfaceVariant` 紧凑图标按钮“从文件导入”；导图不止中心主题时先弹对话框“替换当前导图？”（取消灰色、替换主色）。文字日记的预览页“更多”工具组里有“转为思维导图”（`sitemap`），打开一篇新的导图日记新建页。
 
 ## 6. 无障碍与跨端屏幕自适应
 

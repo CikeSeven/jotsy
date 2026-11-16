@@ -16235,4 +16235,77 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mindMapMoveDown => '下移';
+
+  @override
+  String get mindMapExport => '导出导图';
+
+  @override
+  String get mindMapExportSaved => '已保存';
+
+  @override
+  String get mindMapExportSavedGallery => '已保存到相册';
+
+  @override
+  String get mindMapExportFailed => '导出失败';
+
+  @override
+  String get mindMapShare => '分享';
+
+  @override
+  String get mindMapSaveFile => '保存为文件';
+
+  @override
+  String get mindMapSaveGallery => '保存到相册';
+
+  @override
+  String get mindMapExportImage => '图片';
+
+  @override
+  String get mindMapExportImageHint => '整张导图的 PNG，按两倍清晰度';
+
+  @override
+  String get mindMapExportPdfHint => '一页，按导图大小';
+
+  @override
+  String get mindMapExportXmindHint => '可在 XMind 中打开，保留主题、图标与备注';
+
+  @override
+  String get mindMapExportMarkdownHint => '标题与嵌套列表';
+
+  @override
+  String get mindMapExportOpmlHint => '大纲，适用于大纲类应用';
+
+  @override
+  String get mindMapExportFreeMindHint => '可在 FreeMind、Freeplane 中打开';
+
+  @override
+  String get mindMapCopyOutline => '复制为大纲文字';
+
+  @override
+  String get mindMapCopyOutlineHint => '缩进文字，每个主题一行';
+
+  @override
+  String get mindMapCopied => '已复制';
+
+  @override
+  String get mindMapImport => '从文件导入';
+
+  @override
+  String get mindMapImported => '已导入';
+
+  @override
+  String get mindMapImportFailed =>
+      '读不出这个文件。支持 XMind、OPML、FreeMind（.mm）与 Markdown';
+
+  @override
+  String get mindMapImportReplaceTitle => '替换当前导图？';
+
+  @override
+  String get mindMapImportReplaceBody => '导入的导图会替换这里的全部主题，可以撤销。';
+
+  @override
+  String get mindMapImportReplaceConfirm => '替换';
+
+  @override
+  String get mindMapConvertFromDiary => '转为思维导图';
 }

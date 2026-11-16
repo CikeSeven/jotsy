@@ -19266,4 +19266,79 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get mindMapMoveDown => 'Вниз';
+
+  @override
+  String get mindMapExport => 'Экспорт карты';
+
+  @override
+  String get mindMapExportSaved => 'Сохранено';
+
+  @override
+  String get mindMapExportSavedGallery => 'Сохранено в галерею';
+
+  @override
+  String get mindMapExportFailed => 'Не удалось экспортировать карту';
+
+  @override
+  String get mindMapShare => 'Поделиться';
+
+  @override
+  String get mindMapSaveFile => 'Сохранить файл';
+
+  @override
+  String get mindMapSaveGallery => 'Сохранить в галерею';
+
+  @override
+  String get mindMapExportImage => 'Изображение';
+
+  @override
+  String get mindMapExportImageHint => 'PNG всей карты в двойном разрешении';
+
+  @override
+  String get mindMapExportPdfHint => 'Одна страница по размеру карты';
+
+  @override
+  String get mindMapExportXmindHint =>
+      'Открывается в XMind с темами, значками и заметками';
+
+  @override
+  String get mindMapExportMarkdownHint => 'Заголовки и вложенные списки';
+
+  @override
+  String get mindMapExportOpmlHint => 'Структура для приложений-аутлайнеров';
+
+  @override
+  String get mindMapExportFreeMindHint => 'Открывается в FreeMind и Freeplane';
+
+  @override
+  String get mindMapCopyOutline => 'Копировать как структуру';
+
+  @override
+  String get mindMapCopyOutlineHint => 'Текст с отступами, по теме на строку';
+
+  @override
+  String get mindMapCopied => 'Скопировано';
+
+  @override
+  String get mindMapImport => 'Импорт из файла';
+
+  @override
+  String get mindMapImported => 'Импортировано';
+
+  @override
+  String get mindMapImportFailed =>
+      'Не удалось прочитать файл. Поддерживаются XMind, OPML, FreeMind (.mm) и Markdown';
+
+  @override
+  String get mindMapImportReplaceTitle => 'Заменить эту карту?';
+
+  @override
+  String get mindMapImportReplaceBody =>
+      'Импортированная карта заменит все темы здесь. Это можно отменить.';
+
+  @override
+  String get mindMapImportReplaceConfirm => 'Заменить';
+
+  @override
+  String get mindMapConvertFromDiary => 'Превратить в интеллект-карту';
 }

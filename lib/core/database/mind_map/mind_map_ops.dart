@@ -288,7 +288,11 @@ abstract final class MindMapOps {
         final copied = clone(child, depth + 1);
         if (copied != null) children.add(copied);
       }
-      return node.copyWith(id: id, children: children);
+      // 外来的树（导入、粘贴、转换）可能超长：与解码同一口径截断。
+      final text = node.text.length > kMindMapMaxTextLength
+          ? node.text.substring(0, kMindMapMaxTextLength)
+          : node.text;
+      return node.copyWith(id: id, text: text, children: children);
     }
 
     return document.copyWith(root: clone(root, 0, isRoot: true));

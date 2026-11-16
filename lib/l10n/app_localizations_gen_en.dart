@@ -18568,4 +18568,80 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mindMapMoveDown => 'Move down';
+
+  @override
+  String get mindMapExport => 'Export map';
+
+  @override
+  String get mindMapExportSaved => 'Saved';
+
+  @override
+  String get mindMapExportSavedGallery => 'Saved to gallery';
+
+  @override
+  String get mindMapExportFailed => 'Couldn\'t export the map';
+
+  @override
+  String get mindMapShare => 'Share';
+
+  @override
+  String get mindMapSaveFile => 'Save as file';
+
+  @override
+  String get mindMapSaveGallery => 'Save to gallery';
+
+  @override
+  String get mindMapExportImage => 'Image';
+
+  @override
+  String get mindMapExportImageHint =>
+      'PNG of the whole map, sharp at twice the size';
+
+  @override
+  String get mindMapExportPdfHint => 'One page sized to the map';
+
+  @override
+  String get mindMapExportXmindHint =>
+      'Opens in XMind with topics, stickers and notes';
+
+  @override
+  String get mindMapExportMarkdownHint => 'Headings and nested lists';
+
+  @override
+  String get mindMapExportOpmlHint => 'Outline for outliner apps';
+
+  @override
+  String get mindMapExportFreeMindHint => 'Opens in FreeMind and Freeplane';
+
+  @override
+  String get mindMapCopyOutline => 'Copy as outline';
+
+  @override
+  String get mindMapCopyOutlineHint => 'Indented text, one topic per line';
+
+  @override
+  String get mindMapCopied => 'Copied';
+
+  @override
+  String get mindMapImport => 'Import from file';
+
+  @override
+  String get mindMapImported => 'Imported';
+
+  @override
+  String get mindMapImportFailed =>
+      'Couldn\'t read this file. Supported: XMind, OPML, FreeMind (.mm), Markdown';
+
+  @override
+  String get mindMapImportReplaceTitle => 'Replace this map?';
+
+  @override
+  String get mindMapImportReplaceBody =>
+      'The imported map replaces all topics here. You can undo it.';
+
+  @override
+  String get mindMapImportReplaceConfirm => 'Replace';
+
+  @override
+  String get mindMapConvertFromDiary => 'Turn into mind map';
 }

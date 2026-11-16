@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/desktop_page_arrows.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../controllers/mind_map_editing_controller.dart';
+import '../controllers/mind_map_io_flow.dart';
+import '../sections/mind_map_export_sheet.dart';
+import '../sections/mind_map_style_sheet.dart';
 import '../viewmodels/mind_map_labels.dart';
 import '../widgets/mind_map_page_scaffold.dart';
 import '../widgets/mind_map_workspace.dart';
@@ -64,6 +69,30 @@ class _MindMapEditorPageState extends State<MindMapEditorPage> {
           ),
         ),
         onBack: _close,
+        actions: <Widget>[
+          ExpressiveMenuButton(
+            tooltip: l10n.mindMapMore,
+            icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+            items: <Widget>[
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.palette),
+                onPressed: () => showMindMapStyleSheet(context, _controller),
+                child: Text(l10n.mindMapStyleSheetTitle),
+              ),
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+                onPressed: () =>
+                    showMindMapExportSheet(context, _controller.document),
+                child: Text(l10n.mindMapExport),
+              ),
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.fileImport),
+                onPressed: () => importMindMapFromFile(context, _controller),
+                child: Text(l10n.mindMapImport),
+              ),
+            ],
+          ),
+        ],
         body: (BuildContext context, double topInset) =>
             MindMapWorkspace(controller: _controller, topInset: topInset),
       ),

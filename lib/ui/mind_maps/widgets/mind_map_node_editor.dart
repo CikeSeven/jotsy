@@ -53,15 +53,20 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
         ? TextSelection(baseOffset: 0, extentOffset: _text.text.length)
         : TextSelection.collapsed(offset: _text.text.length);
     widget.controller.textSession.attach(_text);
+    // 从一个主题换到另一个（删除、加子主题 / 同级）时，旧输入框关掉输入法
+    // 连接只是排一个“收起键盘”的微任务，新输入框在这一帧末接上连接后它就
+    // 作废，键盘不收（测试经 testTextInput 的记录兜底）。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focus.requestFocus();
     });
     _focus.addListener(_onFocusChanged);
+    widget.controller.textSession.toolbarFocus.addListener(_onFocusChanged);
   }
 
   @override
   void dispose() {
     widget.controller.textSession.detach(_text);
+    widget.controller.textSession.toolbarFocus.removeListener(_onFocusChanged);
     _focus.removeListener(_onFocusChanged);
     _text.dispose();
     _focus.dispose();
@@ -76,8 +81,11 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
       widget.controller.setRichText(widget.node.id, text, runs, format: format);
 
   void _onFocusChanged() {
-    // 焦点被别处拿走（点了工具坞、对话框）时结束编辑。
-    if (!_focus.hasFocus && widget.controller.editingId == widget.node.id) {
+    // 焦点被别处拿走（点了工具坞、对话框）时结束编辑；去了格式条（颜色代码
+    // 输入框）不算，从那里回到别处时再结束。
+    if (!_focus.hasFocus &&
+        !widget.controller.textSession.keepsEditing &&
+        widget.controller.editingId == widget.node.id) {
       widget.controller.stopEditing();
     }
   }
@@ -116,8 +124,12 @@ class _MindMapNodeEditorState extends State<MindMapNodeEditor> {
     // 局部样式按导图配色画；整条样式的取值决定格式按钮的状态。
     final styles = MindMapLook.of(context, widget.controller.document).styles;
     _text
-      ..runStyle = ((marks) =>
-          styles.runStyle(marks, base: visual.textStyle.decoration))
+      ..runStyle = ((marks) => styles.runStyle(
+        marks,
+        base: visual.textStyle.decoration,
+        ink: visual.textStyle.color,
+        backdrop: visual.fill ?? styles.palette.surface,
+      ))
       ..base = mindMapBaseMarksOf(visual.textStyle);
     return ListenableBuilder(
       listenable: widget.viewport,

@@ -191,8 +191,10 @@ class MindMapEditingController extends ChangeNotifier {
     return id;
   }
 
-  /// 删除选中的节点（根不删），选中改到相邻的同级或父节点。
-  void deleteSelected() {
+  /// 删除选中的节点（根不删），选中改到相邻的同级或父节点。[keepEditing]
+  /// 时接着编辑新选中的主题（键盘弹着时从附件条删除：不结束编辑，键盘就
+  /// 不收起）。
+  void deleteSelected({bool keepEditing = false}) {
     final id = selectedId;
     if (id == null) return;
     final index = _document.index;
@@ -205,7 +207,8 @@ class MindMapEditingController extends ChangeNotifier {
         : position > 0
         ? siblings[position - 1].id
         : parent;
-    _editingId = null;
+    _editingId = keepEditing ? nextSelection : null;
+    _lastCoalesceKey = null;
     commit(
       MindMapOps.removeNodes(_document, <String>[id]),
       select: nextSelection,

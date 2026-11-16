@@ -88,6 +88,41 @@ abstract final class MindMapOps {
     );
   }
 
+  /// 整条样式里与文字有关、局部样式里也有的几项（见 [setStyle]）。
+  static const Set<String> textStyleKeys = <String>{
+    kMindMapStyleBoldKey,
+    kMindMapStyleItalicKey,
+    kMindMapStyleUnderlineKey,
+    kMindMapStyleStrikeKey,
+    kMindMapStyleColorKey,
+    kMindMapStyleHighlightKey,
+  };
+
+  /// 把节点整条样式里的 [key] 设为 [value]（null 为去掉）。[textStyleKeys]
+  /// 里的项同时去掉同名的局部样式：整条设置就是整条生效，不留被局部盖住
+  /// 的字。
+  static MindMapDocument setStyle(
+    MindMapDocument document,
+    String id,
+    String key,
+    Object? value,
+  ) => updateNode(document, id, (node) {
+    if (node.style[key] == value && !mindMapHasRichText(node)) return node;
+    final style = <String, Object?>{...node.style};
+    if (value == null) {
+      style.remove(key);
+    } else {
+      style[key] = value;
+    }
+    if (!textStyleKeys.contains(key) || !mindMapHasRichText(node)) {
+      return node.copyWith(style: style);
+    }
+    return node.copyWith(
+      style: style,
+      delta: encodeMindMapDelta(clearMindMapMark(mindMapRunsOf(node), key)),
+    );
+  });
+
   static String _clip(String text) => text.length > kMindMapMaxTextLength
       ? text.substring(0, kMindMapMaxTextLength)
       : text;

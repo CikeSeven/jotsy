@@ -48,7 +48,7 @@ const String kMindMapNodeTextKey = 'text';
 /// `[{"insert": 文字, "attributes": {样式}}…]`，各段 insert 拼起来必须等于
 /// `text`（对不上就当没有：旧版本改了文字后不显示错位的样式）。属性名与
 /// `style` 同一套（`bold` / `italic` / `underline` / `strike` 为三态：false
-/// 是在整条样式之上局部取消；`color` / `highlight` 存种子色）。读写只经
+/// 是在整条样式之上局部取消；`color` / `highlight` 按原色存）。读写只经
 /// mind_map_rich_text.dart；`text` 仍是唯一的权威文字（搜索、字数、AI、
 /// 大纲与各文件格式都只读它）。
 const String kMindMapNodeDeltaKey = 'delta';
@@ -61,9 +61,10 @@ const String kMindMapNodeSideKey = 'side';
 const String kMindMapSideLeft = 'l';
 const String kMindMapSideRight = 'r';
 
-/// 节点样式覆盖（对象）：`fill` / `color` / `branch` / `highlight`
-/// （`#AARRGGBB` 种子色）、`shape`、`bold` / `italic` / `underline` / `strike`
-/// （bool）、`size`（s / m / l / xl）。
+/// 节点样式覆盖（对象）：`fill` / `branch`（`#AARRGGBB` 种子色，按明暗
+/// 换算）、`color` / `highlight`（`#AARRGGBB` 原色，与正文的文字色 / 背景色
+/// 同一套）、`shape`、`bold` / `italic` / `underline` / `strike`（bool）、
+/// `size`（s / m / l / xl）。
 const String kMindMapNodeStyleKey = 'style';
 const String kMindMapNodeIconsKey = 'icons';
 const String kMindMapNodeLabelsKey = 'labels';
@@ -91,8 +92,8 @@ const String kMindMapStyleStrikeKey = 'strike';
 /// 文字下划线（与形状里的“下划线”不同：那是节点下方的一条线）。
 const String kMindMapStyleUnderlineKey = 'underline';
 
-/// 文字高亮：字后面的底色（种子色，显示取容器色），与节点框的底色 `fill`
-/// 不同，不带形状的主题也能用。
+/// 文字高亮：字后面的底色（原色，可带透明度），与节点框的底色 `fill` 不同，
+/// 不带形状的主题也能用。
 const String kMindMapStyleHighlightKey = 'highlight';
 const String kMindMapStyleSizeKey = 'size';
 

@@ -446,7 +446,6 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
     // （增删主题仍用 Enter / Tab / Esc）。
     final showDock = !widget.readOnly && !editing;
     final showFormatBar = !widget.readOnly && editing && AppPlatform.isDesktop;
-    final palette = MindMapLook.of(context, controller.document).palette;
     final bottomSafe = MediaQuery.paddingOf(context).bottom;
     final padding = EdgeInsets.only(
       top: widget.topInset,
@@ -540,10 +539,7 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
                                 ),
-                                child: MindMapFormatBar(
-                                  controller: controller,
-                                  palette: palette,
-                                ),
+                                child: MindMapFormatBar(controller: controller),
                               ),
                             ),
                           ),
@@ -583,14 +579,8 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
               bottom: 0,
               child: KeyboardInsetPadding(
                 child: _outline
-                    ? MindMapOutlineAccessoryBar(
-                        controller: controller,
-                        palette: palette,
-                      )
-                    : MindMapEditingAccessoryBar(
-                        controller: controller,
-                        palette: palette,
-                      ),
+                    ? MindMapOutlineAccessoryBar(controller: controller)
+                    : MindMapEditingAccessoryBar(controller: controller),
               ),
             ),
           Positioned(

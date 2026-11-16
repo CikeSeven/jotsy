@@ -193,6 +193,7 @@ class _OutlineRowState extends State<_OutlineRow> {
       _controller.textSession.attach(text);
       _focus = FocusNode(onKeyEvent: _onKey);
       _focus!.addListener(_onFocus);
+      _controller.textSession.toolbarFocus.addListener(_onFocus);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _focus?.requestFocus();
@@ -209,7 +210,10 @@ class _OutlineRowState extends State<_OutlineRow> {
   }
 
   void _disposeEditor() {
-    if (_text case final text?) _controller.textSession.detach(text);
+    if (_text case final text?) {
+      _controller.textSession.detach(text);
+      _controller.textSession.toolbarFocus.removeListener(_onFocus);
+    }
     _text?.dispose();
     _focus?.removeListener(_onFocus);
     _focus?.dispose();
@@ -224,7 +228,11 @@ class _OutlineRowState extends State<_OutlineRow> {
   }) => _controller.setRichText(widget.node.id, text, runs, format: format);
 
   void _onFocus() {
-    if (!(_focus?.hasFocus ?? true) && _editing) _controller.stopEditing();
+    if (!(_focus?.hasFocus ?? true) &&
+        !_controller.textSession.keepsEditing &&
+        _editing) {
+      _controller.stopEditing();
+    }
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
@@ -325,6 +333,8 @@ class _OutlineRowState extends State<_OutlineRow> {
     TextStyle? runStyle(MindMapTextMarks marks) => widget.styles.runStyle(
       marks,
       base: style?.decoration,
+      ink: style?.color,
+      backdrop: scheme.surface,
       taskDone: node.taskDone,
     );
     _text

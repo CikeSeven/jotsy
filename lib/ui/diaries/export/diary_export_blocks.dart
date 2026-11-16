@@ -1,4 +1,4 @@
-import 'dart:ui' show Brightness, Color;
+import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 
@@ -19,7 +19,6 @@ import '../models/diary_image_embed_data.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
 import '../models/diary_thumbnail_rows.dart';
-import '../../mind_maps/viewmodels/mind_map_palette.dart';
 import '../../mind_maps/viewmodels/mind_map_visuals.dart';
 
 part 'diary_export_native_blocks.dart';

@@ -8,6 +8,9 @@ import 'package:node_diary/core/database/mind_map/mind_map_ops.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_rich_text.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_text.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch.dart';
 import 'package:node_diary/ui/mind_maps/controllers/mind_map_editing_controller.dart';
 import 'package:node_diary/ui/mind_maps/layout/mind_map_layout.dart';
 import 'package:node_diary/ui/mind_maps/layout/mind_map_text_cache.dart';
@@ -16,7 +19,6 @@ import 'package:node_diary/ui/mind_maps/models/mind_map_themes.dart';
 import 'package:node_diary/ui/mind_maps/sections/mind_map_node_sheets.dart';
 import 'package:node_diary/ui/mind_maps/viewmodels/mind_map_palette.dart';
 import 'package:node_diary/ui/mind_maps/viewmodels/mind_map_visuals.dart';
-import 'package:node_diary/ui/mind_maps/widgets/mind_map_color_swatches.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_dock.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_format_bar.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_outline_view.dart';
@@ -116,8 +118,10 @@ void main() {
     );
   });
 
-  testWidgets('text color swaps the row for swatches and keeps the field '
-      'focused', (tester) async {
+  testWidgets('text color opens the same color panel as the diary editor; '
+      'a preset colors the selection and the custom code keeps editing', (
+    tester,
+  ) async {
     final controller = MindMapEditingController(tree());
     addTearDown(controller.dispose);
     await pumpHost(tester, MindMapWorkspace(controller: controller));
@@ -129,35 +133,86 @@ void main() {
     await tester.pump();
     await tester.tap(tooltip('Text color'));
     await tester.pumpAndSettle();
+    expect(find.byType(DiaryColorPanel), findsOneWidget);
+    expect(controller.textSession.panelExtent.value, greaterThan(0));
     final swatches = find.descendant(
-      of: find.byType(MindMapFormatBar),
-      matching: find.byType(MindMapColorSwatch),
+      of: find.byType(DiaryColorPanel),
+      matching: find.byType(DiaryColorSwatch),
     );
-    expect(swatches, findsNWidgets(kMindMapColorSeeds.length + 1));
+    // 默认 + 全部预设 + 我的颜色一行的格子。
+    expect(
+      swatches.evaluate().length,
+      greaterThan(DiaryColorPreset.values.length),
+    );
     await tester.tap(swatches.at(1));
     await tester.pump();
-    final runs = mindMapRunsOf(controller.document.index[id]!);
+    var runs = mindMapRunsOf(controller.document.index[id]!);
     expect(runs.last.text, 'Beta');
     expect(
       runs.last.marks.color,
-      MindMapNodeStyle.encodeColor(Color(kMindMapColorSeeds.first)),
+      encodeDiaryColor(
+        DiaryColorPreset.values.first.colorFor(DiaryColorTarget.text),
+      ),
     );
     expect(controller.editingId, id);
-    final field = tester.widget<TextField>(find.byType(TextField));
+    final field = tester.widget<TextField>(
+      find.descendant(
+        of: find.byType(MindMapWorkspace),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is TextField &&
+              widget.controller == controller.textSession.current,
+        ),
+      ),
+    );
     expect(field.focusNode!.hasFocus, isTrue);
+
+    // 自定义页的颜色代码输入框拿走焦点时不结束编辑，应用后焦点回到主题。
+    await tester.tap(find.text('Custom'));
+    await tester.pumpAndSettle();
+    final hex = find.descendant(
+      of: find.byType(DiaryColorPanel),
+      matching: find.byType(TextField),
+    );
+    await tester.tap(hex);
+    await tester.pump();
+    expect(controller.editingId, id);
+    await tester.enterText(hex, '00897B');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    runs = mindMapRunsOf(controller.document.index[id]!);
+    expect(runs.last.marks.color, '#FF00897B');
+    expect(controller.editingId, id);
+
+    // 再点一次收起面板。
+    await tester.tap(tooltip('Text color'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryColorPanel), findsNothing);
+    expect(controller.textSession.panelExtent.value, 0);
   });
 
-  testWidgets('the keyboard bar deletes the topic being edited; the central '
-      'topic cannot be deleted', (tester) async {
+  testWidgets('the keyboard bar deletes the topic being edited and goes on '
+      'editing the next one without hiding the keyboard; the central topic '
+      'cannot be deleted', (tester) async {
     final controller = MindMapEditingController(tree());
     addTearDown(controller.dispose);
     await pumpHost(tester, MindMapWorkspace(controller: controller));
     final gamma = await startEditing(tester, controller, 'Gamma');
+    expect(tester.testTextInput.isVisible, isTrue);
+    tester.testTextInput.log.clear();
     await tester.tap(find.text('Delete'));
     await tester.pump();
+    await tester.pump();
     expect(controller.document.index.contains(gamma), isFalse);
-    expect(controller.editingId, isNull);
-    expect(controller.selectedId, idOf(controller.document, 'Alpha Beta'));
+    final alpha = idOf(controller.document, 'Alpha Beta');
+    expect(controller.selectedId, alpha);
+    expect(controller.editingId, alpha);
+    expect(controller.textSession.current?.text, 'Alpha Beta');
+    expect(
+      tester.testTextInput.log.map((call) => call.method),
+      isNot(contains('TextInput.hide')),
+    );
+    expect(tester.testTextInput.isVisible, isTrue);
 
     controller.startEditing(controller.document.root.id);
     await tester.pump();
@@ -248,12 +303,24 @@ void main() {
     expect(node.style['underline'], isTrue);
     expect(mindMapRunsOf(node).first.marks, const MindMapTextMarks(bold: true));
 
-    final highlight = find.byType(MindMapColorSwatch);
-    await tester.ensureVisible(highlight.at(30));
-    await tester.tap(highlight.at(30));
+    // 文字高亮：切到“高亮”再点第一个预设，整条生效。
+    await tester.ensureVisible(find.text('Highlight'));
+    await tester.tap(find.text('Highlight'));
+    await tester.pumpAndSettle();
+    final swatches = find.descendant(
+      of: find.byType(DiaryColorPanel),
+      matching: find.byType(DiaryColorSwatch),
+    );
+    await tester.ensureVisible(swatches.at(1));
+    await tester.tap(swatches.at(1));
     await tester.pump();
     node = controller.document.index[alpha]!;
-    expect(MindMapNodeStyle(node.style).highlight, isNotNull);
+    expect(
+      node.style['highlight'],
+      encodeDiaryColor(
+        DiaryColorPreset.values.first.colorFor(DiaryColorTarget.background),
+      ),
+    );
   });
 
   testWidgets('desktop: Ctrl + B bolds the selection and the format bar '

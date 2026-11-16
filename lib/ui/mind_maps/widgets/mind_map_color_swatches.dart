@@ -6,9 +6,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../diaries/models/diary_mood_palette.dart';
 import '../viewmodels/mind_map_palette.dart';
 
-/// 主题自定义颜色可选的种子色（与心情色同一组十个色相 + 一个中性灰）。
-/// 整条样式（主题样式面板）与局部样式（格式条）共用；显示与写入都经
-/// [MindMapPalette.custom] 按明暗换算。
+/// 主题底色与分支色可选的种子色（与心情色同一组十个色相 + 一个中性灰），
+/// 显示与写入都经 [MindMapPalette.custom] 按明暗换算。文字颜色与高亮不用
+/// 它，用正文同款的颜色面板（见 MindMapFormatBar / MindMapTextColorSection）。
 const List<int> kMindMapColorSeeds = <int>[
   ...kDiaryMoodDefaultColors,
   0xFF757575,

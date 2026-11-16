@@ -6,7 +6,6 @@ import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../controllers/mind_map_editing_controller.dart';
-import '../viewmodels/mind_map_palette.dart';
 import 'mind_map_format_bar.dart';
 
 /// 手机上编辑主题文字时键盘上方的附件条（画布与大纲各一种），同一块浮动
@@ -15,8 +14,8 @@ import 'mind_map_format_bar.dart';
 /// - 画布：子主题、同级、换行、删除、完成；
 /// - 大纲：取消缩进、缩进、上移、下移、删除、完成。
 ///
-/// 删除与工具坞的删除一致（`deleteSelected`：结束编辑、选中相邻的主题，
-/// 可撤销），中心主题不能删、按钮置灰。画布让正在编辑的节点露在附件条之上
+/// 删除与工具坞的删除一致（`deleteSelected`，选中相邻的主题，可撤销），但
+/// 接着编辑新选中的主题、键盘不收起；中心主题不能删、按钮置灰。画布让正在编辑的节点露在附件条之上
 /// 时按 [height] 留白（见 MindMapCanvas 的 `_revealPadding`）。
 abstract final class MindMapAccessoryBar {
   /// 操作行的高度。
@@ -31,14 +30,9 @@ abstract final class MindMapAccessoryBar {
 
 /// 画布上编辑文字时的附件条。
 class MindMapEditingAccessoryBar extends StatelessWidget {
-  const MindMapEditingAccessoryBar({
-    super.key,
-    required this.controller,
-    required this.palette,
-  });
+  const MindMapEditingAccessoryBar({super.key, required this.controller});
 
   final MindMapEditingController controller;
-  final MindMapPalette palette;
 
   void _insertNewLine() {
     final primary = FocusManager.instance.primaryFocus?.context;
@@ -62,7 +56,6 @@ class MindMapEditingAccessoryBar extends StatelessWidget {
     final l10n = context.l10n;
     return _AccessoryCard(
       controller: controller,
-      palette: palette,
       actions: <Widget>[
         _AccessoryAction(
           icon: FontAwesomeIcons.diagramSuccessor,
@@ -92,14 +85,9 @@ class MindMapEditingAccessoryBar extends StatelessWidget {
 
 /// 大纲里编辑文字时的附件条。
 class MindMapOutlineAccessoryBar extends StatelessWidget {
-  const MindMapOutlineAccessoryBar({
-    super.key,
-    required this.controller,
-    required this.palette,
-  });
+  const MindMapOutlineAccessoryBar({super.key, required this.controller});
 
   final MindMapEditingController controller;
-  final MindMapPalette palette;
 
   void _apply(MindMapDocument Function(MindMapDocument, String) op) {
     final id = controller.editingId;
@@ -113,7 +101,6 @@ class MindMapOutlineAccessoryBar extends StatelessWidget {
     final l10n = context.l10n;
     return _AccessoryCard(
       controller: controller,
-      palette: palette,
       actions: <Widget>[
         _AccessoryAction(
           icon: FontAwesomeIcons.outdent,
@@ -152,14 +139,9 @@ class MindMapOutlineAccessoryBar extends StatelessWidget {
 
 /// 两行的浮动卡片：格式条 + 操作行。
 class _AccessoryCard extends StatelessWidget {
-  const _AccessoryCard({
-    required this.controller,
-    required this.palette,
-    required this.actions,
-  });
+  const _AccessoryCard({required this.controller, required this.actions});
 
   final MindMapEditingController controller;
-  final MindMapPalette palette;
   final List<Widget> actions;
 
   @override
@@ -171,7 +153,7 @@ class _AccessoryCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            MindMapFormatBar(controller: controller, palette: palette),
+            MindMapFormatBar(controller: controller),
             SizedBox(
               height: MindMapAccessoryBar.actionsHeight,
               child: Row(children: actions),
@@ -243,11 +225,12 @@ class _DeleteAction extends StatelessWidget {
       icon: FontAwesomeIcons.trashCan,
       label: context.l10n.mindMapDelete,
       color: Theme.of(context).colorScheme.error,
+      // 删掉后接着编辑相邻的主题，键盘不收起。
       onTap: isRoot
           ? null
           : () {
               controller.select(id);
-              controller.deleteSelected();
+              controller.deleteSelected(keepEditing: true);
             },
     );
   }

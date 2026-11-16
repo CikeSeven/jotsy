@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../l10n/app_localizations.dart';
@@ -20,6 +21,7 @@ import '../models/mind_map_themes.dart';
 import '../viewmodels/mind_map_palette.dart';
 import '../viewmodels/mind_map_visuals.dart';
 import '../widgets/mind_map_color_swatches.dart';
+import 'mind_map_text_color_section.dart';
 
 /// 单个主题的面板：样式、图标贴纸、标签、备注、链接与“插入”总入口。
 ///
@@ -267,20 +269,11 @@ class _ActionCell extends StatelessWidget {
 
 // ---------------- 样式 ----------------
 
-/// 改了整条样式里与文字有关的一项时，同名的局部样式一并去掉（整条设置就是
-/// 整条生效，不留被局部盖住的字）。
-const Set<String> _textStyleKeys = <String>{
-  kMindMapStyleBoldKey,
-  kMindMapStyleItalicKey,
-  kMindMapStyleUnderlineKey,
-  kMindMapStyleStrikeKey,
-  kMindMapStyleColorKey,
-  kMindMapStyleHighlightKey,
-};
-
-/// 一个主题的样式：形状、底色、文字颜色、文字高亮、分支颜色、粗 / 斜 /
-/// 下划线 / 删除线、字号。文字有关的几项改的是整条，同名的局部样式随之
-/// 去掉；重置样式连局部样式一起清掉。
+/// 一个主题的样式：形状、底色、文字颜色与文字高亮（正文同款的颜色面板，
+/// 见 [MindMapTextColorSection]）、分支颜色、粗 / 斜 / 下划线 / 删除线、
+/// 字号。改动经 [MindMapOps.setStyle]：文字有关的几项改的是整条，同名的
+/// 局部样式随之去掉；重置样式连局部样式一起清掉。底色与分支色是主题配色，
+/// 仍是按明暗换算的种子色。
 Future<void> showMindMapNodeStyleSheet(
   BuildContext context,
   MindMapEditingController controller,
@@ -294,25 +287,12 @@ Future<void> showMindMapNodeStyleSheet(
     builder: (BuildContext context, MindMapNode node) {
       final l10n = context.l10n;
       final style = MindMapNodeStyle(node.style);
-      void set(String key, Object? value) => controller.updateNode(id, (n) {
-        final next = <String, Object?>{...n.style};
-        if (value == null) {
-          next.remove(key);
-        } else {
-          next[key] = value;
-        }
-        if (!_textStyleKeys.contains(key) || !mindMapHasRichText(n)) {
-          return n.copyWith(style: next);
-        }
-        return n.copyWith(
-          style: next,
-          delta: encodeMindMapDelta(clearMindMapMark(mindMapRunsOf(n), key)),
-        );
-      });
+      void set(String key, Object? value) => controller.updateDocument(
+        (document) => MindMapOps.setStyle(document, id, key, value),
+      );
       Color? seed(Object? raw) =>
           MindMapNodeStyle(<String, Object?>{kMindMapStyleFillKey: raw}).fill;
-      // 底色与高亮预览容器色（节点上实际的样子），文字色与分支色预览
-      // 强调色。
+      // 底色预览容器色（节点上实际的样子），分支色预览强调色。
       Widget colors(String key, {bool container = false}) =>
           MindMapColorSwatches(
             selected: seed(node.style[key]),
@@ -351,10 +331,9 @@ Future<void> showMindMapNodeStyleSheet(
           ),
           _SectionLabel(l10n.mindMapFill),
           colors(kMindMapStyleFillKey, container: true),
-          _SectionLabel(l10n.mindMapTextColor),
-          colors(kMindMapStyleColorKey),
-          _SectionLabel(l10n.mindMapHighlight),
-          colors(kMindMapStyleHighlightKey, container: true),
+          // 文字颜色 / 文字高亮的切换就是这一节的标题。
+          const SizedBox(height: 16),
+          MindMapTextColorSection(controller: controller, id: id),
           _SectionLabel(l10n.mindMapBranchColor),
           colors(kMindMapStyleBranchKey),
           _SectionLabel(l10n.mindMapTextStyle),

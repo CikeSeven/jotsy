@@ -13,7 +13,8 @@ import 'mind_map_schema.dart';
 ///   旧版本改了文字后不会显示错位的样式；
 /// - 属性名与节点 `style` 同一套。`bold` / `italic` / `underline` / `strike`
 ///   为三态：缺省随整条样式，true / false 是在整条样式之上局部打开 / 取消；
-///   `color` / `highlight` 存种子色 `#AARRGGBB`，显示时由界面层按明暗换算；
+///   `color` / `highlight` 与正文的文字色 / 背景色同一套，按原色存
+///   `#AARRGGBB`、按原色显示；
 ///   认不出的属性原样跟着文字走、原样写回；
 /// - 编码时合并相邻同样式的段、丢掉空段；一个样式都没有时不写 delta。
 ///
@@ -99,10 +100,10 @@ final class MindMapTextMarks {
   final bool? underline;
   final bool? strike;
 
-  /// 文字颜色（种子色原文）。
+  /// 文字颜色（`#AARRGGBB` 原文）。
   final String? color;
 
-  /// 高亮底色（种子色原文）。
+  /// 高亮底色（`#AARRGGBB` 原文，可带透明度）。
   final String? highlight;
 
   /// 认不出的属性，原样写回。

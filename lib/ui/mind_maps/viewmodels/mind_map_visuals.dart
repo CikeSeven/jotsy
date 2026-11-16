@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
@@ -148,24 +150,22 @@ final class MindMapStyleResolver {
           textColor = palette.onSurface;
       }
     }
-    // 自定义颜色存的是种子色，与主题一样按明暗换算：底色取它的容器色、
-    // 文字取容器上的文字色；单独设的文字色取强调色（亮色较深、暗色较浅）。
+    // 自定义底色存的是种子色，与主题一样按明暗换算：底色取它的容器色、
+    // 文字取容器上的文字色。
     if (style.fill case final custom? when shape.boxed) {
       final colors = palette.custom(custom);
       fill = colors.container;
       textColor = colors.onContainer;
       border = null;
     }
-    // 整条高亮：字后面铺种子色的容器色，没单独设文字色时文字取容器上的
-    // 文字色（实心底色的节点上也看得清）。
-    Color? highlight;
-    if (style.highlight case final custom?) {
-      final colors = palette.custom(custom);
-      highlight = colors.container;
-      textColor = colors.onContainer;
-    }
+    // 文字颜色与高亮是内容配色，与正文同一套（预设、色系、自定义、我的
+    // 颜色），按原色显示。高亮叠在节点底色（或画布）上后原来的文字看不清、
+    // 又没单独设文字色时，文字换成对比更强的墨色（[readableInk]）。
+    final highlight = style.highlight;
     if (style.color case final custom?) {
-      textColor = palette.custom(custom).accent;
+      textColor = custom;
+    } else if (highlight != null) {
+      textColor = readableInk(textColor, highlight, fill ?? palette.surface);
     }
 
     final fontSize = level.fontSize * size;
@@ -213,6 +213,8 @@ final class MindMapStyleResolver {
     bool taskDone = false,
   }) {
     var base = visual.textStyleWithHighlight;
+    final ink = base.color;
+    final backdrop = visual.fill ?? palette.surface;
     if (taskDone) {
       final color = base.color;
       base = base.copyWith(
@@ -237,6 +239,8 @@ final class MindMapStyleResolver {
             style: runStyle(
               run.marks,
               base: base.decoration,
+              ink: ink,
+              backdrop: backdrop,
               taskDone: taskDone,
             ),
           ),
@@ -249,12 +253,15 @@ final class MindMapStyleResolver {
   /// 的覆盖照样适用）。[base] 为底下那层的装饰线（只改下划线时保留删除线，
   /// 反之亦然）。没有可覆盖的为 null。
   ///
-  /// 颜色与整条一样存种子色、经 [MindMapPalette.custom] 按明暗换算：文字色
-  /// 取强调色，高亮取容器色，只设了高亮的字取容器上的文字色。整条样式
-  /// （`style`）也可经 [MindMapNodeStyle.textMarks] 走这里（大纲视图）。
+  /// 文字颜色与高亮按原色显示（与正文同一套）；只设了高亮的字，若底下那层
+  /// 的文字色 [ink] 叠在高亮（再叠在 [backdrop] 上）上看不清，换成对比更强
+  /// 的墨色（[readableInk]）。整条样式（`style`）也可经
+  /// [MindMapNodeStyle.textMarks] 走这里（大纲视图）。
   TextStyle? runStyle(
     MindMapTextMarks marks, {
     TextDecoration? base,
+    Color? ink,
+    Color? backdrop,
     bool taskDone = false,
   }) {
     if (marks.isEmpty) return null;
@@ -268,15 +275,15 @@ final class MindMapStyleResolver {
             (marks.strike ?? below.contains(TextDecoration.lineThrough)),
       );
     }
-    Color? color;
-    Color? background;
-    if (MindMapNodeStyle.parseColor(marks.highlight) case final seed?) {
-      final colors = palette.custom(seed);
-      background = colors.container;
-      color = colors.onContainer;
-    }
-    if (MindMapNodeStyle.parseColor(marks.color) case final seed?) {
-      color = palette.custom(seed).accent;
+    var color = MindMapNodeStyle.parseColor(marks.color);
+    final background = MindMapNodeStyle.parseColor(marks.highlight);
+    if (color == null && background != null && ink != null) {
+      final readable = readableInk(
+        ink,
+        background,
+        backdrop ?? palette.surface,
+      );
+      if (readable != ink) color = readable;
     }
     if (taskDone && color != null) {
       color = color.withValues(alpha: color.a * 0.55);
@@ -302,6 +309,23 @@ final class MindMapStyleResolver {
       decorationColor: color,
       backgroundColor: background,
     );
+  }
+
+  /// 叠在 [highlight]（再叠在 [backdrop] 上）上的文字色：[ink] 的对比够
+  /// （3:1）就用它，不够时在导图的墨色与表面色里取对比更强的一个（亮暗主题
+  /// 下都是一深一浅）。
+  Color readableInk(Color ink, Color highlight, Color backdrop) {
+    final behind = Color.alphaBlend(highlight, backdrop);
+    if (_contrast(ink, behind) >= 3) return ink;
+    final dark = palette.onSurface;
+    final light = palette.surface;
+    return _contrast(dark, behind) >= _contrast(light, behind) ? dark : light;
+  }
+
+  static double _contrast(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
   }
 
   static TextDecoration _decoration({

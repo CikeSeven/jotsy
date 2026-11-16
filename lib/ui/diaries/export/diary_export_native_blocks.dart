@@ -269,29 +269,21 @@ List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
 }
 
 /// 一个主题压成一行后的各段：局部样式优先，没设的随整条样式（`style`）；
-/// [bold] 为这一行默认加粗（嵌入导图的中心主题）。颜色存的是种子色，导出
-/// 不跟随当前界面，按亮色换算（文字色取强调色、高亮取容器色，只设了高亮
-/// 的字取容器上的文字色）。
+/// [bold] 为这一行默认加粗（嵌入导图的中心主题）。文字颜色与高亮与正文
+/// 同一套、按原色写出（半透明的高亮由各写出器叠在纸面上，同正文）。
 List<ExportInline> _mindMapInlines(MindMapNode node, {bool bold = false}) {
   final style = MindMapNodeStyle(node.style);
-  MindMapBranchColors? colors(Color? seed) =>
-      seed == null ? null : MindMapPalette.seedColors(seed, Brightness.light);
   ExportInline inline(MindMapTextRun run) {
     final marks = run.marks;
-    final highlight = colors(
-      MindMapNodeStyle.parseColor(marks.highlight) ?? style.highlight,
-    );
-    final color = colors(
-      MindMapNodeStyle.parseColor(marks.color) ?? style.color,
-    );
     return ExportInline(
       run.text,
       bold: marks.bold ?? (bold || style.bold == true),
       italic: marks.italic ?? style.italic ?? false,
       underline: marks.underline ?? style.underline ?? false,
       strike: marks.strike ?? style.strike ?? false,
-      color: color?.accent ?? highlight?.onContainer,
-      background: highlight?.container,
+      color: MindMapNodeStyle.parseColor(marks.color) ?? style.color,
+      background:
+          MindMapNodeStyle.parseColor(marks.highlight) ?? style.highlight,
     );
   }
 

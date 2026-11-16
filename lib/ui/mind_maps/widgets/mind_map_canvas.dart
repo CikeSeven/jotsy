@@ -133,6 +133,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
     widget.viewport.attach(this);
     widget.controller.addListener(_onControllerChanged);
     widget.keyboardInset?.addListener(_onKeyboardChanged);
+    widget.controller.textSession.panelExtent.addListener(_onKeyboardChanged);
     _transition.addStatusListener((status) {
       if (!_transition.isAnimating) {
         _from = null;
@@ -147,7 +148,11 @@ class MindMapCanvasState extends State<MindMapCanvas>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onControllerChanged);
+      oldWidget.controller.textSession.panelExtent.removeListener(
+        _onKeyboardChanged,
+      );
       widget.controller.addListener(_onControllerChanged);
+      widget.controller.textSession.panelExtent.addListener(_onKeyboardChanged);
     }
     if (oldWidget.viewport != widget.viewport) {
       oldWidget.viewport.detach();
@@ -162,6 +167,9 @@ class MindMapCanvasState extends State<MindMapCanvas>
   @override
   void dispose() {
     widget.controller.removeListener(_onControllerChanged);
+    widget.controller.textSession.panelExtent.removeListener(
+      _onKeyboardChanged,
+    );
     widget.keyboardInset?.removeListener(_onKeyboardChanged);
     widget.viewport.detach();
     _transition.dispose();
@@ -225,18 +233,20 @@ class MindMapCanvasState extends State<MindMapCanvas>
   }
 
   /// 让节点露出来时四周留的白：键盘升起时底边让出键盘与其上两行的附件条
-  /// （[MindMapAccessoryBar.height]），正在编辑的节点不被盖住。
+  /// （[MindMapAccessoryBar.height]），颜色面板展开时再让出面板的高度，
+  /// 正在编辑的节点不被盖住。
   EdgeInsets get _revealPadding {
     final keyboard = widget.keyboardInset?.value ?? 0;
     final base = widget.padding;
     final accessory = keyboard > 0
         ? keyboard + MindMapAccessoryBar.height + 12
         : 0.0;
+    final panel = widget.controller.textSession.panelExtent.value;
     return EdgeInsets.fromLTRB(
       base.left + 24,
       base.top + 24,
       base.right + 24,
-      math.max(base.bottom, accessory) + 24,
+      math.max(base.bottom, accessory) + panel + 24,
     );
   }
 

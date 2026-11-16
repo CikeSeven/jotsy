@@ -6,6 +6,7 @@ import '../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_surface/widgets/app_glass_field.dart';
 import '../../diaries/models/diary_mood_palette.dart';
 import '../../diaries/widgets/diary_link/diary_link_search_view.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
@@ -522,6 +523,7 @@ class _ToggleIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => IconButton.filledTonal(
     tooltip: tooltip,
+    style: AppGlassField.tonalButtonStyle(context),
     isSelected: selected,
     onPressed: onTap,
     icon: FaIcon(icon, size: 15),
@@ -960,7 +962,11 @@ class _NoteSheetState extends State<_NoteSheet> {
       title: l10n.mindMapNote,
       children: <Widget>[
         if (widget.readOnly)
-          SelectableText(_input.text, style: theme.textTheme.bodyLarge)
+          SelectableText(
+            _input.text,
+            style: theme.textTheme.bodyLarge,
+            contextMenuBuilder: appTextContextMenuBuilder,
+          )
         else
           TextField(
             controller: _input,
@@ -1056,6 +1062,7 @@ class _LinkSheetState extends State<_LinkSheet> {
                 if (widget.onOpen != null)
                   Expanded(
                     child: FilledButton.tonalIcon(
+                      style: AppGlassField.tonalButtonStyle(context),
                       onPressed: () {
                         Navigator.of(context).maybePop();
                         widget.onOpen!(_current);

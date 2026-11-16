@@ -57,8 +57,8 @@ void main() {
       0,
       2,
       (marks) => marks
-          .withFlag(MindMapMark.bold, true)
-          .withColor(MindMapColorMark.highlight, '#FFFDD835'),
+          .withFlag(InlineMark.bold, true)
+          .withColor(InlineColorMark.highlight, '#FFFDD835'),
     );
     styled = MindMapOps.updateNode(
       styled,

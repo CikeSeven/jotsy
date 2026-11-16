@@ -4,7 +4,7 @@ import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
-import 'mind_map_rich_text_controller.dart';
+import 'mind_map_text_session.dart';
 
 /// 导图编辑会话：当前文档、选中与正在编辑的节点、撤销 / 重做。
 ///
@@ -160,7 +160,7 @@ class MindMapEditingController extends ChangeNotifier {
   void setRichText(
     String id,
     String text,
-    List<MindMapTextRun> runs, {
+    List<InlineTextRun> runs, {
     bool format = false,
   }) => commit(
     MindMapOps.setRichText(_document, id, text, runs),

@@ -83,9 +83,9 @@ void main() {
     await tester.pump();
     await tester.tap(tooltip('Bold'));
     await tester.pump();
-    expect(mindMapRunsOf(controller.document.index[id]!), <MindMapTextRun>[
-      const MindMapTextRun('Alpha', MindMapTextMarks(bold: true)),
-      const MindMapTextRun(' Beta'),
+    expect(mindMapRunsOf(controller.document.index[id]!), <InlineTextRun>[
+      const InlineTextRun('Alpha', InlineTextMarks(bold: true)),
+      const InlineTextRun(' Beta'),
     ]);
     expect(controller.editingId, id);
 
@@ -114,7 +114,7 @@ void main() {
     await tester.pump();
     expect(
       mindMapRunsOf(controller.document.index[id]!).last,
-      const MindMapTextRun('!', MindMapTextMarks(underline: true)),
+      const InlineTextRun('!', InlineTextMarks(underline: true)),
     );
   });
 
@@ -235,7 +235,7 @@ void main() {
       alpha,
       0,
       5,
-      (marks) => marks.withFlag(MindMapMark.bold, true),
+      (marks) => marks.withFlag(InlineMark.bold, true),
     );
     final controller = MindMapEditingController(document);
     addTearDown(controller.dispose);
@@ -257,9 +257,9 @@ void main() {
     await tester.pump();
     await tester.enterText(find.byType(TextField), 'Alpha Beta Delta');
     await tester.pump();
-    expect(mindMapRunsOf(controller.document.index[alpha]!), <MindMapTextRun>[
-      const MindMapTextRun('Alpha', MindMapTextMarks(bold: true)),
-      const MindMapTextRun(' Beta Delta'),
+    expect(mindMapRunsOf(controller.document.index[alpha]!), <InlineTextRun>[
+      const InlineTextRun('Alpha', InlineTextMarks(bold: true)),
+      const InlineTextRun(' Beta Delta'),
     ]);
   });
 
@@ -273,8 +273,8 @@ void main() {
       0,
       5,
       (marks) => marks
-          .withFlag(MindMapMark.underline, true)
-          .withFlag(MindMapMark.bold, true),
+          .withFlag(InlineMark.underline, true)
+          .withFlag(InlineMark.bold, true),
     );
     final controller = MindMapEditingController(document);
     addTearDown(controller.dispose);
@@ -301,7 +301,7 @@ void main() {
     await tester.pump();
     var node = controller.document.index[alpha]!;
     expect(node.style['underline'], isTrue);
-    expect(mindMapRunsOf(node).first.marks, const MindMapTextMarks(bold: true));
+    expect(mindMapRunsOf(node).first.marks, const InlineTextMarks(bold: true));
 
     // 文字高亮：切到“高亮”再点第一个预设，整条生效。
     await tester.ensureVisible(find.text('Highlight'));
@@ -340,8 +340,8 @@ void main() {
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     await tester.pump();
     // 桌面上进入编辑时全选：整段加粗。
-    expect(mindMapRunsOf(controller.document.index[id]!), <MindMapTextRun>[
-      const MindMapTextRun('Gamma', MindMapTextMarks(bold: true)),
+    expect(mindMapRunsOf(controller.document.index[id]!), <InlineTextRun>[
+      const InlineTextRun('Gamma', InlineTextMarks(bold: true)),
     ]);
     expect(controller.editingId, id);
     debugDefaultTargetPlatformOverride = null;
@@ -377,7 +377,7 @@ void main() {
       gamma,
       0,
       5,
-      (marks) => marks.withFlag(MindMapMark.bold, true),
+      (marks) => marks.withFlag(InlineMark.bold, true),
     );
     final bold = layoutMindMap(document, config).byId[gamma]!;
     // 测试字体里粗体不变宽：比的是排版用的片段，而不是宽度。

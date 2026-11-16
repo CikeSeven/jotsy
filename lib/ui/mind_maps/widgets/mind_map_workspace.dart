@@ -54,7 +54,7 @@ import 'mind_map_starter_card.dart';
 /// 大小、Ctrl / ⌘ + / 收起或展开、Ctrl / ⌘ + C / X / V 复制剪切粘贴、Esc
 /// 取消选中（没选中时交给页面返回）。编辑文字时底部的工具坞换成格式条
 /// [MindMapFormatBar]，Ctrl / ⌘ + B / I / U、Ctrl / ⌘ + Shift + S 设局部
-/// 样式（由输入框处理，见 `mindMapFormatShortcut`）。
+/// 样式（由输入框处理，见 `inlineFormatShortcut`）。
 ///
 /// 节点里的备注与链接标记：点备注打开备注面板（只读时只能看），点链接打开
 /// 网址或日记（日记链接经 `openDiaryLinkTarget`）。

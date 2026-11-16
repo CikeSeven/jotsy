@@ -39,7 +39,7 @@ abstract final class MindMapOps {
       }
       return node.copyWith(
         text: clipped,
-        delta: encodeMindMapDelta(
+        delta: encodeInlineDelta(
           remapRunsAfterEdit(mindMapRunsOf(node), clipped),
         ),
       );
@@ -52,14 +52,14 @@ abstract final class MindMapOps {
     MindMapDocument document,
     String id,
     String text,
-    List<MindMapTextRun> runs,
+    List<InlineTextRun> runs,
   ) {
-    if (mindMapRunsText(runs) != text) return setText(document, id, text);
+    if (inlineRunsText(runs) != text) return setText(document, id, text);
     final clipped = _clip(text);
-    final delta = encodeMindMapDelta(
+    final delta = encodeInlineDelta(
       clipped.length == text.length
           ? runs
-          : sliceMindMapRuns(runs, 0, clipped.length),
+          : sliceInlineRuns(runs, 0, clipped.length),
     );
     return updateNode(document, id, (node) {
       if (node.text == clipped &&
@@ -76,7 +76,7 @@ abstract final class MindMapOps {
     String id,
     int start,
     int end,
-    MindMapTextMarks Function(MindMapTextMarks marks) update,
+    InlineTextMarks Function(InlineTextMarks marks) update,
   ) {
     final node = document.index[id];
     if (node == null) return document;
@@ -119,7 +119,7 @@ abstract final class MindMapOps {
     }
     return node.copyWith(
       style: style,
-      delta: encodeMindMapDelta(clearMindMapMark(mindMapRunsOf(node), key)),
+      delta: encodeInlineDelta(clearMindMapMark(mindMapRunsOf(node), key)),
     );
   });
 
@@ -135,8 +135,8 @@ abstract final class MindMapOps {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
       if (a[i]['insert'] != b[i]['insert'] ||
-          MindMapTextMarks.fromJson(a[i]['attributes']) !=
-              MindMapTextMarks.fromJson(b[i]['attributes'])) {
+          InlineTextMarks.fromJson(a[i]['attributes']) !=
+              InlineTextMarks.fromJson(b[i]['attributes'])) {
         return false;
       }
     }

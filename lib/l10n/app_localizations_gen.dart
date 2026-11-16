@@ -6024,6 +6024,18 @@ abstract class AppLocalizations {
   /// **'Show excerpt'**
   String get diaryCardStyleShowPreview;
 
+  /// Diary card style settings: whether to show the notebooks an entry is in, after its tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Show notebooks'**
+  String get diaryCardStyleShowNotebooks;
+
+  /// Caption under the show notebooks toggle on the diary card style settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the notebooks this entry is in, after its tags'**
+  String get diaryCardStyleShowNotebooksSubtitle;
+
   /// Diary card style settings: maximum lines for the title.
   ///
   /// In en, this message translates to:
@@ -6749,6 +6761,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seaside boardwalk'**
   String get diaryCardStyleSampleLocation;
+
+  /// Diary card style preview: name of the sample notebook shown on sample cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel journal'**
+  String get diaryCardStyleSampleNotebook;
 
   /// Diary card style settings: a value in dp.
   ///

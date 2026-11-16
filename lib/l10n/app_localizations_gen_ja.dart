@@ -3367,6 +3367,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryCardStyleShowPreview => '抜粋を表示';
 
   @override
+  String get diaryCardStyleShowNotebooks => '所属する日記帳を表示';
+
+  @override
+  String get diaryCardStyleShowNotebooksSubtitle =>
+      'タグの後ろに、この日記が入っている日記帳を表示します';
+
+  @override
   String get diaryCardStyleTitleLines => 'タイトルの最大行数';
 
   @override
@@ -3739,6 +3746,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleLocation => '海辺の遊歩道';
+
+  @override
+  String get diaryCardStyleSampleNotebook => '旅行記';
 
   @override
   String diaryCardStyleValueDp(String value) {

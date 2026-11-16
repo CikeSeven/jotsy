@@ -3720,6 +3720,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleShowPreview => 'Show excerpt';
 
   @override
+  String get diaryCardStyleShowNotebooks => 'Show notebooks';
+
+  @override
+  String get diaryCardStyleShowNotebooksSubtitle =>
+      'Show the notebooks this entry is in, after its tags';
+
+  @override
   String get diaryCardStyleTitleLines => 'Title lines';
 
   @override
@@ -4105,6 +4112,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleLocation => 'Seaside boardwalk';
+
+  @override
+  String get diaryCardStyleSampleNotebook => 'Travel journal';
 
   @override
   String diaryCardStyleValueDp(String value) {

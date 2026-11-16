@@ -68,6 +68,13 @@ List<DiaryWithTags> buildDiaryCardStyleSamples(
     );
   }
 
+  // 示例日记本：开启“显示所属日记本”时，前两篇的标签后出现它的胶囊。
+  final notebook = DiaryNotebookRef(
+    id: 'sample-notebook',
+    name: l10n.diaryCardStyleSampleNotebook,
+    icon: 'plane',
+  );
+
   return <DiaryWithTags>[
     DiaryWithTags(
       diary: diary(
@@ -86,6 +93,7 @@ List<DiaryWithTags> buildDiaryCardStyleSamples(
         },
       ),
       tags: <Tag>[travel, life],
+      notebooks: <DiaryNotebookRef>[notebook],
     ),
     DiaryWithTags(
       diary: diary(
@@ -114,6 +122,7 @@ List<DiaryWithTags> buildDiaryCardStyleSamples(
         },
       ),
       tags: <Tag>[travel],
+      notebooks: <DiaryNotebookRef>[notebook],
     ),
     DiaryWithTags(
       diary: diary(

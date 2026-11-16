@@ -3830,6 +3830,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryCardStyleShowPreview => 'Показывать отрывок';
 
   @override
+  String get diaryCardStyleShowNotebooks => 'Показывать блокноты';
+
+  @override
+  String get diaryCardStyleShowNotebooksSubtitle =>
+      'Показывать после меток блокноты, в которых лежит запись';
+
+  @override
   String get diaryCardStyleTitleLines => 'Строк в заголовке';
 
   @override
@@ -4218,6 +4225,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleLocation => 'Набережная у моря';
+
+  @override
+  String get diaryCardStyleSampleNotebook => 'Путевой дневник';
 
   @override
   String diaryCardStyleValueDp(String value) {

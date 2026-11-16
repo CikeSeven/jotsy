@@ -4773,6 +4773,14 @@
   "@diaryCardStyleShowPreview": {
     "description": "Diary card style settings: whether to show the text excerpt."
   },
+  "diaryCardStyleShowNotebooks": "Показывать блокноты",
+  "@diaryCardStyleShowNotebooks": {
+    "description": "Diary card style settings: whether to show the notebooks an entry is in, after its tags."
+  },
+  "diaryCardStyleShowNotebooksSubtitle": "Показывать после меток блокноты, в которых лежит запись",
+  "@diaryCardStyleShowNotebooksSubtitle": {
+    "description": "Caption under the show notebooks toggle on the diary card style settings."
+  },
   "diaryCardStyleTitleLines": "Строк в заголовке",
   "@diaryCardStyleTitleLines": {
     "description": "Diary card style settings: maximum lines for the title."
@@ -5266,6 +5274,10 @@
   "diaryCardStyleSampleLocation": "Набережная у моря",
   "@diaryCardStyleSampleLocation": {
     "description": "Diary card style settings: location of a preview sample entry."
+  },
+  "diaryCardStyleSampleNotebook": "Путевой дневник",
+  "@diaryCardStyleSampleNotebook": {
+    "description": "Diary card style preview: name of the sample notebook shown on sample cards."
   },
   "diaryCardStyleValueDp": "{value}dp",
   "@diaryCardStyleValueDp": {

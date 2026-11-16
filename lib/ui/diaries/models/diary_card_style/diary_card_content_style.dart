@@ -1,7 +1,8 @@
 part of 'diary_card_style.dart';
 
 /// 卡片正文的组成：区块顺序、标题/摘要显隐、没写标题时取正文第一行、标签样式、
-/// 置顶徽章、没设封面时取正文第一张图、无封面占位与多图拼贴。两种布局共用。
+/// 所属日记本、置顶徽章、没设封面时取正文第一张图、无封面占位与多图拼贴。两种
+/// 布局共用。
 ///
 /// 标签显示数量沿用独立的旧设置 `diaryCardTagLimit`（随备份单独导出），
 /// 这里不重复保存。
@@ -12,6 +13,7 @@ class DiaryCardContentStyle {
     this.showTitle = true,
     this.showUntitled = true,
     this.showPreview = true,
+    this.showNotebooks = false,
     this.tagStyle = DiaryCardTagStyle.chip,
     this.pinnedBadge = DiaryCardPinnedBadge.standard,
     this.firstImageCover = true,
@@ -29,6 +31,10 @@ class DiaryCardContentStyle {
   /// 占位开关，含义改为“没写标题时显示标题行”，已存的样式照旧生效。
   final bool showUntitled;
   final bool showPreview;
+
+  /// 是否在标签行末尾显示这篇所在的日记本（图标 + 名称的胶囊，只展示、
+  /// 不可点）。默认关闭，即改版前的卡片。
+  final bool showNotebooks;
   final DiaryCardTagStyle tagStyle;
   final DiaryCardPinnedBadge pinnedBadge;
 
@@ -46,6 +52,7 @@ class DiaryCardContentStyle {
     bool? showTitle,
     bool? showUntitled,
     bool? showPreview,
+    bool? showNotebooks,
     DiaryCardTagStyle? tagStyle,
     DiaryCardPinnedBadge? pinnedBadge,
     bool? firstImageCover,
@@ -62,6 +69,7 @@ class DiaryCardContentStyle {
       showTitle: showTitle ?? this.showTitle,
       showUntitled: showUntitled ?? this.showUntitled,
       showPreview: showPreview ?? this.showPreview,
+      showNotebooks: showNotebooks ?? this.showNotebooks,
       tagStyle: tagStyle ?? this.tagStyle,
       pinnedBadge: pinnedBadge ?? this.pinnedBadge,
       firstImageCover: firstImageCover ?? this.firstImageCover,
@@ -81,6 +89,7 @@ class DiaryCardContentStyle {
       showTitle: _bool(json['showTitle'], d.showTitle),
       showUntitled: _bool(json['showUntitled'], d.showUntitled),
       showPreview: _bool(json['showPreview'], d.showPreview),
+      showNotebooks: _bool(json['showNotebooks'], d.showNotebooks),
       tagStyle: _enumByName(
         DiaryCardTagStyle.values,
         json['tagStyle'],
@@ -110,6 +119,7 @@ class DiaryCardContentStyle {
     _put(json, 'showTitle', showTitle, d.showTitle);
     _put(json, 'showUntitled', showUntitled, d.showUntitled);
     _put(json, 'showPreview', showPreview, d.showPreview);
+    _put(json, 'showNotebooks', showNotebooks, d.showNotebooks);
     _putEnum(json, 'tagStyle', tagStyle, d.tagStyle);
     _putEnum(json, 'pinnedBadge', pinnedBadge, d.pinnedBadge);
     _put(json, 'firstImageCover', firstImageCover, d.firstImageCover);
@@ -125,6 +135,7 @@ class DiaryCardContentStyle {
         other.showTitle == showTitle &&
         other.showUntitled == showUntitled &&
         other.showPreview == showPreview &&
+        other.showNotebooks == showNotebooks &&
         other.tagStyle == tagStyle &&
         other.pinnedBadge == pinnedBadge &&
         other.firstImageCover == firstImageCover &&
@@ -138,6 +149,7 @@ class DiaryCardContentStyle {
     showTitle,
     showUntitled,
     showPreview,
+    showNotebooks,
     tagStyle,
     pinnedBadge,
     firstImageCover,

@@ -167,7 +167,8 @@ SELECT
       END
     ),
     '[]'
-  ) AS tags_json
+  ) AS tags_json,
+  ${_diaryNotebooksJsonColumn('d.id')}
 FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
@@ -229,8 +230,8 @@ ORDER BY d.deleted_at DESC, d.updated_at DESC
   }
 
   /// 日历按日期范围查询日记时共用的列与标签聚合（含归档，不含已删除与私密
-  /// 日记）。用到它的查询 `readsFrom` 须为 [_calendarReadsFrom]。
-  static final String _calendarDiaryWithTagsSelect =
+  /// 日记，带所在日记本）。用到它的查询 `readsFrom` 须为 [_calendarReadsFrom]。
+  String get _calendarDiaryWithTagsSelect =>
       '''
 SELECT
   d.id,
@@ -256,7 +257,8 @@ SELECT
       END
     ),
     '[]'
-  ) AS tags_json
+  ) AS tags_json,
+  ${_diaryNotebooksJsonColumn('d.id')}
 FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
@@ -568,9 +570,13 @@ ORDER BY updated_at DESC
   List<DiaryWithTags> _mapDiaryWithTagsRows(List<QueryRow> rows) {
     return rows
         .map((row) {
+          final notebooksJson = row.readNullable<String>('notebooks_json');
           return DiaryWithTags(
             diary: _mapDiaryFromRow(row),
             tags: _parseTagsJson(row.read<String>('tags_json')),
+            notebooks: notebooksJson == null
+                ? const <DiaryNotebookRef>[]
+                : _parseDiaryNotebooksJson(notebooksJson),
           );
         })
         .toList(growable: false);
@@ -592,6 +598,63 @@ ORDER BY updated_at DESC
           );
         })
         .toList(growable: false);
+  }
+
+  /// 列表行里“这篇在哪些日记本里”的一列 `notebooks_json`（给日记卡片的
+  /// “显示所属日记本”）：手动日记本的成员行连上日记本，按书架的置顶与手动
+  /// 顺序排，每本只带业务 id、名称与 payload 里的图标、强调色。
+  ///
+  /// 相关子查询走 `diary_notebooks` 的复合主键前缀（`diary_id`），每行一次
+  /// 索引查找。调用方的 `readsFrom` 须含 `notebooks` 与 `diary_notebooks`
+  /// （[_diaryScopeReadsFrom] 已带上），改名、换色或移入移出时列表随之刷新。
+  /// 私密日记本里的日记在全局列表里已被排除，只有进了那本才会看到它的名字。
+  String _diaryNotebooksJsonColumn(String diaryIdColumn) =>
+      '''
+COALESCE((
+    SELECT json_group_array(json_object(
+      'id', nb.notebook_id,
+      'name', nb.name,
+      'icon', json_extract(nb.payload, '\$.icon'),
+      'color', json_extract(nb.payload, '\$.color')
+    ))
+    FROM (
+      SELECT n.notebook_id, n.name, n.payload
+      FROM diary_notebooks dnb
+      JOIN notebooks n ON n.id = dnb.notebook_id
+      WHERE dnb.diary_id = $diaryIdColumn
+      ORDER BY n.is_pinned DESC, n.sort_order ASC, n.id ASC
+    ) nb
+  ), '[]') AS notebooks_json''';
+
+  /// 解析 [_diaryNotebooksJsonColumn] 的结果；损坏或缺字段的项跳过，整列
+  /// 损坏时按没有日记本处理（卡片少画胶囊，不影响列表）。
+  List<DiaryNotebookRef> _parseDiaryNotebooksJson(String rawJson) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! List<dynamic>) {
+        return const <DiaryNotebookRef>[];
+      }
+      final refs = <DiaryNotebookRef>[];
+      for (final entry in decoded) {
+        if (entry is! Map<String, dynamic>) continue;
+        final id = entry['id'];
+        final name = entry['name'];
+        if (id is! String || name is! String) continue;
+        final icon = entry['icon'];
+        final color = entry['color'];
+        refs.add(
+          DiaryNotebookRef(
+            id: id,
+            name: name,
+            icon: icon is String && icon.isNotEmpty ? icon : null,
+            color: color is num ? color.toInt() : null,
+          ),
+        );
+      }
+      return List<DiaryNotebookRef>.unmodifiable(refs);
+    } catch (_) {
+      return const <DiaryNotebookRef>[];
+    }
   }
 
   /// 解析 SQL 聚合得到的标签 JSON 字符串。

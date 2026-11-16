@@ -4773,6 +4773,14 @@
   "@diaryCardStyleShowPreview": {
     "description": "Diary card style settings: whether to show the text excerpt."
   },
+  "diaryCardStyleShowNotebooks": "所属する日記帳を表示",
+  "@diaryCardStyleShowNotebooks": {
+    "description": "Diary card style settings: whether to show the notebooks an entry is in, after its tags."
+  },
+  "diaryCardStyleShowNotebooksSubtitle": "タグの後ろに、この日記が入っている日記帳を表示します",
+  "@diaryCardStyleShowNotebooksSubtitle": {
+    "description": "Caption under the show notebooks toggle on the diary card style settings."
+  },
   "diaryCardStyleTitleLines": "タイトルの最大行数",
   "@diaryCardStyleTitleLines": {
     "description": "Diary card style settings: maximum lines for the title."
@@ -5266,6 +5274,10 @@
   "diaryCardStyleSampleLocation": "海辺の遊歩道",
   "@diaryCardStyleSampleLocation": {
     "description": "Diary card style settings: location of a preview sample entry."
+  },
+  "diaryCardStyleSampleNotebook": "旅行記",
+  "@diaryCardStyleSampleNotebook": {
+    "description": "Diary card style preview: name of the sample notebook shown on sample cards."
   },
   "diaryCardStyleValueDp": "{value}dp",
   "@diaryCardStyleValueDp": {

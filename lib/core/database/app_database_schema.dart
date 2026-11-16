@@ -159,12 +159,55 @@ enum DiarySortMode {
       of(field, direction);
 }
 
-/// 业务聚合模型：日记 + 其标签列表。
+/// 业务聚合模型：日记 + 其标签列表（列表查询另带所在的日记本）。
 class DiaryWithTags {
-  const DiaryWithTags({required this.diary, required this.tags});
+  const DiaryWithTags({
+    required this.diary,
+    required this.tags,
+    this.notebooks = const <DiaryNotebookRef>[],
+  });
 
   final Diary diary;
   final List<Tag> tags;
+
+  /// 这篇所在的手动日记本（多对多，按书架顺序），只给日记卡片的“显示所属
+  /// 日记本”用。只有首页 / 搜索 / 日记本列表、归档与日历的列表查询带上
+  /// （`_diaryNotebooksJsonColumn`），其余来源为空。
+  final List<DiaryNotebookRef> notebooks;
+}
+
+/// 日记卡片上的日记本胶囊所需的轻量引用：业务 id、名称、图标与强调色，
+/// 与列表行一起查出，卡片不必再按 id 查书架。按值比较，供卡片判断要不要
+/// 重建。
+@immutable
+class DiaryNotebookRef {
+  const DiaryNotebookRef({
+    required this.id,
+    required this.name,
+    this.icon,
+    this.color,
+  });
+
+  /// 日记本业务 id（`notebooks.notebook_id`）。
+  final String id;
+  final String name;
+
+  /// 图标的枚举名（`NotebookIcon.fromName` 解析，认不出时回退默认图标）。
+  final String? icon;
+
+  /// 强调色种子（ARGB）；null 为跟随主题。
+  final int? color;
+
+  @override
+  bool operator ==(Object other) =>
+      other is DiaryNotebookRef &&
+      other.id == id &&
+      other.name == name &&
+      other.icon == icon &&
+      other.color == color;
+
+  @override
+  int get hashCode => Object.hash(id, name, icon, color);
 }
 
 /// 探索页轻量日记概览。

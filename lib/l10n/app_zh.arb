@@ -4720,6 +4720,14 @@
   "@diaryCardStyleShowPreview": {
     "description": "日记卡片样式设置页：是否显示正文摘要。"
   },
+  "diaryCardStyleShowNotebooks": "显示所属日记本",
+  "@diaryCardStyleShowNotebooks": {
+    "description": "日记卡片样式设置页：是否在标签后显示日记所在的日记本。"
+  },
+  "diaryCardStyleShowNotebooksSubtitle": "在标签后显示这篇所在的日记本",
+  "@diaryCardStyleShowNotebooksSubtitle": {
+    "description": "“显示所属日记本”开关的说明。"
+  },
   "diaryCardStyleTitleLines": "标题最多行数",
   "@diaryCardStyleTitleLines": {
     "description": "日记卡片样式设置页：标题最多显示几行。"
@@ -5213,6 +5221,10 @@
   "diaryCardStyleSampleLocation": "海边栈道",
   "@diaryCardStyleSampleLocation": {
     "description": "日记卡片样式设置页：预览示例日记的地点。"
+  },
+  "diaryCardStyleSampleNotebook": "旅行手账",
+  "@diaryCardStyleSampleNotebook": {
+    "description": "日记卡片样式预览：示例卡片上的示例日记本名称。"
   },
   "diaryCardStyleValueDp": "{value}dp",
   "@diaryCardStyleValueDp": {

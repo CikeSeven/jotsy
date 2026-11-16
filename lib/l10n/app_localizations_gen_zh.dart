@@ -3310,6 +3310,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStyleShowPreview => '显示摘要';
 
   @override
+  String get diaryCardStyleShowNotebooks => '显示所属日记本';
+
+  @override
+  String get diaryCardStyleShowNotebooksSubtitle => '在标签后显示这篇所在的日记本';
+
+  @override
   String get diaryCardStyleTitleLines => '标题最多行数';
 
   @override
@@ -3677,6 +3683,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleLocation => '海边栈道';
+
+  @override
+  String get diaryCardStyleSampleNotebook => '旅行手账';
 
   @override
   String diaryCardStyleValueDp(String value) {

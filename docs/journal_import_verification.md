@@ -17,7 +17,7 @@
 | Google Keep | Takeout ZIP / JSON；共享照片和 `.jpeg` / `.jpg` 扩展名差异；待办、标签、归档、置顶、网页链接 |
 | Joplin | RAW ZIP、JEX tar / gzip；对象与资源；HTML 附件链接；冲突副本保留；加密跳过统计；截断和校验和拒绝 |
 | Memos | 1.0 导出 ZIP、历史平铺 Markdown；缺失正文统计；本地和外部附件；归档、位置、标签 |
-| Markdown / 纯文本 | 单文件 / ZIP；相对、编码、大小写和引用式附件链接；同名附件歧义；Obsidian 双链；UTF-8 / UTF-16；TXT 原样保留符号、空格和 front matter |
+| Markdown / 纯文本 | 单文件 / ZIP；相对、编码、大小写和引用式附件链接；同名附件歧义；Obsidian 双链与笔记间链接（转日记链接，`![[笔记]]` 转日记链接卡片）；UTF-8 / UTF-16；TXT 原样保留符号、空格和 front matter |
 
 上述每种文件来源另有端到端回归：预检不改本机 → 合并 → 媒体字节比对 → 再次导入跳过 → 再次导入覆盖。已有日记、草稿、模板、纪念日和媒体均须保持正确。
 

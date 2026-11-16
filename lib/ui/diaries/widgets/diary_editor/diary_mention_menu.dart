@@ -1,6 +1,7 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
+import '../../../../core/database/diary_blocks/diary_blocks_schema.dart';
 import '../../../../core/database/diary_blocks/diary_link_target.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../controllers/diary_editor_controller.dart';
@@ -16,6 +17,8 @@ enum DiaryMentionMode { inline, card }
 
 /// `@` 日记链接会话：`@` 写进正文后，接着输入的文字就是检索词，候选浮在
 /// 光标旁（会话边界与浮层见 [DiaryCaretMenuSession] / [DiaryCaretMenuHost]）。
+/// Obsidian 式的 `[[`（及 `【【`）开启的是同一个会话，只是触发字不同（见
+/// [diaryWikiLinkCommands]）。
 ///
 /// 候选经 [DiaryLinkSearchController] 防抖查询；[highlighted] 是键盘选中的
 /// 一项（桌面 ↑ / ↓，Enter / Tab 与软键盘回车确认），候选变化时回到第一项。
@@ -41,6 +44,11 @@ class DiaryMentionMenuController extends DiaryCaretMenuSession {
   @override
   bool hasMatchesFor(String query) => _search.results?.isNotEmpty ?? true;
 
+  /// `[[` 会话里打出右括号即用户在手写括号，结束会话、文字原样保留。
+  @override
+  bool closesOn(String query) =>
+      trigger != triggerCharacter && query.contains(RegExp(r'[\]】]'));
+
   DiaryMentionMode get mode => _mode;
   Set<DiaryLinkKind> get kinds => _search.kinds;
 
@@ -48,17 +56,18 @@ class DiaryMentionMenuController extends DiaryCaretMenuSession {
   List<DiaryLinkCandidate>? get results => _search.results;
   int get highlighted => _highlighted;
 
-  /// 开启会话：[node] 的 [offset] 处已写好 `@`。
+  /// 开启会话：[node] 的 [offset] 处已写好 [trigger]（缺省为 `@`）。
   void open(
     af.Node node,
     int offset, {
     required Set<DiaryLinkKind> kinds,
     DiaryMentionMode mode = DiaryMentionMode.inline,
+    String? trigger,
   }) {
     close();
     _mode = mode;
     _search.kinds = kinds;
-    openAt(node, offset);
+    openAt(node, offset, trigger: trigger);
   }
 
   /// 在光标处写一个 `@` 并以卡片模式开启（`/` 菜单的卡片命令）。光标不在
@@ -154,6 +163,51 @@ af.CharacterShortcutEvent diaryMentionCommand({
     },
   );
 }
+
+/// 打字触发 `[[`（Obsidian 的双链写法；中文输入法打出的 `【【` 同样）：打下
+/// 第二个括号时，光标前正是同一个括号、不在代码块也不是行内代码，就先把它
+/// 写进正文，再以前一个括号为触发处开启 `@` 的同一个会话（行内模式）。与
+/// `@` 不同，不要求前面是空白或行首：两个括号本身就是明确的意图，中文正文
+/// 里也常紧挨着文字。选中候选时删掉“`[[` + 检索词”写入行内链接；打出右括号
+/// 即结束会话（[DiaryMentionMenuController.closesOn]），文字原样保留。
+List<af.CharacterShortcutEvent> diaryWikiLinkCommands({
+  required DiaryEditorController controller,
+  required DiaryMentionMenuController menu,
+  required Set<DiaryLinkKind> Function() kinds,
+}) => [
+  for (final (key, bracket) in const [
+    ('diary_wiki_link', '['),
+    ('diary_wiki_link_cjk', '【'),
+  ])
+    af.CharacterShortcutEvent(
+      key: key,
+      character: bracket,
+      handler: (state) async {
+        if (state.isDisposed || controller.linkSource == null) return false;
+        final selection = state.selection;
+        if (selection == null || !selection.isCollapsed) return false;
+        final node = state.document.nodeAtPath(selection.end.path);
+        final delta = node?.delta;
+        if (delta == null || node!.type == 'code') return false;
+        final offset = selection.end.offset;
+        if (offset == 0 ||
+            delta.toPlainText()[offset - 1] != bracket ||
+            _isInlineCode(delta, offset - 1)) {
+          return false;
+        }
+        await state.insertTextAtPosition(bracket);
+        if (state.isDisposed) return true;
+        menu.open(node, offset - 1, kinds: kinds(), trigger: bracket * 2);
+        return true;
+      },
+    ),
+];
+
+/// [delta] 里 [offset] 处的那个字是否为行内代码。
+bool _isInlineCode(af.Delta delta, int offset) => delta
+    .slice(offset, offset + 1)
+    .whereType<af.TextInsert>()
+    .any((op) => op.attributes?[kDiaryInlineCode] == true);
 
 /// 会话开着且有候选时，回车确认高亮项（软键盘与桌面的回车都经字符事件
 /// 送来）；否则交给后面的事件照常换行。须排在字符事件最前面。

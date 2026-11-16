@@ -9,6 +9,7 @@ import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style.d
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/qweather_icon.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -302,6 +303,68 @@ void main() {
         (tester.getCenter(find.text('😊')).dy - eyebrow.center.dy).abs(),
         lessThan(4),
       );
+    });
+  });
+
+  // #289：手动填写的天气只存文字、没有和风图标编码，卡片曾因此整个不画天气。
+  group('typed weather', () {
+    const typedRain = '{"context":{"weather":"小雨"}}';
+
+    String? resolvedAsset(WidgetTester tester) {
+      final icon = tester.widget<QWeatherIcon>(find.byType(QWeatherIcon));
+      return QWeatherIcon.iconUrl(icon.iconCode, weatherText: icon.weatherText);
+    }
+
+    testWidgets('weather text without an icon code still shows its icon', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[_diary(metadata: typedRain)],
+      );
+      expect(find.byType(QWeatherIcon), findsOneWidget);
+      expect(resolvedAsset(tester), 'assets/weather_icons/qweather/305.svg');
+    });
+
+    testWidgets('typed weather can sit on the cover', (tester) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[
+          _diary(cover: '/cover.png', metadata: typedRain),
+        ],
+        style: _listMode(
+          (m) => m.copyWith(metaPosition: DiaryCardMetaPosition.cover),
+        ),
+      );
+      final cover = tester.getRect(find.byType(Image));
+      expect(
+        cover.contains(tester.getCenter(find.byType(QWeatherIcon))),
+        isTrue,
+      );
+    });
+
+    testWidgets('unrecognized weather text falls back to the default icon', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[
+          _diary(metadata: '{"context":{"weather":"好天气"}}'),
+        ],
+      );
+      expect(resolvedAsset(tester), isNull);
+      expect(_icon(FontAwesomeIcons.cloudSun), findsOneWidget);
+    });
+
+    testWidgets('hiding weather also hides typed weather', (tester) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[_diary(metadata: typedRain)],
+        style: DiaryCardStyle.defaults.copyWith(
+          meta: const DiaryCardMetaStyle(showWeather: false),
+        ),
+      );
+      expect(find.byType(QWeatherIcon), findsNothing);
     });
   });
 

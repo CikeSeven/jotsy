@@ -9,13 +9,15 @@ import '../viewmodels/storage_labels.dart';
 import '../viewmodels/storage_overview_view.dart';
 
 /// 总览页“可释放空间”分组：每条建议写明能省多少，就地清理或跳到要处理的
-/// 地方。为 0 的建议不出现；全部为 0 时只留一行“已经很整洁了”。
+/// 地方。为 0 的建议不出现；全部为 0 时只留一行“已经很整洁了”。“未使用的
+/// 文件”两样都有：行尾“清理”一次清完，点按这一行进列表逐个查看、删除。
 class StorageSuggestionsGroup extends StatelessWidget {
   const StorageSuggestionsGroup({
     super.key,
     required this.view,
     required this.onClearCache,
     required this.onClearUnused,
+    required this.onOpenUnused,
     required this.onCompactDatabase,
     required this.onOpenTrash,
     required this.onOpenCompressible,
@@ -26,6 +28,7 @@ class StorageSuggestionsGroup extends StatelessWidget {
   /// 为 null 时按钮停用（正在执行）。
   final VoidCallback? onClearCache;
   final VoidCallback? onClearUnused;
+  final VoidCallback onOpenUnused;
   final VoidCallback? onCompactDatabase;
   final VoidCallback onOpenTrash;
 
@@ -48,16 +51,17 @@ class StorageSuggestionsGroup extends StatelessWidget {
           actionLabel: l10n.storageMgmtClear,
           onAction: onClearCache,
         ),
-      if (report.clearableOrphanBytes > 0)
+      if (report.orphanFiles > 0)
         _SuggestionTile(
           icon: FontAwesomeIcons.fileCircleXmark,
           title: l10n.storageMgmtSuggestUnused,
           subtitle: l10n.storageMgmtSuggestUnusedSubtitle(
-            report.clearableOrphanFiles,
-            size(report.clearableOrphanBytes),
+            report.orphanFiles,
+            size(report.orphanBytes),
           ),
           actionLabel: l10n.storageMgmtClear,
           onAction: onClearUnused,
+          onTap: onOpenUnused,
         ),
       if (view.trash.count > 0)
         _SuggestionTile(

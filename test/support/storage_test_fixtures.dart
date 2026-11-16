@@ -38,7 +38,7 @@ class FakeStorageMediaService extends Fake implements StorageMediaService {
     final reason = busy;
     if (reason != null) throw StorageBusyException(reason);
     deleted.add(keys);
-    final freed = report.media
+    final freed = [...report.media, ...report.unused]
         .where((entry) => keys.contains(entry.key))
         .fold<int>(0, (sum, entry) => sum + entry.bytes);
     return StorageDeleteResult(
@@ -58,7 +58,7 @@ class FakeStorageMediaService extends Fake implements StorageMediaService {
     if (reason != null) throw StorageBusyException(reason);
     cleanUps.add((cache: cache, orphans: orphans, database: database));
     return (cache ? report.clearableCacheBytes : 0) +
-        (orphans ? report.clearableOrphanBytes : 0);
+        (orphans ? report.orphanBytes : 0);
   }
 }
 
@@ -119,6 +119,10 @@ StorageMediaEntry storageEntry(
   );
 }
 
+/// 没有任何引用的文件（[StorageUsageReport.unused] 里的一项）。
+StorageMediaEntry unusedStorageEntry(String key, {required int bytes}) =>
+    storageEntry(key, bytes: bytes, refs: const <StorageMediaRef>[]);
+
 /// 有图片、视频、录音、私密与回收站项、缓存与未使用文件的一份报告。
 StorageUsageReport sampleStorageReport({
   bool withReclaimable = true,
@@ -169,10 +173,14 @@ StorageUsageReport sampleStorageReport({
       if (withReclaimable) StorageCategory.unused: 25 * mb,
     },
     media: media,
-    orphanFiles: withReclaimable ? 4 : 0,
-    orphanBytes: withReclaimable ? 25 * mb : 0,
-    clearableOrphanFiles: withReclaimable ? 4 : 0,
-    clearableOrphanBytes: withReclaimable ? 25 * mb : 0,
+    unused: withReclaimable
+        ? [
+            unusedStorageEntry('diary_videos/import_1/big.mp4', bytes: 20 * mb),
+            unusedStorageEntry('diary_images/m9/left.jpg', bytes: 3 * mb),
+            unusedStorageEntry('diary_images/m9/right.jpg', bytes: 1 * mb),
+            unusedStorageEntry('diary_attachments/notes.pdf', bytes: 1 * mb),
+          ]
+        : const <StorageMediaEntry>[],
     cacheBytes: withReclaimable ? 40 * mb : 0,
     clearableCacheBytes: withReclaimable ? 40 * mb : 0,
     deviceSpace: deviceSpace,

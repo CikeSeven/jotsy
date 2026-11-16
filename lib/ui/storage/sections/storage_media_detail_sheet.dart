@@ -138,11 +138,15 @@ class _DetailBody extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.l),
           Text(
-            l10n.storageMgmtUsedIn(entry.refs.length),
+            entry.refs.isEmpty
+                ? l10n.storageMgmtCategoryUnused
+                : l10n.storageMgmtUsedIn(entry.refs.length),
             style: theme.textTheme.titleSmall?.copyWith(color: scheme.primary),
           ),
           const SizedBox(height: AppSpacing.xs),
-          if (item.masked)
+          if (entry.refs.isEmpty)
+            Text(l10n.storageMgmtUnusedNote, style: theme.textTheme.bodyMedium)
+          else if (item.masked)
             Text(
               entry.visibility == StorageRefVisibility.capsule
                   ? l10n.storageMgmtMaskedCapsule

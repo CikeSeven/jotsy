@@ -47,6 +47,80 @@ void main() {
     expect(find.text('旧日记'), findsOneWidget);
   });
 
+  testWidgets('unused files are listed, explained and deleted without places', (
+    tester,
+  ) async {
+    final service = FakeStorageMediaService(sampleStorageReport());
+    await pumpStoragePage(
+      tester,
+      const StorageMediaPage(
+        initialFilter: StorageMediaFilter(unusedOnly: true),
+      ),
+      service: service,
+    );
+
+    expect(find.text(l10n.storageMgmtCategoryUnused), findsOneWidget);
+    expect(
+      find.text(l10n.storageMgmtListSummary(4, l10n.formatByteSize(25 * mb))),
+      findsOneWidget,
+    );
+    expect(find.text('海边'), findsNothing);
+    expect(top(tester, 'big.mp4'), lessThan(top(tester, 'left.jpg')));
+
+    await tester.tap(find.text('big.mp4'));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.storageMgmtUnusedNote), findsOneWidget);
+    expect(find.text(l10n.storageMgmtUsedIn(0)), findsNothing);
+
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.storageMgmtDeleteTitle(1)), findsOneWidget);
+    expect(
+      find.text(l10n.storageMgmtDeleteUnusedBody(l10n.formatByteSize(20 * mb))),
+      findsOneWidget,
+    );
+    // 没有“从以下位置移除”的清单。
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.textContaining('· '),
+      ),
+      findsNothing,
+    );
+
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(service.deleted.single, {'diary_videos/import_1/big.mp4'});
+  });
+
+  testWidgets('the unused chip swaps the list and leaves trash-only', (
+    tester,
+  ) async {
+    await pumpStoragePage(
+      tester,
+      const StorageMediaPage(
+        initialFilter: StorageMediaFilter(trashOnly: true),
+      ),
+      service: FakeStorageMediaService(sampleStorageReport()),
+    );
+    expect(find.text('旧日记'), findsOneWidget);
+
+    final unused = find.widgetWithText(
+      FilterChip,
+      l10n.storageMgmtFilterUnused,
+    );
+    await tester.ensureVisible(unused);
+    await tester.pumpAndSettle();
+    await tester.tap(unused);
+    await tester.pumpAndSettle();
+
+    expect(find.text('旧日记'), findsNothing);
+    expect(find.text('left.jpg'), findsOneWidget);
+    final trash = find.widgetWithText(FilterChip, l10n.storageMgmtFilterTrash);
+    expect(tester.widget<FilterChip>(trash).selected, isFalse);
+    expect(tester.widget<FilterChip>(unused).selected, isTrue);
+  });
+
   testWidgets('private media stays masked until shown', (tester) async {
     await pumpStoragePage(
       tester,
@@ -81,10 +155,6 @@ void main() {
               visibility: StorageRefVisibility.capsule,
             ),
           ],
-          orphanFiles: 0,
-          orphanBytes: 0,
-          clearableOrphanFiles: 0,
-          clearableOrphanBytes: 0,
           cacheBytes: 0,
           clearableCacheBytes: 0,
         ),
@@ -153,10 +223,6 @@ void main() {
       StorageUsageReport(
         categoryBytes: const {StorageCategory.images: 2 * mb},
         media: [entry],
-        orphanFiles: 0,
-        orphanBytes: 0,
-        clearableOrphanFiles: 0,
-        clearableOrphanBytes: 0,
         cacheBytes: 0,
         clearableCacheBytes: 0,
       ),

@@ -122,7 +122,10 @@ class FakeDiaryMediaCleanupService extends Fake
   int sweeps = 0;
 
   @override
-  Future<DiaryMediaSweepReport?> sweep({Duration? gracePeriod}) async {
+  Future<DiaryMediaSweepReport?> sweep({
+    Duration? gracePeriod,
+    bool includeCaches = true,
+  }) async {
     sweeps++;
     return null;
   }

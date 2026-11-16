@@ -284,11 +284,6 @@ class StorageDeviceSpace {
   }
 }
 
-/// 存储管理清理未使用文件时保留最近这么久写入的：局域网同步在写库前先把
-/// 收到的文件放进媒体目录，导入也是先拷文件后写库，这段时间里文件还没有
-/// 引用。比启动回收的 24 小时短得多，用户点了清理就能马上看到效果。
-const Duration kStorageOrphanGrace = Duration(minutes: 10);
-
 /// 应用总占用：系统统计读得到时为安装包 + 数据（不少于扫描到的），否则为
 /// 扫描到的 [scanned]。总览与设置首页的“已用”同一口径。
 int storageAppTotal(int scanned, StorageDeviceSpace? space) {
@@ -303,10 +298,7 @@ class StorageUsageReport {
   const StorageUsageReport({
     required this.categoryBytes,
     required this.media,
-    required this.orphanFiles,
-    required this.orphanBytes,
-    required this.clearableOrphanFiles,
-    required this.clearableOrphanBytes,
+    this.unused = const <StorageMediaEntry>[],
     required this.cacheBytes,
     required this.clearableCacheBytes,
     this.databaseFreeBytes = 0,
@@ -317,16 +309,18 @@ class StorageUsageReport {
   /// 每个类别的字节数；没有内容的类别不在表里。
   final Map<StorageCategory, int> categoryBytes;
 
-  /// 被引用着的媒体（未被引用的只计入 [orphanFiles] / [orphanBytes]）。
+  /// 被引用着的媒体（未被引用的在 [unused]）。
   final List<StorageMediaEntry> media;
 
-  /// 托管媒体目录里没有任何引用的文件（含 HEIC 修复留下的原图、中断的导入）。
-  final int orphanFiles;
-  final int orphanBytes;
+  /// 托管媒体目录里没有任何引用的文件（[StorageMediaEntry.refs] 为空，类别
+  /// 仍按所在目录）：删掉的日记、留言、草稿、AI 对话留下的，HEIC 修复留下
+  /// 的原图，中断的导入与同步。全部可以立即清理或逐个删除（存储管理先确认
+  /// 没有编辑页、并独占托管媒体写入闸门，见 `StorageMediaService`）。
+  final List<StorageMediaEntry> unused;
 
-  /// 其中现在就能清的（修改时间早于 [kStorageOrphanGrace]）。
-  final int clearableOrphanFiles;
-  final int clearableOrphanBytes;
+  int get orphanFiles => unused.length;
+
+  int get orphanBytes => unused.fold<int>(0, (sum, entry) => sum + entry.bytes);
 
   /// 缓存清单里的全部字节与其中现在就能清的部分（见 `storage_cache_catalog.dart`）。
   final int cacheBytes;
@@ -353,7 +347,7 @@ class StorageUsageReport {
   /// 一键清理能释放的字节：缓存、未使用的文件与数据库空闲页，从不包括被
   /// 引用的媒体。
   int get reclaimableBytes =>
-      clearableCacheBytes + clearableOrphanBytes + compactableDatabaseBytes;
+      clearableCacheBytes + orphanBytes + compactableDatabaseBytes;
 
   /// 并入系统统计（[StorageDeviceSpace.appTotalBytes] 读得到时）：安装包计入
   /// “应用本体”，系统算的数据比扫描到的多出来的部分（引擎缓存、偏好、不随
@@ -383,10 +377,7 @@ class StorageUsageReport {
   }) => StorageUsageReport(
     categoryBytes: categoryBytes ?? this.categoryBytes,
     media: media,
-    orphanFiles: orphanFiles,
-    orphanBytes: orphanBytes,
-    clearableOrphanFiles: clearableOrphanFiles,
-    clearableOrphanBytes: clearableOrphanBytes,
+    unused: unused,
     cacheBytes: cacheBytes,
     clearableCacheBytes: clearableCacheBytes,
     databaseFreeBytes: databaseFreeBytes ?? this.databaseFreeBytes,

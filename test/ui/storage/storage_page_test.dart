@@ -117,6 +117,76 @@ void main() {
     );
   });
 
+  testWidgets('unused files clear in one tap or open as a list', (
+    tester,
+  ) async {
+    final service = FakeStorageMediaService(sampleStorageReport());
+    await pumpStoragePage(
+      tester,
+      const StoragePage(),
+      service: service,
+      size: const Size(400, 2400),
+    );
+
+    final subtitle = find.text(
+      l10n.storageMgmtSuggestUnusedSubtitle(4, l10n.formatByteSize(25 * mb)),
+    );
+    expect(subtitle, findsOneWidget);
+    final row = find.ancestor(of: subtitle, matching: find.byType(ListTile));
+    await tester.tap(
+      find.descendant(
+        of: row,
+        matching: find.widgetWithText(TextButton, l10n.storageMgmtClear),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(service.cleanUps.single, (
+      cache: false,
+      orphans: true,
+      database: false,
+    ));
+    expect(
+      find.text(l10n.storageMgmtFreed(l10n.formatByteSize(25 * mb))),
+      findsOneWidget,
+    );
+
+    await tester.tap(subtitle);
+    await tester.pumpAndSettle();
+    expect(find.byType(StorageMediaPage), findsOneWidget);
+    expect(find.text('big.mp4'), findsOneWidget);
+    expect(find.text('海边'), findsNothing);
+  });
+
+  testWidgets('the unused legend opens the unused list', (tester) async {
+    await pumpStoragePage(
+      tester,
+      const StoragePage(),
+      service: FakeStorageMediaService(sampleStorageReport()),
+      size: const Size(400, 2400),
+    );
+
+    await tester.tap(find.text(l10n.storageMgmtCategoryUnused).first);
+    await tester.pumpAndSettle();
+    expect(find.byType(StorageMediaPage), findsOneWidget);
+    expect(find.text('left.jpg'), findsOneWidget);
+  });
+
+  testWidgets('a sync still placing files makes cleaning wait with a note', (
+    tester,
+  ) async {
+    final service = FakeStorageMediaService(sampleStorageReport())
+      ..busy = StorageBusyReason.mediaWrites;
+    await pumpStoragePage(tester, const StoragePage(), service: service);
+
+    await tester.tap(
+      find.text(l10n.storageMgmtCleanUpAll(l10n.formatByteSize(65 * mb))),
+    );
+    await tester.pumpAndSettle();
+
+    expect(service.cleanUps, isEmpty);
+    expect(find.text(l10n.storageMgmtBusyMediaWrites), findsOneWidget);
+  });
+
   testWidgets('an open editor blocks cleaning with an explanation', (
     tester,
   ) async {

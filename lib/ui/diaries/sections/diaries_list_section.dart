@@ -20,7 +20,10 @@ import 'diary_head_section.dart';
 import '../../widgets/expressive_entrance.dart';
 import '../../widgets/launch_reveal.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/container_transform/morph_live_target.dart';
 import '../../widgets/list_item_presence.dart';
+import '../../widgets/list_make_room.dart';
+import '../controllers/diary_create_morph.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 
@@ -55,6 +58,7 @@ class DiariesListSection extends StatelessWidget {
     required this.maxVisibleTags,
     this.pendingHideDiaryIds = const <String>{},
     this.appearingDiaryIds = const <String>{},
+    this.makeRoom,
     required this.onOpenEditor,
     required this.onToggleSelection,
     this.onArchiveDiary,
@@ -114,6 +118,10 @@ class DiariesListSection extends StatelessWidget {
 
   /// 标记“正在出现动画”的日记项集合。
   final Set<String> appearingDiaryIds;
+
+  /// 新卡片插入时其余卡片的让位动画（见 [MakeRoomController]）；null 时不包。
+  /// 结构随它是否为 null 固定，同一页面里不会切换。
+  final MakeRoomController? makeRoom;
 
   /// 普通模式点击卡片：传入整条数据（预览页可直接用它渲染首帧）与从封面抓取
   /// 的画面（预览页头图以它为共享元素落点，无封面或减少动画时为 null）。
@@ -275,11 +283,14 @@ class DiariesListSection extends StatelessWidget {
           final diary = diaries[index];
           return KeyedSubtree(
             key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
-            child: _revealItem(
-              index,
-              _launchReveal(
+            child: _makeRoom(
+              diary.diary.diaryId,
+              _revealItem(
                 index,
-                _buildDiaryItem(context, diary: diary, resolved: resolved),
+                _launchReveal(
+                  index,
+                  _buildDiaryItem(context, diary: diary, resolved: resolved),
+                ),
               ),
             ),
           );
@@ -297,26 +308,42 @@ class DiariesListSection extends StatelessWidget {
         final sectionHeader = sectionHeaderBuilder?.call(context, index);
         return KeyedSubtree(
           key: ValueKey<String>('list_${diary.diary.diaryId}'),
-          child: _launchReveal(
-            index,
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: modeStyle.sideMargin),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  if (sectionHeader != null) _revealPlain(index, sectionHeader),
-                  _revealItem(
-                    index,
-                    _buildDiaryItem(context, diary: diary, resolved: resolved),
-                  ),
-                  if (!isLast) SizedBox(height: modeStyle.cardGap),
-                ],
+          child: _makeRoom(
+            diary.diary.diaryId,
+            _launchReveal(
+              index,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: modeStyle.sideMargin),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (sectionHeader != null)
+                      _revealPlain(index, sectionHeader),
+                    _revealItem(
+                      index,
+                      _buildDiaryItem(
+                        context,
+                        diary: diary,
+                        resolved: resolved,
+                      ),
+                    ),
+                    if (!isLast) SizedBox(height: modeStyle.cardGap),
+                  ],
+                ),
               ),
             ),
           ),
         );
       }, childCount: diaries.length),
     );
+  }
+
+  /// 包一层让位动画（[makeRoom] 为 null 时原样返回）。
+  Widget _makeRoom(String diaryId, Widget child) {
+    final controller = makeRoom;
+    return controller == null
+        ? child
+        : MakeRoomItem(tag: diaryId, controller: controller, child: child);
   }
 
   Widget _buildDiaryItem(
@@ -326,32 +353,37 @@ class DiariesListSection extends StatelessWidget {
   }) {
     final diaryId = diary.diary.diaryId;
     final anchor = AppPlatform.isDesktop ? selectionAnchor : null;
-    Widget card = DiaryCard(
-      diary: diary,
-      resolved: resolved,
-      selected: selectedDiaryIds.contains(diaryId),
-      isSelectionMode: isSelectionMode,
-      maxVisibleTags: maxVisibleTags,
-      onOpenEditor: onOpenEditor,
-      // 长按勾选同样记作范围起点。
-      onToggleSelection: anchor == null
-          ? onToggleSelection
-          : (String id, bool force) {
-              anchor.id = id;
-              onToggleSelection(id, force);
-            },
-      enableCoverHero: enableCoverHero,
-      opensLockedCapsulePage: opensLockedCapsulePage,
-      commentCount: commentCounts[diaryId] ?? 0,
-      highlightTerms: highlightTerms,
-      onTapIntercept: anchor == null
-          ? null
-          : (DiaryWithTags tapped) => handleDiaryModifierTap(
-              order: <String>[for (final item in diaries) item.diary.diaryId],
-              diaryId: tapped.diary.diaryId,
-              anchor: anchor,
-              toggle: onToggleSelection,
-            ),
+    // 新建日记发表后整页收回的落点（MorphLiveTarget）：平时原样绘制。
+    Widget card = MorphLiveTarget(
+      tag: DiaryCreateMorph.cardTag(diaryId),
+      borderRadius: resolved.cornerRadius,
+      child: DiaryCard(
+        diary: diary,
+        resolved: resolved,
+        selected: selectedDiaryIds.contains(diaryId),
+        isSelectionMode: isSelectionMode,
+        maxVisibleTags: maxVisibleTags,
+        onOpenEditor: onOpenEditor,
+        // 长按勾选同样记作范围起点。
+        onToggleSelection: anchor == null
+            ? onToggleSelection
+            : (String id, bool force) {
+                anchor.id = id;
+                onToggleSelection(id, force);
+              },
+        enableCoverHero: enableCoverHero,
+        opensLockedCapsulePage: opensLockedCapsulePage,
+        commentCount: commentCounts[diaryId] ?? 0,
+        highlightTerms: highlightTerms,
+        onTapIntercept: anchor == null
+            ? null
+            : (DiaryWithTags tapped) => handleDiaryModifierTap(
+                order: <String>[for (final item in diaries) item.diary.diaryId],
+                diaryId: tapped.diary.diaryId,
+                anchor: anchor,
+                toggle: onToggleSelection,
+              ),
+      ),
     );
     // 双栏时每张卡都包一层阅读环（结构恒定，换选时卡片不重建），环随卡片
     // 一起左滑；单栏时不包。

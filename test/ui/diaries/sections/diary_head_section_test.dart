@@ -165,27 +165,48 @@ void main() {
     tester,
   ) async {
     const countKey = ValueKey<String>('diary_head_draft_count');
-    Badge badge() => tester.widget<Badge>(find.byKey(countKey));
+    Finder label(String text) =>
+        find.descendant(of: find.byKey(countKey), matching: find.text(text));
 
     await tester.pumpWidget(_host(selection: false));
-    expect(badge().isLabelVisible, isFalse);
+    expect(find.byKey(countKey), findsOneWidget);
+    // 0 份时胶囊不显示：没有可见的数字。
+    expect(
+      find.descendant(
+        of: find.byKey(countKey),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Visibility && widget.visible,
+        ),
+      ),
+      findsNothing,
+    );
 
     await tester.pumpWidget(_host(selection: false, draftCount: 3));
-    expect(badge().isLabelVisible, isTrue);
+    await tester.pumpAndSettle();
+    expect(label('3'), findsOneWidget);
     // 主色底而不是默认的错误色：草稿是“还没写完”，不是警告。
     final colors = Theme.of(tester.element(find.byKey(countKey))).colorScheme;
-    expect(badge().backgroundColor, colors.primary);
-    expect(badge().textColor, colors.onPrimary);
+    final pill = tester.widget<Container>(
+      find.descendant(
+        of: find.byKey(countKey),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Container &&
+              widget.decoration is ShapeDecoration &&
+              (widget.decoration! as ShapeDecoration).shape is StadiumBorder,
+        ),
+      ),
+    );
+    expect((pill.decoration! as ShapeDecoration).color, colors.primary);
     expect(
-      find.descendant(of: find.byKey(countKey), matching: find.text('3')),
-      findsOneWidget,
+      tester.widget<Text>(label('3')).style?.color ??
+          DefaultTextStyle.of(tester.element(label('3'))).style.color,
+      colors.onPrimary,
     );
 
     await tester.pumpWidget(_host(selection: false, draftCount: 120));
-    expect(
-      find.descendant(of: find.byKey(countKey), matching: find.text('99+')),
-      findsOneWidget,
-    );
+    await tester.pumpAndSettle();
+    expect(label('99+'), findsOneWidget);
   });
 
   testWidgets('a 320dp top bar with AI and drafts still fits', (tester) async {

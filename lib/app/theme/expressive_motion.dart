@@ -60,6 +60,33 @@ abstract final class ExpressiveMotion {
   static const containerClose = Duration(milliseconds: 400);
   static const containerSpring = _CriticallyDampedSpringCurve(9);
 
+  /// 新建日记的收回（`MorphPageRoute` 落进草稿箱角标、新建按钮或列表里的
+  /// 新卡片）：
+  /// - [morphLand]：整页收向落点的时长；
+  /// - [morphLandCurve]：欠阻尼弹簧从静止起步、第一次到达终点的那一段
+  ///   （归一化到时长里）。与 [containerSpring] 一样一按就走、平滑加速，但
+  ///   不在终点前减速到零，而是带着约平均速度四成的余速“落”进目标——余下
+  ///   的回弹交给落点自己（[morphLandBounce]），整页不在终点前后来回晃；
+  /// - [morphLandBounce]：落点接住整页后的回弹弹簧（按压感：先被压小一点、
+  ///   越过原尺寸一点再落稳），由 [springTo] 的 `kick` 带入初速度。
+  static const morphLand = Duration(milliseconds: 380);
+  static const morphLandCurve = _SpringArrivalCurve(0.65);
+  static final SpringDescription morphLandBounce =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 700, ratio: 0.55);
+
+  /// 让 [morphLandBounce] 从静止的 1 出发、最多被压小 [squash]（0–1）所需的
+  /// 初速度（每秒，负值）。欠阻尼振子从平衡位置以速度 v 出发，第一次峰值
+  /// 为 `v / ω · e^(−ζ/√(1−ζ²) · atan(√(1−ζ²)/ζ))`，反解出 v。
+  static double morphLandKick(double squash) {
+    final spring = morphLandBounce;
+    final omega = math.sqrt(spring.stiffness / spring.mass);
+    final zeta =
+        spring.damping / (2 * math.sqrt(spring.stiffness * spring.mass));
+    final beta = math.sqrt(1 - zeta * zeta);
+    final peak = math.exp(-zeta / beta * math.atan(beta / zeta)) / omega;
+    return -squash / peak;
+  }
+
   /// 进场与状态变化：减速收尾，不越界。
   static const effects = Curves.easeOutCubic;
 
@@ -189,4 +216,32 @@ class _CriticallyDampedSpringCurve extends Curve {
 
   @override
   double transformInternal(double t) => _raw(settle * t) / _raw(settle);
+}
+
+/// 欠阻尼弹簧从静止出发、第一次到达 1 的那一段，压进固定时长（见
+/// [ExpressiveMotion.morphLandCurve]）。
+///
+/// 位移为 `x(τ) = 1 − e^(−ζτ)·(cos βτ + ζ/β·sin βτ)`（`τ = ωt`、
+/// `β = √(1−ζ²)`），第一次到达 1 时 `βτ = π − atan(β/ζ)`。起点速度为 0、
+/// 加速度最大（一按就走），之后平滑加速，到终点时仍有余速：ζ = 0.65 时
+/// 约为平均速度的 43%。到达之前从不越过终点，路由进度不必截断。
+class _SpringArrivalCurve extends Curve {
+  const _SpringArrivalCurve(this.ratio);
+
+  /// 阻尼比（0–1）：越小到达时越快、越“甩”。
+  final double ratio;
+
+  double get _beta => math.sqrt(1 - ratio * ratio);
+
+  double get _arrival => (math.pi - math.atan(_beta / ratio)) / _beta;
+
+  double _x(double tau) {
+    final beta = _beta;
+    return 1 -
+        math.exp(-ratio * tau) *
+            (math.cos(beta * tau) + ratio / beta * math.sin(beta * tau));
+  }
+
+  @override
+  double transformInternal(double t) => _x(t * _arrival) / _x(_arrival);
 }

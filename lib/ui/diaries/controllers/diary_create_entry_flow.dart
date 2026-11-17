@@ -7,9 +7,14 @@ import '../../../core/services/app_service.dart';
 import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../diary_templates/models/diary_template_selection.dart';
 import '../../diary_templates/sections/diary_template_picker_sheet.dart';
+import '../../app_surface/models/app_surface_enums.dart';
+import '../../app_surface/widgets/app_page_background.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../../widgets/container_transform/morph_anchor.dart';
+import '../../widgets/container_transform/morph_page_route.dart';
 import '../pages/diary_drafts_page.dart';
 import '../models/diary_create_initial_action.dart';
+import 'diary_create_morph.dart';
 export '../models/diary_create_initial_action.dart';
 import '../pages/edit_diary_page.dart';
 import '../sections/diary_draft_picker_sheet.dart';
@@ -47,6 +52,11 @@ typedef DiaryCreateEntryResult = ({bool opened, String? createdDiaryId});
 /// 新建并套用这个模板（与草稿面板里“从模板新建”选好后同一条路径）；日记
 /// 模板功能关闭时忽略，按普通新建处理。
 ///
+/// [fromCreateButton]（首页的新建按钮）：编辑页从露在屏上的新建按钮展开，
+/// 返回时按结果收回到列表里的新卡片、草稿箱角标或新建按钮（见
+/// [DiaryCreateMorph]）。按钮不在屏上、减少动态效果或平台不用容器展开时
+/// 照常按主题转场打开。
+///
 /// 功能管理（[appFeaturesProvider]）关闭的功能隐藏入口，数据保留：
 /// - 日记模板关闭：草稿面板没有“从模板新建”，新建空白不套用日记本的默认
 ///   模板（`templateId` 原样留在日记本里，重新开启即恢复）；
@@ -61,6 +71,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   String? chapterId,
   DiaryCreateInitialAction? initialAction,
   DiaryTemplateSelection? template,
+  bool fromCreateButton = false,
 }) async {
   const dismissed = (opened: false, createdDiaryId: null);
   final database = ref.read(appDatabaseProvider);
@@ -85,6 +96,7 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
     notebookId: draftId == null ? notebookId : null,
     chapterId: draftId == null ? chapterId : null,
     initialAction: draftId == null ? initialAction : null,
+    fromCreateButton: fromCreateButton,
   );
 
   /// 新建空白：在日记本里时带上这本的默认模板（读不到、或模板功能关闭时
@@ -170,20 +182,35 @@ Future<DiaryCreateEntryResult> _openEditor(
   String? notebookId,
   String? chapterId,
   DiaryCreateInitialAction? initialAction,
+  bool fromCreateButton = false,
 }) async {
+  Widget page(BuildContext context) => EditDiaryPage(
+    entryMode: EditDiaryEntryMode.create,
+    createDraftId: draftId,
+    createDateOverride: day,
+    createCapsuleUnlockAt: capsuleUnlockAt,
+    createTemplate: template,
+    createNotebookId: notebookId,
+    createNotebookChapterId: chapterId,
+    createInitialAction: initialAction,
+  );
+  final origin = fromCreateButton
+      ? MorphAnchor.capture(context, DiaryCreateMorph.createButton)
+      : null;
+  final opener = ModalRoute.of(context);
   final result = await Navigator.of(context).push<Object?>(
-    MaterialPageRoute<Object?>(
-      builder: (_) => EditDiaryPage(
-        entryMode: EditDiaryEntryMode.create,
-        createDraftId: draftId,
-        createDateOverride: day,
-        createCapsuleUnlockAt: capsuleUnlockAt,
-        createTemplate: template,
-        createNotebookId: notebookId,
-        createNotebookChapterId: chapterId,
-        createInitialAction: initialAction,
-      ),
-    ),
+    origin == null || opener == null
+        ? MaterialPageRoute<Object?>(builder: page)
+        // 落点由编辑页按有没有写东西决定（见 EditDiaryPage 绑定的
+        // DiaryCreateMorph.editorLanding）。
+        : MorphPageRoute<Object?>(
+            builder: page,
+            origin: origin,
+            originRoute: opener,
+            backdrop: const AppPageBackgroundFill(
+              area: AppBackgroundArea.editor,
+            ),
+          ),
   );
   return (opened: true, createdDiaryId: result is String ? result : null);
 }

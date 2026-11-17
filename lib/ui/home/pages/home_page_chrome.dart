@@ -88,12 +88,16 @@ extension _HomePageChrome on _HomePageState {
   /// “控件”为玻璃时按钮是玻璃（见 [HomeNavRailCreateButton]），启动入场
   /// 改经 [LaunchReveal.builder] + [GlassReveal]，不放进透明度层。
   Widget _buildRailCreateButton() {
-    final button = Consumer(
-      builder: (context, ref, _) => HomeNavRailCreateButton(
-        label: _createLabel(context, ref),
-        onPressed: () {
-          unawaited(_openCreate());
-        },
+    final button = HomeCreateMorphAnchor(
+      borderRadius: HomeNavRailCreateButton.radius,
+      face: HomeCreateMorphAnchor.plusFace,
+      child: Consumer(
+        builder: (context, ref, _) => HomeNavRailCreateButton(
+          label: _createLabel(context, ref),
+          onPressed: () {
+            unawaited(_openCreate());
+          },
+        ),
       ),
     );
     if (AppGlass.of(context).isGlass(AppGlassComponent.controls)) {
@@ -111,13 +115,21 @@ extension _HomePageChrome on _HomePageState {
   /// 实色按钮放进 LaunchReveal 的 Opacity，按 action 槽位弹出；“控件”为
   /// 玻璃时按钮是玻璃，入场改经 [LaunchReveal.builder] + [GlassReveal]。
   Widget _buildInlineCreateButton(HomeBarResolvedStyle barStyle) {
-    final button = Consumer(
-      builder: (context, ref, _) => HomeInlineCreateButton(
-        style: barStyle,
-        label: _createLabel(context, ref, fab: true),
-        onPressed: () {
-          unawaited(_openCreateFromGlobalFab());
-        },
+    final button = HomeCreateMorphAnchor(
+      enabled: _effectiveTab == HomeTab.diaries,
+      borderRadius: barStyle.cornerRadius,
+      face: (foreground) => HomeCreateMorphAnchor.plusFace(
+        foreground,
+        size: HomeInlineCreateButton.iconSize,
+      ),
+      child: Consumer(
+        builder: (context, ref, _) => HomeInlineCreateButton(
+          style: barStyle,
+          label: _createLabel(context, ref, fab: true),
+          onPressed: () {
+            unawaited(_openCreateFromGlobalFab());
+          },
+        ),
       ),
     );
     return IgnorePointer(
@@ -229,24 +241,56 @@ extension _HomePageChrome on _HomePageState {
               ),
               curve: ExpressiveMotion.spatial,
               offset: shouldShow ? Offset.zero : const Offset(0, 1.6),
-              child: glassFab
-                  ? _buildGlassFabReveal(context, shouldShow, button)
-                  : AnimatedOpacity(
-                      duration: ExpressiveMotion.duration(
-                        context,
-                        _HomePageState._fabVisibilityDuration,
+              // 新建日记的编辑页从这里展开、没写东西时收回这里（只在日记
+              // Tab 且按钮露着时；待办 Tab 上它新建的是待办）。
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final label = _createLabel(context, ref, fab: true);
+                  return HomeCreateMorphAnchor(
+                    enabled: shouldShow && _effectiveTab == HomeTab.diaries,
+                    borderRadius: HomeCreateMorphAnchor.fabRadius(context),
+                    face: (foreground) => _createFabFace(label, foreground),
+                    child: child!,
+                  );
+                },
+                child: glassFab
+                    ? _buildGlassFabReveal(context, shouldShow, button)
+                    : AnimatedOpacity(
+                        duration: ExpressiveMotion.duration(
+                          context,
+                          _HomePageState._fabVisibilityDuration,
+                        ),
+                        curve: _HomePageState._fabVisibilityCurve,
+                        opacity: shouldShow ? 1 : 0,
+                        child: LaunchReveal(
+                          slot: LaunchRevealSlot.action,
+                          child: button,
+                        ),
                       ),
-                      curve: _HomePageState._fabVisibilityCurve,
-                      opacity: shouldShow ? 1 : 0,
-                      child: LaunchReveal(
-                        slot: LaunchRevealSlot.action,
-                        child: button,
-                      ),
-                    ),
+              ),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// 全局 FAB 的样子（不含底色），供整页收放在容器里原样重画：与 FAB 同一
+  /// 组件、同样的文字，只换成透明底、不带投影，不接点按（见
+  /// [HomeCreateMorphAnchor]）。
+  Widget _createFabFace(String label, Color foreground) {
+    return FloatingActionButton.extended(
+      heroTag: null,
+      onPressed: () {},
+      backgroundColor: Colors.transparent,
+      foregroundColor: foreground,
+      elevation: 0,
+      focusElevation: 0,
+      hoverElevation: 0,
+      highlightElevation: 0,
+      disabledElevation: 0,
+      icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
+      label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }
 

@@ -315,6 +315,13 @@ class DiaryListTransitionCoordinator {
   /// 大半被遮住；先把它压住不参与构建，本页所在路由的 secondaryAnimation 回到
   /// dismissed（上层退场结束）后再以出现动画放出。减少动画时直接显示。
   void revealCreatedDiary(String diaryId) {
+    final session = MorphLandingSession.current.value;
+    if (session != null &&
+        session.involves(DiaryCreateMorph.cardTag(diaryId)) &&
+        identical(session.originRoute, ModalRoute.of(_state.context))) {
+      _landCreatedDiary(diaryId, session);
+      return;
+    }
     final secondary = ModalRoute.of(_state.context)?.secondaryAnimation;
     if (ExpressiveMotion.reduceMotion(_state.context) ||
         secondary == null ||
@@ -345,6 +352,30 @@ class DiaryListTransitionCoordinator {
     secondary.addStatusListener(listener);
     _state._appearingTimers.remove(diaryId)?.cancel();
     _state._appearingTimers[diaryId] = Timer(_createdRevealTimeout, release);
+  }
+
+  /// 整页正收回、要落进新日记的卡片（`MorphPageRoute`，见 [DiaryCreateMorph]）：
+  /// 新卡片不压住、也不播放“长高”的出现动画——它已随列表数据排在最终位置，
+  /// 由整页收回的容器带出来（`MorphLiveTarget`）；其余卡片在整页开始收回
+  /// 的同一帧从新建前的位置让位滑开（[MakeRoomController.play]）。等不到
+  /// 落点、原地退场时同样让位：列表在淡出的页面下面照常补位。
+  void _landCreatedDiary(String diaryId, MorphLandingSession session) {
+    _state._appearingTimers.remove(diaryId)?.cancel();
+    if (_state._optimisticHiddenDiaryIds.contains(diaryId) ||
+        _state._appearingDiaryIds.contains(diaryId)) {
+      _state.setState(() {
+        _state._optimisticHiddenDiaryIds.remove(diaryId);
+        _state._appearingDiaryIds.remove(diaryId);
+      });
+    }
+    void handlePhase() {
+      if (session.phase.value == MorphLandingPhase.holding) return;
+      session.phase.removeListener(handlePhase);
+      if (_state.mounted) _state._makeRoom.play(_state.context);
+    }
+
+    session.phase.addListener(handlePhase);
+    handlePhase();
   }
 
   void _revealCreatedDiary(String diaryId) {

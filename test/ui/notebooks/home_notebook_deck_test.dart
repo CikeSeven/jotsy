@@ -342,6 +342,29 @@ void main() {
     await h.unmount();
   });
 
+  for (final fromChip in <bool>[false, true]) {
+    testWidgets(
+      'a right pull right after back reopens (from chip: $fromChip)',
+      (tester) async {
+        final h = await pumpHome(tester, seed: seedTwo);
+        if (fromChip) {
+          await tester.tap(find.byType(NotebookSwitcherChip));
+        } else {
+          await pull(tester, 120);
+        }
+        await h.settleAll();
+        expect(find.byType(NotebookDeck), findsOneWidget);
+        expect(await systemBackLeavesApp(tester), isFalse);
+        // 收回动画还在走，马上再右滑。
+        await tester.pump(const Duration(milliseconds: 60));
+        await pull(tester, 120);
+        await h.settleAll();
+        expect(find.byType(NotebookDeck), findsOneWidget);
+        await h.unmount();
+      },
+    );
+  }
+
   testWidgets('back closes the deck first and keeps the scope', (tester) async {
     final h = await pumpHome(tester, seed: seedTwo);
     await tester.tap(find.byType(NotebookSwitcherChip));

@@ -233,23 +233,30 @@ class NotebookSwitcherController extends ChangeNotifier {
     _showPortal();
   }
 
-  /// 在打开的卡组（面板或遮罩）上横向起手：按同一根进度轴反着跟手——往
-  /// 回拉时卡组缩回左缘胶囊、胶囊再缩进边缘，与右滑拉出逐帧对称。正弹回
-  /// 打开或正收回左缘时也能接住。从切换胶囊打开的卡组改为收向左缘（胶囊
-  /// 此刻露回原处），纵向中心跟着手指。
+  /// 在卡组浮层（面板或遮罩）上横向起手：按同一根进度轴跟手——往回拉时
+  /// 卡组缩回左缘胶囊、胶囊再缩进边缘，与右滑拉出逐帧对称；往右拉则重新
+  /// 长开。打开着、正弹回打开、或正收回（返回键、点遮罩，不是选中后的
+  /// 落地）时都能接住：收回途中浮层还盖着页面，列表上的右滑到不了页面的
+  /// 手势层，必须在这里接住，否则要等动画走完再滑一次。
+  ///
+  /// 从切换胶囊打开的卡组：完全打开时起手改为收向左缘（胶囊此刻露回原处，
+  /// 进度在 2 上换起点不会跳）；正收向胶囊途中被接住则仍以胶囊为起点，
+  /// 往回拉最多回到胶囊处，松手收回时也收进胶囊。纵向中心跟着手指。
   void closeDragStart(Offset position) {
     final catchable =
         _phase == NotebookSwitcherPhase.open ||
-        (_phase == NotebookSwitcherPhase.closing &&
-            _origin == NotebookSwitcherOrigin.edge &&
-            _landingEntry == null);
+        (_phase == NotebookSwitcherPhase.closing && _landingEntry == null);
     final pane = _pane;
     if (!catchable || pane == null) return;
     stage.stop();
     if (_origin == NotebookSwitcherOrigin.chip) {
-      _origin = NotebookSwitcherOrigin.edge;
-      chipHidden.value = false;
       _span = (pane.width * 0.4).clamp(minSpan, maxSpan);
+      if (stage.value >= 1.98) {
+        _origin = NotebookSwitcherOrigin.edge;
+        chipHidden.value = false;
+      } else {
+        chipHidden.value = true;
+      }
     }
     _deck?.autoScroll(null);
     _deck?.lift(null);
@@ -272,7 +279,9 @@ class NotebookSwitcherController extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _pull = math.max(0, _pull + deltaX * _directionSign);
+    // 以切换胶囊为起点时没有左缘胶囊那一段：最多收回到胶囊处。
+    final floor = _origin == NotebookSwitcherOrigin.chip ? armDistance : 0.0;
+    _pull = math.max(floor, _pull + deltaX * _directionSign);
     stage.value = _stageForPull(_pull);
     _setArmed(_pull >= armDistance);
     // 拉满一次就记下手指高度；之后手指往卡片那边斜着挪（横向略回收）仍算
@@ -327,9 +336,16 @@ class NotebookSwitcherController extends ChangeNotifier {
     if (open) {
       _settleOpen(velocity / _span);
     } else {
-      _closeTo(NotebookSwitcherOrigin.edge, velocity: velocity / _span);
+      _closeTo(_closeTarget, velocity: velocity / _span);
     }
   }
+
+  /// 不选中、只是收起时回到哪里：以切换胶囊为起点且胶囊还在屏上时收进
+  /// 胶囊，否则收回左缘。
+  NotebookSwitcherOrigin get _closeTarget =>
+      _origin == NotebookSwitcherOrigin.chip && host.chipRect != null
+      ? NotebookSwitcherOrigin.chip
+      : NotebookSwitcherOrigin.edge;
 
   void dragCancel() {
     if (_phase != NotebookSwitcherPhase.dragging) return;
@@ -341,7 +357,7 @@ class NotebookSwitcherController extends ChangeNotifier {
     if (stage.value >= 1.5) {
       _settleOpen(0);
     } else {
-      _closeTo(NotebookSwitcherOrigin.edge);
+      _closeTo(_closeTarget);
     }
   }
 
@@ -430,11 +446,7 @@ class NotebookSwitcherController extends ChangeNotifier {
     _deck?.autoScroll(null);
     _deck?.lift(null);
     _dragSelecting = false;
-    if (_origin == NotebookSwitcherOrigin.chip && host.chipRect != null) {
-      _closeTo(NotebookSwitcherOrigin.chip);
-    } else {
-      _closeTo(NotebookSwitcherOrigin.edge);
-    }
+    _closeTo(_closeTarget);
   }
 
   /// 立即消失，不播动画（切 Tab、关闭日记本功能、页面销毁前）。

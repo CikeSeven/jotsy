@@ -11,9 +11,7 @@ import 'diary_head_section.dart';
 @immutable
 class DiaryViewMenuOptions {
   const DiaryViewMenuOptions({
-    required this.onOpenDrafts,
     required this.onOpenArchived,
-    this.draftCount = 0,
     required this.sortMode,
     required this.layoutMode,
     required this.onSortModeChanged,
@@ -25,14 +23,8 @@ class DiaryViewMenuOptions {
     this.onOpenSettings,
   });
 
-  /// 打开草稿箱页。
-  final VoidCallback onOpenDrafts;
-
   /// 打开归档日记页。
   final VoidCallback onOpenArchived;
-
-  /// 草稿份数：大于 0 时“草稿箱”行尾带份数角标。
-  final int draftCount;
 
   final DiarySortMode sortMode;
   final DiaryLayoutMode layoutMode;
@@ -55,9 +47,8 @@ class DiaryViewMenuOptions {
 }
 
 /// 首页顶栏的“更多”（⋮）：弹出菜单，分三组——
-/// - 草稿箱、归档日记：跳转页面（原先是顶栏上的两枚图标按钮，收进来让搜索条
-///   更宽）。草稿份数大于 0 时“草稿箱”行尾为份数角标，配色与原图标角标相同
-///   （主色底，草稿是“还没写完”，不是警告），超过 99 显示 99+；
+/// - 归档日记：跳转页面（原先是顶栏上的图标按钮，收进来让搜索条更宽；草稿箱
+///   常用、要看份数角标，留在顶栏，见 DiaryHeadSection）；
 /// - 排序方式 ›、显示布局 ›：从所在那一行展开二级菜单（miuix 的级联变形）；
 /// - 设置：推入设置页（设置不在底栏，这里是它的入口）。
 ///
@@ -65,7 +56,7 @@ class DiaryViewMenuOptions {
 /// 后方淡出、换序、淡入，效果看得见；点外部或返回关闭。选中态由二级菜单页
 /// 自己维护（初值取展开时的页面状态）：二级菜单的内容在展开时取定、不随页面
 /// 重建刷新，打开期间排序与布局只能经由这个菜单修改，本地状态不会与页面分叉。
-/// 草稿箱、归档日记、“卡片样式”“设置”是跳转，点按先关菜单。
+/// 归档日记、“卡片样式”“设置”是跳转，点按先关菜单。
 class DiaryViewOptionsMenuButton extends StatelessWidget {
   const DiaryViewOptionsMenuButton({super.key, required this.options});
 
@@ -74,26 +65,10 @@ class DiaryViewOptionsMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colorScheme = Theme.of(context).colorScheme;
-    final draftCount = options.draftCount;
     return ExpressiveMenuButton(
       tooltip: l10n.autoT0125,
       icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
       items: <Widget>[
-        ExpressiveMenuItem(
-          leadingIcon: const FaIcon(FontAwesomeIcons.filePen),
-          trailingIcon: draftCount > 0
-              ? Badge.count(
-                  key: const ValueKey<String>('diary_menu_draft_count'),
-                  count: draftCount,
-                  maxCount: 99,
-                  backgroundColor: colorScheme.primary,
-                  textColor: colorScheme.onPrimary,
-                )
-              : null,
-          onPressed: options.onOpenDrafts,
-          child: Text(l10n.diaryDraftsTitle),
-        ),
         ExpressiveMenuItem(
           leadingIcon: const FaIcon(FontAwesomeIcons.boxArchive),
           onPressed: options.onOpenArchived,

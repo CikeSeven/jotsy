@@ -27,7 +27,8 @@ import 'notebook_switcher_panel.dart';
 /// 日记本卡组的浮层（经 `OverlayPortal` 画在首页路由之上、之后推入的页面
 /// 之下）：遮罩、从起点形变成面板的容器、落进切换胶囊时的胶囊副本。
 ///
-/// 几何逐帧按 [NotebookSwitcherController.stage] 计算（见控制器的类注释）：
+/// 几何逐帧按 [NotebookSwitcherController.stage] 计算（见控制器的类注释），
+/// 面板竖直方向悬浮在唤出的位置（[NotebookSwitcherController.panelAnchor]）：
 /// - 0 → 1：左缘胶囊，左端藏在屏外，纵向中心跟着手指；
 /// - 1 → 2：容器从起点（左缘胶囊 / 切换胶囊）插值到面板，圆角插值到 28；
 ///   面板内容始终按最终尺寸排版、由容器裁切露出；
@@ -169,14 +170,17 @@ class _NotebookSwitcherOverlayState
     });
   }
 
-  /// 面板的矩形（全局坐标）：窄窗口贴列表栏行首、竖直居中；中宽窗口顶部
-  /// 对齐切换胶囊下方。
+  /// 面板的矩形（全局坐标）：贴列表栏行首，竖直方向悬浮在唤出的位置
+  /// （[NotebookPanelAnchor]：右滑以武装时手指的高度为中心，切换胶囊时顶边
+  /// 贴在胶囊下方；还没武装时以手指为中心），夹在上下安全区之内。面板比
+  /// 可用高度还高时铺满（中宽窗口最高 640）。
   Rect _panelRect({
     required Rect pane,
     required double height,
     required MediaQueryData view,
     required double sign,
-    Rect? chip,
+    required NotebookPanelAnchor? anchor,
+    required double fallbackY,
   }) {
     const margin = NotebookSwitcherOverlay.margin;
     final padding = view.padding;
@@ -196,17 +200,38 @@ class _NotebookSwitcherOverlayState
               width;
     final topBound = padding.top + margin;
     final bottomBound = view.size.height - padding.bottom - margin;
-    if (compact) {
-      final h = math.min(height, bottomBound - topBound);
-      return Rect.fromLTWH(left, (topBound + bottomBound - h) / 2, width, h);
-    }
-    final top = math.max(topBound, (chip?.bottom ?? topBound) + 8);
+    final room = bottomBound - topBound;
     final h = math.min(
       height,
-      math.min(NotebookSwitcherOverlay.wideMaxHeight, bottomBound - top),
+      compact ? room : math.min(NotebookSwitcherOverlay.wideMaxHeight, room),
     );
+    final double top = _anchoredTop(
+      anchor,
+      fallbackY,
+      h,
+    ).clamp(topBound, math.max(topBound, bottomBound - h));
     return Rect.fromLTWH(left, top, width, h);
   }
+
+  /// 锚点对应的面板顶边。以中心定位的锚点只在第一次见到时按当时的高度
+  /// 换算成顶边并记住：之后展开子本、面板变高时顶边不动、只往下长（手指
+  /// 刚点的角标不会被推走），碰到底边才由夹取往上让。
+  double _anchoredTop(
+    NotebookPanelAnchor? anchor,
+    double fallbackY,
+    double height,
+  ) {
+    if (anchor == null) return fallbackY - height / 2;
+    if (anchor.top) return anchor.y;
+    if (!identical(anchor, _topAnchor)) {
+      _topAnchor = anchor;
+      _anchorTop = anchor.y - height / 2;
+    }
+    return _anchorTop;
+  }
+
+  NotebookPanelAnchor? _topAnchor;
+  double _anchorTop = 0;
 
   /// 左缘胶囊在进度 [t]（0–1）时的矩形。
   Rect _pillRect(Rect pane, double t, double fingerY, double sign) {
@@ -266,7 +291,8 @@ class _NotebookSwitcherOverlayState
       height: contentHeight,
       view: view,
       sign: sign,
-      chip: controller.host.chipRect ?? _lastChip,
+      anchor: controller.panelAnchor,
+      fallbackY: controller.fingerY,
     );
     final heightTarget = _heightTarget;
     if (heightTarget == null) {
@@ -380,7 +406,8 @@ class _NotebookSwitcherOverlayState
       height: _height.value,
       view: view,
       sign: sign,
-      chip: chip,
+      anchor: controller.panelAnchor,
+      fallbackY: controller.fingerY,
     );
     final useChip = fromChip && chip != null;
     final anchor = useChip

@@ -6,7 +6,10 @@ import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
+import 'package:node_diary/ui/notebooks/controllers/notebook_switcher_controller.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_switcher_overlay.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_switcher_panel.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_switcher_indicator.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
@@ -59,8 +62,9 @@ void main() {
     WidgetTester tester,
     double distance, {
     bool release = true,
+    double y = 420,
   }) async {
-    final gesture = await tester.startGesture(const Offset(60, 420));
+    final gesture = await tester.startGesture(Offset(60, y));
     const steps = 12;
     for (var i = 0; i < steps; i++) {
       await gesture.moveBy(Offset(distance / steps, 0));
@@ -128,6 +132,45 @@ void main() {
     await h.settleAll();
     expect(find.byType(NotebookDeck), findsNothing);
     expect(find.text('这本还空着'), findsOneWidget);
+    await h.unmount();
+  });
+
+  Rect panelRect(WidgetTester tester) =>
+      tester.getRect(find.byType(NotebookSwitcherPanel));
+
+  testWidgets('a short deck floats where the pull armed it', (tester) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    await pull(tester, 120, y: 360);
+    await h.settleAll();
+    final rect = panelRect(tester);
+    // 面板比屏幕矮：中心对着武装时手指的高度，而不是屏幕正中。
+    expect(rect.height, lessThan(600));
+    expect(rect.center.dy, closeTo(360, 1));
+
+    // 靠近底边起手：整块往上让，不超出下方安全区。
+    expect(await systemBackLeavesApp(tester), isFalse);
+    await h.settleAll();
+    final screen = MediaQuery.sizeOf(tester.element(find.byType(DiariesPage)));
+    await pull(tester, 120, y: screen.height - 30);
+    await h.settleAll();
+    expect(
+      panelRect(tester).bottom,
+      closeTo(screen.height - NotebookSwitcherOverlay.margin, 1),
+    );
+    await h.unmount();
+  });
+
+  testWidgets('a deck opened from the chip hangs below the chip', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    final chip = tester.getRect(find.byType(NotebookSwitcherChip));
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
+    expect(
+      panelRect(tester).top,
+      closeTo(chip.bottom + NotebookSwitcherController.panelGap, 1),
+    );
     await h.unmount();
   });
 

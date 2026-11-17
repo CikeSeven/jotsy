@@ -25,6 +25,7 @@ void main() {
     FakeDeviceAuth? auth,
     bool listLayout = false,
     bool notebooksOff = false,
+    Widget Function(Widget page)? wrap,
   }) async {
     // 手机竖屏：卡组贴左缘、竖直居中。
     tester.view.physicalSize = const Size(400, 800);
@@ -36,8 +37,9 @@ void main() {
       await h.settings.setAppFeaturesRaw('{"notebooks":false}');
     }
     await seed?.call(h);
+    const page = DiariesPage();
     await h.pump(
-      const DiariesPage(),
+      wrap?.call(page) ?? page,
       overrides: [
         deviceAuthServiceProvider.overrideWithValue(auth ?? FakeDeviceAuth()),
       ],
@@ -295,13 +297,20 @@ void main() {
     Offset start = const Offset(300, 420),
     bool release = true,
   }) async {
-    final gesture = await tester.startGesture(start);
+    // 带上真实的时间戳：松手速度按手指的移动算，往回甩得出甩动速度。
+    final gesture = await tester.createGesture();
+    await gesture.down(start);
     const steps = 12;
     for (var i = 0; i < steps; i++) {
-      await gesture.moveBy(Offset(-distance / steps, 0));
+      await gesture.moveBy(
+        Offset(-distance / steps, 0),
+        timeStamp: Duration(milliseconds: 16 * (i + 1)),
+      );
       await tester.pump(const Duration(milliseconds: 16));
     }
-    if (release) await gesture.up();
+    if (release) {
+      await gesture.up(timeStamp: const Duration(milliseconds: 16 * steps));
+    }
     return gesture;
   }
 
@@ -320,6 +329,83 @@ void main() {
     await h.settleAll();
     expect(find.byType(NotebookDeck), findsNothing);
     expect(scopeOf(tester).isAll, isTrue);
+    await h.unmount();
+  });
+
+  /// 日记页放进左右翻页的 PageView（与首页一样），返回翻页控制器。
+  Future<(DiaryDraftsHarness, PageController)> pumpPaged(
+    WidgetTester tester,
+  ) async {
+    final pager = PageController();
+    addTearDown(pager.dispose);
+    final h = await pumpHome(
+      tester,
+      seed: seedTwo,
+      wrap: (Widget page) => PageView(
+        controller: pager,
+        children: <Widget>[
+          page,
+          const Center(child: Text('第二页')),
+        ],
+      ),
+    );
+    return (h, pager);
+  }
+
+  /// 从 [start] 快速往左滑一大段并松手（翻页用）。
+  Future<void> swipeLeft(WidgetTester tester, Offset start) async {
+    final gesture = await tester.startGesture(start);
+    for (var i = 0; i < 10; i++) {
+      await gesture.moveBy(const Offset(-30, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+  }
+
+  testWidgets('pushing the deck back past the edge hides it at once', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    await pull(tester, 120);
+    await h.settleAll();
+
+    // 一路拖过头、甩手松开：卡组已经缩进左缘，不再挂着一段看不见的弹簧。
+    await pushBack(tester, 300);
+    await tester.pump();
+    expect(find.byType(NotebookDeck), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('a left swipe right after pushing the deck back turns the page', (
+    tester,
+  ) async {
+    final (h, pager) = await pumpPaged(tester);
+    await pull(tester, 120);
+    await h.settleAll();
+    expect(find.byType(NotebookDeck), findsOneWidget);
+
+    await pushBack(tester, 300);
+    await tester.pump(const Duration(milliseconds: 16));
+    await swipeLeft(tester, const Offset(300, 420));
+    await h.settleAll();
+    expect(pager.page, 1);
+    await h.unmount();
+  });
+
+  testWidgets('a left swipe while the deck closes turns the page', (
+    tester,
+  ) async {
+    final (h, pager) = await pumpPaged(tester);
+    await pull(tester, 120);
+    await h.settleAll();
+
+    // 往回甩到一半松手：卡组正收回左缘，浮层还在屏上。
+    await pushBack(tester, 128);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.byType(NotebookDeck), findsOneWidget);
+    await swipeLeft(tester, const Offset(380, 420));
+    await h.settleAll();
+    expect(pager.page, 1);
     await h.unmount();
   });
 

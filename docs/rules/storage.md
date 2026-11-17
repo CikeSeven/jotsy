@@ -1,14 +1,30 @@
 # 存储管理
 
-> 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.34。
+> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.34。
 
-- 必须：存储管理（设置首页「数据与安全」→ 存储管理，`lib/ui/storage/`）的扫描、删除、压缩与清理只经 `StorageMediaService`（`lib/core/services/storage/`，`storageMediaServiceProvider`），页面只做装配与选择状态，流程（确认、忙碌、提示、刷新）只经 `StorageFlows`；不进 `AppFeatures`（与回收站、数据管理同类的工具页）。
-- 必须：占用扫描（`scanStorageUsage`）在后台 isolate 里只读：托管媒体目录逐个文件按引用索引归类，被引用的进媒体列表（`report.media`）、没有引用的进未使用列表（`report.unused`，`refs` 为空、类别仍按所在目录）并计入“未使用”；背景图、字体、数据库文件（含日志）各自求和；缓存只算 `StorageCacheCatalog` 清单里的条目；数据根目录下其余一切计入“其他”。引用索引（`buildStorageReferenceIndex`）结构化解析日记正文与封面（含回收站、归档、未解封的胶囊）、日记本载荷的 `cover`、留言图片、草稿正文与封面、AI 对话消息的附图（`ai_messages.images`，墓碑不算引用），并用与媒体回收同一份保守扫描（`DiaryMediaReferences`）判断“在用”：结构化解析不认识的提及（日记 metadata、旧版单份草稿）记为 `StorageOtherRef`，文件算在用、只计入占用，禁止从存储管理删除或压缩。匹配一律按定位键（`storageMediaKeyOf` → `diaryMediaKeyOf`，`file:` URI 先解码），禁止按绝对路径比较。新增会引用托管媒体的数据时必须同时接进引用索引、改写规划（`storage_media_edit_plan.dart`）与媒体回收的引用来源。设备空间与本应用的系统占用只经 `MediaCompressor.deviceSpace`（Android 8+ 取 `StorageStatsManager`：标称总容量、可用，以及本应用的安装包与数据，与系统设置同一口径；更早的系统只有 `StatFs`、没有应用统计；桌面没有）；读得到应用统计时报告经 `withDeviceSpace` 把安装包计为“应用本体”、扫描不到的数据计入“其他”，总览的总数与设置首页的“已用”都按 `storageAppTotal` 同一口径，禁止各自另算。
-- 必须：删除媒体只经“先移除引用、再删文件”：`deleteMedia` 在 `DataArchiveService.runSerialized` 里重读引用来源、经 `planStorageMediaRemoval` 换算改写（正文媒体块整块移除并重算纯文本镜像、日记封面清空、日记本载荷去掉 `cover` 并重置取景、留言图片列去掉该项且既没字也没图的留言整条删除、草稿同正文与封面、AI 对话消息的图片列把那一位写成墓碑（位置即编号，不能前移；消息不删、不改时间）），`applyStorageMediaEdits` 一次事务按前置条件写入（读取后被改过的行跳过），再重扫引用、只删已经没有任何引用的文件；禁止直接删除仍被引用的文件（会留下同步修不好的坏引用）。删除前必须经确认对话框写明影响（几篇日记 / 日记本封面 / 留言 / 草稿 / AI 对话消息、释放多少、无法恢复）。“用在”里 AI 对话的引用在 AI 助手开着时点按打开那段对话（`openAiConversation`）；AI 对话不分私密，引用一律可见。
-- 必须：存储管理里查看媒体只经 `openImageViewer`（图片）与 `openStorageMedia`（`controllers/storage_media_open_flow.dart`）：视频在 `AppPlatform.supportsInlineVideo` 的平台进视频预览页 `StorageVideoPreviewPage`（与正文视频同一个 `DiaryVideoPlayerController`，就绪后自动播放，播放条与“这天的照片”预览页共用 `DiaryVideoPlaybackBar`），其余平台与录音、附件交给系统应用（`FileOpenService`）；打码的项不提供查看入口。
-- 必须：压缩只在 `AppPlatform.supportsMediaCompression`（Android：图片经 `DiaryImageTranscoder.compress` 按最长边与画质重编码为 JPEG、照搬拍摄时间与 GPS；视频经 `DiaryVideoTools`（Media3 Transformer）转 H.264 + AAC 的 MP4、短边只缩不放、码率不超过原片、HDR 转 SDR）；桌面不出现压缩入口、视频显示图标占位、不显示设备空间。禁止原地改写托管文件：输出一律写到原文件旁的新路径（`freshSiblingPath`），全部编码结束（或取消）后在 `runSerialized` 里重读引用、经 `planStorageMediaReplacement` 只换路径（显示宽高、小图标记、取景原样）一次改写，再只删已无引用的文件（写入被跳过时删的是新文件）；输出不到原文件 90% 才保留（`storageCompressionWorthKeeping`），否则丢掉输出、保留原文件。不压：GIF 与其他动图、带透明的图、认不出格式或尺寸的图、小于 300 KB 的文件、已经不比档位清晰且码率不高的视频（`storage_compress_plan.dart`）；“可压缩 / 预计节省”只是估算，界面写“约”。Media3 版本必须与 `video_player_android` 带进来的一致（见 `android/app/build.gradle.kts` 的注释）。release 构建的 R8 规则 `android/app/proguard-rules.pro` 让 Media3 里 `LogSessionId`（API 31）类型的字段保持原样：R8 合并类时会把字段放宽成 `Object` 并在读取处补强转，Android 7–11 上一压视频就闪退（v0.13.0），禁止删除该规则；升级 Media3 / `video_player` 后须在发布包里复查没有对这类字段的无条件强转。
-- 必须：写入前的守卫只经 `StorageMediaService._guard`：有 `EditingSessionRegistry` 阻塞者（编辑页等握着整份内存副本的页面）时拒绝并提示关闭编辑页，撤销窗口经 `waitForUndoWindows` 等关闭、超时同样拒绝；写入过就发出 `notifyDataReplaced`。改写日记与日记本时 `updatedAt` 推后 1 秒（与 HEIF 修复共用 `applyStorageMediaEdits`），留言改图片时刷新 `editedAt`。删除与压缩改变的是记录，下次局域网同步把新文件与改动带到对端，对端旧文件由各自的媒体回收收走；网盘较早的备份仍保留原文件，直到按保留份数清理（页尾脚注写明）。
-- 必须：清理只清安全的东西，不需要确认：缓存只删清单里一小时内没改动过的条目（选图、拍照、导出、分享、下载更新与网盘备份的暂存可能正在用），`pending_recordings`、`.backup_import_*`、`.journal_import_*`、`.lan_sync_staging`、`cloud_backup_state` 一律不碰；未使用的文件不论新旧一次清完（用户删掉日记、清空回收站后马上就要能释放），经媒体回收 `DiaryMediaCleanupService.sweep(gracePeriod: Duration.zero, includeCaches: false)`（选择器缓存与长图分片仍归缓存规则）；数据库空闲页不少于 1 MB 时才提供整理（`VACUUM`，在 `runSerialized` 里）。三者都在 `runSerialized` 里执行，界面上“可释放”的数字与实际清理同一口径（`StorageUsageReport.reclaimableBytes`）。“可释放空间”里的未使用的文件一行：行尾“清理”一次清完，点按这一行（或总览图例里的“未使用的文件”）进媒体页的“未使用”列表（`StorageMediaFilter.unusedOnly`，与“可压缩”“仅回收站”互斥），可逐个查看、多选删除（经 `deleteMedia`，确认对话框写明没有地方在用）；未使用的文件不提供压缩。
-- 必须：零宽限期只在存储管理的删除与清理里成立，靠两道保护：守卫（没有编辑页、撤销提示已关闭），以及独占托管媒体写入闸门 `ManagedMediaWriteGate.exclusive`（`lib/core/services/managed_media_write_gate.dart`；等不到写入者结束时视为忙，提示“正在同步或处理图片”，什么都不删）。“先把文件放进托管目录、稍后才写库引用”的后台流程必须把这一整段包进 `ManagedMediaWriteGate.write`：局域网同步的就位到写库（`SyncApplier.apply`）、同步换键拷贝（`adoptMediaRekeys`）、HEIC 修复的转码到改写引用、存储管理的压缩；新增这类流程同样必须接入。两边都在 `runSerialized` 之外进入闸门（写入者持闸门等串行队列、独占者等写入者结束后才排队，不会互相等待）。备份导入、其他应用导入与网盘恢复整段在 `runSerialized` 里，不需要闸门；编辑页、留言与 AI 输入栏、日记本编辑等前台入口复制进来的文件靠守卫（编辑页）与页面不会同时打开兜底。自动回收（启动后、回收站彻底删除后、删除草稿后）不经闸门，必须保留 24 小时宽限期。
-- 必须：私密不外露：只出现在私密日记（`_privateDiaryExclusionSql` 同一口径）或私密日记本封面里的媒体默认打码（锁形占位、不读文件、不写标题与日期），“显示”只在本页内存里生效，有在生效上锁的日记本里的先经 `IdentityVerifier` 验证（不能验证时不放行）；只在未解封时间胶囊里的媒体永远打码、不提供显示；在任一公开处出现过的媒体不打码。打码的项仍计入占用、可以删除与压缩（确认对话框提示含未解封的胶囊）。
-- 必须：存储管理的本机偏好（排序、列表 / 网格、两个压缩档位）只存单个 JSON 键 `app.settings.storage_manager`（`StoragePreferences`，逐字段容错），不随备份导出、不同步；占用扫描 `storageReportProvider` 与设置首页的“已用” `storageQuickTotalProvider` 是一次性读取，已登记在 `syncedDataRefreshProvider`，删除、压缩、清理以及从回收站、背景设置、日记回来后经 `refreshStorageViews` 重新读取。
+## 入口与口径
+- 必须：扫描、删除、压缩与清理只经 `StorageMediaService`；不进 `AppFeatures`（与回收站同类的工具页）。
+- 必须：媒体一律按定位键匹配，禁止按绝对路径；解析不认识的引用算“在用”，禁止从存储管理删除或压缩。
+- 必须：新增会引用托管媒体的数据时，同时接进存储管理的引用索引、改写规划与媒体回收。
+- 必须：设备空间只经 `MediaCompressor.deviceSpace`；总览与设置首页的“已用”同一口径。
+- 必须：偏好只存单个 JSON 键 `app.settings.storage_manager`，不随备份、不同步。
+
+## 删除与压缩
+- 必须：删除先移除引用、再只删已无引用的文件，禁止直接删仍被引用的文件；确认对话框写明影响范围与无法恢复。
+- 必须：AI 消息的图片位置留墓碑、不前移编号；改写的行刷新修改时间，以便同步带到对端。
+- 必须：有编辑阻塞者或撤销提示未关闭时拒绝写入。
+- 必须：压缩只在 `AppPlatform.supportsMediaCompression`（Android）；禁止原地改写托管文件，输出写到新路径，不到原文件 90% 即丢弃。
+- 必须：不压动图、带透明的图、小于 300 KB 的文件与已够小的视频；预计节省一律写“约”。
+- 禁止：删除 `proguard-rules.pro` 保留 Media3 `LogSessionId` 字段的规则（Android 7–11 压视频会闪退）；Media3 须与 `video_player_android` 同版本，升级后在发布包复查。
+- 必须：查看媒体只经 `openStorageMedia`（图片经 `openImageViewer`）；打码项不提供查看。
+
+## 清理与宽限期
+- 必须：清理不需确认、只清安全的：缓存只删一小时内未改动的条目，各类暂存与同步 / 网盘状态目录一律不碰。
+- 必须：未使用的文件一次清完；数据库空闲页 ≥ 1 MB 才提供整理；“可释放”与实际清理同一口径。
+- 必须：零宽限期只在存储管理的删除与清理里成立，须持 `ManagedMediaWriteGate.exclusive`，等不到即什么都不删。
+- 必须：“先放文件、后写引用”的后台流程（同步、HEIC 修复、压缩等）必须整段包进 `ManagedMediaWriteGate.write`。
+- 必须：自动回收不经闸门，保留 24 小时宽限期。
+
+## 隐私
+- 必须：只出现在私密日记或私密本子封面里的媒体默认打码，“显示”只在本页生效，涉及上锁日记本先经 `IdentityVerifier`。
+- 必须：只在未解封胶囊里的媒体永远打码；在任一公开处出现过的不打码；打码项仍可删除与压缩。

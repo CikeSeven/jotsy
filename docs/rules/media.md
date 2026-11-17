@@ -1,16 +1,44 @@
 # 图片、看图与媒体
 
-> 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.11 / §5.12。
+> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.11 / §5.12。
 
-- 必须：日记列表封面、日历条目、探索缩略图与正文小图经 `boundedImageProvider(cover: true)` 传入实际显示宽高的物理像素目标，由编码头尺寸计算铺满容器所需的最小等比解码（`BoundedCoverImage`，小图不放大、边长 ≤ 8192、总像素约 ≤ 4 Mi）；禁止为猜测横竖而按两倍宽解码，或在正文小图解码前额外读取一次文件头。未解封胶囊的低清封面仍用极小宽度目标。`LongImageCoverAlignment` 的尺寸监听必须与 `Image` 一样经 `ScrollAwareImageProvider` 推迟快速滚动中的新解码，缓存命中立即显示；卸载后取消尚未开始的加载。
+## 解码与长图
+- 必须：封面与各处缩略图（含正文小图）经 `boundedImageProvider(cover: true)` 按显示尺寸铺满解码，cover 裁切只经 `CoverCroppedImage`（长图顶部对齐）。
+- 必须：长图（高 ≥ 宽 × 3）只经 `isLongImageSize` 判定，解码前的尺寸只经 `ImageDimensions` 读文件头。
+- 必须：长图分片只经 `LongImageTileService`（Android），缓存不随备份导出、原图只读。
 
-- 必须：打开大图统一经 `openImageViewer`（来源图片用 `ImageViewerHeroSource` 包裹并在点按时 `ImageViewerHero.capture`；例外：补写日记“这天的照片”里尚未插入的相册照片与视频经 `openDiaryDayPhotoPreview` 预览，只负责查看与勾选，同样用 `ImageViewerHeroSource` / `ImageViewerHeroTarget` 飞入）；看图页顶栏只放返回、页码与 ⋮，图片操作只经操作面板 `showImageViewerActionsSheet`（长按图片与 ⋮ 打开同一个）（只负责挑选：分享到已安装应用或“更多应用”、保存到相册、打开日记）→ `ImageViewerExportController`（执行；分享复用 `DiaryShareController`，按钮复用 `DiaryShareTargetButton.forTarget`），禁止再在顶栏加保存 / 分享按钮或另写图片分享链路；“打开日记”只在 `ImageViewerItem.diaryId` 与 `onOpenDiary` 都给出时出现，只由日记不在下层的入口（探索页媒体画廊）提供，预览页与编辑页看图不提供；状态驱动的颜色变化经 `ExpressiveStateBlend` 补间；新增触觉反馈只用于“动作生效/越过阈值”的瞬间，类型对照 DESIGN.md §4.3。
-- 必须：看图与看视频的缩放只经 `DoubleTapZoomViewer`：双指捏合由 `PinchZoomGestureRecognizer`（`lib/ui/widgets/pinch_zoom_gesture_recognizer.dart`）接管——第一根手指还没拖过触摸阈值时第二根落下即在手势竞技场里胜出，翻页与下拉关闭拿不到这两根手指；单指永不接受，单指拖过阈值后主动退出；只收触摸与手写笔，触控板捏合与滚轮仍归 InteractiveViewer（#252）。缩放与平移的换算只经 `ZoomGeometry`（`zoom_geometry.dart`：以焦点为不动点、夹回不露白、越界阻尼及其逆），矩阵的 Z 轴与 X / Y 同比例缩放（`getMaxScaleOnAxis` 取三轴最大值）。`SwipeDismissViewer` 在下拉途中数到第二根手指即作废本次下拉。禁止在看图 / 视频页另写缩放手势，或为了缩放调大翻页 / 下拉的触发阈值。视频画面经 `DiaryVideoSurface(zoomable: true)`（全屏页、“这天的照片”预览、存储管理预览），未放大时不响应双击（`doubleTapZoomsIn: false`，单击立即播放 / 暂停）、放大后双击复原，放大态经 `onZoomChanged` 交给宿主锁住翻页与下拉关闭；正文里的视频卡片不开启（与正文滚动冲突，放大先进全屏）。
-- 必须：补写日记的“这天拍的照片”（照片与视频）只经 `DayPhotoLibrary`（`dayPhotoLibraryProvider`；photo_manager 实现在 Android 按 `datetaken` 拍摄时间筛选，缺失时才退回 `date_added`，图片与视频同一条件）读取相册，状态经 `DiaryDayPhotosController`，界面为编辑页标题下的 `DiaryDayPhotosStrip` 与 `showDiaryDayPhotosSheet`；提示条只在新建模式且发表日期早于今天时自动出现，编辑器设置开关 `dayPhotoSuggestionsEnabled`（“自动显示当天照片”，默认开，本机偏好，不随备份导出）只控制这一自动出现；编辑页 ⋮ 菜单“这天的照片”在新建与编辑模式、相册可用且这天不在未来（新建取所选日期或今天，编辑取 `_draftPublishAt`）时出现，经 `DiaryDayPhotosController.browse()` 打开同一面板，不受该开关与“本次不再显示”影响。进入页面只查询授权状态，系统权限框只能由用户点“允许访问”触发；只申请图片与视频读取权限（Android 13+ `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` 与 14+ 部分授权，不申请音频与照片位置），授权状态按图片、视频分别查询后经 `combineDayPhotoAccess` 合成：只授权过图片的设备（`DayPhotoAccess.imagesOnly`）照常列出照片、查询不带视频，另给一行“允许访问视频”（同样点按才申请；Android 14+ 已授予部分授权那一项时插件的申请不弹框，只经 `PhotoManagerDayPhotoLibrary.requestAccess` 改用 `presentLimited` 发起）。点缩略图打开预览页 `openDiaryDayPhotoPreview`（左右翻看、图片缩放、视频经 `DiaryVideoPlayerController` 直接播放相册原文件（Android `content://`），大图只经 `DayPhotoLibrary.previewOf` 按比例缩小解码），点右上角勾选圈勾选；预览页只负责查看、勾选与“插入”（返回 true 交给打开者），不提供分享 / 保存。插入复用 `DiaryMediaImportController.pickAndInsert(picker:)` 复制到日记私有目录（勾选按拍摄时间分成相邻的图片段 / 视频段逐段插入，视频为视频块），禁止删除、移动或改写相册原文件；勾选与已插入状态只在本次编辑页内存中，不落盘。设为封面（只限图片，视频没有封面入口）只经 `DiaryMetaActions.setCoverFromFile` 拷贝到封面私有目录（与发布页选封面同一条链路），新建时写进草稿、编辑时写进这篇日记的封面并随编辑自动保存（禁止写入新建草稿），禁止直接引用相册原图路径作为封面。视觉规范见 DESIGN.md §5.11。
-- 必须：正文里直接拍照 / 录像只在 `AppPlatform.supportsCameraCapture`（Android）提供，经 `DiaryCameraCaptureService`（原生 `DiaryCameraCapture.kt`：交给系统相机应用，`EXTRA_OUTPUT` 写进 `cacheDir/diary_camera/<批次>/`，`DiaryCameraFileProvider` 只暴露该目录；清单声明了 CAMERA（扫码用），拍摄前先申请该权限）→ `DiaryMediaImportController.captureAndInsert`（复用 `pickAndInsert` 的锚点、复制、回滚与暂存清理，`diary_camera` 登记在 `pickerCacheDirectoryNames`），禁止另写插入链路或引入相机插件；拍到的文件只进日记私有目录、不存系统相册。入口只有工具栏图片 / 视频按钮的来源菜单（`DiaryToolbarMediaSourceButton`，两项单行动作的锚定菜单，不抢焦点，禁止改成底部面板或对话框）、`/` 菜单的“拍照 / 录像”（`diaryBlockCommands(onCamera:)`），以及桌面小组件的“拍照记”（`EditDiaryPage.createInitialAction`，新建页入场后调同一个 `captureMedia`，见 `home_widgets.md`）；不能拍摄的平台两处都不出现，按钮仍直接打开选择器；附件没有拍摄入口。失败按 `camera_permission_denied` / `camera_unavailable` 换成 `DiaryMediaImportOutcome.cameraPermissionDenied` / `cameraUnavailable` 的提示。视觉规范见 DESIGN.md §5.6。
-- 必须：展示型图片解码一律经 `boundedImageProvider` 保持比例缩小（禁止新增只给一边的 `cacheWidth`/`cacheHeight`、`Image.file(cacheWidth:)` 或 `ResizeImage.resizeIfNeeded`：另一边按比例推出后仍可能超过 GPU 纹理上限，被 Impeller 单独压扁）；长图（高 ≥ 宽 × 3）只经 `isLongImageSize` 判定，解码前的尺寸只经 `ImageDimensions` 读取（只读文件头）。正文图片经 `DiaryEmbeddedImage`：比列宽窄时靠行首（段落带对齐属性时从之），长图折叠为 `DiaryLongImageFold`（预览页阅读行为 `longImageMode` 为完整显示时用 `DiaryLongImageFull`，分片按滚动可见范围构建）；点按菜单只经 `showDiaryImageOptions`（“查看”经 `openImageViewer`），禁止回退到上游 `ImageOptionsMenu`；小图显示只存于图片块的 `data.thumbnail`（视频小图见下一条；`kDiaryImageThumbnailKey`，只认 `true`，经 `DiaryImageEmbedActions.setThumbnail` 一次事务写入、取消时删键，缩放写入的宽高原样保留），只读正文不提供切换、小图时菜单不提供调整大小；小图只经 `DiaryImageThumbnail` 绘制（见方，边长只经 `diaryThumbnailExtentFor` 按正文列宽取：一排三张恰好放下、最大 `kDiaryImageThumbnailExtent`；经 `CoverCroppedImage` cover 裁切、`boundedImageProvider(cover: true)` 在编码头回调里按短边铺满解码，优先于宽高上限与长图的折叠 / 完整显示），点按与普通图片相同；正文顶层连续的小图从这一串的第一张起每三张一排（`diaryThumbnailRows` / `diaryThumbnailRowOf`，`models/diary_thumbnail_rows.dart`），数据不变（每张仍是独立的图片块，容器块里的子块不并排）：一排只经两个页面块（`DiaryScrollPage` / `DiaryInlinePage`）画在第一张那一项里（`DiaryThumbnailRowView`，格宽同一边长、间距 `kDiaryThumbnailRowGap`、整排按第一张的对齐，边长经 `DiaryThumbnailExtent` 交给每张），其余几张的项为空，列表下标仍与顶层块一一对应，按下标跳转（揭示块、拖动锚点）经 `diaryThumbnailRowLeader` 换成第一张，拖动锚点跳过空项；某张设为 / 取消小图只通知它自己，分排变化只经 `DiaryThumbnailRowsBuilder` 随事务重建页面；拖动段落的落点把一排当一块（上半区整排之前、下半区整排之后）；紧跟在小图后面经选图插入的图片也设为小图（`insertDiaryEditorNodes(followThumbnails:)`，只有 `insertDiaryImages` 开启），接着排进那一排；导出（PDF / Word / 网页）按同一分排三张一排（`diaryThumbnailRowsBy`，细则见 `export_share.md`），Markdown 与纯文本仍一张一行；只影响应用内正文显示，导出、分享与复制出去的图片仍是原图；看图页每页经 `ImageViewerImagePage`，长图按屏宽竖向滚动（`DoubleTapZoomViewer.tall`）并关闭该页的下拉关闭；cover 裁切的封面与缩略图经 `CoverCroppedImage`（长图顶部对齐）。长图分片只经 `LongImageTileService`（Android 原生 `DiaryLongImageSlicer`，缓存 `getTemporaryDirectory()/diary_image_tiles/`，不随备份导出，原图只读），原图已不存在的分片目录由 `sweepDiaryMediaFiles` 回收。视觉规范见 DESIGN.md §5.12。
-- 必须：正文视频（#252）只经 `DiaryMediaBlockBuilder` 的视频分支：普通显示为卡片（`DiaryVideoPlayer`；不能内嵌播放的平台为 `DiaryVideoPosterCard`，同样大小），画面下只有一行控件 `DiaryVideoControls`（播放 / 暂停、进度条与时间、导出或 ⋮、全屏，不显示文件名；控件行窄于 300 时省掉时间文字，按钮不省）；宽度上限只存于视频块的 `data.width`（`kDiaryVideoWidthKey`，经 `DiaryVideoEmbedActions.resize` 一次事务写入、读取经 `diaryVideoWidthLimit`，面板 `showDiaryVideoResizer` 只有一条宽度滑条、拖动时只在块内预览，最窄 `kDiaryVideoMinWidth`，只作上限，高度随视频比例）。小图与图片同一个键 `data.thumbnail`（`kDiaryImageThumbnailKey`，经 `DiaryImageEmbedActions.setThumbnail`），与图片小图同一套分排（`isDiaryThumbnailMedia`：图片与视频可排在同一排；`insertDiaryMediaBlocks` 同样 `followThumbnails`，附件不受影响）；画面只经 `DiaryVideoThumbnail`（与图片小图同一方格、圆角与边框，正中 `VideoPlayBadge`），帧只经 `VideoPosterCache`（`lib/core/services/video_poster_cache.dart`，Android 原生取帧，缓存目录与存储管理的缩略图是同一个、登记在 `StorageCacheCatalog`；取不到帧的平台为占位方格），小图禁止创建播放器；导出不认视频小图（视频仍是一行文件条，夹在一排中间时把这一排断开）。编辑页的视频操作只经视频菜单 `diaryVideoMenuItems`（单行动作的锚定菜单，最多四项）：卡片控件行的 ⋮ 为 `DiaryVideoMenuButton`（`ExpressiveMenuButton(takesFocus: false)`：按钮在编辑器的焦点子树里，菜单抢焦点会让编辑器连上输入法、弹出键盘），菜单为显示为小图 / 调整大小 / 保存到相册 / 删除；小图点按经 `DiaryVideoThumbnailBlock` 从小图长出播放 / 恢复正常显示 / 保存到相册 / 删除；只读正文的卡片只有导出按钮，小图点按直接播放（桌面交给系统播放器）。导出视频只经 `runDiaryVideoExport`（手机先确认再存相册，桌面“另存为…”）。全屏播放只经 `openDiaryVideoFullscreen`（与看图页同样的不透明度为 false 的淡入路由与下拉关闭；卡片借出自己的播放器与导出控制器，小图打开时本页自建播放器、就绪即播、关闭时释放）：顶栏只有返回与导出，底栏为 `DiaryVideoPlaybackBar`，点按画面显示 / 隐藏上下栏与中央的播放 / 暂停按钮，播放中 3 秒无操作自动隐藏（按住底栏重新计时；暂停、播放失败与无障碍导航开启时一直显示）；禁止再加文件名行或“退出全屏”按钮。视觉规范见 DESIGN.md §5.12。
-- 必须：托管图片（正文图片、日记与日记本封面、背景图）进库时经 `HeifImageConverter.convertImported` 把 HEIF 系（HEIC / HEIF / AVIF，只看文件头 `ftyp` 品牌、不看扩展名）转成同目录的 `<主名>.jpg`：桌面（Windows / Linux）的 Flutter 解码器不认这些格式，手机存进来的 HEIC 同步或备份到桌面后会显示不出来。`DiaryMediaStorageService.importFile`（图片）、`DiaryCoverStorageService.importCover`、`AppBackgroundStorageService.importImage` 已接入，新增图片入库路径必须经这三者之一或同样调用它；转码只在 `AppPlatform.supportsHeifToJpeg`（Android 9+ 原生 `DiaryImageTranscoder`：方向写进像素、EXIF 方向归正、拍摄时间 / 相机 / GPS 照搬），不能转或失败时保留原文件，禁止因此丢图。已存的旧图（旧版本插入、其他应用导入、从旧版设备同步来的）只经 `HeifMediaRepairService`（Android 冷启动后延迟一次，有 `EditingSessionRegistry` 阻塞者时等其全部关闭）：读文件头在后台 isolate，JPEG 不覆盖已有文件（`jpegSiblingPath`），引用只经 `applyMediaPathRepairs` 按前置条件一次事务改写（日记正文图片与封面、日记本载荷的 `cover`（其余键原样）、背景设置里的文件名），`updatedAt` 推后 1 秒（库里按秒存；按 `(id, updatedAt)` 做键的派生缓存与同步靠它看到变化），原 HEIC 不删、只把修改时间刷新为现在，交给媒体回收在宽限期后删除（开着的页面写回旧路径时文件仍在），或由用户在存储管理里清掉（那里先确认没有编辑页、撤销提示已关闭）；转码到改写引用整段经 `ManagedMediaWriteGate.write`，存储管理的立即清理不会删掉还没写进引用的 JPEG。桌面正文图片解码失败且文件是 HEIF 时，占位 `DiaryImageFallback` 说明原因与补救办法（在手机上打开后再同步）并可经 `FileOpenService` 交给系统应用打开。
-- 必须：已存托管媒体的压缩与按文件删除只经存储管理（`storage.md`）：重编码一律写到新路径（`freshSiblingPath`，`HeifImageConverter.jpegSiblingPath` 同一实现）再按前置条件改写全部引用，禁止原地覆盖托管文件（局域网同步按引用判断要不要传文件，原地改写对端永远拿不到新内容）。
+## 看图
+- 必须：看图页的图片操作只经操作面板 `showImageViewerActionsSheet`，分享复用 `DiaryShareController`；禁止在顶栏加保存 / 分享按钮或另写分享链路。
+- 必须：“打开日记”只在入口给出日记 id 时出现（目前只有探索页媒体画廊）。
+- 必须：看图与看视频的缩放只经 `DoubleTapZoomViewer`；禁止另写缩放手势或调大翻页 / 下拉阈值；正文视频卡片不可缩放。
 
-- 必须：正文导入文件经 `DiaryMediaImportController` 按扩展名分类（`diary_imported_media.dart`：图片 / 视频 / 音频候选 / 其余附件）。音频候选（工具栏「文件」与桌面拖放）在复制前用 `probeAudioDuration`（与正文录音卡片同一个 audioplayers 播放器，只准备不播放，带超时）对来源文件读时长：读得出才复制进 `diary_recordings/`（`DiaryMediaKind.audio`）、做成录音块（`diaryAudioNode`，名称为去扩展名的文件名，不带声纹），读不出或只有数据流时照旧复制进 `diary_attachments/` 当附件（#251）。录音块的文件必须在 `diary_recordings/` 里：备份恢复只在该目录为录音块重绑路径（`BackupMediaPaths.rewriteContent`）。禁止把录音块指向附件目录，或不经探测把音频直接做成录音块。
+## 正文媒体与小图
+- 必须：正文图片点按菜单只经 `showDiaryImageOptions`，禁止回退到上游 `ImageOptionsMenu`。
+- 必须：小图只存于图片 / 视频块的 `data.thumbnail`（只认 `true`，取消删键，缩放宽高保留）；只读正文不提供切换。
+- 必须：正文顶层连续小图（图片与视频可混排）三张一排只是显示分组，每张仍是独立块；分排只经 `diaryThumbnailRows`。
+- 必须：紧跟小图插入的图片与视频也设为小图（附件除外）；导出、分享与复制出去的仍是原图。
+- 必须：视频宽度上限只存于 `data.width`；小图的帧只经 `VideoPosterCache`，禁止为小图创建播放器。
+- 必须：导出视频只经 `runDiaryVideoExport`，全屏只经 `openDiaryVideoFullscreen`。
+
+## 这天的照片
+- 必须：相册只经 `DayPhotoLibrary` 读取（按拍摄时间筛选），状态只经 `DiaryDayPhotosController`。
+- 必须：“自动显示当天照片”存于编辑器设置（默认开，本机偏好、不随备份），只控制提示条自动出现。
+- 必须：系统权限框只由用户点按触发；只申请图片与视频读取，只授权图片时照常列出照片。
+- 必须：插入只复制进日记私有目录，禁止改动相册原文件；勾选状态只在本次编辑页内存。
+- 必须：预览页 `openDiaryDayPhotoPreview` 只负责查看、勾选与插入，不提供分享 / 保存。
+- 必须：设为封面只限图片，经 `DiaryMetaActions.setCoverFromFile` 拷贝（新建写草稿，编辑写这篇日记）；禁止引用相册原图路径。
+
+## 拍照 / 录像
+- 必须：只在 `AppPlatform.supportsCameraCapture`（Android）交给系统相机，经 `DiaryMediaImportController.captureAndInsert` 插入；禁止引入相机插件；文件不存系统相册。
+- 必须：入口只有工具栏图片 / 视频按钮的来源菜单、`/` 菜单与桌面小组件“拍照记”；附件与留言没有拍摄入口。界面见 DESIGN.md §5.6。
+
+## HEIF 与托管文件
+- 必须：托管图片入库经 `HeifImageConverter.convertImported`；新增图片入库路径须经 `DiaryMediaStorageService` / `DiaryCoverStorageService` / `AppBackgroundStorageService` 之一。
+- 必须：HEIF 只按文件头判断；转码只在 `AppPlatform.supportsHeifToJpeg`，失败时保留原文件，禁止因此丢图。
+- 必须：旧 HEIF 图只经 `HeifMediaRepairService` 修复（等编辑会话全部关闭），引用一次事务改写，原 HEIC 交给媒体回收。
+- 必须：桌面 HEIF 图解码失败时，占位说明原因与补救（在手机上打开后再同步）。
+- 禁止：原地覆盖托管文件，重编码一律写新路径再改引用，以免同步对端拿不到；压缩与删除见 `storage.md`。
+
+## 导入音频
+- 必须：导入的音频经 `probeAudioDuration` 读得出时长才做成录音块，否则当附件。
+- 禁止：录音块指向 `diary_recordings/` 以外的目录（备份恢复只在该目录重绑路径）。

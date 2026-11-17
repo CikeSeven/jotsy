@@ -35,7 +35,9 @@ class DiaryListTransitionCoordinator {
   ///
   /// [directional] 为 true（点标签、清空标签）时按冻结时与此刻的标签条位置
   /// 定左右方向（连点 A→B→C 按 A→C 算）；其余变更（长按多选、排序、日记本
-  /// 与章节）没有左右之分，纵向进出。
+  /// 与章节）没有左右之分，纵向进出。[direction] 非 null 时直接用它（含义同
+  /// [DiaryListSwitchMotion.exit]），优先于 [directional]：从日记本卡组切换时
+  /// 新列表从卡组所在的行首一侧进来。
   ///
   /// [scrollToTop] 为 true 时，换数据的同一帧让列表回到最顶（见
   /// [_jumpListToTop]）；[scrollToListStart] 为 true 时只回到列表开头、刊头
@@ -46,6 +48,7 @@ class DiaryListTransitionCoordinator {
     bool scrollToTop = false,
     bool scrollToListStart = false,
     bool directional = false,
+    int? direction,
   }) {
     if (_state._heldDisplayedItems == null) {
       _state._heldDisplayedItems = _state._lastDisplayedItems;
@@ -59,13 +62,15 @@ class DiaryListTransitionCoordinator {
       _state._scrollToListStartOnFilterRelease = true;
     }
     mutation();
-    _state._listSwitchDirection = directional
-        ? tagSwitchDirection(
-            _state._heldTagStripPosition,
-            _currentTagStripPosition(),
-            Directionality.of(_state.context),
-          )
-        : 0;
+    _state._listSwitchDirection =
+        direction ??
+        (directional
+            ? tagSwitchDirection(
+                _state._heldTagStripPosition,
+                _currentTagStripPosition(),
+                Directionality.of(_state.context),
+              )
+            : 0);
     _state._queuedFilterTransition ??= _runFilterTransition();
   }
 

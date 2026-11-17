@@ -9017,11 +9017,11 @@
   },
   "notebookTitle": "日记本",
   "@notebookTitle": {
-    "description": "日记本功能的标题：书架面板、管理页与设置入口。"
+    "description": "日记本功能的标题：日记本卡组、管理页与设置入口。"
   },
   "notebookNew": "新建日记本",
   "@notebookNew": {
-    "description": "新建日记本：编辑页标题、按钮与书架末尾的新建格子。"
+    "description": "新建日记本：编辑页标题、按钮与日记本卡组顶栏的新建按钮。"
   },
   "notebookEditTitle": "编辑日记本",
   "@notebookEditTitle": {
@@ -9029,7 +9029,7 @@
   },
   "notebookManage": "管理",
   "@notebookManage": {
-    "description": "书架面板标题行右侧的按钮，进入日记本管理页。"
+    "description": "日记本卡组顶栏右侧的按钮，进入日记本管理页。"
   },
   "notebookSubSectionTitle": "子日记本",
   "@notebookSubSectionTitle": {
@@ -9068,15 +9068,6 @@
   "notebookSubCreate": "新建子日记本",
   "@notebookSubCreate": {
     "description": "日记本操作面板里在这本下面新建子日记本的一项。"
-  },
-  "notebookSubCountSemantics": "含 {count} 本子日记本",
-  "@notebookSubCountSemantics": {
-    "description": "书架上有子本的日记本封面的读屏说明。",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "notebookNestGoUp": "回到「{name}」",
   "@notebookNestGoUp": {
@@ -9157,15 +9148,11 @@
   },
   "notebookAllDiaries": "全部日记",
   "@notebookAllDiaries": {
-    "description": "书架面板里回到全部日记的一行。"
+    "description": "日记本卡组里回到全部日记的一张卡片。"
   },
   "notebookUnfiled": "未收录",
   "@notebookUnfiled": {
-    "description": "书架面板“全部日记”下面的一行与首页切换胶囊：没有收进任何日记本的日记。"
-  },
-  "notebookSectionPinned": "置顶",
-  "@notebookSectionPinned": {
-    "description": "书架面板分组：置顶的日记本。"
+    "description": "日记本卡组“全部日记”下面的一张卡片与首页切换胶囊：没有收进任何日记本的日记。"
   },
   "notebookSectionMine": "我的日记本",
   "@notebookSectionMine": {
@@ -9177,7 +9164,7 @@
   },
   "notebookSectionClosed": "已合上",
   "@notebookSectionClosed": {
-    "description": "书架与管理页分组：已合上的日记本（书架上默认收起）。"
+    "description": "日记本卡组与管理页分组：已合上的日记本（卡组里默认收成一叠）。"
   },
   "notebookEntryCount": "{count} 篇",
   "@notebookEntryCount": {
@@ -21672,5 +21659,22 @@
         "example": "3"
       }
     }
+  },
+  "notebookDeckCurrent": "当前",
+  "@notebookDeckCurrent": {
+    "description": "日记本卡组里当前范围那张卡片的读屏后缀。"
+  },
+  "notebookDeckShowChildren": "展开 {count} 本子日记本",
+  "@notebookDeckShowChildren": {
+    "description": "日记本卡组卡片上子本角标的读屏说明（子本收起时）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookDeckHideChildren": "收起子日记本",
+  "@notebookDeckHideChildren": {
+    "description": "日记本卡组卡片上子本角标的读屏说明（子本展开时）。"
   }
 }

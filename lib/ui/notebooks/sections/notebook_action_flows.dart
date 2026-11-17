@@ -17,7 +17,7 @@ import 'notebook_parent_picker_sheet.dart';
 
 /// 删除时宿主页面的配合：管理页先让这一行收起（[beforeDelete] 等收起动画
 /// 结束），删除失败时 [onDeleteFailed] 让它展开回来，撤销写回后
-/// [onRestored] 让这一行重新展开。书架面板不需要这些。
+/// [onRestored] 让这一行重新展开。日记本卡组不需要这些。
 class NotebookDeleteHooks {
   const NotebookDeleteHooks({
     this.beforeDelete,
@@ -50,7 +50,7 @@ const Set<NotebookAction> notebookRevealingActions = <NotebookAction>{
   NotebookAction.delete,
 };
 
-/// 执行对 [notebook] 的一个操作：书架长按菜单、管理页“更多”面板与首页头部
+/// 执行对 [notebook] 的一个操作：卡组长按菜单、管理页“更多”面板与首页头部
 /// 卡片共用。
 ///
 /// [notebookRevealingActions] 里的操作对上锁的日记本先经
@@ -103,7 +103,7 @@ Future<void> runNotebookAction(
         () => controller.setClosed(notebook.id, action == NotebookAction.close),
       );
     case NotebookAction.createChild:
-      // 新子本保存后出现在上级下面；当前页面（书架、管理页）不跟着跳转。
+      // 新子本保存后出现在上级下面；当前页面（卡组、管理页）不跟着跳转。
       await Navigator.of(
         context,
       ).push(NotebookEditorPage.route(initialParentId: notebook.id));

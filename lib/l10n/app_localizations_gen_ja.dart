@@ -6510,11 +6510,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notebookSubCreate => 'サブ日記帳を新規作成';
 
   @override
-  String notebookSubCountSemantics(int count) {
-    return 'サブ日記帳$count冊を含む';
-  }
-
-  @override
   String notebookNestGoUp(String name) {
     return '「$name」に戻る';
   }
@@ -6570,9 +6565,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookUnfiled => '未分類';
-
-  @override
-  String get notebookSectionPinned => 'ピン留め';
 
   @override
   String get notebookSectionMine => 'マイ日記帳';
@@ -16871,4 +16863,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String diaryReplaceAllDone(int count) {
     return '$count 件置換しました';
   }
+
+  @override
+  String get notebookDeckCurrent => '現在';
+
+  @override
+  String notebookDeckShowChildren(int count) {
+    return 'サブ日記帳$count冊を表示';
+  }
+
+  @override
+  String get notebookDeckHideChildren => 'サブ日記帳を隠す';
 }

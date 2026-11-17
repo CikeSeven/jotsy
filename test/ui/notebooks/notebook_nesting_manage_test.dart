@@ -8,13 +8,14 @@ import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_editor_page.dart';
 import 'package:node_diary/ui/notebooks/pages/notebooks_page.dart';
 import 'package:node_diary/ui/notebooks/sections/notebook_picker_sheet.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
+import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_stacked_cover.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
-/// 嵌套在书架、管理页、操作面板、编辑页与收录选择器里的样子与写入：父本
+/// 嵌套在日记本卡组、管理页、操作面板、编辑页与收录选择器里的样子与写入：父本
 /// 叠放、树序与缩进、只在兄弟之间拖动排序、新建子本与移动、选上级保存、
 /// 上级私密的提示、选本面板的缩进。
 void main() {
@@ -59,22 +60,23 @@ void main() {
     return h;
   }
 
-  testWidgets('a parent on the shelf is drawn as a stack with its count', (
+  testWidgets('a parent in the deck is drawn as a stack with its count', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    final h = await pumpLauncher(
-      tester,
-      seedTree,
-      (context) => unawaited(showNotebookShelfSheet(context)),
-    );
+    final h = await DiaryDraftsHarness.create(tester);
+    await seedTree(h);
+    await h.pump(const DiariesPage());
+    await h.settleAll();
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
     final stacks = tester
         .widgetList<NotebookStackedCover>(find.byType(NotebookStackedCover))
         .toList();
-    // 只列顶层：旅行（2 本子本）与读书（没有子本，不叠放）。
-    expect(stacks.map((s) => s.childCount), <int>[2, 0]);
-    expect(find.bySemanticsLabel(RegExp('含 2 本子日记本')), findsOneWidget);
-    expect(find.text('2025'), findsNothing);
+    // 子本收着：只有旅行（2 本子本）叠纸边，读书没有子本、不叠放。
+    expect(stacks.map((s) => s.childCount), <int>[2]);
+    expect(find.bySemanticsLabel('展开 2 本子日记本'), findsOneWidget);
+    expect(deckCard('2025'), findsNothing);
     semantics.dispose();
     await h.unmount();
   });

@@ -2,7 +2,7 @@
 
 part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 
-/// 日记页的日记本范围编排：书架切换、上锁验证、头部菜单、本子排序、
+/// 日记页的日记本范围编排：卡组切换、上锁验证、头部菜单、本子排序、
 /// 日记本被删除后的回退与系统返回。
 ///
 /// 职责边界：
@@ -11,7 +11,7 @@ part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 ///   顶部淡入），并退出多选；
 /// - 别处改了范围（上锁遮罩“回到全部日记”）时由 [handleScopeIdChanged]
 ///   补上同样的过渡；
-/// - 不构建 UI（书架面板、确认框由各自的 flow 负责）。
+/// - 不构建 UI（日记本卡组、确认框由各自的组件与 flow 负责）。
 class DiariesNotebookScopeController {
   DiariesNotebookScopeController(
     this._state, {
@@ -35,59 +35,76 @@ class DiariesNotebookScopeController {
   HomeNotebookScopeResolution get resolution =>
       _state.ref.read(homeNotebookScopeResolutionProvider);
 
-  /// 打开书架面板，按选择切换范围（上锁的先验证）。
-  Future<void> openShelf() async {
-    final current = _state.ref.read(homeNotebookScopeProvider);
-    final result = await showNotebookShelfSheet(
-      _state.context,
-      currentNotebookId: current.notebookId,
-      unfiledSelected: current.unfiled,
-    );
-    if (!_state.mounted || result == null) {
-      return;
-    }
-    switch (result) {
-      case NotebookShelfSelectAll():
-        showAll();
-      case NotebookShelfSelectUnfiled():
-        showUnfiled();
-      case NotebookShelfSelectNotebook(:final notebookId):
-        await enter(notebookId);
-    }
-  }
+  /// 从切换胶囊打开日记本卡组（右滑拉出是另一个入口，见
+  /// [NotebookSwitcherGesture]）。
+  void openSwitcher() => _state._switcher.openFromChip(
+    textDirection: Directionality.of(_state.context),
+  );
 
-  /// 进入日记本（书架、头部的子本网格与面包屑共用）：上锁的先验证，未通过
+  /// 进入日记本（头部的子本网格与面包屑共用）：上锁的先验证，未通过
   /// （取消、失败、设备不支持）停留原处。
-  ///
-  /// 在同一个上锁范围里切换（上锁的父本与随之上锁的子本之间、经面包屑回到
-  /// 上级）不再验证，见 [notebookSwitchRequiresAuth]；验证会话因切到后台
-  /// 失效（relocked）时按从头进入处理。
   Future<void> enter(String notebookId) async {
     final current = _state.ref.read(homeNotebookScopeProvider);
     if (current.notebookId == notebookId) {
       return;
     }
+    if (!await _authorize(notebookId) || !_state.mounted) {
+      return;
+    }
+    _switchScope(notebookId, () => _notifier.enter(notebookId));
+  }
+
+  /// 卡组选中一项之前的验证：日记本按 [_authorize]，全部日记与未收录不用
+  /// 验证。卡组在验证期间把那张卡片抽出来等着，未通过时落回。
+  Future<bool> authorizeEntry(NotebookDeckEntry entry) async {
+    final notebook = entry.notebook;
+    if (notebook == null) return true;
+    return await _authorize(notebook.id) && _state.mounted;
+  }
+
+  /// 卡组选中一项（已验证）：切换范围，新列表从卡组所在的行首一侧切入。
+  void commitEntry(NotebookDeckEntry entry) {
+    // 列表切换的方向口径：+1 新内容从右边来。卡组在行首（LTR 为左）。
+    final direction = Directionality.of(_state.context) == TextDirection.ltr
+        ? -1
+        : 1;
+    switch (entry.kind) {
+      case NotebookDeckEntryKind.all:
+        showAll(direction: direction);
+      case NotebookDeckEntryKind.unfiled:
+        showUnfiled(direction: direction);
+      case NotebookDeckEntryKind.notebook:
+        final id = entry.notebook!.id;
+        if (_state.ref.read(homeNotebookScopeProvider).notebookId == id) {
+          return;
+        }
+        _switchScope(id, () => _notifier.enter(id), direction: direction);
+      case NotebookDeckEntryKind.closedHeader:
+        return;
+    }
+  }
+
+  /// 进入 [notebookId] 前的验证（上锁的本子）；返回是否放行。
+  ///
+  /// 在同一个上锁范围里切换（上锁的父本与随之上锁的子本之间、经面包屑回到
+  /// 上级）不再验证，见 [notebookSwitchRequiresAuth]；验证会话因切到后台
+  /// 失效（relocked）时按从头进入处理。本子不在了（刚被删）不放行。
+  Future<bool> _authorize(String notebookId) async {
+    final current = _state.ref.read(homeNotebookScopeProvider);
     final tree = _state.ref.read(notebookTreeProvider);
     final notebook = tree?[notebookId];
     if (tree == null || notebook == null) {
-      return;
+      return false;
     }
     final needsAuth = notebookSwitchRequiresAuth(
       tree,
       notebook,
       fromId: current.relocked ? null : current.notebookId,
     );
-    if (needsAuth) {
-      final allowed = await authorizeNotebookEntry(
-        _state.context,
-        _state.ref,
-        notebook,
-      );
-      if (!allowed || !_state.mounted) {
-        return;
-      }
+    if (!needsAuth) {
+      return true;
     }
-    _switchScope(notebookId, () => _notifier.enter(notebookId));
+    return authorizeNotebookEntry(_state.context, _state.ref, notebook);
   }
 
   /// 系统返回（多选与标签栏都已收起之后）：只在子本里回到上级本子。顶层
@@ -129,19 +146,24 @@ class DiariesNotebookScopeController {
   }
 
   /// 进入“未收录”（没有收进任何日记本的日记，已在其中时不变）。
-  void showUnfiled() {
+  /// [direction] 见 [DiaryListTransitionCoordinator.queueFilterMutation]。
+  void showUnfiled({int? direction}) {
     if (_state.ref.read(homeNotebookScopeProvider).unfiled) {
       return;
     }
-    _switchScope(HomeNotebookScope.unfiledKey, _notifier.showUnfiled);
+    _switchScope(
+      HomeNotebookScope.unfiledKey,
+      _notifier.showUnfiled,
+      direction: direction,
+    );
   }
 
   /// 回到全部日记（已在全部日记时不变）。
-  void showAll() {
+  void showAll({int? direction}) {
     if (_state.ref.read(homeNotebookScopeProvider).isAll) {
       return;
     }
-    _switchScope(null, _notifier.showAll);
+    _switchScope(null, _notifier.showAll, direction: direction);
   }
 
   /// 功能管理里关掉日记本时，首页若停在某本里就回到全部日记（日记本功能
@@ -164,13 +186,18 @@ class DiariesNotebookScopeController {
     });
   }
 
-  /// [scopeKey] 为新范围的 [HomeNotebookScope.key]。
-  void _switchScope(String? scopeKey, VoidCallback mutation) {
+  /// [scopeKey] 为新范围的 [HomeNotebookScope.key]；[direction] 为列表
+  /// 切换的左右方向（null 为纵向进出）。
+  void _switchScope(String? scopeKey, VoidCallback mutation, {int? direction}) {
     _expectedNotebookId = scopeKey;
     if (_state._isSelectionMode) {
       _state.setState(_state._resetSelection);
     }
-    transitionCoordinator.queueFilterMutation(mutation, scrollToTop: true);
+    transitionCoordinator.queueFilterMutation(
+      mutation,
+      scrollToTop: true,
+      direction: direction,
+    );
   }
 
   /// 范围的身份（[HomeNotebookScope.key]）变了：不是页面发起的（上锁遮罩
@@ -182,6 +209,8 @@ class DiariesNotebookScopeController {
       return;
     }
     _expectedNotebookId = next;
+    // 卡组开着时（例如上锁遮罩里回到全部日记）直接收掉，不留在新范围上。
+    _state._switcher.dismissImmediately();
     Navigator.of(_state.context).popUntil((Route<dynamic> route) {
       return route.isFirst;
     });

@@ -9017,11 +9017,11 @@
   },
   "notebookTitle": "Notebooks",
   "@notebookTitle": {
-    "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
+    "description": "Title of the notebooks feature: notebook deck, management page and settings entry."
   },
   "notebookNew": "New notebook",
   "@notebookNew": {
-    "description": "Create a notebook: editor title, buttons and the shelf's new tile."
+    "description": "Create a notebook: editor title, buttons and the notebook deck's new button."
   },
   "notebookEditTitle": "Edit notebook",
   "@notebookEditTitle": {
@@ -9029,7 +9029,7 @@
   },
   "notebookManage": "Manage",
   "@notebookManage": {
-    "description": "Shelf sheet header button that opens the notebook management page."
+    "description": "Notebook deck header button that opens the notebook management page."
   },
   "notebookSubSectionTitle": "Sub-notebooks",
   "@notebookSubSectionTitle": {
@@ -9068,15 +9068,6 @@
   "notebookSubCreate": "New sub-notebook",
   "@notebookSubCreate": {
     "description": "Notebook actions sheet item that creates a sub-notebook inside this one."
-  },
-  "notebookSubCountSemantics": "{count, plural, =1{Contains 1 sub-notebook} other{Contains {count} sub-notebooks}}",
-  "@notebookSubCountSemantics": {
-    "description": "Screen reader text for a shelf cover that has sub-notebooks.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "notebookNestGoUp": "Go to \"{name}\"",
   "@notebookNestGoUp": {
@@ -9157,15 +9148,11 @@
   },
   "notebookAllDiaries": "All entries",
   "@notebookAllDiaries": {
-    "description": "Shelf sheet row that returns to all entries."
+    "description": "Notebook deck card that returns to all entries."
   },
   "notebookUnfiled": "Not in a notebook",
   "@notebookUnfiled": {
-    "description": "Shelf sheet row below All entries, and the home switcher chip: entries that are not in any notebook."
-  },
-  "notebookSectionPinned": "Pinned",
-  "@notebookSectionPinned": {
-    "description": "Shelf sheet group: pinned notebooks."
+    "description": "Notebook deck card below All entries, and the home switcher chip: entries that are not in any notebook."
   },
   "notebookSectionMine": "My notebooks",
   "@notebookSectionMine": {
@@ -9177,7 +9164,7 @@
   },
   "notebookSectionClosed": "Closed",
   "@notebookSectionClosed": {
-    "description": "Shelf and management group: closed notebooks (collapsed on the shelf by default)."
+    "description": "Notebook deck and management group: closed notebooks (folded into a pile in the deck by default)."
   },
   "notebookEntryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
   "@notebookEntryCount": {
@@ -21672,5 +21659,22 @@
         "example": "3"
       }
     }
+  },
+  "notebookDeckCurrent": "Current",
+  "@notebookDeckCurrent": {
+    "description": "Screen reader suffix for the notebook deck card of the scope the home list is showing."
+  },
+  "notebookDeckShowChildren": "{count, plural, =1{Show 1 sub-notebook} other{Show {count} sub-notebooks}}",
+  "@notebookDeckShowChildren": {
+    "description": "Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are hidden.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookDeckHideChildren": "Hide sub-notebooks",
+  "@notebookDeckHideChildren": {
+    "description": "Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are shown."
   }
 }

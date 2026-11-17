@@ -113,7 +113,7 @@ class NotebookShelfGroups {
         notebooks.where((n) => n.parentId == null && n.isClosed),
       );
 
-  /// 置顶且没合上的（书架“置顶”分组，不论哪一层）。
+  /// 置顶且没合上的（卡组“置顶”分组，不论哪一层）。
   final List<NotebookView> pinned;
 
   /// 没合上的顶层普通日记本，含置顶的（管理页“我的日记本”）。
@@ -125,11 +125,11 @@ class NotebookShelfGroups {
   /// 已合上的顶层日记本（不论类型、是否置顶）。
   final List<NotebookView> closed;
 
-  /// 书架“我的日记本”：没置顶、没合上的顶层普通日记本（置顶的已在上面单列）。
+  /// 卡组“我的日记本”：没置顶、没合上的顶层普通日记本（置顶的已在上面单列）。
   List<NotebookView> get shelfManual =>
       manual.where((n) => !n.isPinned).toList(growable: false);
 
-  /// 书架“智能日记本”：没置顶的顶层智能本（置顶的同样已在上面单列）。
+  /// 卡组“智能日记本”：没置顶的顶层智能本（置顶的同样已在上面单列）。
   List<NotebookView> get shelfSmart =>
       smart.where((n) => !n.isPinned).toList(growable: false);
 }

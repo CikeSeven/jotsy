@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../../../app/theme/app_spacing.dart';
 import '../../diary_templates/viewmodels/diary_template_accent.dart';
 import '../models/notebook_icon.dart';
 import '../viewmodels/notebook_labels.dart';
@@ -82,76 +80,6 @@ class NotebookStateBadge extends StatelessWidget {
             },
             size: 12,
             color: scheme.onSurface,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 网格末尾的“＋ 新建日记本”：描边、无底色。
-class NotebookCreateTile extends StatelessWidget {
-  const NotebookCreateTile({super.key, required this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final label = context.l10n.notebookNew;
-    final borderRadius = BorderRadius.circular(20);
-    return Semantics(
-      button: true,
-      label: label,
-      excludeSemantics: true,
-      onTap: onTap,
-      child: AspectRatio(
-        aspectRatio: 3 / 4,
-        child: Material(
-          type: MaterialType.transparency,
-          shape: RoundedRectangleBorder(
-            borderRadius: borderRadius,
-            side: BorderSide(color: scheme.outlineVariant),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox.square(
-                    dimension: 40,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: scheme.primary.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: FaIcon(
-                          FontAwesomeIcons.plus,
-                          size: 16,
-                          color: scheme.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.s),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: scheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
       ),

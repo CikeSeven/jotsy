@@ -12,9 +12,9 @@ import 'notebook_cover/notebook_cover_layouts.dart';
 import 'notebook_cover/notebook_cover_mini.dart';
 import 'notebook_cover_parts.dart';
 
-enum _TileVariant { full, mini, create }
+enum _TileVariant { full, mini }
 
-/// 日记本封面：书架网格、收录选择器与编辑页预览共用。
+/// 日记本封面：编辑页预览、探索页卡片与各处列表行的小封面共用。
 ///
 /// - 默认：3:4 的封面卡片。底色为强调色经主题换算后的容器色（见
 ///   [notebookAccentColors]），内容按 [style] 的版式排布（经典：有封面图时
@@ -23,8 +23,7 @@ enum _TileVariant { full, mini, create }
 ///   （上锁 / 隐藏 / 智能）；[selected] 时描边补间到 2dp primary，[closed]
 ///   时整体 0.6 不透明度——角标、描边、不透明度与水波纹不随版式变化；
 /// - [NotebookCoverTile.mini]：44×56 的小封面，列表行左侧用，不含文字，按
-///   版式保留主要特征（[NotebookCoverMini]）；
-/// - [NotebookCoverTile.create]：描边的“＋ 新建日记本”格子，放在网格末尾。
+///   版式保留主要特征（[NotebookCoverMini]）。
 ///
 /// 只负责展示与回调；点按墨水层叠在内容之上（DESIGN.md §4.3），封面图不会
 /// 盖住水波纹。
@@ -61,21 +60,6 @@ class NotebookCoverTile extends StatelessWidget {
        selected = false,
        onTap = null,
        onLongPress = null;
-
-  /// 网格末尾的“＋ 新建日记本”格子。
-  const NotebookCoverTile.create({super.key, required this.onTap})
-    : _variant = _TileVariant.create,
-      name = null,
-      icon = NotebookIcon.fallback,
-      color = null,
-      coverPath = null,
-      style = NotebookCoverStyle.defaults,
-      count = null,
-      kind = NotebookKind.manual,
-      visibility = NotebookVisibility.normal,
-      selected = false,
-      closed = false,
-      onLongPress = null;
 
   /// 由 [NotebookView] 构造默认封面。
   factory NotebookCoverTile.fromView(
@@ -139,7 +123,6 @@ class NotebookCoverTile extends StatelessWidget {
   Widget build(BuildContext context) => switch (_variant) {
     _TileVariant.full => _buildFull(context),
     _TileVariant.mini => _buildMini(context),
-    _TileVariant.create => NotebookCreateTile(onTap: onTap),
   };
 
   Widget _buildFull(BuildContext context) {

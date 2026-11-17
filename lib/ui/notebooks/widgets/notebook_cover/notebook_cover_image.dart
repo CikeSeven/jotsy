@@ -42,18 +42,38 @@ class NotebookCoverImage extends StatelessWidget {
   /// 只读取景部分（对齐点与放大）。
   final NotebookCoverStyle style;
 
-  @override
-  Widget build(BuildContext context) {
-    final dpr = MediaQuery.devicePixelRatioOf(context);
+  /// 与 [build] 同一份解码尺寸的图片（预取用：卡组拉出时先把封面解码好，
+  /// 卡片出现时不再淡入）。
+  static ImageProvider providerFor({
+    required String path,
+    required double width,
+    double? height,
+    NotebookCoverStyle style = NotebookCoverStyle.defaults,
+    required double devicePixelRatio,
+  }) {
     final file = FileImage(File(path));
     if (style.hasDefaultCrop && height == null) {
-      return CoverCroppedImage(
-        image: boundedImageProvider(file, width: (width * dpr).round()),
-        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+      return boundedImageProvider(
+        file,
+        width: (width * devicePixelRatio).round(),
       );
     }
     final extent = math.max(width, height ?? 0) * style.zoom * 1.5;
-    final image = boundedImageProvider(file, width: (extent * dpr).round());
+    return boundedImageProvider(
+      file,
+      width: (extent * devicePixelRatio).round(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final image = providerFor(
+      path: path,
+      width: width,
+      height: height,
+      style: style,
+      devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
     if (style.hasDefaultCrop) {
       return CoverCroppedImage(
         image: image,

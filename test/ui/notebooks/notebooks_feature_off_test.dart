@@ -22,7 +22,6 @@ import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_selection_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_notebook_tiles.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
@@ -47,18 +46,6 @@ void main() {
     of: find.text(title),
     matching: find.byType(DiarySelectionSurface),
   );
-
-  Future<void> openShelfAndPick(DiaryDraftsHarness h, String name) async {
-    await h.tester.tap(find.byType(NotebookSwitcherChip));
-    await h.settleAll();
-    await h.tester.tap(
-      find.descendant(
-        of: find.byType(NotebookShelf),
-        matching: find.text(name),
-      ),
-    );
-    await h.settleAll();
-  }
 
   group('diaries page', () {
     Future<DiaryDraftsHarness> pumpHome(
@@ -141,7 +128,7 @@ void main() {
         ],
       );
       await h.settleAll();
-      await openShelfAndPick(h, '旅行');
+      await pickFromDeck(h, '旅行');
       expect(
         containerOf(tester).read(homeNotebookScopeProvider).notebookId,
         travel,
@@ -169,7 +156,7 @@ void main() {
       unawaited(h.settings.setAppFeaturesRaw(null));
       await h.settleAll();
       expect(find.byType(NotebookSwitcherChip), findsOneWidget);
-      await openShelfAndPick(h, '旅行');
+      await pickFromDeck(h, '旅行');
       expect(find.text('在京都'), findsOneWidget);
       expect(find.text('上班路上'), findsNothing);
       expect(tester.takeException(), isNull);
@@ -211,7 +198,7 @@ void main() {
         ),
       );
       await h.settleAll();
-      await openShelfAndPick(h, '保险箱');
+      await pickFromDeck(h, '保险箱');
       expect(auth.reasons, hasLength(1));
       expect(
         containerOf(tester).read(homeNotebookScopeProvider).notebookId,

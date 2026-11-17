@@ -6,7 +6,7 @@ import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_editor_page.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_breadcrumb.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_children_grid.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_actions.dart';
@@ -42,20 +42,6 @@ void main() {
   String? scopeId(WidgetTester tester) =>
       containerOf(tester).read(homeNotebookScopeProvider).notebookId;
 
-  Future<void> openShelfAndPick(DiaryDraftsHarness h, String name) async {
-    await h.tester.tap(find.byType(NotebookSwitcherChip));
-    await h.settleAll();
-    // 封面的墨水层盖在文字上面，点按落在它身上（与书架的真实点按一致）。
-    await h.tester.tap(
-      find.descendant(
-        of: find.byType(NotebookShelf),
-        matching: find.text(name),
-      ),
-      warnIfMissed: false,
-    );
-    await h.settleAll();
-  }
-
   Finder inGrid(Finder finder) =>
       find.descendant(of: find.byType(NotebookChildrenGrid), matching: finder);
 
@@ -77,11 +63,13 @@ void main() {
     await h.diary('上班路上');
   }
 
-  testWidgets('the shelf lists top-level notebooks only', (tester) async {
+  testWidgets('the deck folds sub-notebooks under their parent', (
+    tester,
+  ) async {
     final h = await pumpHome(tester, seed: seedTravel);
     await tester.tap(find.byType(NotebookSwitcherChip));
     await h.settleAll();
-    final shelf = find.byType(NotebookShelf);
+    final shelf = find.byType(NotebookDeck);
     expect(find.descendant(of: shelf, matching: find.text('旅行')), findsOne);
     expect(
       find.descendant(of: shelf, matching: find.text('2025')),
@@ -97,7 +85,7 @@ void main() {
     tester,
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
 
     // 列表汇总子孙里的日记；头部的子本网格只列直接子本。
     expect(find.text('出发'), findsOneWidget);
@@ -145,7 +133,7 @@ void main() {
     tester,
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
     await tester.tap(inGrid(find.text('东京')));
@@ -170,7 +158,7 @@ void main() {
     'the grid create button opens the editor with the parent filled in',
     (tester) async {
       final h = await pumpHome(tester, seed: seedTravel);
-      await openShelfAndPick(h, '旅行');
+      await pickFromDeck(h, '旅行');
       await tester.tap(inGrid(find.text('新建子本')));
       await h.settleAll();
       final editor = tester.widget<NotebookEditorPage>(
@@ -194,7 +182,7 @@ void main() {
         reading = await h.notebook('读书');
       },
     );
-    await openShelfAndPick(h, '读书');
+    await pickFromDeck(h, '读书');
     expect(find.byType(NotebookChildrenGrid), findsNothing);
     await tester.tap(inActions(find.text('新建子本')));
     await h.settleAll();
@@ -212,7 +200,7 @@ void main() {
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
     // 有子本的父本：入口只在子本网格的标题行；最深一层两处都没有。
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     expect(inActions(find.text('新建子本')), findsNothing);
     expect(inGrid(find.text('新建子本')), findsOneWidget);
     await tester.tap(inGrid(find.text('2025')));
@@ -237,7 +225,7 @@ void main() {
         ];
       },
     );
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
 
     // 手机宽度两列：收起时列出前三本，第四格为“还有 3 本”。
     expect(inGrid(find.text('6')), findsOneWidget);
@@ -294,7 +282,7 @@ void main() {
         }
       },
     );
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     for (final name in names) {
       expect(inGrid(find.text(name)), findsOneWidget);
     }
@@ -307,7 +295,7 @@ void main() {
     tester,
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
     expect(scopeId(tester), year);
@@ -338,7 +326,7 @@ void main() {
     tester,
   ) async {
     final h = await pumpHome(tester, seed: seedTravel);
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     await tester.tap(inGrid(find.text('2025')));
     await h.settleAll();
 
@@ -371,7 +359,7 @@ void main() {
     testWidgets('moving within one locked tree asks only once', (tester) async {
       final auth = FakeDeviceAuth(results: <bool>[true]);
       final h = await pumpHome(tester, seed: seedLocks, auth: auth);
-      await openShelfAndPick(h, '保险箱');
+      await pickFromDeck(h, '保险箱');
       expect(auth.reasons, hasLength(1));
       expect(scopeId(tester), vault);
 
@@ -388,7 +376,7 @@ void main() {
     testWidgets('a locked child of a plain parent still asks', (tester) async {
       final auth = FakeDeviceAuth(results: <bool>[false, true]);
       final h = await pumpHome(tester, seed: seedLocks, auth: auth);
-      await openShelfAndPick(h, '旅行');
+      await pickFromDeck(h, '旅行');
       expect(auth.reasons, isEmpty);
       // 比父本更私密的子本不汇总进父本的列表。
       expect(find.text('出发'), findsOneWidget);

@@ -10,7 +10,7 @@ keywords: [archive, unarchive, swipe to archive, archived diaries, delete diary,
 **Archive** tucks away diaries you don't want to see on the home page without deleting them. The **recycle bin** holds deleted diaries, which you can restore or delete permanently.
 
 ## Archiving
-- On a phone, **swipe a card left** in the diary list and let go past the threshold to archive it. You can undo from the notice.
+- On a phone, with the List layout, **swipe a card left** in the diary list and let go past the threshold to archive it. You can undo from the notice. The default Waterfall layout has no swipe; switch to List in ⋮ (More) → Layout.
 - Long-press a card to start selecting, pick several, and tap the archive button in the top bar to archive them together.
 - On a computer, right-click a card and choose "Archive".
 - Archived diaries no longer show in the home list, but the calendar and Explore stats still count them, and search finds them when "Include archived" is on.

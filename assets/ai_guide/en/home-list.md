@@ -12,7 +12,7 @@ The Diaries tab is the home page you see when you open the app: a search bar and
 ## Layout and sorting
 Tap ⋮ (More) at the right of the top bar to open the menu, in three groups from top to bottom: Archived diaries (see "Archive and recycle bin"); Sort and Layout; Settings.
 - Sort: Date updated, Date published or Title, each Ascending or Descending.
-- Layout: List or Waterfall; "Card style" below them opens the card style page, where you can switch presets and adjust covers, text, colors and more; see "Diary card, preview page and navigation bar styles".
+- Layout: Waterfall (default) or List; on a phone, only the List layout lets you swipe a card left to archive it. "Card style" below them opens the card style page, where you can switch presets and adjust covers, text, colors and more; see "Diary card, preview page and navigation bar styles".
 - Inside a notebook, the sort section becomes "Sort in this notebook": Date published, newest first; Date published, oldest first; Recently edited; or Book order (arranged by hand in the contents; smart notebooks don't have it, see "Notebooks"). It only applies to that notebook.
 
 Drafts is the button just left of ⋮ (see "Drafts and publishing"); when you have drafts, it shows how many. With the AI assistant on, the AI assistant button sits to the left of Drafts.

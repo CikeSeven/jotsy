@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../../utils/date_picker_range.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../todos/viewmodels/todo_calendar_index.dart';
 import '../models/calendar_display_options.dart';
@@ -43,8 +44,8 @@ class CalendarMonthGrid extends StatefulWidget {
     this.scaleRowsWithWidth = false,
   });
 
-  static final DateTime firstDay = DateTime(2010, 1, 1);
-  static final DateTime lastDay = DateTime(2100, 12, 31);
+  static final DateTime firstDay = DatePickerRange.firstDate;
+  static final DateTime lastDay = DatePickerRange.lastDate;
 
   /// 行高：table_calendar 默认 52；显示农历时数字下方多一行小字，加高到
   /// 60，数字、农历与底部指示物三层互不挤压。
@@ -296,7 +297,7 @@ class CalendarMonthGrid extends StatefulWidget {
 class _CalendarMonthGridState extends State<CalendarMonthGrid> {
   /// Home 的 tab_calendar 是 PageStorageKey；若沿用路由的 bucket，
   /// TableCalendar 的页码会与外层列表的像素偏移共用同一个存储位置。
-  /// 从年视图回到月视图时，0 会被当作第一页（2010 年），旧页码则会覆盖
+  /// 从年视图回到月视图时，0 会被当作第一页（1900 年），旧页码则会覆盖
   /// 新选的月份。这里截断祖先 key 的查找，让每次挂载都以 focusedDay 定位。
   final _pageStorageBucket = PageStorageBucket();
 

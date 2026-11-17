@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../../utils/date_picker_range.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
@@ -45,7 +46,7 @@ class _DiaryExportPageState extends ConsumerState<DiaryExportPage> {
     final now = DateTime.now();
     final picked = await showDateRangePicker(
       context: context,
-      firstDate: DateTime(1970),
+      firstDate: DatePickerRange.firstDate,
       lastDate: DateTime(now.year + 1, 12, 31),
       initialDateRange:
           _scope.customRange ??

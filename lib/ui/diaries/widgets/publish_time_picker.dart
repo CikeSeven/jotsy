@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-/// 发表时间可选的最早日期，与日历页的可选范围一致。
-final DateTime _earliestPublishDate = DateTime(2010, 1, 1);
+import '../../../utils/date_picker_range.dart';
 
 /// 依次弹出日期、时间选择器，返回新的发表时间（精确到分钟）。
 ///
 /// 发布页与编辑已发布日记共用，约束保持一致：
 /// - 日期不能晚于今天；[current] 在未来时（如胶囊提前解封后仍保留原解封
 ///   时间）从今天开始选；
-/// - 日期下限为 2010-01-01，但 [current] 更早（如导入的旧日记）时放宽到
+/// - 日期下限为 [DatePickerRange.firstDate]，但 [current] 更早时放宽到
 ///   [current] 当天，否则选择器初始日期越界会直接断言失败；
 /// - 时间固定 24 小时制。
 ///
@@ -23,9 +22,9 @@ Future<DateTime?> showPublishTimePicker(
   final local = current.toLocal();
   final currentDate = DateUtils.dateOnly(local);
   final lastDate = DateUtils.dateOnly(DateTime.now());
-  final firstDate = currentDate.isBefore(_earliestPublishDate)
+  final firstDate = currentDate.isBefore(DatePickerRange.firstDate)
       ? currentDate
-      : _earliestPublishDate;
+      : DatePickerRange.firstDate;
 
   final pickedDate = await showDatePicker(
     context: context,

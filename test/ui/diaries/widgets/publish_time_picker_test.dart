@@ -43,16 +43,28 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a diary dated before 2010 opens on its own month', (
+  testWidgets('dates reach back to 1900', (tester) async {
+    final results = await openPicker(tester, DateTime(2008, 5, 20, 8, 15, 30));
+
+    final picker = tester.widget<CalendarDatePicker>(
+      find.byType(CalendarDatePicker),
+    );
+    expect(picker.firstDate, DateTime(1900));
+    await tester.tap(find.text('25'));
+    await confirmDateAndTime(tester);
+    expect(results, [DateTime(2008, 5, 25, 8, 15)]);
+  });
+
+  testWidgets('a diary dated before 1900 opens on its own month', (
     tester,
   ) async {
-    final results = await openPicker(tester, DateTime(2008, 5, 20, 8, 15, 30));
+    final results = await openPicker(tester, DateTime(1895, 5, 20, 8, 15, 30));
     expect(tester.takeException(), isNull);
 
     // 下限只放宽到原日期当天，之后的日期照常可选。
     await tester.tap(find.text('25'));
     await confirmDateAndTime(tester);
-    expect(results, [DateTime(2008, 5, 25, 8, 15)]);
+    expect(results, [DateTime(1895, 5, 25, 8, 15)]);
   });
 
   testWidgets('a future publish time starts from today and keeps its time', (

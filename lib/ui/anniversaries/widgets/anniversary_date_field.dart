@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../utils/date_picker_range.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../viewmodels/anniversary_rule.dart';
 
@@ -21,9 +22,6 @@ class AnniversaryDateField extends StatelessWidget {
     this.showLunar = true,
   });
 
-  static final DateTime firstDate = DateTime(1900);
-  static final DateTime lastDate = DateTime(2100, 12, 31);
-
   final DateTime date;
   final ValueChanged<DateTime> onChanged;
   final bool showLunar;
@@ -33,8 +31,8 @@ class AnniversaryDateField extends StatelessWidget {
     final picked = await showDatePicker(
       context: context,
       initialDate: date,
-      firstDate: firstDate,
-      lastDate: lastDate,
+      firstDate: DatePickerRange.firstDate,
+      lastDate: DatePickerRange.lastDate,
       locale: Localizations.localeOf(context),
       helpText: l10n.anniversaryFieldDate,
       cancelText: l10n.commonCancel,

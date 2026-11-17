@@ -98,7 +98,7 @@ void main() {
       });
 
       testWidgets(
-        'choosing a year after scrolling the list does not jump to 2010',
+        'choosing a year after scrolling the list does not jump to the first page',
         (tester) async {
           final now = DateTime.now();
           await pumpCalendarPage(
@@ -162,7 +162,7 @@ void main() {
         (tester) async {
           await pumpCalendarPage(tester, brightness: brightness);
           final now = DateTime.now();
-          for (final year in [2010, 2100, 2015]) {
+          for (final year in [1900, 2100, 2015]) {
             await _pickYear(tester, year);
             _expectMonth(tester, DateTime(year, now.month));
             final grid = tester.widget<CalendarMonthGrid>(
@@ -175,6 +175,19 @@ void main() {
           _expectMonth(tester, now);
         },
       );
+
+      testWidgets('the year view stops at the first year of the calendar', (
+        tester,
+      ) async {
+        await pumpCalendarPage(tester, brightness: brightness);
+        final first = CalendarMonthGrid.firstDay.year;
+        await _pickYear(tester, first);
+
+        // 已在最早一年时再往前翻是空操作；点进的月份仍在月历范围内。
+        await _openPreviousYearMarch(tester);
+        expect(tester.takeException(), isNull);
+        _expectMonth(tester, DateTime(first, 3));
+      });
     });
   }
 }

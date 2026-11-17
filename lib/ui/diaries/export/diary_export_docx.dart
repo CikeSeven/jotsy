@@ -474,7 +474,7 @@ class DiaryDocxWriter {
   static const int _commentImageHeightEmu = 1463040;
 
   /// 留言区（没有留言时不写）：一条分隔线、加粗的“留言”，每条留言为一段
-  /// 说明行（DiaryMeta）加一段心情与文字，带图片时文字后面逐张内嵌（最高
+  /// 说明行（DiaryMeta，心情在开头）加一段文字，带图片时文字后面逐张内嵌（最高
   /// [_commentImageHeightEmu]）；[media] 为 null（不带媒体）或图片写不进去
   /// 时，这几张在文字里写成占位。
   ///

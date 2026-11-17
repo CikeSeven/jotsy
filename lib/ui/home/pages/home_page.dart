@@ -32,6 +32,7 @@ import 'package:node_diary/ui/home/providers/home_bar_settings_provider.dart';
 import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_create_morph_anchor.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';

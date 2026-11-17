@@ -333,16 +333,25 @@ class EditDiaryController {
       return;
     }
 
+    Widget page(BuildContext context) => PublishDiaryPage(
+      onPublished: _handlePublished,
+      onLeave: _leaveAfterPublish,
+      initialDraft: _state._currentCreateDraft,
+    );
+    // 编辑页是从新建按钮展开的：发布页照常按主题转场推入，发表后返回时
+    // 整页落进列表里的新卡片（见 DiaryCreateMorph.publishLanding）。
+    final morph = MorphPageRoute.maybeOf(_state.context);
     await Navigator.of(_state.context).push<Object>(
-      MaterialPageRoute<Object>(
-        builder: (BuildContext context) {
-          return PublishDiaryPage(
-            onPublished: _handlePublished,
-            onLeave: _leaveAfterPublish,
-            initialDraft: _state._currentCreateDraft,
-          );
-        },
-      ),
+      morph == null
+          ? MaterialPageRoute<Object>(builder: page)
+          : MorphPageRoute<Object>(
+              builder: page,
+              originRoute: morph.originRoute,
+              backdrop: const AppPageBackgroundFill(
+                area: AppBackgroundArea.editor,
+              ),
+              landing: DiaryCreateMorph.publishLanding,
+            ),
     );
   }
 

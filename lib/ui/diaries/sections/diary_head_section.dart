@@ -11,6 +11,7 @@ import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/select_all_button.dart';
 import 'diary_view_options_menu.dart';
+import '../widgets/draft_count_badge.dart';
 
 /// 日记列表布局模式。
 enum DiaryLayoutMode { list, waterfall }
@@ -481,7 +482,6 @@ class _TrailingActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -494,14 +494,11 @@ class _TrailingActions extends StatelessWidget {
         IconButton(
           tooltip: context.l10n.diaryDraftsTitle,
           onPressed: onOpenDrafts,
-          // 角标用主色而不是默认的错误色：草稿是“还没写完”，不是警告。
-          icon: Badge.count(
+          // 角标用主色而不是默认的错误色：草稿是“还没写完”，不是警告。份数
+          // 逐位滚动，也是新建页整页收回的落点（见 DraftCountBadge）。
+          icon: DraftCountBadge(
             key: const ValueKey<String>('diary_head_draft_count'),
             count: draftCount,
-            maxCount: 99,
-            isLabelVisible: draftCount > 0,
-            backgroundColor: colorScheme.primary,
-            textColor: colorScheme.onPrimary,
             child: const FaIcon(FontAwesomeIcons.filePen, size: 18),
           ),
         ),

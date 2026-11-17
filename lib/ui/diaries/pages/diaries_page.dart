@@ -87,6 +87,9 @@ import '../widgets/diary_tag_filter_bar.dart';
 import '../widgets/tag_filter_pull_hint.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
+import 'package:node_diary/ui/widgets/container_transform/morph_landing.dart';
+import 'package:node_diary/ui/widgets/list_make_room.dart';
+import '../controllers/diary_create_morph.dart';
 import 'package:node_diary/ui/widgets/launch_reveal.dart';
 import '../../ai/controllers/ai_chat_return_flow.dart';
 import '../../ai/providers/ai_chat_return_provider.dart';
@@ -185,6 +188,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 玻璃顶栏两片之间的纽带：刊头把自己此刻的高度报给标签栏，标签栏那一块
   /// 玻璃据此从刊头露出来的上缘起，自上而下渐变（见 [HomeTopBarStackLink]）。
   final HomeTopBarStackLink _topBarLink = HomeTopBarStackLink();
+
+  /// 新建日记发表后整页落进列表时，其余卡片的让位动画（FLIP，见
+  /// [MakeRoomController]）：点新建按钮时记下各卡片的位置，整页开始收回时
+  /// 从记下的位置滑到插入新卡片后的位置。
+  late final MakeRoomController _makeRoom = MakeRoomController(vsync: this);
 
   // ==================== 列表整体过渡动画 ====================
   /// 列表整体切换的退场 / 级联入场（见 [DiaryListSwitchMotion]），逐项经
@@ -356,6 +364,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _topBarLink.dispose();
     _pullHint.dispose();
     _listSwitchMotion.dispose();
+    _makeRoom.dispose();
     super.dispose();
   }
 
@@ -955,6 +964,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     ),
                                     pendingHideDiaryIds: _pendingHideDiaryIds,
                                     appearingDiaryIds: _appearingDiaryIds,
+                                    makeRoom: _makeRoom,
                                     onOpenEditor: _controller.openDiary,
                                     onToggleSelection: (noteId, forceSelect) =>
                                         _controller.toggleSelection(
@@ -1241,7 +1251,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   }
 
   Future<void> _openCreateFromHomeFab() async {
-    await _controller.openCreateEditorWithDraftPrompt();
+    await _controller.openCreateEditorWithDraftPrompt(fromCreateButton: true);
   }
 
   void _handlePullHintChanged() {

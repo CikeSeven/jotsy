@@ -104,6 +104,9 @@ import '../../../core/services/app_platform.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/expressive_entrance.dart';
 import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
+import 'package:node_diary/ui/widgets/container_transform/morph_landing.dart';
+import 'package:node_diary/ui/widgets/container_transform/morph_page_route.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_create_morph.dart';
 import 'package:node_diary/ui/ai/controllers/ai_privacy_gate.dart';
 import 'package:node_diary/ui/ai/controllers/ai_writing_flow.dart';
 import 'package:node_diary/ui/ai/controllers/ai_writing_session.dart';
@@ -539,7 +542,23 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _onRouteCurrentChanged(ModalRoute.isCurrentOf(context) ?? true);
+    // 从新建按钮展开时（MorphPageRoute），返回时按此刻有没有写东西决定收回到
+    // 草稿箱角标还是新建按钮（直接发表时为列表里的新卡片）。
+    if (_isCreateEntry) {
+      MorphPageRoute.bindLanding(context, _createMorphLanding);
+    }
   }
+
+  /// 新建页返回时的候选落点（见 [DiaryCreateMorph.editorLanding]）。在路由
+  /// 开始返回的那一刻调用，早于 PopScope 回调里的草稿补存：是否留在草稿箱
+  /// 与补存同一口径（[EditDiaryController.createSnapshotOf]）。
+  List<MorphLanding> _createMorphLanding(Object? result) =>
+      DiaryCreateMorph.editorLanding(
+        result: result,
+        keepsDraft: _controller
+            .createSnapshotOf(_currentCreateDraft)
+            .hasContent,
+      );
 
   @override
   void dispose() {

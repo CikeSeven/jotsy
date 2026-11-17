@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
+import 'morph_landing.dart';
 
 /// 容器展开（卡片 ↔ 整页）的来源端：登记卡片、在点按时量出它在屏上的位置，
 /// 返回时按同一标签找回它。
@@ -181,28 +182,13 @@ class _ContainerTransformSourceState extends State<ContainerTransformSource> {
   /// [requireVisible] 时卡片露在导航器里的部分太少（滑出屏幕、只在列表的
   /// 预构建区里）返回 null。
   ContainerTransformBounds? _measure({bool requireVisible = false}) {
-    final box = context.findRenderObject();
-    final navigatorBox = Navigator.maybeOf(context)?.context.findRenderObject();
-    if (box is! RenderBox ||
-        navigatorBox is! RenderBox ||
-        !box.attached ||
-        !navigatorBox.attached ||
-        !box.hasSize ||
-        box.size.isEmpty) {
-      return null;
-    }
-    final rect = MatrixUtils.transformRect(
-      box.getTransformTo(navigatorBox),
-      Offset.zero & box.size,
+    final rect = measureInNavigator(
+      context,
+      minVisibleExtent: requireVisible ? _minVisibleExtent : 0,
     );
-    final visible = rect.intersect(Offset.zero & navigatorBox.size);
-    if (visible.isEmpty ||
-        (requireVisible &&
-            visible.height <
-                _minVisibleExtent.clamp(0, rect.height).toDouble())) {
-      return null;
-    }
-    return ContainerTransformBounds(rect: rect, radius: widget.borderRadius);
+    return rect == null
+        ? null
+        : ContainerTransformBounds(rect: rect, radius: widget.borderRadius);
   }
 
   @override

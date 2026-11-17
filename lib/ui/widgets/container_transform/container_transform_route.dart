@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/display_corners.dart';
 import 'container_transform_below_snapshot.dart';
+import 'container_transform_gate.dart';
 import 'container_transform_source.dart';
 import 'container_transform_transition.dart';
 
@@ -27,12 +27,12 @@ import 'container_transform_transition.dart';
 ///   出卡片此刻的位置（内容可能刚改过）并缩回去。展开途中返回时下层
 ///   一直在屏上、快照也在，当场量完就原路返回。找不到卡片（翻到了别的一
 ///   篇且它不在屏上、日记已删除、[returnsToOrigin] 说不回）时原地缩小淡出；
-/// - 等待最多 [_GatedCurveSimulation.maxHold]，防止哪一帧迟迟不来时卡住。
+/// - 等待最多 [GatedCurveSimulation.maxHold]，防止哪一帧迟迟不来时卡住。
 ///
 /// 进度由模拟直接给出（已套上 [ExpressiveMotion.containerSpring]），推入、
 /// 返回各自从当前进度出发：进入途中返回、返回途中再进入都不跳变。
 ///
-/// 共享元素：转场期间关闭本页的 Hero（[_RouteHeroGate]）——卡片封面与预览
+/// 共享元素：转场期间关闭本页的 Hero（[RouteHeroGate]）——卡片封面与预览
 /// 页头图同一个标签，容器本身已经把卡片展开成整页，再让封面单独飞一趟两者
 /// 会错开；停稳之后照常开启，从头图、正文图进看图页的飞行不受影响。
 ///
@@ -71,7 +71,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   final ModalRoute<Object?> _originRoute;
   Object _returnTag;
   final ContainerTransformGeometry _geometry;
-  _TransitionGate _gate = _TransitionGate.opened();
+  ContainerTransformGate _gate = ContainerTransformGate.opened();
   bool _disposed = false;
 
   /// 下层页面的快照开关（见类注释“下层页面画成快照”）。
@@ -149,12 +149,12 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
 
   @override
   TickerFuture didPush() {
-    final gate = _gate = _TransitionGate();
+    final gate = _gate = ContainerTransformGate();
     // 第一帧：Hero 控制器让新路由 offstage，页面只构建、排版，下层这一帧
     // 就拍成快照（原卡片照常在里面，之后被容器盖住）；第二帧：页面第一次
     // 绘制，容器停在卡片上。两帧的重活分开，都画完才开始计时。
     _belowSnapshot.enabled = true;
-    _afterFrames(2, () {
+    afterContainerTransformFrames(2, () {
       if (_disposed || !identical(_gate, gate)) return;
       gate.open(
         duration: ExpressiveMotion.containerOpen,
@@ -164,20 +164,9 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
     return super.didPush();
   }
 
-  /// [count] 帧画完之后执行 [callback]（转场在动，后面的帧一定会来）。
-  static void _afterFrames(int count, VoidCallback callback) {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (count <= 1) {
-        callback();
-      } else {
-        _afterFrames(count - 1, callback);
-      }
-    });
-  }
-
   @override
   bool didPop(T? result) {
-    final gate = _gate = _TransitionGate();
+    final gate = _gate = ContainerTransformGate();
     final toOrigin = returnsToOrigin?.call(result) ?? true;
     // 展开途中返回：下层一直在屏上（布局就是此刻的），快照也还开着。
     final belowOnScreen = _belowSnapshot.enabled;
@@ -204,7 +193,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
     // 停稳后返回：下层此前 offstage，这一帧重新排版并拍成快照（仍停在整页
     // 上，看不出在等），下一帧空等光栅追上，重活不落进曲线；之后按此刻的
     // 布局量出卡片并起步。
-    _afterFrames(2, () {
+    afterContainerTransformFrames(2, () {
       if (_disposed || !identical(_gate, gate)) return;
       if (controller == null || controller!.isDismissed) return;
       land();
@@ -226,7 +215,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   @override
   Simulation? createSimulation({required bool forward}) {
     final from = controller?.value ?? (forward ? 0.0 : 1.0);
-    return _GatedCurveSimulation(
+    return GatedCurveSimulation(
       from: from,
       to: forward ? 1 : 0,
       gate: _gate,
@@ -254,7 +243,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   ) {
     // 闸门看真正的控制器：[animation] 是代理，推入后的第一帧（offstage）它
     // 报告“已完成”，Hero 控制器恰好在那一帧之后收集两端的 Hero。
-    return _RouteHeroGate(
+    return RouteHeroGate(
       animation: controller!,
       child: Semantics(
         scopesRoute: true,
@@ -303,176 +292,4 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
     _belowSnapshot.dispose();
     super.dispose();
   }
-}
-
-/// 转场起步的闸门：关着时进度停在起点，打开时带上这一段的时长与曲线。
-class _TransitionGate {
-  _TransitionGate();
-
-  _TransitionGate.opened() : _open = true;
-
-  bool _open = false;
-  Duration duration = ExpressiveMotion.containerOpen;
-  Curve curve = ExpressiveMotion.containerSpring;
-
-  bool get isOpen => _open;
-
-  void open({required Duration duration, required Curve curve}) {
-    this.duration = duration;
-    this.curve = curve;
-    _open = true;
-  }
-}
-
-/// 从 [from] 按曲线走到 [to]，但闸门打开之后才开始计时。
-///
-/// 计时起点是闸门打开后的第一次取值（下一帧），于是之前那一帧花多久都不会
-/// 让进度跳一截。闸门迟迟不开时最多等 [maxHold]。
-class _GatedCurveSimulation extends Simulation {
-  _GatedCurveSimulation({
-    required this.from,
-    required this.to,
-    required this.gate,
-    this.instant = false,
-  });
-
-  /// 闸门最多等这么久（秒）：正常两帧就开，这只是防止哪一帧迟迟不来时
-  /// 卡在起点的兜底。
-  static const double maxHold = 1;
-
-  /// 起步后的第一步隔了超过这么久（秒），就从这一帧重新起算。
-  ///
-  /// 为什么：起步帧之前刚把下层整屏拍成快照，GPU 可能还压着几十毫秒的活，
-  /// 起步帧（进度仍在起点）被拖到很晚才上屏，下一帧按真实时间算进度，第
-  /// 一眼就跳过一大截（真机返回时 34ms，一帧缩掉近两成）。从这一帧重新起
-  /// 算，只是晚一两帧起步，看不出在等。正常帧间隔 120Hz 约 8ms、60Hz 约
-  /// 17ms，都在阈值以内；只纠正一次，中途掉帧照常按真实时间追上，测试里
-  /// `pumpAndSettle` 的 100ms 步长也不会一直卡在起点。
-  static const double maxFirstStep = 0.02;
-
-  final double from;
-  final double to;
-  final _TransitionGate gate;
-  final bool instant;
-
-  double? _start;
-
-  /// 第一步是否已经走过（之后不再重新起算）。
-  bool _stepped = false;
-
-  double get _seconds =>
-      gate.duration.inMicroseconds / Duration.microsecondsPerSecond;
-
-  /// 已走过的时间比例（0–1）；还在等闸门时为 null。
-  double? _progress(double time) {
-    var start = _start;
-    if (start == null) {
-      if (!gate.isOpen && time < maxHold) {
-        return null;
-      }
-      start = _start = time;
-    } else if (!_stepped && time > start) {
-      _stepped = true;
-      if (time - start > maxFirstStep) {
-        start = _start = time;
-      }
-    }
-    final seconds = _seconds;
-    return seconds <= 0 ? 1 : ((time - start) / seconds).clamp(0.0, 1.0);
-  }
-
-  bool get _still => instant || from == to;
-
-  @override
-  double x(double time) {
-    if (_still) {
-      return to;
-    }
-    final t = _progress(time);
-    if (t == null) {
-      return from;
-    }
-    return from + (to - from) * gate.curve.transform(t);
-  }
-
-  @override
-  double dx(double time) {
-    final start = _start;
-    if (_still || start == null) {
-      return 0;
-    }
-    final seconds = _seconds;
-    if (seconds <= 0) {
-      return 0;
-    }
-    final t = ((time - start) / seconds).clamp(0.0, 1.0);
-    if (t >= 1) {
-      return 0;
-    }
-    const h = 1e-3;
-    final a = gate.curve.transform(t);
-    final b = gate.curve.transform((t + h).clamp(0.0, 1.0));
-    return (to - from) * (b - a) / (h * seconds);
-  }
-
-  @override
-  bool isDone(double time) {
-    if (_still) {
-      return true;
-    }
-    final start = _start;
-    return start != null && time - start >= _seconds;
-  }
-}
-
-/// 只在路由停稳（进度为 1 且不在动）时开启本页的 Hero。
-///
-/// 切换开关只重建 [HeroMode] 自己，页面子树不重建。Hero 控制器在路由变化
-/// 后的下一帧末尾才收集两端的 Hero，那时开关已随路由状态更新（推入时页面
-/// 首次构建就是关着的）。
-class _RouteHeroGate extends StatefulWidget {
-  const _RouteHeroGate({required this.animation, required this.child});
-
-  final Animation<double> animation;
-  final Widget child;
-
-  @override
-  State<_RouteHeroGate> createState() => _RouteHeroGateState();
-}
-
-class _RouteHeroGateState extends State<_RouteHeroGate> {
-  late bool _enabled = widget.animation.isCompleted;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.animation.addStatusListener(_handleStatus);
-  }
-
-  @override
-  void didUpdateWidget(_RouteHeroGate oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.animation, widget.animation)) {
-      oldWidget.animation.removeStatusListener(_handleStatus);
-      widget.animation.addStatusListener(_handleStatus);
-      _enabled = widget.animation.isCompleted;
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.animation.removeStatusListener(_handleStatus);
-    super.dispose();
-  }
-
-  void _handleStatus(AnimationStatus status) {
-    final enabled = status.isCompleted;
-    if (enabled != _enabled && mounted) {
-      setState(() => _enabled = enabled);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) =>
-      HeroMode(enabled: _enabled, child: widget.child);
 }

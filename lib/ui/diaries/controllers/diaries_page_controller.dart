@@ -328,13 +328,21 @@ class DiariesPageController {
   /// 草稿选择面板），返回后刷新列表；编辑页直接发布的新日记交给协调器，
   /// 在发布页退场后以出现动画插入。在普通日记本里新建空白日记时预先收进
   /// 这本（与当前章节），并套用这本的默认模板。
-  Future<void> openCreateEditorWithDraftPrompt() async {
+  ///
+  /// [fromCreateButton]（首页的新建按钮）：编辑页从按钮展开、返回时整页收回
+  /// （见 [DiaryCreateMorph]）。此刻列表还在屏上，先记下各卡片的位置，发表后
+  /// 整页落进列表时其余卡片从这里让位（[MakeRoomController]）。
+  Future<void> openCreateEditorWithDraftPrompt({
+    bool fromCreateButton = false,
+  }) async {
     final target = _state._scopeController.createTarget();
+    if (fromCreateButton) _state._makeRoom.captureBaseline();
     final result = await runDiaryCreateEntryFlow(
       _state.context,
       _state.ref,
       notebookId: target.notebookId,
       chapterId: target.chapterId,
+      fromCreateButton: fromCreateButton,
     );
     if (!_state.mounted || !result.opened) {
       return;

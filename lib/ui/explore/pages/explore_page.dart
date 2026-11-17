@@ -211,9 +211,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                   ),
             ),
           ),
+          // 页头不随 960 的内容列内收：首页各 Tab 的标题在任何宽度下都距
+          // 左缘 16，切换 Tab 时停在同一位置（#308）。
           PageHeader(
             title: l10n.autoT0058,
-            contentMaxWidth: AppContentWidth.explore,
             actions: <Widget>[
               IconButton(
                 tooltip: l10n.exploreCustomize,

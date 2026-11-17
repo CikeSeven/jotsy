@@ -10,7 +10,8 @@ import 'diaries_wide_test_support.dart';
 
 void main() {
   testWidgets(
-    'a medium window centres the list column at 720 and opens the full preview',
+    'a medium window centres the list column at 720, keeps the masthead '
+    'full width and opens the full preview',
     (tester) async {
       await pumpWideDiariesPage(
         tester,
@@ -21,10 +22,11 @@ void main() {
         preferences: wideListLayoutPreferences,
       );
 
-      // 刊头与标签栏跟内容列对齐：900 宽里每侧补 90，列宽 720。
+      // 刊头铺满页宽，标题与其他 Tab 一样距左缘 16（#308）；标签栏跟内容
+      // 列对齐：900 宽里每侧补 90，列宽 720。
       final head = tester.getRect(find.byType(DiaryHeadSection));
-      expect(head.left, 90);
-      expect(head.width, 720);
+      expect(head.left, 0);
+      expect(head.width, 900);
       final tagBar = tester.getRect(find.byType(DiaryTagFilterBar));
       expect(tagBar.left, 90);
       expect(tagBar.width, 720);

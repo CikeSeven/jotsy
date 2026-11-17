@@ -32,7 +32,7 @@ class CalendarHeader extends StatelessWidget {
     this.previousTooltip,
     this.nextTooltip,
     this.collapsedExtent = 0,
-    this.horizontalInset = 0,
+    this.monthBarInset = 0,
     this.showMonthBar = true,
   });
 
@@ -78,9 +78,11 @@ class CalendarHeader extends StatelessWidget {
   /// 超出范围的值会被夹取。
   final double collapsedExtent;
 
-  /// 宽窗口下内容在左右 16 之外再内缩的量，让按钮行与下方居中的日历内容
-  /// 对齐；底色仍铺满整个页宽。手机上为 0。
-  final double horizontalInset;
+  /// 宽窗口单列时月份行在左右 16 之外再内缩的量，让翻月箭头与下方居中的
+  /// 日历卡片对齐；手机上为 0。标题栏不受影响，始终距页面左右 16：首页
+  /// 四个 Tab 的页头标题在任何宽度下都停在同一位置，切换 Tab 时不跳动
+  /// （#308）。底色铺满整个页宽。
+  final double monthBarInset;
 
   /// 是否在标题栏下画月份行。双栏布局里月份行改放在左栏日历卡片上方
   /// （经 [monthBar] 取得），页头只留标题栏，此时为 false。
@@ -112,9 +114,9 @@ class CalendarHeader extends StatelessWidget {
       solidColor: AppPageBackdrop.solidBarColorOf(context),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          16 + horizontalInset,
+          16,
           MediaQuery.paddingOf(context).top,
-          16 + horizontalInset,
+          16,
           0,
         ),
         child: Column(
@@ -179,9 +181,12 @@ class CalendarHeader extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     minHeight: monthBarHeight,
                     maxHeight: monthBarHeight,
-                    child: ExcludeFocus(
-                      excluding: monthBarHidden,
-                      child: monthBar(),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: monthBarInset),
+                      child: ExcludeFocus(
+                        excluding: monthBarHidden,
+                        child: monthBar(),
+                      ),
                     ),
                   ),
                 ),

@@ -74,6 +74,9 @@ void main() {
     expect(memory.left, greeting.left);
     expect(mood.right, greeting.right);
     expect(tester.getRect(find.byType(ExploreMediaCard)).width, 960);
+    // 页头标题不随 960 的内容列内收，与其他 Tab 一样距左缘 16（#308）。
+    final l10n = tester.element(find.byType(ExplorePage)).l10n;
+    expect(tester.getTopLeft(find.text(l10n.autoT0058)).dx, 16);
     expect(tester.takeException(), isNull);
   });
 

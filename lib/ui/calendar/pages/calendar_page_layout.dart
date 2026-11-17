@@ -4,7 +4,7 @@ part of 'calendar_page.dart';
 typedef _CalendarHeaderFactory =
     CalendarHeader Function(
       double collapsedExtent,
-      double horizontalInset, {
+      double monthBarInset, {
       bool showMonthBar,
     });
 typedef _CalendarPanelFactory = Widget Function({required bool wide});
@@ -12,13 +12,16 @@ typedef _CalendarPanelFactory = Widget Function({required bool wide});
 /// 日历页的三种摆放（页面装配的一部分）：
 ///
 /// - 紧凑（< 600）：手机布局，单个 CustomScrollView，与改版前完全一致；
-/// - 中等（600–1023）：同样单列，页头内容与所有区块居中到
+/// - 中等（600–1023）：同样单列，月份行与所有区块居中到
 ///   [AppContentWidth.reading]（720）宽；
-/// - 展开（≥ 1024）：页头标题栏横跨居中的 [AppContentWidth.grid]（1200）
-///   容器；其下左栏是月份行 + 日历卡片（月/周网格或年视图，宽
+/// - 展开（≥ 1024）：内容容器居中到 [AppContentWidth.grid]（1200）；
+///   左栏是月份行 + 日历卡片（月/周网格或年视图，宽
 ///   `clamp(可用宽 × 0.5, 440, 600)`），不随右栏滚动；右栏是独立的滚动
 ///   列表（选中日标题、纪念日、当天日记、那年今日，最宽 720）。左栏选日即
 ///   改页面状态，右栏随之重建。
+///
+/// 三种摆放的标题栏（“日历” + 操作按钮）都铺满页宽、距左右 16，不随内容
+/// 列内收：与日记、待办、探索的页头标题停在同一位置，切换 Tab 不跳（#308）。
 ///
 /// 居中一律用滚动视图的左右内边距（[AppContentWidth.gutter] 的思路），
 /// 滚动视图本身不收窄：滚动条留在窗口边缘，留白处的滚轮也能滚动内容。
@@ -56,7 +59,7 @@ extension _CalendarPageLayout on _CalendarPageState {
     return CustomScrollView(
       slivers: <Widget>[
         // 页头固定在顶部，月份行随下滑收起、只留标题栏，见
-        // CalendarHeaderSliver。底色铺满页宽，按钮行与下方一列对齐。
+        // CalendarHeaderSliver。底色铺满页宽，月份行与下方一列对齐。
         CalendarHeaderSliver(
           builder: (_, double collapsedExtent) =>
               buildHeader(collapsedExtent, side),
@@ -107,12 +110,12 @@ extension _CalendarPageLayout on _CalendarPageState {
     );
     final rightPadding =
         width - side - leftWidth - rightContent - AppSpacing.m * 2;
-    final header = buildHeader(0, side - AppSpacing.m, showMonthBar: false);
+    final header = buildHeader(0, 0, showMonthBar: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // 页头只留标题栏，横跨内容容器（左右内边距本身是 16，再内缩到
-        // 容器边缘）；月份行放到左栏卡片正上方，箭头对齐卡片两侧。
+        // 页头只留标题栏，铺满页宽、距左右 16（不内缩到内容容器）；月份行
+        // 放到左栏卡片正上方，箭头对齐卡片两侧。
         header,
         Expanded(
           child: Row(

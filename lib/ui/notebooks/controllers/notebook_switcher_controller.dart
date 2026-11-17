@@ -113,7 +113,9 @@ class NotebookSwitcherController extends ChangeNotifier {
     required this.host,
   }) : stage = AnimationController.unbounded(vsync: vsync),
        armPop = AnimationController.unbounded(vsync: vsync),
-       chipBounce = AnimationController.unbounded(vsync: vsync, value: 1);
+       chipBounce = AnimationController.unbounded(vsync: vsync, value: 1) {
+    stage.addListener(_finishPastEdge);
+  }
 
   final NotebookSwitcherHost host;
 
@@ -192,6 +194,22 @@ class NotebookSwitcherController extends ChangeNotifier {
   /// 是否拦下系统返回（看得见就先收起）。
   bool get blocksBack => isVisible;
 
+  /// 收回途中浮层不挡页面：点按、纵向滚动与往回的翻页都落到下面的页面，
+  /// 不必等收回动画走完；浮层只留手势层接住重新拉开的拖动
+  /// （[acceptsOverlayDrag]）。
+  bool get passesPointersThrough => _phase == NotebookSwitcherPhase.closing;
+
+  /// 浮层上一次净方向为 [sign]（全局，+1 向右）的横向拖动是否由卡组接手
+  /// （之后走 [closeDragStart]）：打开着时两个方向都接（往回收，或多拉
+  /// 一点再弹回）；正收回（不是选中后的落地）时只接重新拉开的方向——往回
+  /// 的滑动这时没有可收的，交给下面的页面翻页；其余阶段都不接。
+  bool acceptsOverlayDrag(double sign) => switch (_phase) {
+    NotebookSwitcherPhase.open => true,
+    NotebookSwitcherPhase.closing =>
+      _landingEntry == null && sign == _directionSign,
+    _ => false,
+  };
+
   /// 手指此刻的全局 y（左缘胶囊的纵向中心跟着它）。
   double get fingerY => _fingerY;
 
@@ -263,8 +281,8 @@ class NotebookSwitcherController extends ChangeNotifier {
   /// 在卡组浮层（面板或遮罩）上横向起手：按同一根进度轴跟手——往回拉时
   /// 卡组缩回左缘胶囊、胶囊再缩进边缘，与右滑拉出逐帧对称；往右拉则重新
   /// 长开。打开着、正弹回打开、或正收回（返回键、点遮罩，不是选中后的
-  /// 落地）时都能接住：收回途中浮层还盖着页面，列表上的右滑到不了页面的
-  /// 手势层，必须在这里接住，否则要等动画走完再滑一次。
+  /// 落地）时都能接住：收回途中浮层虽然放行指针，命中顺序仍排在页面之前，
+  /// 重新拉开的右滑先到这里（切换胶囊收回途中页面的手势层接不住）。
   ///
   /// 从切换胶囊打开的卡组：完全打开时起手改为收向左缘（胶囊此刻露回原处，
   /// 进度在 2 上换起点不会跳）；正收向胶囊途中被接住则仍以胶囊为起点，
@@ -540,6 +558,11 @@ class NotebookSwitcherController extends ChangeNotifier {
     if (target == NotebookSwitcherOrigin.chip) {
       chipHidden.value = true;
       _landInChip();
+    } else if (stage.value <= 0) {
+      // 往回拖过了头、已经缩进边缘再松手：直接收尾，不再带着甩动速度跑
+      // 一段看不见的弹簧（期间浮层还在，接连的左滑都被它接走、翻不了页）。
+      stage.stop();
+      _finish();
     } else {
       if (_armed) _setArmed(false);
       _springStage(
@@ -558,6 +581,20 @@ class NotebookSwitcherController extends ChangeNotifier {
     distance: 0.004,
     velocity: 0.06,
   );
+
+  /// 收回左缘的弹簧带着往回甩的速度会冲过 0 再折回：0 以下什么都看不见
+  /// （胶囊宽度为 0、藏在边缘外），浮层却要多挂几百毫秒。越过 0 的那一帧
+  /// 就收尾。
+  void _finishPastEdge() {
+    if (_phase == NotebookSwitcherPhase.closing &&
+        _origin == NotebookSwitcherOrigin.edge &&
+        _stageTarget == 0 &&
+        stage.isAnimating &&
+        stage.value <= 0) {
+      stage.stop();
+      _finish();
+    }
+  }
 
   /// 收进切换胶囊：与收回左缘同一条弹簧曲线（[ExpressiveMotion.springPage]，
   /// 起步干脆、收尾柔和），只是停稳判定更宽——容器视觉上已贴住胶囊（差

@@ -12,6 +12,7 @@ import '../../../../app/theme/app_effects.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../app_surface/widgets/app_glass_scope.dart';
 import '../../../app_surface/widgets/app_glass_surface.dart';
+import '../../../widgets/directional_drag_recognizer.dart';
 import '../../controllers/notebook_switcher_controller.dart';
 import '../../providers/home_notebook_scope_provider.dart';
 import '../../providers/notebook_providers.dart';
@@ -393,19 +394,23 @@ class _NotebookSwitcherOverlayState
       onNotification: (_) => true,
       // 打开后在面板或遮罩上横向拖动：往回收起（与右滑拉出同一根进度轴
       // 反着跟手）。纵向滚动卡组照旧，谁先越过自己方向的溢出距离谁接手。
+      // 接不接、接哪个方向由控制器按阶段定（[acceptsOverlayDrag]）：收回
+      // 途中只接重新拉开的方向，往回的滑动留给下面的页面翻页。
       child: RawGestureDetector(
         behavior: HitTestBehavior.translucent,
         gestures: <Type, GestureRecognizerFactory>{
-          HorizontalDragGestureRecognizer:
+          DirectionalHorizontalDragGestureRecognizer:
               GestureRecognizerFactoryWithHandlers<
-                HorizontalDragGestureRecognizer
+                DirectionalHorizontalDragGestureRecognizer
               >(
-                () => HorizontalDragGestureRecognizer(
+                () => DirectionalHorizontalDragGestureRecognizer(
                   debugOwner: this,
                   supportedDevices: _dragDevices,
+                  acceptsDirection: controller.acceptsOverlayDrag,
                 ),
-                (HorizontalDragGestureRecognizer instance) {
+                (DirectionalHorizontalDragGestureRecognizer instance) {
                   instance
+                    ..acceptsDirection = controller.acceptsOverlayDrag
                     ..gestureSettings = gestureSettings
                     ..dragStartBehavior = DragStartBehavior.down
                     ..onStart = (DragStartDetails details) {
@@ -576,41 +581,47 @@ class _NotebookSwitcherOverlayState
     }
 
     final l10n = context.l10n;
-    return Semantics(
-      scopesRoute: interactive,
-      namesRoute: interactive,
-      explicitChildNodes: true,
-      label: interactive ? l10n.notebookTitle : null,
-      child: Stack(
-        children: <Widget>[
-          Positioned.fill(
-            child: Semantics(
-              button: interactive,
-              label: interactive ? l10n.commonClose : null,
-              onTap: interactive ? controller.close : null,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
+    // 收回途中整层放行指针（结构不变，只切 ignoring）：点按、滚动与往回的
+    // 翻页落到下面的页面；外层的拖动手势层是 translucent，仍收得到按下，
+    // 接住重新拉开的拖动。
+    return IgnorePointer(
+      ignoring: controller.passesPointersThrough,
+      child: Semantics(
+        scopesRoute: interactive,
+        namesRoute: interactive,
+        explicitChildNodes: true,
+        label: interactive ? l10n.notebookTitle : null,
+        child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: Semantics(
+                button: interactive,
+                label: interactive ? l10n.commonClose : null,
                 onTap: interactive ? controller.close : null,
-                child: ColoredBox(
-                  color: scheme.scrim.withValues(alpha: 0.24 * open),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fromRect(rect: rect, child: container),
-          if (replica > 0 && chip != null)
-            Positioned.fromRect(
-              rect: chip,
-              child: IgnorePointer(
-                child: ExcludeSemantics(
-                  child: Opacity(
-                    opacity: replica,
-                    child: widget.chipReplica(context),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: interactive ? controller.close : null,
+                  child: ColoredBox(
+                    color: scheme.scrim.withValues(alpha: 0.24 * open),
                   ),
                 ),
               ),
             ),
-        ],
+            Positioned.fromRect(rect: rect, child: container),
+            if (replica > 0 && chip != null)
+              Positioned.fromRect(
+                rect: chip,
+                child: IgnorePointer(
+                  child: ExcludeSemantics(
+                    child: Opacity(
+                      opacity: replica,
+                      child: widget.chipReplica(context),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

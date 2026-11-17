@@ -155,8 +155,10 @@ void main() {
       expect(await export(enabled: true, include: false), off);
       final on = await export(enabled: true);
       expect(on, startsWith(off.trimRight()));
-      expect(on, contains('——— 留言 ———\n'));
-      expect(on, contains('😀 回头再看'));
+      // 心情在说明行开头（“写下后 N 天”随运行日期变），文字另起一行。
+      expect(on, contains('——— 留言 ———\n😀 写下后 '));
+      expect(on, contains('\n回头再看\n'));
+      expect(on, isNot(contains('😀 回头再看')));
 
       final csvOff = await export(
         enabled: false,
@@ -165,7 +167,8 @@ void main() {
       expect(csvOff.split('\r\n').first, endsWith('字数,最后编辑'));
       final csvOn = await export(enabled: true, format: DiaryExportFormat.csv);
       expect(csvOn.split('\r\n').first, endsWith('字数,最后编辑,留言'));
-      expect(csvOn, contains('😀 回头再看'));
+      expect(csvOn, contains('"😀 写下后 '));
+      expect(csvOn, contains('\n回头再看"'));
     },
   );
 

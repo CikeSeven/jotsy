@@ -25,6 +25,7 @@
 - 必须：嵌入导图只经 `diary_mind_map_editing.dart` 插入、全屏编辑与删除；`/` 插入只在日记正文里有，模板正文没有。
 - 必须：导图编辑页、嵌入编辑页与查看页共用 `MindMapWorkspace` 与 `MindMapPageScaffold`，禁止另写画布或工具栏；布局只经 `layoutMindMap`，结果确定、节点不重叠。
 - 必须：导图有自己的撤销栈（最多 100 步），不进正文撤销栈；全屏编辑关闭时写成正文的一步撤销。
+- 必须：手机上编辑主题文字时，画布与大纲都让到键盘与附件条之上，靠下的主题与最后几行不被盖住（`mind_map_outline_keyboard_test.dart` 兜底）。
 - 必须：桌面快捷键与滚轮缩放只在桌面生效，编辑文字时按键交给输入框；右键菜单经 `ExpressiveMenuAnchor.openAt`。
 
 ## 导入导出与生成

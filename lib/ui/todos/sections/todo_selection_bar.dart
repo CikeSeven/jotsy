@@ -28,21 +28,18 @@ class TodoSelectionHeader extends StatelessWidget {
     required this.allSelected,
     required this.onToggleAll,
     required this.onClose,
-    this.contentMaxWidth,
   });
 
   final int count;
   final bool allSelected;
   final VoidCallback onToggleAll;
   final VoidCallback onClose;
-  final double? contentMaxWidth;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return PageHeader(
       title: l10n.todoSelectedCount(count),
-      contentMaxWidth: contentMaxWidth,
       actions: <Widget>[
         SelectAllButton(allSelected: allSelected, onPressed: onToggleAll),
         IconButton(

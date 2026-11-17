@@ -17,7 +17,6 @@ class _Calls {
   final List<NotebookSort> notebookSorts = <NotebookSort>[];
   int cardStyle = 0;
   int settings = 0;
-  int drafts = 0;
   int archived = 0;
 }
 
@@ -29,7 +28,6 @@ Future<(_Calls, AppLocalizations)> _pump(
   NotebookSort? notebookSort,
   bool allowBookOrder = false,
   bool withSettings = true,
-  int draftCount = 0,
 }) async {
   final calls = _Calls();
   await tester.pumpWidget(
@@ -43,9 +41,7 @@ Future<(_Calls, AppLocalizations)> _pump(
           actions: <Widget>[
             DiaryViewOptionsMenuButton(
               options: DiaryViewMenuOptions(
-                onOpenDrafts: () => calls.drafts++,
                 onOpenArchived: () => calls.archived++,
-                draftCount: draftCount,
                 sortMode: sortMode,
                 layoutMode: layoutMode,
                 onSortModeChanged: calls.sorts.add,
@@ -91,14 +87,15 @@ bool? _selected(WidgetTester tester, String label) => tester
     .selected;
 
 void main() {
-  testWidgets('the menu lists drafts, archive, sort, layout and settings in '
-      'three groups', (tester) async {
+  testWidgets('the menu lists archive, sort, layout and settings in three '
+      'groups', (tester) async {
     final (_, l10n) = await _pump(tester);
     await _openMenu(tester, l10n);
 
     expect(find.byType(ExpressiveSubmenuItem), findsNWidgets(2));
+    // 草稿箱在顶栏上，不在菜单里。
+    expect(find.text(l10n.diaryDraftsTitle), findsNothing);
     final labels = <String>[
-      l10n.diaryDraftsTitle,
       l10n.autoT0100,
       l10n.autoT0141,
       l10n.autoT0145,
@@ -117,55 +114,13 @@ void main() {
     expect(find.text(l10n.autoT0146), findsNothing);
   });
 
-  testWidgets('drafts and archive close the menu and open their pages', (
-    tester,
-  ) async {
+  testWidgets('archive closes the menu and opens its page', (tester) async {
     final (calls, l10n) = await _pump(tester);
-    await _openMenu(tester, l10n);
-    await tester.tap(find.text(l10n.diaryDraftsTitle));
-    await tester.pumpAndSettle();
-    expect(calls.drafts, 1);
-    expect(find.byType(ExpressiveMenuItem), findsNothing);
-
     await _openMenu(tester, l10n);
     await tester.tap(find.text(l10n.autoT0100));
     await tester.pumpAndSettle();
     expect(calls.archived, 1);
-    expect(calls.drafts, 1);
     expect(find.byType(ExpressiveMenuItem), findsNothing);
-  });
-
-  testWidgets('the drafts row shows the draft count only when non-zero', (
-    tester,
-  ) async {
-    const countKey = ValueKey<String>('diary_menu_draft_count');
-    var (_, l10n) = await _pump(tester);
-    await _openMenu(tester, l10n);
-    expect(find.byKey(countKey), findsNothing);
-    await tester.tapAt(const Offset(200, 500));
-    await tester.pumpAndSettle();
-
-    (_, l10n) = await _pump(tester, draftCount: 3);
-    await _openMenu(tester, l10n);
-    final badge = tester.widget<Badge>(find.byKey(countKey));
-    // 主色底而不是默认的错误色：草稿是“还没写完”，不是警告。
-    final colors = Theme.of(tester.element(find.byKey(countKey))).colorScheme;
-    expect(badge.backgroundColor, colors.primary);
-    expect(badge.textColor, colors.onPrimary);
-    expect(
-      find.descendant(of: find.byKey(countKey), matching: find.text('3')),
-      findsOneWidget,
-    );
-    await tester.tapAt(const Offset(200, 500));
-    await tester.pumpAndSettle();
-
-    (_, l10n) = await _pump(tester, draftCount: 120);
-    await _openMenu(tester, l10n);
-    expect(
-      find.descendant(of: find.byKey(countKey), matching: find.text('99+')),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('settings closes the menu and opens settings', (tester) async {

@@ -698,7 +698,7 @@ class DiariesPageController {
     );
   }
 
-  /// 打开草稿箱（顶栏“更多”菜单入口）。
+  /// 打开草稿箱（顶栏草稿箱按钮）。
   void openDraftsPage() {
     Navigator.of(_state.context).push(
       MaterialPageRoute<void>(
@@ -707,22 +707,15 @@ class DiariesPageController {
     );
   }
 
-  /// 组装顶栏“更多”菜单的当前值与回调（草稿箱、归档、排序、布局、卡片
-  /// 样式、设置）。[draftCount] 由页面 watch 草稿份数后传入，变化时页面重建、
-  /// 菜单里的份数角标随之更新。
+  /// 组装顶栏“更多”菜单的当前值与回调（归档、排序、布局、卡片样式、设置）。
   ///
   /// 在日记本里时排序换成本子的排序（写回本子，布局仍是全局的）；日记本
   /// 功能关闭时没有本子排序，数据保留。
-  DiaryViewMenuOptions viewMenuOptions({
-    required bool notebooksEnabled,
-    required int draftCount,
-  }) {
+  DiaryViewMenuOptions viewMenuOptions({required bool notebooksEnabled}) {
     final scope = _state._scopeController.resolution;
     final notebook = scope.notebook;
     return DiaryViewMenuOptions(
-      onOpenDrafts: openDraftsPage,
       onOpenArchived: openArchivedPage,
-      draftCount: draftCount,
       sortMode: _state._sortMode,
       layoutMode: _state._layoutMode,
       onSortModeChanged: _changeSortMode,

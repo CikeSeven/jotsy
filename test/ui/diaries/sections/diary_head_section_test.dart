@@ -15,6 +15,8 @@ Widget _host({
   VoidCallback? onAddToNotebook,
   VoidCallback? onSetTags,
   VoidCallback? onOpenAi,
+  VoidCallback? onOpenDrafts,
+  int draftCount = 0,
   HomeBarResolvedStyle? bar,
 }) => MaterialApp(
   locale: const Locale('zh'),
@@ -38,8 +40,9 @@ Widget _host({
       onAddToNotebookSelected: onAddToNotebook ?? () {},
       onRemoveFromNotebookSelected: inManualNotebook ? () {} : null,
       onMoveToNotebookSelected: inManualNotebook ? () {} : null,
+      onOpenDrafts: onOpenDrafts ?? () {},
+      draftCount: draftCount,
       viewOptions: DiaryViewMenuOptions(
-        onOpenDrafts: () {},
         onOpenArchived: () {},
         sortMode: DiarySortMode.updatedDesc,
         layoutMode: DiaryLayoutMode.list,
@@ -124,22 +127,79 @@ void main() {
     expect(find.text('在 Jotsy 中搜索'), findsOneWidget);
   });
 
-  testWidgets('drafts and archive live in the more menu, not the top bar', (
+  testWidgets('drafts sits in the top bar, archive stays in the more menu', (
     tester,
   ) async {
     final l10n = lookupAppLocalizations(const Locale('zh'));
-    await tester.pumpWidget(_host(selection: false));
-    // 顶栏只剩搜索条与“更多”。
-    expect(find.byTooltip(l10n.diaryDraftsTitle), findsNothing);
+    var opened = 0;
+    await tester.pumpWidget(
+      _host(selection: false, onOpenDrafts: () => opened++),
+    );
+    // AI 不可用时顶栏为搜索条 + 草稿箱 + “更多”。
+    expect(find.byType(IconButton), findsNWidgets(2));
     expect(find.byTooltip(l10n.autoT0100), findsNothing);
-    // 唯一的图标按钮就是“更多”本身（AI 不可用时）。
-    expect(find.byType(IconButton), findsOneWidget);
-    expect(find.byTooltip(l10n.autoT0125), findsOneWidget);
+    final drafts = tester.getCenter(find.byTooltip(l10n.diaryDraftsTitle)).dx;
+    final more = tester.getCenter(find.byTooltip(l10n.autoT0125)).dx;
+    expect(drafts, lessThan(more));
+
+    await tester.tap(find.byTooltip(l10n.diaryDraftsTitle));
+    expect(opened, 1);
 
     await tester.tap(find.byTooltip(l10n.autoT0125));
     await tester.pumpAndSettle();
-    expect(find.text(l10n.diaryDraftsTitle), findsOneWidget);
     expect(find.text(l10n.autoT0100), findsOneWidget);
+    expect(find.text(l10n.diaryDraftsTitle), findsNothing);
+  });
+
+  testWidgets('with AI on, drafts sits right of the AI button', (tester) async {
+    final l10n = lookupAppLocalizations(const Locale('zh'));
+    await tester.pumpWidget(_host(selection: false, onOpenAi: () {}));
+    final ai = tester.getCenter(find.byTooltip(l10n.aiHubTooltip)).dx;
+    final drafts = tester.getCenter(find.byTooltip(l10n.diaryDraftsTitle)).dx;
+    final more = tester.getCenter(find.byTooltip(l10n.autoT0125)).dx;
+    expect(ai, lessThan(drafts));
+    expect(drafts, lessThan(more));
+  });
+
+  testWidgets('the drafts button shows the draft count only when non-zero', (
+    tester,
+  ) async {
+    const countKey = ValueKey<String>('diary_head_draft_count');
+    Badge badge() => tester.widget<Badge>(find.byKey(countKey));
+
+    await tester.pumpWidget(_host(selection: false));
+    expect(badge().isLabelVisible, isFalse);
+
+    await tester.pumpWidget(_host(selection: false, draftCount: 3));
+    expect(badge().isLabelVisible, isTrue);
+    // 主色底而不是默认的错误色：草稿是“还没写完”，不是警告。
+    final colors = Theme.of(tester.element(find.byKey(countKey))).colorScheme;
+    expect(badge().backgroundColor, colors.primary);
+    expect(badge().textColor, colors.onPrimary);
+    expect(
+      find.descendant(of: find.byKey(countKey), matching: find.text('3')),
+      findsOneWidget,
+    );
+
+    await tester.pumpWidget(_host(selection: false, draftCount: 120));
+    expect(
+      find.descendant(of: find.byKey(countKey), matching: find.text('99+')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a 320dp top bar with AI and drafts still fits', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      _host(selection: false, onOpenAi: () {}, draftCount: 120),
+    );
+    expect(tester.takeException(), isNull);
+    final search = tester.getSize(
+      find.byKey(const ValueKey<String>('search_preview')),
+    );
+    expect(search.width, greaterThan(100));
   });
 
   testWidgets('selection bar fits 320dp with a large count', (tester) async {

@@ -104,6 +104,10 @@ class _NotebookDeckState extends ConsumerState<NotebookDeck>
   Duration _autoScrollLast = Duration.zero;
   int _keyboardIndex = -1;
 
+  /// 长按菜单开着的那一张（没有为 null）：它一直保持抬起，点它只收起菜单。
+  String? _menuKey;
+  ExpressiveMenuAnchorState? _openMenu;
+
   /// 绘制回调里不读 inherited widget：方向在 build 时记下。
   bool _rtl = false;
   bool _ghostSweepScheduled = false;
@@ -314,6 +318,14 @@ class _NotebookDeckState extends ConsumerState<NotebookDeck>
   void pullOut(String? key) => _motion.pullOut(key);
 
   @override
+  bool closeMenu() {
+    final menu = _openMenu;
+    if (_menuKey == null || menu == null || !menu.mounted) return false;
+    menu.close();
+    return true;
+  }
+
+  @override
   void shake(String key) {
     if (ExpressiveMotion.reduceMotion(context)) return;
     _shakeKey = key;
@@ -400,13 +412,19 @@ class _NotebookDeckState extends ConsumerState<NotebookDeck>
     );
     final current = !item.leaving && widget.isCurrent(entry);
     final desktop = AppPlatform.isDesktop;
-    Widget card(VoidCallback? onLongPress) => NotebookDeckCard(
+    Widget card(ExpressiveMenuAnchorState? menu) => NotebookDeckCard(
       entry: entry,
       width: entry.kind == NotebookDeckEntryKind.closedHeader
           ? width
           : cardWidth,
       current: current,
       onTap: () {
+        // 这张的长按菜单开着：点它只收起菜单。它是菜单的锚点，点它不算
+        // “点在菜单外面”，菜单自己不会拦下这次点按。
+        if (_menuKey == entry.key) {
+          menu?.close();
+          return;
+        }
         if (entry.kind == NotebookDeckEntryKind.closedHeader) {
           widget.onToggle(entry);
           return;
@@ -416,11 +434,16 @@ class _NotebookDeckState extends ConsumerState<NotebookDeck>
       onPressChanged: (bool down) {
         if (down) {
           _motion.lift(entry.key);
-        } else if (_motion.lifted == entry.key) {
+        } else if (_motion.lifted == entry.key && _menuKey != entry.key) {
           _motion.lift(null);
         }
       },
-      onLongPress: onLongPress,
+      onLongPress: menu == null
+          ? null
+          : () {
+              _openMenu = menu;
+              menu.open();
+            },
       onToggle:
           entry.childCount > 0 ||
               entry.kind == NotebookDeckEntryKind.closedHeader
@@ -435,6 +458,18 @@ class _NotebookDeckState extends ConsumerState<NotebookDeck>
       final l10n = context.l10n;
       child = ExpressiveMenuAnchor(
         placement: ExpressiveMenuPlacement.start,
+        // 菜单开着的整段时间里这张保持抬起，看得出菜单是对哪一本的；菜单
+        // 关上再放下。
+        onOpen: () {
+          _menuKey = entry.key;
+          _motion.lift(entry.key);
+        },
+        onClose: () {
+          if (_menuKey != entry.key) return;
+          _menuKey = null;
+          _openMenu = null;
+          if (_motion.lifted == entry.key) _motion.lift(null);
+        },
         menuChildren: <Widget>[
           for (final action in notebookQuickActions(notebook))
             ExpressiveMenuItem(
@@ -452,14 +487,18 @@ class _NotebookDeckState extends ConsumerState<NotebookDeck>
             ),
         ],
         builder: (BuildContext context, ExpressiveMenuAnchorState menu, _) =>
-            card(menu.open),
+            card(menu),
       );
     }
     if (desktop && !item.leaving) {
       child = MouseRegion(
-        onEnter: (_) => _motion.lift(entry.key),
+        onEnter: (_) {
+          if (_menuKey == null) _motion.lift(entry.key);
+        },
         onExit: (_) {
-          if (_motion.lifted == entry.key) _motion.lift(null);
+          if (_motion.lifted == entry.key && _menuKey != entry.key) {
+            _motion.lift(null);
+          }
         },
         child: child,
       );

@@ -72,12 +72,16 @@ abstract interface class NotebookDeckHandle {
 
   /// 验证没通过：被选的那张左右轻晃一下。
   void shake(String key);
+
+  /// 收起开着的长按菜单；没有开着的菜单时返回 false。
+  bool closeMenu();
 }
 
 /// 首页日记本卡组的状态机：右滑拉出 → 长成卡组 → 拖选 / 点选 → 收进切换
 /// 胶囊（或收回左缘），以及从切换胶囊打开。
 ///
 /// 输入：手势层的 [dragStart] / [dragUpdate] / [dragEnd] / [dragCancel]，
+/// 浮层上收起用的 [closeDragStart]（之后同样走 update / end / cancel），
 /// 页面的 [openFromChip] / [close] / [dismissImmediately]，卡组的 [select]。
 /// 输出：浮层逐帧读取的 [stage]（见下）、[armPop]、[fingerY]、[origin] 等，
 /// 胶囊的 [chipHidden] / [chipBounce]；副作用：触觉、经 [host] 验证与提交切换、
@@ -148,6 +152,10 @@ class NotebookSwitcherController extends ChangeNotifier {
   bool _dragSelecting = false;
   double? _openAnchorY;
   NotebookDeckEntry? _hovered;
+
+  /// 这次拖动是在打开的卡组上往回收（[closeDragStart]），不是从列表上拉出：
+  /// 不进拖选，松手按进度与甩动方向决定收回还是弹回。
+  bool _reverse = false;
   double _stageTarget = 0;
 
   NotebookSwitcherPhase get phase => _phase;
@@ -203,6 +211,7 @@ class NotebookSwitcherController extends ChangeNotifier {
     _dragSelecting = false;
     _openAnchorY = null;
     _hovered = null;
+    _reverse = false;
     final caught = _phase == NotebookSwitcherPhase.closing;
     stage.stop();
     // 余下的距离不够长成面板时缩短这一段，保证一定拉得满。
@@ -224,6 +233,36 @@ class NotebookSwitcherController extends ChangeNotifier {
     _showPortal();
   }
 
+  /// 在打开的卡组（面板或遮罩）上横向起手：按同一根进度轴反着跟手——往
+  /// 回拉时卡组缩回左缘胶囊、胶囊再缩进边缘，与右滑拉出逐帧对称。正弹回
+  /// 打开或正收回左缘时也能接住。从切换胶囊打开的卡组改为收向左缘（胶囊
+  /// 此刻露回原处），纵向中心跟着手指。
+  void closeDragStart(Offset position) {
+    final catchable =
+        _phase == NotebookSwitcherPhase.open ||
+        (_phase == NotebookSwitcherPhase.closing &&
+            _origin == NotebookSwitcherOrigin.edge &&
+            _landingEntry == null);
+    final pane = _pane;
+    if (!catchable || pane == null) return;
+    stage.stop();
+    if (_origin == NotebookSwitcherOrigin.chip) {
+      _origin = NotebookSwitcherOrigin.edge;
+      chipHidden.value = false;
+      _span = (pane.width * 0.4).clamp(minSpan, maxSpan);
+    }
+    _deck?.autoScroll(null);
+    _deck?.lift(null);
+    _reverse = true;
+    _dragSelecting = false;
+    _openAnchorY = null;
+    _hovered = null;
+    _fingerY = position.dy;
+    _pull = _pullForStage(stage.value);
+    _armed = _pull >= armDistance;
+    _setPhase(NotebookSwitcherPhase.dragging);
+  }
+
   void dragUpdate(Offset position, double deltaX) {
     if (_phase != NotebookSwitcherPhase.dragging) return;
     _fingerY = position.dy;
@@ -239,12 +278,14 @@ class NotebookSwitcherController extends ChangeNotifier {
     // 拉满一次就记下手指高度；之后手指往卡片那边斜着挪（横向略回收）仍算
     // 在拉开的卡组上，上下移过溢出距离即进入拖选。明显往回收（进度跌破
     // 一半）才作废，回到跟手开合。
-    if (stage.value >= 1.98) {
+    if (_reverse) {
+      // 往回收：只管开合，不进拖选。
+    } else if (stage.value >= 1.98) {
       _openAnchorY ??= position.dy;
     } else if (stage.value < 1.5) {
       _openAnchorY = null;
     }
-    final anchor = _openAnchorY;
+    final anchor = _reverse ? null : _openAnchorY;
     if (anchor != null && (position.dy - anchor).abs() > dragSelectSlop) {
       _dragSelecting = true;
       // 横向不再控制开合：没拉满的那一点弹回到完全打开。
@@ -271,7 +312,19 @@ class NotebookSwitcherController extends ChangeNotifier {
       return;
     }
     final velocity = velocityX * _directionSign;
-    if (_armed && velocity > -cancelFlingVelocity) {
+    final bool open;
+    if (_reverse) {
+      // 往回收：甩动方向优先，否则看收回过没过一半。
+      _reverse = false;
+      open = velocity >= cancelFlingVelocity
+          ? true
+          : velocity <= -cancelFlingVelocity
+          ? false
+          : stage.value >= 1.5;
+    } else {
+      open = _armed && velocity > -cancelFlingVelocity;
+    }
+    if (open) {
       _settleOpen(velocity / _span);
     } else {
       _closeTo(NotebookSwitcherOrigin.edge, velocity: velocity / _span);
@@ -284,6 +337,7 @@ class NotebookSwitcherController extends ChangeNotifier {
     _deck?.lift(null);
     _dragSelecting = false;
     _hovered = null;
+    _reverse = false;
     if (stage.value >= 1.5) {
       _settleOpen(0);
     } else {
@@ -362,6 +416,10 @@ class NotebookSwitcherController extends ChangeNotifier {
     _showPortal();
     _springStage(2, ExpressiveMotion.springSpatial);
   }
+
+  /// 系统返回 / Esc：卡组里的长按菜单开着时先收起菜单（日记页的 PopScope
+  /// 拦在菜单的局部历史之前，菜单自己收不到返回），返回是否收起了菜单。
+  bool closeDeckMenu() => _deck?.closeMenu() ?? false;
 
   /// 收起，不切换：回到来处（左缘或切换胶囊）。
   void close() {
@@ -491,6 +549,7 @@ class NotebookSwitcherController extends ChangeNotifier {
     _pull = 0;
     _armed = false;
     _dragSelecting = false;
+    _reverse = false;
     _hovered = null;
     _openAnchorY = null;
     armPop.value = 0;

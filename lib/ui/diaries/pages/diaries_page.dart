@@ -1256,7 +1256,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     if (_switcherVisible &&
         event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.escape) {
-      _switcher.close();
+      if (!_switcher.closeDeckMenu()) _switcher.close();
       return KeyEventResult.handled;
     }
     return _readingSelection.handleKeyEvent(node, event);
@@ -1309,7 +1309,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
   }
 
-  /// 返回被拦下时的顺序：收起日记本卡组 → 退出多选 → 收起展开的标签栏 →
+  /// 返回被拦下时的顺序：收起日记本卡组（里面开着长按菜单时先收菜单）→
+  /// 退出多选 → 收起展开的标签栏 →
   /// AI 卡片带过来的回到那段对话（`aiChatReturnProvider`）→ 子本里回到上级
   /// 本子。顶层本子与未收录不拦返回，不在这里回到全部日记。
   ///
@@ -1317,7 +1318,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 返回只用于切回日记页（Home 处理），后两步只在日记页可见时执行。
   void _handlePopBlocked() {
     if (_switcher.isVisible) {
-      _switcher.close();
+      if (!_switcher.closeDeckMenu()) _switcher.close();
       return;
     }
     if (_isSelectionMode) {

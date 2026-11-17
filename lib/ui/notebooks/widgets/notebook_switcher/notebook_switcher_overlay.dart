@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,11 +86,26 @@ class _NotebookSwitcherOverlayState
     ),
   );
 
-  /// 打开时的范围：卡组展开当前本子上级链按它算，切换途中范围变了也不
-  /// 重新展开、卡片不跳。
-  late final String? _openNotebookId = ref
-      .read(homeNotebookScopeProvider)
-      .notebookId;
+  /// 打开时为露出当前本子而展开的项（见 [notebookDeckRevealKeys]）：只在
+  /// 打开那一刻算一次，切换途中范围变了也不重新展开、卡片不跳；用户收起
+  /// 其中一项时从这里移除，之后照常能收能放。
+  Set<String>? _revealed;
+
+  Set<String> _revealedFor(List<NotebookView> notebooks, NotebookTree tree) {
+    final cached = _revealed;
+    if (cached != null) return cached;
+    final current = ref.read(homeNotebookScopeProvider).notebookId;
+    // 书架还没读到当前本子时先不定下来，读到后再算。
+    if (current != null && tree[current] == null) return const <String>{};
+    return _revealed = <String>{
+      ...notebookDeckRevealKeys(
+        notebooks: notebooks,
+        tree: tree,
+        currentNotebookId: current,
+      ),
+    };
+  }
+
   Rect? _lastChip;
   bool _precached = false;
 
@@ -108,11 +124,21 @@ class _NotebookSwitcherOverlayState
         NotebookDeckEntryKind.closedHeader => false,
       };
 
+  /// 展开 / 收起子本或“已合上”这一叠。打开时自动展开的项收起时也要从
+  /// [_revealed] 里拿掉，否则它一直被并进展开状态、收不起来。
   void _toggle(NotebookDeckEntry entry) {
     final key = entry.kind == NotebookDeckEntryKind.closedHeader
         ? deckGroupPrefix(NotebookDeckGroup.closed)
         : '${deckGroupPrefix(entry.group)}:${entry.notebook!.id}';
-    ref.read(notebookDeckExpandedProvider.notifier).toggle(key);
+    final notifier = ref.read(notebookDeckExpandedProvider.notifier);
+    final stored = ref.read(notebookDeckExpandedProvider).contains(key);
+    final revealed = _revealed?.contains(key) ?? false;
+    if (stored || revealed) {
+      if (revealed) setState(() => _revealed!.remove(key));
+      if (stored) notifier.toggle(key);
+    } else {
+      notifier.toggle(key);
+    }
   }
 
   /// 拉出时先把前几张封面解码好：卡片出现时不再中途淡入。
@@ -218,15 +244,14 @@ class _NotebookSwitcherOverlayState
     final notebooks =
         ref.watch(notebooksProvider).value ?? const <NotebookView>[];
     final tree = ref.watch(notebookTreeProvider) ?? NotebookTree.empty;
-    final expanded = ref.watch(notebookDeckExpandedProvider);
+    final expanded = <String>{
+      ...ref.watch(notebookDeckExpandedProvider),
+      ..._revealedFor(notebooks, tree),
+    };
     final entries = buildNotebookDeckEntries(
       notebooks: notebooks,
       tree: tree,
       expanded: expanded,
-      closedExpanded: expanded.contains(
-        deckGroupPrefix(NotebookDeckGroup.closed),
-      ),
-      currentNotebookId: _openNotebookId,
     );
     final layout = NotebookDeckLayout(entries);
     // 真实的窗口安全区（首页 Scaffold 给 body 的 padding 含底栏槽位）；
@@ -278,22 +303,64 @@ class _NotebookSwitcherOverlayState
         onToggle: _toggle,
       ),
     );
+    final gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
     return NotificationListener<ScrollNotification>(
       // 卡组的滚动不往上冒：首页按滚动隐藏底栏的监听不认层级。
       onNotification: (_) => true,
-      child: AnimatedBuilder(
-        animation: Listenable.merge(<Listenable>[
-          controller,
-          controller.stage,
-          controller.armPop,
-          _height,
-        ]),
-        child: panel,
-        builder: (BuildContext context, Widget? panel) =>
-            _frame(context, panel!, pane: pane, view: view, sign: sign),
+      // 打开后在面板或遮罩上横向拖动：往回收起（与右滑拉出同一根进度轴
+      // 反着跟手）。纵向滚动卡组照旧，谁先越过自己方向的溢出距离谁接手。
+      child: RawGestureDetector(
+        behavior: HitTestBehavior.translucent,
+        gestures: <Type, GestureRecognizerFactory>{
+          HorizontalDragGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<
+                HorizontalDragGestureRecognizer
+              >(
+                () => HorizontalDragGestureRecognizer(
+                  debugOwner: this,
+                  supportedDevices: _dragDevices,
+                ),
+                (HorizontalDragGestureRecognizer instance) {
+                  instance
+                    ..gestureSettings = gestureSettings
+                    ..dragStartBehavior = DragStartBehavior.down
+                    ..onStart = (DragStartDetails details) {
+                      controller.closeDragStart(details.globalPosition);
+                    }
+                    ..onUpdate = (DragUpdateDetails details) {
+                      controller.dragUpdate(
+                        details.globalPosition,
+                        details.delta.dx,
+                      );
+                    }
+                    ..onEnd = (DragEndDetails details) {
+                      controller.dragEnd(details.velocity.pixelsPerSecond.dx);
+                    }
+                    ..onCancel = controller.dragCancel;
+                },
+              ),
+        },
+        child: AnimatedBuilder(
+          animation: Listenable.merge(<Listenable>[
+            controller,
+            controller.stage,
+            controller.armPop,
+            _height,
+          ]),
+          child: panel,
+          builder: (BuildContext context, Widget? panel) =>
+              _frame(context, panel!, pane: pane, view: view, sign: sign),
+        ),
       ),
     );
   }
+
+  /// 收起用的拖动只认触屏与手写笔，与右滑拉出一致。
+  static const Set<PointerDeviceKind> _dragDevices = <PointerDeviceKind>{
+    PointerDeviceKind.touch,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.invertedStylus,
+  };
 
   Widget _frame(
     BuildContext context,

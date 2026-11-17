@@ -71,16 +71,22 @@ void main() {
 
     List<NotebookDeckEntry> build({
       Set<String> expanded = const <String>{},
-      bool closedExpanded = false,
       String? current,
     }) {
       final notebooks = views(rows);
+      final tree = NotebookTree.fromViews(notebooks);
+      // 与卡组一样：打开时把露出当前本子要展开的项并进展开状态。
       return buildNotebookDeckEntries(
         notebooks: notebooks,
-        tree: NotebookTree.fromViews(notebooks),
-        expanded: expanded,
-        closedExpanded: closedExpanded,
-        currentNotebookId: current,
+        tree: tree,
+        expanded: <String>{
+          ...expanded,
+          ...notebookDeckRevealKeys(
+            notebooks: notebooks,
+            tree: tree,
+            currentNotebookId: current,
+          ),
+        },
       );
     }
 
@@ -116,6 +122,14 @@ void main() {
         names(entries),
         containsAllInOrder(<String>['旅行', '  日本', '    东京']),
       );
+      expect(
+        notebookDeckRevealKeys(
+          notebooks: views(rows),
+          tree: NotebookTree.fromViews(views(rows)),
+          currentNotebookId: tokyo.notebookId,
+        ),
+        <String>{'m:${travel.notebookId}', 'm:${japan.notebookId}'},
+      );
     });
 
     test('closed notebooks keep their entries while the pile is folded', () {
@@ -125,7 +139,14 @@ void main() {
       );
       expect(header.expanded, isFalse);
       expect(header.closedCount, 1);
-      expect(build(closedExpanded: true).last.inClosedGroup, isTrue);
+      final open = build(expanded: const <String>{'c'});
+      expect(open.last.inClosedGroup, isTrue);
+      expect(
+        open
+            .firstWhere((e) => e.kind == NotebookDeckEntryKind.closedHeader)
+            .expanded,
+        isTrue,
+      );
     });
   });
 
@@ -138,7 +159,6 @@ void main() {
         notebooks: notebooks,
         tree: NotebookTree.fromViews(notebooks),
         expanded: const <String>{},
-        closedExpanded: false,
       );
     }
 

@@ -217,4 +217,7 @@ class _FakeDeck implements NotebookDeckHandle {
 
   @override
   void shake(String key) => shaken.add(key);
+
+  @override
+  bool closeMenu() => false;
 }

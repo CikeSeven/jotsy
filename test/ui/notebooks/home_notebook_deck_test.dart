@@ -215,6 +215,133 @@ void main() {
     await h.unmount();
   });
 
+  /// 在打开的卡组上从 [start] 往左拖 [distance]（逐步跟手）；[release]
+  /// 为 false 时不松手。
+  Future<TestGesture> pushBack(
+    WidgetTester tester,
+    double distance, {
+    Offset start = const Offset(300, 420),
+    bool release = true,
+  }) async {
+    final gesture = await tester.startGesture(start);
+    const steps = 12;
+    for (var i = 0; i < steps; i++) {
+      await gesture.moveBy(Offset(-distance / steps, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    if (release) await gesture.up();
+    return gesture;
+  }
+
+  testWidgets('a left drag on the open deck follows the finger and closes', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
+
+    // 拖到一半还按着：卡组跟着手指往回缩，但还在。
+    final gesture = await pushBack(tester, 140, release: false);
+    expect(find.byType(NotebookDeck), findsOneWidget);
+    expect(find.byType(NotebookSwitcherIndicator), findsOneWidget);
+    await gesture.up();
+    await h.settleAll();
+    expect(find.byType(NotebookDeck), findsNothing);
+    expect(scopeOf(tester).isAll, isTrue);
+    await h.unmount();
+  });
+
+  testWidgets('a short left drag on the open deck springs it back open', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    await pull(tester, 120);
+    await h.settleAll();
+    final gesture = await tester.startGesture(const Offset(300, 420));
+    for (var i = 0; i < 4; i++) {
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump(const Duration(milliseconds: 40));
+    }
+    await tester.pump(const Duration(milliseconds: 200));
+    await gesture.up();
+    await h.settleAll();
+    expect(find.byType(NotebookDeck), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('sub-notebooks shown for the current one can still fold', (
+    tester,
+  ) async {
+    final h = await pumpHome(
+      tester,
+      seed: (h) async {
+        final travel = await h.notebook('旅行');
+        final japan = await h.notebook('日本', parentId: travel);
+        await h.diary('在京都', notebookIds: <String>[japan]);
+      },
+    );
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
+    await tester.tap(find.bySemanticsLabel('展开 1 本子日记本'));
+    await h.settleAll();
+    await tester.tap(deckCard('日本'));
+    await h.settleAll();
+
+    // 再打开：当前在“日本”，它的上级自动展开；点角标照常能收起。
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
+    expect(deckCard('日本'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('收起子日记本'));
+    await h.settleAll();
+    expect(deckCard('日本'), findsNothing);
+    await tester.tap(find.bySemanticsLabel('展开 1 本子日记本'));
+    await h.settleAll();
+    expect(deckCard('日本'), findsOneWidget);
+    await h.unmount();
+  });
+
+  testWidgets('a long-pressed card stays lifted while its menu is open', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
+    final resting = tester.getTopLeft(deckCard('旅行')).dx;
+    await tester.longPress(deckCard('旅行'));
+    await h.settleAll();
+    expect(find.text('编辑'), findsOneWidget);
+    expect(tester.getTopLeft(deckCard('旅行')).dx, greaterThan(resting + 3));
+
+    // 点这张本身只收起菜单，不切换；它随之放下。
+    await tester.tap(deckCard('旅行'), warnIfMissed: false);
+    await h.settleAll();
+    expect(find.text('编辑'), findsNothing);
+    expect(find.byType(NotebookDeck), findsOneWidget);
+    expect(scopeOf(tester).isAll, isTrue);
+    expect(tester.getTopLeft(deckCard('旅行')).dx, closeTo(resting, 0.5));
+
+    // 点别的卡同样只收起菜单。
+    await tester.longPress(deckCard('旅行'));
+    await h.settleAll();
+    await tester.tap(deckCard('读书'), warnIfMissed: false);
+    await h.settleAll();
+    expect(find.text('编辑'), findsNothing);
+    expect(find.byType(NotebookDeck), findsOneWidget);
+    expect(scopeOf(tester).isAll, isTrue);
+
+    // 系统返回先收起菜单，卡组还在；再返回才收起卡组。
+    await tester.longPress(deckCard('旅行'));
+    await h.settleAll();
+    expect(await systemBackLeavesApp(tester), isFalse);
+    await h.settleAll();
+    expect(find.text('编辑'), findsNothing);
+    expect(find.byType(NotebookDeck), findsOneWidget);
+    expect(await systemBackLeavesApp(tester), isFalse);
+    await h.settleAll();
+    expect(find.byType(NotebookDeck), findsNothing);
+    await h.unmount();
+  });
+
   testWidgets('back closes the deck first and keeps the scope', (tester) async {
     final h = await pumpHome(tester, seed: seedTwo);
     await tester.tap(find.byType(NotebookSwitcherChip));

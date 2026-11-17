@@ -119,18 +119,15 @@ class NotebookDeckEntry {
 /// 最后是“已合上”标题条与合上的本子（分组口径同 [NotebookShelfGroups]）。
 ///
 /// 每组顶层本子后面按 [notebookSubtreeRows] 的树序跟着子孙，只列出上级都
-/// 已展开的那些：展开状态按“分组前缀:本子 id”记在 [expanded] 里（只在内存）。
-/// [currentNotebookId] 不在顶层时，它所在分组里的上级链视为展开（打开卡组
-/// 时能直接看到当前的那本），合上的分组也随之展开。
+/// 已展开的那些：展开状态按“分组前缀:本子 id”记在 [expanded] 里（只在内存），
+/// “已合上”这一叠展开时 [expanded] 里有它的分组前缀。打开卡组时要露出当前
+/// 本子，由调用方把 [notebookDeckRevealKeys] 并进 [expanded]。
 List<NotebookDeckEntry> buildNotebookDeckEntries({
   required List<NotebookView> notebooks,
   required NotebookTree tree,
   required Set<String> expanded,
-  required bool closedExpanded,
-  String? currentNotebookId,
 }) {
   final groups = NotebookShelfGroups(notebooks);
-  final revealed = _currentAncestorKeys(groups, tree, currentNotebookId);
   final entries = <NotebookDeckEntry>[
     const NotebookDeckEntry.all(),
     const NotebookDeckEntry.unfiled(),
@@ -145,8 +142,7 @@ List<NotebookDeckEntry> buildNotebookDeckEntries({
     final collapsed = <String>{
       for (final row in rows)
         if (row.notebook.hasChildren &&
-            !expanded.contains('$prefix:${row.notebook.id}') &&
-            !revealed.contains('$prefix:${row.notebook.id}'))
+            !expanded.contains('$prefix:${row.notebook.id}'))
           row.notebook.id,
     };
     final fold = notebookRowsFold(rows, collapsed);
@@ -190,9 +186,7 @@ List<NotebookDeckEntry> buildNotebookDeckEntries({
   addGroup(NotebookDeckGroup.mine, groups.shelfManual);
   addGroup(NotebookDeckGroup.smart, groups.shelfSmart);
   if (groups.closed.isNotEmpty) {
-    final open =
-        closedExpanded ||
-        revealed.contains(deckGroupPrefix(NotebookDeckGroup.closed));
+    final open = expanded.contains(deckGroupPrefix(NotebookDeckGroup.closed));
     entries.add(
       NotebookDeckEntry._(
         kind: NotebookDeckEntryKind.closedHeader,
@@ -216,13 +210,17 @@ String deckGroupPrefix(NotebookDeckGroup group) => switch (group) {
   NotebookDeckGroup.closed => 'c',
 };
 
-/// 当前日记本不在顶层时要展开的上级（“分组前缀:id”），合上的分组时再加上
-/// 分组前缀本身。当前本子置顶时它已在置顶组里单列，不用展开别处。
-Set<String> _currentAncestorKeys(
-  NotebookShelfGroups groups,
-  NotebookTree tree,
+/// 打开卡组时为露出 [currentNotebookId] 要展开的项：它不在顶层时，所在
+/// 分组里的上级链（“分组前缀:id”），在“已合上”里时再加上分组前缀本身。
+/// 当前本子置顶时它已在置顶组里单列，不用展开别处。
+///
+/// 只在打开卡组那一刻算一次、并进展开状态；之后用户照常可以把它们收起。
+Set<String> notebookDeckRevealKeys({
+  required List<NotebookView> notebooks,
+  required NotebookTree tree,
   String? currentNotebookId,
-) {
+}) {
+  final groups = NotebookShelfGroups(notebooks);
   if (currentNotebookId == null) return const <String>{};
   final current = tree[currentNotebookId];
   if (current == null || current.parentId == null) return const <String>{};

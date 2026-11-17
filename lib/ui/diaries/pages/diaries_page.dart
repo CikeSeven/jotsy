@@ -224,7 +224,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool _isPagingCooldown = false;
   Timer? _pagingCooldownTimer;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
-  DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
+  DiaryLayoutMode _layoutMode = DiaryLayoutMode.waterfall;
   bool _viewPreferencesLoaded = false;
   late final AnimationController _tagFilterExpansionController;
   double _tagFilterDragDelta = 0;

@@ -31,14 +31,10 @@ class DiaryViewPreferences {
     return DiarySortMode.values.asNameMap()[raw] ?? DiarySortMode.updatedDesc;
   }
 
-  /// 布局字符串解析。
+  /// 布局字符串解析：存储值即 [DiaryLayoutMode] 的枚举名；无法识别（空串、
+  /// 较新版本写入的值、被手改的备份）时回落到与“没选过”相同的默认瀑布流
+  /// （见 `SettingsService.diaryLayoutModeRaw`）。
   static DiaryLayoutMode _parseLayoutMode(String raw) {
-    switch (raw) {
-      case 'waterfall':
-        return DiaryLayoutMode.waterfall;
-      case 'list':
-      default:
-        return DiaryLayoutMode.list;
-    }
+    return DiaryLayoutMode.values.asNameMap()[raw] ?? DiaryLayoutMode.waterfall;
   }
 }

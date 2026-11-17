@@ -18,6 +18,7 @@ void main() {
         diaries: <DiaryWithTags>[
           for (var index = 0; index < 6; index++) wideDiary('medium', index),
         ],
+        preferences: wideListLayoutPreferences,
       );
 
       // 刊头与标签栏跟内容列对齐：900 宽里每侧补 90，列宽 720。
@@ -54,6 +55,7 @@ void main() {
       diaries: <DiaryWithTags>[
         for (var index = 0; index < 4; index++) wideDiary('phone', index),
       ],
+      preferences: wideListLayoutPreferences,
     );
 
     expect(find.byType(DiaryDetailPane), findsNothing);

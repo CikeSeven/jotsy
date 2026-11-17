@@ -119,8 +119,10 @@ void main() {
       ) async {
         final l10n = await _pumpPage(
           tester,
-          buildPage: (settings) =>
-              DiaryCardStylePage(settingsService: settings),
+          buildPage: (settings) => DiaryCardStylePage(
+            settingsService: settings,
+            initialMode: DiaryCardMode.list,
+          ),
           brightness: brightness,
           size: size,
         );

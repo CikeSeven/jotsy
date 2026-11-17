@@ -38,6 +38,8 @@ Future<void> _pumpHome(WidgetTester tester, {String? barStyleRaw}) async {
   tester.view.padding = const FakeViewPadding(top: _statusBar);
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
+    // 列表布局：12 篇单列才够把刊头滚到收起（瀑布流两列只有一半高）。
+    'app.settings.diary_layout_mode': 'list',
     'app.settings.home_bar_style': ?barStyleRaw,
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());

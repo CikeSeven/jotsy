@@ -478,8 +478,11 @@ class SettingsService {
   String get diarySortModeRaw =>
       _prefs.getString(_keyDiarySortMode) ?? 'updatedDesc';
 
+  /// 首页日记布局，没选过时默认瀑布流：列表的卡片可左滑归档，与左右滑动
+  /// 切换 Tab、上下滑动时的斜向手势容易混淆而误归档（#311）；瀑布流不挂
+  /// 侧滑。解析与未知值回落见 `DiaryViewPreferences`。
   String get diaryLayoutModeRaw =>
-      _prefs.getString(_keyDiaryLayoutMode) ?? 'list';
+      _prefs.getString(_keyDiaryLayoutMode) ?? 'waterfall';
 
   String? get diaryToolbarOrderRaw => diaryToolbarOrderRawNotifier.value;
   String? get diaryToolbarHiddenItemsRaw =>

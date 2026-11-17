@@ -165,6 +165,7 @@ void main() {
   testWidgets('the header card lines up with the list cards', (tester) async {
     late String travel;
     final h = await pumpHome(tester, (h) async {
+      await h.settings.setDiaryLayoutModeRaw('list');
       travel = await h.notebook('旅行');
       await h.diary('在京都', notebookIds: <String>[travel]);
     });

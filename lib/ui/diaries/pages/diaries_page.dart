@@ -672,7 +672,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         );
 
         // 列表栏（单栏时即整页）：刊头、标签栏、日记本头部与列表。宽窗口里
-        // 内容收进 [DiariesPageLayout.contentInset] 留白的内容列，底色铺满。
+        // 刊头以外的内容收进 [DiariesPageLayout.contentInset] 留白的内容列，
+        // 底色铺满。
         Widget listPane(
           DiariesPageLayout layout, {
           required double listWidth,
@@ -725,11 +726,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                           topInset: viewPadding.top,
                           link: _topBarLink,
                           backgroundColor: solidBarColor,
-                          child: Container(
+                          // 刊头不收进内容列：首页各 Tab 的页头标题在任何
+                          // 宽度下都距左缘 16，切换 Tab 时停在同一位置
+                          // （#308）。
+                          child: SizedBox(
                             height: _headerCollapsibleHeight,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: contentInset,
-                            ),
                             child: LaunchReveal(
                               slot: LaunchRevealSlot.masthead,
                               // 只让顶栏随草稿份数与（多选时）列表的完整

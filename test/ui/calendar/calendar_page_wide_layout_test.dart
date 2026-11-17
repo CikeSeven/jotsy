@@ -84,6 +84,9 @@ void main() {
     expect(monthBar.left, 40);
     expect(monthBar.width, 600);
     expect(monthBar.bottom, lessThan(gridRect.top));
+    // 标题栏不随 1200 的内容容器内收：标题距左缘 16，与其他 Tab 一致
+    // （#308）。
+    expect(tester.getTopLeft(find.text(l10n.autoT0183)).dx, 16);
     // 日期高亮保持手机比例：选中的今天最宽 64，居中在格子里。
     final cellRect = tester.getRect(
       find
@@ -153,9 +156,11 @@ void main() {
     expect(headingRect.left, greaterThanOrEqualTo(90));
     expect(headingRect.right, lessThanOrEqualTo(810));
     expect(gridRect.center.dx, moreOrLessEquals(450, epsilon: 1));
-    // 页头底色铺满，按钮行与这一列对齐。
+    // 页头底色铺满，月份行与这一列对齐；标题不内收，与其他 Tab 一样距
+    // 左缘 16（#308）。
+    expect(tester.getTopLeft(find.text(l10n.autoT0183)).dx, 16);
     expect(
-      tester.getTopLeft(find.text(l10n.autoT0183)).dx,
+      tester.getRect(find.byType(CalendarMonthBar)).left,
       moreOrLessEquals(106, epsilon: 1),
     );
   });

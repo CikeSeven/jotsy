@@ -340,7 +340,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     // 单列与双栏只是摆放方式不同（见 calendar_page_layout.dart）。
     CalendarHeader buildHeader(
       double collapsedExtent,
-      double horizontalInset, {
+      double monthBarInset, {
       bool showMonthBar = true,
     }) => CalendarHeader(
       title: _controller.focusedMonthTitle,
@@ -359,7 +359,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       previousTooltip: _yearMode ? l10n.calendarPreviousYear : null,
       nextTooltip: _yearMode ? l10n.calendarNextYear : null,
       collapsedExtent: collapsedExtent,
-      horizontalInset: horizontalInset,
+      monthBarInset: monthBarInset,
       showMonthBar: showMonthBar,
     );
     Widget buildPanel({required bool wide}) => _buildCalendarPanel(

@@ -559,40 +559,36 @@ class NotebookSwitcherController extends ChangeNotifier {
     velocity: 0.06,
   );
 
-  /// 收进切换胶囊：与新建日记收进角标同一套落点动效——容器按
-  /// [ExpressiveMotion.morphLandCurve] 带着余速撞进胶囊（不在终点前减速
-  /// 到停、拖一段尾巴），撞上的同一帧换回真胶囊，由胶囊接着回弹
-  /// （[ExpressiveMotion.morphLandBounce]）。离胶囊越近走得越快。
+  /// 收进切换胶囊：与收回左缘同一条弹簧曲线（[ExpressiveMotion.springPage]，
+  /// 起步干脆、收尾柔和），只是停稳判定更宽——容器视觉上已贴住胶囊（差
+  /// 几个像素、几乎不动）就算到，同一帧换回真胶囊并轻轻回弹，不再走一段
+  /// 看不出的尾巴、停一下才弹。
   void _landInChip() {
-    _stageTarget = 1;
-    if (_reduceMotion) {
-      stage.value = 1;
-      _finish();
-      return;
-    }
-    final remaining = ((stage.value - 1) / 1).clamp(0.35, 1.0);
-    stage
-        .animateTo(
+    _springStage(
+      1,
+      ExpressiveMotion.springPage,
+      tolerance: _landTolerance,
+      onDone: () {
+        _finish();
+        if (_reduceMotion) return;
+        // 胶囊接住容器：先被压小一点再弹回，幅度与弹簧的柔和收尾相称。
+        chipBounce.value = 1;
+        ExpressiveMotion.springTo(
+          host.context,
+          chipBounce,
           1,
-          duration: ExpressiveMotion.morphLand * remaining,
-          curve: ExpressiveMotion.morphLandCurve,
-        )
-        .then((_) {
-          if (_stageTarget != 1 || _phase != NotebookSwitcherPhase.closing) {
-            return;
-          }
-          _finish();
-          // 胶囊接住容器：先被压小一点再弹回。
-          chipBounce.value = 1;
-          ExpressiveMotion.springTo(
-            host.context,
-            chipBounce,
-            1,
-            spring: ExpressiveMotion.morphLandBounce,
-            kick: ExpressiveMotion.morphLandKick(0.08),
-          );
-        });
+          spring: ExpressiveMotion.morphLandBounce,
+          kick: ExpressiveMotion.morphLandKick(0.05),
+        );
+      },
+    );
   }
+
+  /// 收进胶囊的停稳判定：差 1% 的进度（面板到胶囊的几个像素）且几乎不动。
+  static const Tolerance _landTolerance = Tolerance(
+    distance: 0.01,
+    velocity: 0.3,
+  );
 
   void _springStage(
     double target,

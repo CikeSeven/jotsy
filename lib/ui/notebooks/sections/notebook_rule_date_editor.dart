@@ -9,6 +9,7 @@ import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../../utils/date_picker_range.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../viewmodels/notebook_rule_labels.dart';
@@ -91,8 +92,8 @@ class _NotebookDateRuleEditorState extends State<NotebookDateRuleEditor> {
   Future<void> _pickRange() async {
     final picked = await showDateRangePicker(
       context: context,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100, 12, 31),
+      firstDate: DatePickerRange.firstDate,
+      lastDate: DatePickerRange.lastDate,
       initialDateRange: DateTimeRange(start: _from, end: _to),
     );
     if (picked == null || !mounted) return;

@@ -177,25 +177,37 @@ class _CalendarPageController {
   }
 
   /// 年视图翻年：保留月份，回到月视图时仍落在同一个月。
+  ///
+  /// 年份夹在月历的可选范围内：越界的年份点进月视图时，焦点日落在
+  /// table_calendar 的 firstDay / lastDay 之外会触发断言。到边界后再翻为
+  /// 空操作。
   void _switchYear(int offset) {
     final focused = _state._focusedMonth;
+    final year = (focused.year + offset).clamp(
+      CalendarMonthGrid.firstDay.year,
+      CalendarMonthGrid.lastDay.year,
+    );
+    if (year == focused.year) {
+      return;
+    }
     _state.applyState(
-      () =>
-          _state._focusedMonth = DateTime(focused.year + offset, focused.month),
+      () => _state._focusedMonth = DateTime(year, focused.month),
     );
   }
 
   /// 打开日期选择弹窗并跳转到指定日期。
   ///
   /// 交互约束：
-  /// - 日期范围与日历组件保持一致（2010-01-01 ~ 2100-12-31）；
+  /// - 日期范围与日历组件保持一致（[CalendarMonthGrid.firstDay] ~
+  ///   [CalendarMonthGrid.lastDay]）；
   /// - 从当前浏览日期打开，选择完成后同步更新选中日和焦点月份；
   /// - 跳转时统一切到月视图，便于用户定位月份上下文。
   Future<void> pickDateAndJump() async {
     final firstDate = CalendarMonthGrid.firstDay;
     final lastDate = CalendarMonthGrid.lastDay;
     // 浏览年/月不会改变选中日；沿用选中日会让弹窗突然回到上次选择的年份。
-    // 年视图可浏览到范围外，弹窗仍须把初始日期限制在月历支持的范围内。
+    // 焦点月份也可能来自外部跳转（如桌面小组件），初始日期仍须限制在
+    // 月历支持的范围内，否则选择器断言失败。
     final focused = DateUtils.dateOnly(_state._focusedMonth);
     final initialDate = focused.isBefore(firstDate)
         ? firstDate

@@ -72,7 +72,7 @@
 
 ## lib/l10n 与 lib/utils
 - `l10n/`：ARB（`app_en.arb` 为模板，另有 zh / ja / ru）、语言清单 `app_languages.dart`（`appLanguages`）、`context.l10n` 封装 `app_localizations.dart`；`app_localizations_gen*.dart` 为生成文件。
-- `utils/`：字数 `text_stats.dart`（`TextStats` / `DiaryWordCounts`）、查询保活、日期与时间格式化、三态选择；`pinyin/` 为拼音表与 A–Z 索引。
+- `utils/`：字数 `text_stats.dart`（`TextStats` / `DiaryWordCounts`）、查询保活、日期与时间格式化、日期选择统一范围 `date_picker_range.dart`、三态选择；`pinyin/` 为拼音表与 A–Z 索引。
 
 ## 其他顶层目录
 - `assets/`：内置字体、天气图标、应用图标、示例与收款图片、AI 使用指南 `ai_guide/zh|en/`（`docs/releases/` 也作为资源打进应用）。

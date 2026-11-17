@@ -16,7 +16,8 @@ import 'mind_map_format_bar.dart';
 ///
 /// 删除与工具坞的删除一致（`deleteSelected`，选中相邻的主题，可撤销），但
 /// 接着编辑新选中的主题、键盘不收起；中心主题不能删、按钮置灰。画布让正在编辑的节点露在附件条之上
-/// 时按 [height] 留白（见 MindMapCanvas 的 `_revealPadding`）。
+/// 时按 [height] 留白（见 MindMapCanvas 的 `_revealPadding`），大纲的视口经
+/// [MindMapAccessoryBarInset] 让到附件条之上。
 abstract final class MindMapAccessoryBar {
   /// 操作行的高度。
   static const double actionsHeight = 52;
@@ -26,6 +27,50 @@ abstract final class MindMapAccessoryBar {
       MindMapFormatBar.height + actionsHeight + _bottomGap;
 
   static const double _bottomGap = 8;
+}
+
+/// 把内容视口的底边抬到键盘与附件条（连同展开的颜色面板）之上，大纲用；
+/// 画布不缩视口、自己挪镜头（见 MindMapCanvas 的 `_revealPadding`）。
+///
+/// 为什么缩视口而不是在列表末尾加留白：导图页不随键盘缩
+/// （`resizeToAvoidBottomInset: false`），内容原本铺到键盘底下；输入框自己
+/// 让光标露出来（获得焦点、键盘升起的每一帧、打字换行）只按所在视口算，
+/// 视口还伸在键盘底下时，靠下正在编辑的行照样被盖住，也滚不到最后几行。
+///
+/// 只有这一层读 viewInsets、随键盘动画逐帧重建；[child] 由外层构建好传进来
+/// 原样交回。不显示附件条时也套着同一个 Padding（结构恒定），开始 / 结束
+/// 编辑时子树不重新挂载，列表的滚动位置不丢。
+class MindMapAccessoryBarInset extends StatelessWidget {
+  const MindMapAccessoryBarInset({
+    super.key,
+    required this.controller,
+    required this.showsBar,
+    required this.child,
+  });
+
+  final MindMapEditingController controller;
+
+  /// 附件条此刻是否显示（手机上编辑主题文字时）。
+  final bool showsBar;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    return ValueListenableBuilder<double>(
+      valueListenable: controller.textSession.panelExtent,
+      builder: (BuildContext context, double panel, Widget? child) => Padding(
+        padding: EdgeInsets.only(
+          bottom: showsBar
+              ? keyboard + MindMapAccessoryBar.height + panel
+              : keyboard,
+        ),
+        child: child,
+      ),
+      child: child,
+    );
+  }
 }
 
 /// 画布上编辑文字时的附件条。

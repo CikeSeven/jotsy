@@ -99,18 +99,11 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('mini and create variants render', (tester) async {
-    var tapped = false;
+  testWidgets('the mini variant renders', (tester) async {
     await tester.pumpWidget(
       notebookTestApp(
-        Column(
-          children: <Widget>[
-            const NotebookCoverTile.mini(icon: NotebookIcon.heart),
-            SizedBox(
-              width: 120,
-              child: NotebookCoverTile.create(onTap: () => tapped = true),
-            ),
-          ],
+        const Column(
+          children: <Widget>[NotebookCoverTile.mini(icon: NotebookIcon.heart)],
         ),
       ),
     );
@@ -119,8 +112,6 @@ void main() {
       const Size(44, 56),
     );
     expect(icon(FontAwesomeIcons.solidHeart), findsOneWidget);
-    await tester.tap(find.text('新建日记本'));
-    expect(tapped, isTrue);
   });
 
   testWidgets('dark theme renders the tile', (tester) async {

@@ -7107,17 +7107,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookSubCreate => 'New sub-notebook';
 
   @override
-  String notebookSubCountSemantics(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Contains $count sub-notebooks',
-      one: 'Contains 1 sub-notebook',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String notebookNestGoUp(String name) {
     return 'Go to \"$name\"';
   }
@@ -7180,9 +7169,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookUnfiled => 'Not in a notebook';
-
-  @override
-  String get notebookSectionPinned => 'Pinned';
 
   @override
   String get notebookSectionMine => 'My notebooks';
@@ -18964,4 +18950,21 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get notebookDeckCurrent => 'Current';
+
+  @override
+  String notebookDeckShowChildren(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count sub-notebooks',
+      one: 'Show 1 sub-notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookDeckHideChildren => 'Hide sub-notebooks';
 }

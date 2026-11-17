@@ -434,6 +434,8 @@ class DiariesListSection extends StatelessWidget {
         actionIconColor: swipeActionIconColor ?? colorScheme.onPrimaryContainer,
         borderRadius: resolved.cornerRadius,
         onSwiped: () => onArchiveDiary!(diaryId),
+        // 右滑留给日记页拉出日记本卡组（卡片只有左滑归档）。
+        releaseStartDrags: true,
         child: animatedBaseItem,
       );
     }

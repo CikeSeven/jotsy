@@ -24,6 +24,9 @@ import '../../widgets/launch_reveal.dart';
 /// 位移两者相加，连点时不会先跳回满不透明再淡出。退场方向在开始时锁定，
 /// 途中换方向只影响下一段入场。减少动画时协调器不调用本类的动画，只等数据
 /// 到齐直接替换。
+///
+/// 另有一份与切换无关的跟手横移 [pullShift]（右滑拉出日记本卡组时列表被
+/// 推开一点），叠加在每一项的位移上；它由宿主逐帧赋值，不参与错峰。
 class DiaryListSwitchMotion extends ChangeNotifier {
   DiaryListSwitchMotion({required TickerProvider vsync})
     : _exit = AnimationController(vsync: vsync, duration: exitDuration),
@@ -73,6 +76,18 @@ class DiaryListSwitchMotion extends ChangeNotifier {
   /// 第一张卡片照样第一个落位。
   int? _anchor;
 
+  double _pullShift = 0;
+
+  /// 所有项一起的跟手横移（逻辑像素，正值向右），静止为 0。
+  double get pullShift => _pullShift;
+  set pullShift(double value) {
+    if (value == _pullShift) {
+      return;
+    }
+    _pullShift = value;
+    notifyListeners();
+  }
+
   /// 是否处在静止的落定态（没有退场、入场已走完）。
   bool get isIdle =>
       !_exit.isAnimating &&
@@ -116,7 +131,7 @@ class DiaryListSwitchMotion extends ChangeNotifier {
     final exit = _exitDirection == 0
         ? Offset(0, sinkDistance * exited)
         : Offset(-_exitDirection * slideDistance * exited, 0);
-    return enter + exit;
+    return enter + exit + Offset(_pullShift, 0);
   }
 
   /// 退场：所有项朝 [direction] 的反方向离开并淡出，完成时列表不可见。

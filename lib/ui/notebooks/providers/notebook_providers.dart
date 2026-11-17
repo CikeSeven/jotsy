@@ -156,7 +156,7 @@ final notebookContentsCollapsedProvider =
       (String notebookId) => NotebookCollapsedIdsNotifier(),
     );
 
-/// 一组“收起了的”id（管理页的本子、目录页的章节共用）。
+/// 一组“收起了的”id（管理页的本子、目录页的章节共用；卡组借它记展开了的项）。
 class NotebookCollapsedIdsNotifier extends Notifier<Set<String>> {
   @override
   Set<String> build() => const <String>{};
@@ -180,6 +180,16 @@ class NotebookCollapsedIdsNotifier extends Notifier<Set<String>> {
     if (next.length != state.length) state = Set<String>.unmodifiable(next);
   }
 }
+
+/// 首页日记本卡组里展开了的项：有子本的卡片按“分组前缀:本子 id”记（见
+/// `buildNotebookDeckEntries`），“已合上”那一叠记分组前缀本身。
+///
+/// 只在内存里：本次运行期间再打开卡组仍保持，重启应用后全部收起，不加
+/// 设置键。
+final notebookDeckExpandedProvider =
+    NotifierProvider<NotebookCollapsedIdsNotifier, Set<String>>(
+      NotebookCollapsedIdsNotifier.new,
+    );
 
 /// 首页日记本头部展开了全部子本的日记本（业务 id），见 `NotebookChildrenGrid`。
 ///

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/directional_drag_recognizer.dart';
 import 'diary_swipe_action_background.dart';
 import 'swipe_action_spec.dart';
 
@@ -41,6 +42,8 @@ export 'swipe_action_spec.dart';
 /// 起手竞争照旧：横向超过触摸溢出距离即由卡片接住，不另加大或要求更陡的
 /// 角度——日记页在首页的左右翻页 PageView 里，卡片晚接手，横向手势就会被
 /// PageView 接走变成切换 Tab，并不能让给列表的纵向滚动。
+/// [releaseStartDrags] 为 true 且没有行首动作时，朝行首动作方向（LTR 右滑）
+/// 的拖动卡片不接，留给外层（首页日记列表的右滑拉出日记本卡组）。
 ///
 /// 状态：idle（可拖动；松手后回弹也在这一态，可以再次按住接着拖）→
 /// leaving（越过阈值松手，卡片朝生效一侧滑出，不再响应手势）→ collapsing
@@ -57,6 +60,7 @@ class DiarySwipeActionItem extends StatefulWidget {
     required this.borderRadius,
     required this.onSwiped,
     this.startAction,
+    this.releaseStartDrags = false,
     required this.child,
   });
 
@@ -91,6 +95,10 @@ class DiarySwipeActionItem extends StatefulWidget {
 
   /// 行首动作（LTR 右滑），为 null 时往这个方向拖不响应。
   final SwipeActionSpec? startAction;
+
+  /// 没有 [startAction] 时，朝行首动作方向起手的拖动不接手、让给外层；
+  /// 默认 false（卡片照旧接住，停在原位）。
+  final bool releaseStartDrags;
   final Widget child;
 
   @override
@@ -423,15 +431,39 @@ class _DiarySwipeActionItemState extends State<DiarySwipeActionItem>
         ],
       );
     }
-    final interactive = _interactive;
-    return GestureDetector(
+    final gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
+    return RawGestureDetector(
       behavior: HitTestBehavior.opaque,
-      onHorizontalDragDown: interactive ? _handleDragDown : null,
-      onHorizontalDragStart: interactive ? _handleDragStart : null,
-      onHorizontalDragUpdate: interactive ? _handleDragUpdate : null,
-      onHorizontalDragEnd: interactive ? _handleDragEnd : null,
-      onHorizontalDragCancel: interactive ? _handleDragCancel : null,
+      gestures: <Type, GestureRecognizerFactory>{
+        if (_interactive)
+          DirectionalHorizontalDragGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<
+                DirectionalHorizontalDragGestureRecognizer
+              >(
+                () => DirectionalHorizontalDragGestureRecognizer(
+                  debugOwner: this,
+                  acceptsDirection: _acceptsDirection,
+                ),
+                (DirectionalHorizontalDragGestureRecognizer instance) {
+                  instance
+                    ..acceptsDirection = _acceptsDirection
+                    ..gestureSettings = gestureSettings
+                    ..onDown = _handleDragDown
+                    ..onStart = _handleDragStart
+                    ..onUpdate = _handleDragUpdate
+                    ..onEnd = _handleDragEnd
+                    ..onCancel = _handleDragCancel;
+                },
+              ),
+      },
       child: content,
     );
   }
+
+  /// 起手方向是否由卡片接住：只有开了 [DiarySwipeActionItem.releaseStartDrags]
+  /// 且没有行首动作时，朝行首动作方向（与 [_actionSign] 相反）的拖动不接。
+  bool _acceptsDirection(double sign) =>
+      !(widget.releaseStartDrags &&
+          widget.startAction == null &&
+          sign == -_actionSign);
 }

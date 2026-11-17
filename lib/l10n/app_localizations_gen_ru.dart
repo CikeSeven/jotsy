@@ -7291,19 +7291,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notebookSubCreate => 'Создать вложенный блокнот';
 
   @override
-  String notebookSubCountSemantics(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Содержит $count вложенного блокнота',
-      many: 'Содержит $count вложенных блокнотов',
-      few: 'Содержит $count вложенных блокнота',
-      one: 'Содержит $count вложенный блокнот',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String notebookNestGoUp(String name) {
     return 'Перейти в «$name»';
   }
@@ -7372,9 +7359,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookUnfiled => 'Без блокнота';
-
-  @override
-  String get notebookSectionPinned => 'Закреплённые';
 
   @override
   String get notebookSectionMine => 'Мои блокноты';
@@ -19666,4 +19650,23 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get notebookDeckCurrent => 'Текущий';
+
+  @override
+  String notebookDeckShowChildren(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Показать $count вложенного блокнота',
+      many: 'Показать $count вложенных блокнотов',
+      few: 'Показать $count вложенных блокнота',
+      one: 'Показать $count вложенный блокнот',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookDeckHideChildren => 'Скрыть вложенные блокноты';
 }

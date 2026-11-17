@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
-/// 书架“全部日记”下面的“未收录”：列出没有收进任何日记本的日记，切换胶囊
+/// 卡组“全部日记”下面的“未收录”：列出没有收进任何日记本的日记，切换胶囊
 /// 随之显示“未收录”，返回回到全部日记；两行行尾都有篇数。
 void main() {
   Future<DiaryDraftsHarness> pumpHome(WidgetTester tester) async {
@@ -37,9 +37,9 @@ void main() {
   ).read(homeNotebookScopeProvider);
 
   Finder inShelf(Finder finder) =>
-      find.descendant(of: find.byType(NotebookShelf), matching: finder);
+      find.descendant(of: find.byType(NotebookDeck), matching: finder);
 
-  testWidgets('the shelf offers unfiled entries right below all entries', (
+  testWidgets('the deck offers unfiled entries right below all entries', (
     tester,
   ) async {
     final h = await pumpHome(tester);
@@ -51,12 +51,12 @@ void main() {
     expect(unfiled.dy, greaterThan(all.dy));
     expect(
       unfiled.dy,
-      lessThan(tester.getTopLeft(inShelf(find.text('我的日记本'))).dy),
+      lessThan(tester.getTopLeft(inShelf(find.text('旅行'))).dy),
     );
     Finder rowCount(String row, String count) => find.descendant(
       of: find.ancestor(
         of: inShelf(find.text(row)),
-        matching: find.byType(ListTile),
+        matching: find.byType(NotebookDeckCard),
       ),
       matching: find.text(count),
     );
@@ -85,7 +85,7 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets('back leaves unfiled for all entries, and the shelf marks it', (
+  testWidgets('back leaves unfiled for all entries, and the deck marks it', (
     tester,
   ) async {
     final h = await pumpHome(tester);
@@ -94,23 +94,17 @@ void main() {
     await tester.tap(inShelf(find.text('未收录')));
     await h.settleAll();
 
-    // 再打开书架时高亮的是“未收录”。
+    // 再打开卡组时标为当前的是“未收录”。
     await tester.tap(find.byType(NotebookSwitcherChip));
     await h.settleAll();
-    final unfiledTile = tester.widget<ListTile>(
+    NotebookDeckCard card(String name) => tester.widget<NotebookDeckCard>(
       find.ancestor(
-        of: inShelf(find.text('未收录')),
-        matching: find.byType(ListTile),
+        of: inShelf(find.text(name)),
+        matching: find.byType(NotebookDeckCard),
       ),
     );
-    final allTile = tester.widget<ListTile>(
-      find.ancestor(
-        of: inShelf(find.text('全部日记')),
-        matching: find.byType(ListTile),
-      ),
-    );
-    expect(unfiledTile.selected, isTrue);
-    expect(allTile.selected, isFalse);
+    expect(card('未收录').current, isTrue);
+    expect(card('全部日记').current, isFalse);
     await tester.tapAt(const Offset(5, 5));
     await h.settleAll();
 

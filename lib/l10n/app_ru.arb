@@ -9070,11 +9070,11 @@
   },
   "notebookTitle": "Блокноты",
   "@notebookTitle": {
-    "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
+    "description": "Title of the notebooks feature: notebook deck, management page and settings entry."
   },
   "notebookNew": "Новый блокнот",
   "@notebookNew": {
-    "description": "Create a notebook: editor title, buttons and the shelf's new tile."
+    "description": "Create a notebook: editor title, buttons and the notebook deck's new button."
   },
   "notebookEditTitle": "Редактирование блокнота",
   "@notebookEditTitle": {
@@ -9082,7 +9082,7 @@
   },
   "notebookManage": "Управление",
   "@notebookManage": {
-    "description": "Shelf sheet header button that opens the notebook management page."
+    "description": "Notebook deck header button that opens the notebook management page."
   },
   "notebookSubSectionTitle": "Вложенные блокноты",
   "@notebookSubSectionTitle": {
@@ -9125,15 +9125,6 @@
   "notebookSubCreate": "Создать вложенный блокнот",
   "@notebookSubCreate": {
     "description": "Notebook actions sheet item that creates a sub-notebook inside this one."
-  },
-  "notebookSubCountSemantics": "{count, plural, one{Содержит {count} вложенный блокнот} few{Содержит {count} вложенных блокнота} many{Содержит {count} вложенных блокнотов} other{Содержит {count} вложенного блокнота}}",
-  "@notebookSubCountSemantics": {
-    "description": "Screen reader text for a shelf cover that has sub-notebooks.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "notebookNestGoUp": "Перейти в «{name}»",
   "@notebookNestGoUp": {
@@ -9214,15 +9205,11 @@
   },
   "notebookAllDiaries": "Все записи",
   "@notebookAllDiaries": {
-    "description": "Shelf sheet row that returns to all entries."
+    "description": "Notebook deck card that returns to all entries."
   },
   "notebookUnfiled": "Без блокнота",
   "@notebookUnfiled": {
-    "description": "Shelf sheet row below All entries, and the home switcher chip: entries that are not in any notebook."
-  },
-  "notebookSectionPinned": "Закреплённые",
-  "@notebookSectionPinned": {
-    "description": "Shelf sheet group: pinned notebooks."
+    "description": "Notebook deck card below All entries, and the home switcher chip: entries that are not in any notebook."
   },
   "notebookSectionMine": "Мои блокноты",
   "@notebookSectionMine": {
@@ -9234,7 +9221,7 @@
   },
   "notebookSectionClosed": "Закрытые",
   "@notebookSectionClosed": {
-    "description": "Shelf and management group: closed notebooks (collapsed on the shelf by default)."
+    "description": "Notebook deck and management group: closed notebooks (folded into a pile in the deck by default)."
   },
   "notebookEntryCount": "{count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записи}}",
   "@notebookEntryCount": {
@@ -22239,5 +22226,22 @@
         "example": "3"
       }
     }
+  },
+  "notebookDeckCurrent": "Текущий",
+  "@notebookDeckCurrent": {
+    "description": "Screen reader suffix for the notebook deck card of the scope the home list is showing."
+  },
+  "notebookDeckShowChildren": "{count, plural, one{Показать {count} вложенный блокнот} few{Показать {count} вложенных блокнота} many{Показать {count} вложенных блокнотов} other{Показать {count} вложенного блокнота}}",
+  "@notebookDeckShowChildren": {
+    "description": "Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are hidden.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookDeckHideChildren": "Скрыть вложенные блокноты",
+  "@notebookDeckHideChildren": {
+    "description": "Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are shown."
   }
 }

@@ -6,12 +6,14 @@ import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/notebooks/pages/notebook_editor_page.dart';
 import 'package:node_diary/ui/notebooks/pages/notebooks_page.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
+import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
-/// 智能日记本在别处的入口：书架与管理页的篇数、转为普通日记本、搜索页
+/// 智能日记本在别处的入口：卡组与管理页的篇数、转为普通日记本、搜索页
 /// “存为智能日记本”。
 void main() {
   NotebookPayload pinnedRule() => NotebookPayload(
@@ -26,7 +28,7 @@ void main() {
     return id;
   }
 
-  testWidgets('the shelf and the management page show smart counts', (
+  testWidgets('the deck and the management page show smart counts', (
     tester,
   ) async {
     final h = await DiaryDraftsHarness.create(tester);
@@ -34,24 +36,19 @@ void main() {
     await pinnedDiary(h, '一');
     await pinnedDiary(h, '二');
     await h.diary('三');
-    await h.pump(
-      Scaffold(
-        body: Builder(
-          builder: (BuildContext context) => TextButton(
-            onPressed: () => showNotebookShelfSheet(context),
-            child: const Text('open'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('open'));
+    await h.pump(const DiariesPage());
     await h.settleAll();
-    await tester.scrollUntilVisible(
-      find.text('置顶的'),
-      200,
-      scrollable: find.byType(Scrollable).last,
+    await tester.tap(find.byType(NotebookSwitcherChip));
+    await h.settleAll();
+    expect(deckCard('置顶的'), findsOneWidget);
+    // 全部日记与未收录各 3 篇，只有智能本是 2 篇。
+    expect(
+      find.descendant(
+        of: find.byType(NotebookDeck),
+        matching: find.text('2 篇'),
+      ),
+      findsOneWidget,
     );
-    expect(find.text('2 篇'), findsOneWidget);
     await h.unmount();
 
     await h.pump(const NotebooksPage());

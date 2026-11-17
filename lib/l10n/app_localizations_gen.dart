@@ -11616,13 +11616,13 @@ abstract class AppLocalizations {
   /// **'Templates can only be applied to a blank entry'**
   String get diaryTemplateNeedsBlankEntry;
 
-  /// Title of the notebooks feature: shelf sheet, management page and settings entry.
+  /// Title of the notebooks feature: notebook deck, management page and settings entry.
   ///
   /// In en, this message translates to:
   /// **'Notebooks'**
   String get notebookTitle;
 
-  /// Create a notebook: editor title, buttons and the shelf's new tile.
+  /// Create a notebook: editor title, buttons and the notebook deck's new button.
   ///
   /// In en, this message translates to:
   /// **'New notebook'**
@@ -11634,7 +11634,7 @@ abstract class AppLocalizations {
   /// **'Edit notebook'**
   String get notebookEditTitle;
 
-  /// Shelf sheet header button that opens the notebook management page.
+  /// Notebook deck header button that opens the notebook management page.
   ///
   /// In en, this message translates to:
   /// **'Manage'**
@@ -11687,12 +11687,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New sub-notebook'**
   String get notebookSubCreate;
-
-  /// Screen reader text for a shelf cover that has sub-notebooks.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{Contains 1 sub-notebook} other{Contains {count} sub-notebooks}}'**
-  String notebookSubCountSemantics(int count);
 
   /// Screen reader text and tooltip of a parent notebook in the header card breadcrumb.
   ///
@@ -11772,23 +11766,17 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Its sub-notebook moves up a level and isn\'t deleted} other{Its {count} sub-notebooks move up a level and aren\'t deleted}}'**
   String notebookNestDeleteChildrenHint(int count);
 
-  /// Shelf sheet row that returns to all entries.
+  /// Notebook deck card that returns to all entries.
   ///
   /// In en, this message translates to:
   /// **'All entries'**
   String get notebookAllDiaries;
 
-  /// Shelf sheet row below All entries, and the home switcher chip: entries that are not in any notebook.
+  /// Notebook deck card below All entries, and the home switcher chip: entries that are not in any notebook.
   ///
   /// In en, this message translates to:
   /// **'Not in a notebook'**
   String get notebookUnfiled;
-
-  /// Shelf sheet group: pinned notebooks.
-  ///
-  /// In en, this message translates to:
-  /// **'Pinned'**
-  String get notebookSectionPinned;
 
   /// Shelf and management group: regular notebooks.
   ///
@@ -11802,7 +11790,7 @@ abstract class AppLocalizations {
   /// **'Smart notebooks'**
   String get notebookSectionSmart;
 
-  /// Shelf and management group: closed notebooks (collapsed on the shelf by default).
+  /// Notebook deck and management group: closed notebooks (folded into a pile in the deck by default).
   ///
   /// In en, this message translates to:
   /// **'Closed'**
@@ -29763,6 +29751,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Replaced 1 match} other{Replaced {count} matches}}'**
   String diaryReplaceAllDone(int count);
+
+  /// Screen reader suffix for the notebook deck card of the scope the home list is showing.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get notebookDeckCurrent;
+
+  /// Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Show 1 sub-notebook} other{Show {count} sub-notebooks}}'**
+  String notebookDeckShowChildren(int count);
+
+  /// Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide sub-notebooks'**
+  String get notebookDeckHideChildren;
 }
 
 class _AppLocalizationsDelegate

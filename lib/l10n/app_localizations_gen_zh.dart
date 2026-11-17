@@ -6388,11 +6388,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookSubCreate => '新建子日记本';
 
   @override
-  String notebookSubCountSemantics(int count) {
-    return '含 $count 本子日记本';
-  }
-
-  @override
   String notebookNestGoUp(String name) {
     return '回到「$name」';
   }
@@ -6447,9 +6442,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookUnfiled => '未收录';
-
-  @override
-  String get notebookSectionPinned => '置顶';
 
   @override
   String get notebookSectionMine => '我的日记本';
@@ -16601,4 +16593,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String diaryReplaceAllDone(int count) {
     return '已替换 $count 处';
   }
+
+  @override
+  String get notebookDeckCurrent => '当前';
+
+  @override
+  String notebookDeckShowChildren(int count) {
+    return '展开 $count 本子日记本';
+  }
+
+  @override
+  String get notebookDeckHideChildren => '收起子日记本';
 }

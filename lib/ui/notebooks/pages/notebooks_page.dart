@@ -28,7 +28,7 @@ import '../../widgets/form_width.dart';
 import 'package:node_diary/ui/app_surface/models/app_surface_enums.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 
-/// 日记本管理页（书架面板“管理”与设置首页入口）。
+/// 日记本管理页（日记本卡组“管理”与设置首页入口）。
 ///
 /// 三组：我的日记本（含置顶）、智能日记本、已合上；每组按树序列出顶层本子
 /// 与跟在它下面的子本（缩进随层级）。按住手柄（或长按整行）拖动只在同一
@@ -36,7 +36,7 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// [notebookSiblingOrderAfterDrag]），写入时保持其他本子的相对顺序
 /// （[notebookOrderAfterReorder]）。行尾“更多”
 /// 打开操作面板，编辑、置顶、合并、合上与删除都经 [runNotebookAction]，与
-/// 书架面板同一套流程；删除时这一行先收起再删，撤销后重新展开。
+/// 日记本卡组同一套流程；删除时这一行先收起再删，撤销后重新展开。
 ///
 /// 收起子本：有子本的行尾可收起 / 展开，顶栏“全部收起 / 全部展开”；收起
 /// 状态在 [notebookTreeCollapsedProvider]（本次运行的内存）。拖动一本有

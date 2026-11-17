@@ -7,7 +7,7 @@ import 'notebook_child_tile.dart';
 import 'notebook_cover_tile.dart';
 
 // 头部子本网格（`NotebookChildrenGrid`）折叠后的最后一格：收起时为“还有 N 本”，
-// 展开时为“收起”。两格都是动作而不是一本日记本，所以与书架的新建格同一
+// 展开时为“收起”。两格都是动作而不是一本日记本，所以用“新建”格的
 // 语言：`outlineVariant` 描边、无底色、`primary` 文字；高度随同一行的子本格。
 
 /// 收起时的“还有 N 本”：左边叠放前几本没列出的子本的小封面，右边两行

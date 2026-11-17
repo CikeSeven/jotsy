@@ -5,14 +5,14 @@ import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
-/// 首页原地切换到日记本：标签栏的切换胶囊、头部卡片、搜索提示、返回、
+/// 首页原地切换到日记本（经日记本卡组）：标签栏的切换胶囊、头部卡片、
+/// 搜索提示、返回、
 /// 本子排序、日记本被删除后的回退，以及上锁日记本的验证。
 void main() {
   Future<DiaryDraftsHarness> pumpHome(
@@ -34,18 +34,6 @@ void main() {
 
   ProviderContainer containerOf(WidgetTester tester) =>
       ProviderScope.containerOf(tester.element(find.byType(DiariesPage)));
-
-  Future<void> openShelfAndPick(DiaryDraftsHarness h, String name) async {
-    await h.tester.tap(find.byType(NotebookSwitcherChip));
-    await h.settleAll();
-    await h.tester.tap(
-      find.descendant(
-        of: find.byType(NotebookShelf),
-        matching: find.text(name),
-      ),
-    );
-    await h.settleAll();
-  }
 
   Finder inHeader(Finder finder) =>
       find.descendant(of: find.byType(NotebookHeaderCard), matching: finder);
@@ -92,7 +80,7 @@ void main() {
     expect(find.text('上班路上'), findsOneWidget);
     expect(find.byType(NotebookHeaderCard), findsNothing);
 
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
 
     expect(find.text('在京都'), findsOneWidget);
     expect(find.text('上班路上'), findsNothing);
@@ -128,7 +116,7 @@ void main() {
         await h.diary('上班路上');
       },
     );
-    await openShelfAndPick(h, '读书');
+    await pickFromDeck(h, '读书');
     expect(find.text('这本还空着'), findsOneWidget);
     expect(find.text('上班路上'), findsNothing);
     await h.unmount();
@@ -143,7 +131,7 @@ void main() {
         await h.diary('在京都', notebookIds: <String>[travel]);
       },
     );
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     // 更多 → 排序方式：在日记本里换成本子的排序（普通本有书序）。
     await tester.tap(find.byTooltip(h.l10n.autoT0125));
     await h.settleAll();
@@ -176,7 +164,7 @@ void main() {
         await h.diary('上班路上');
       },
     );
-    await openShelfAndPick(h, '旅行');
+    await pickFromDeck(h, '旅行');
     expect(find.byType(NotebookHeaderCard), findsOneWidget);
 
     await tester.runAsync(() => h.database.deleteNotebook(travel));
@@ -206,12 +194,12 @@ void main() {
       // 私密日记不在全部日记里。
       expect(find.text('秘密'), findsNothing);
 
-      await openShelfAndPick(h, '保险箱');
+      await pickFromDeck(h, '保险箱');
       expect(auth.reasons, <String>['解锁「保险箱」']);
       expect(containerOf(tester).read(homeNotebookScopeProvider).isAll, isTrue);
       expect(find.byType(NotebookHeaderCard), findsNothing);
 
-      await openShelfAndPick(h, '保险箱');
+      await pickFromDeck(h, '保险箱');
       expect(auth.reasons, hasLength(2));
       expect(find.byType(NotebookHeaderCard), findsOneWidget);
       expect(find.text('秘密'), findsOneWidget);
@@ -224,7 +212,7 @@ void main() {
     ) async {
       final auth = FakeDeviceAuth(supported: false);
       final h = await pumpHome(tester, seed: seedVault, auth: auth);
-      await openShelfAndPick(h, '保险箱');
+      await pickFromDeck(h, '保险箱');
       expect(find.text('无法打开上锁的日记本'), findsOneWidget);
       expect(auth.reasons, isEmpty);
       // 只有“知道了”：不再提供绕过验证的“去设置”。

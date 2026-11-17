@@ -11,7 +11,7 @@ import '../widgets/notebook_cover_tile.dart';
 import '../widgets/notebook_foldable_rows.dart';
 import '../widgets/notebook_tree_toggle.dart';
 
-/// 对一个日记本可做的操作（书架长按菜单与管理页“更多”面板共用）。
+/// 对一个日记本可做的操作（卡组长按菜单与管理页“更多”面板共用）。
 ///
 /// [createChild]（新建子日记本）与 [move]（移动到…：换上级或放回书架）只在
 /// 管理页的操作面板里出现。
@@ -28,7 +28,7 @@ enum NotebookAction {
   delete,
 }
 
-/// 书架长按菜单的四项：编辑 / 置顶或取消置顶 / 合上或重新打开 / 删除。
+/// 卡组长按菜单的四项：编辑 / 置顶或取消置顶 / 合上或重新打开 / 删除。
 List<NotebookAction> notebookQuickActions(NotebookView notebook) =>
     <NotebookAction>[
       NotebookAction.edit,

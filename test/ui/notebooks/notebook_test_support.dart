@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
 import '../../support/diary_drafts_harness.dart';
 import '../../support/expressive_test_theme.dart';
@@ -82,6 +84,21 @@ Future<bool> systemBackLeavesApp(WidgetTester tester) async {
     messenger.setMockMethodCallHandler(SystemChannels.platform, null);
   }
   return left;
+}
+
+/// 卡组里名为 [name] 的那张卡片（顶条上的名称）。
+Finder deckCard(String name) =>
+    find.descendant(of: find.byType(NotebookDeck), matching: find.text(name));
+
+/// 点切换胶囊打开日记本卡组（已开着时不再点），再点名为 [name] 的卡片切换
+/// 过去，等动画与数据都落定。
+Future<void> pickFromDeck(DiaryDraftsHarness h, String name) async {
+  if (find.byType(NotebookDeck).evaluate().isEmpty) {
+    await h.tester.tap(find.byType(NotebookSwitcherChip).first);
+    await h.settleAll();
+  }
+  await h.tester.tap(deckCard(name));
+  await h.settleAll();
 }
 
 /// 不需要数据库的组件：套上中文本地化与测试主题。

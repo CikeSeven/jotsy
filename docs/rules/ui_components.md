@@ -28,3 +28,8 @@
 
 - 必须：可排序列表的手柄一律用 `ReorderHandle`，禁止在其文件外直接写 `ReorderableDragStartListener`（长按拖动的 Delayed 版除外）。
 - 必须：`proxyDecorator` 用共用的两个装饰器之一，自写的须包 `ReorderHandleLift`（以上两条 `reorder_handle_source_test.dart` 兜底）。
+
+## 单向横向拖动
+
+- 必须：嵌在首页翻页 PageView 里、只要一个方向的横向拖动经 `DirectionalHorizontalDragGestureRecognizer`，另一方向留给外层；禁止用 `onHorizontalDrag*` 把两个方向都接下。
+- 必须：日记列表的卡片左滑（`DiarySwipeActionItem`）没有行首动作时开 `releaseStartDrags`，右滑留给日记本卡组。

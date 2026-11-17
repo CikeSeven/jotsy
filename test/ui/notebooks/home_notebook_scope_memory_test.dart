@@ -7,7 +7,7 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/notebooks/models/home_notebook_scope_memory.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
-import 'package:node_diary/ui/notebooks/sections/notebook_shelf_sheet.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher_chip.dart';
 
@@ -99,7 +99,7 @@ void main() {
     expect(h.settings.homeLastScopeRaw, isNull);
 
     Finder inShelf(Finder finder) =>
-        find.descendant(of: find.byType(NotebookShelf), matching: finder);
+        find.descendant(of: find.byType(NotebookDeck), matching: finder);
 
     await tester.tap(find.byType(NotebookSwitcherChip));
     await h.settleAll();

@@ -8,7 +8,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/empty_hint.dart';
 
-/// 还没有日记本时的空态：一句说明 + “新建日记本”。书架面板与管理页共用。
+/// 还没有日记本时的空态：一句说明 + “新建日记本”。管理页用。
 class NotebooksEmptyState extends StatelessWidget {
   const NotebooksEmptyState({super.key, required this.onCreate});
 

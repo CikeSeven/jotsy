@@ -10,7 +10,7 @@ import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_parts.dart';
 
 /// 首页标签栏最前面的日记本切换胶囊：“全部日记”“未收录”或当前日记本的
-/// 名称，点按打开书架面板。
+/// 名称，点按展开日记本卡组。
 ///
 /// 高度由标签栏给定（与标签胶囊同高）；宽度取内容固有宽度，展开成多行时
 /// 标签栏按 [measureWidth] 预留同样的宽度。全部日记用 `secondaryContainer`，
@@ -24,7 +24,7 @@ class NotebookSwitcherChip extends StatelessWidget {
     this.unfiled = false,
   });
 
-  /// “未收录”的图标（书架那一行、胶囊与搜索页共用）。
+  /// “未收录”的图标（卡组那一张、胶囊与搜索页共用）。
   static const FaIconData unfiledIcon = FontAwesomeIcons.inbox;
 
   /// 当前日记本；null 为全部日记或未收录（[unfiled]）。

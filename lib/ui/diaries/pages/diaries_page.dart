@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderSliver, ScrollDirection;
+import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,11 +47,15 @@ import '../../notebooks/controllers/notebook_book_export_flow.dart';
 import '../../notebooks/pages/notebook_insights_page.dart';
 import '../../notebooks/sections/notebook_action_sheets.dart';
 import '../../notebooks/sections/notebook_picker_sheet.dart';
-import '../../notebooks/sections/notebook_shelf_sheet.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../notebooks/widgets/notebook_chapter_divider.dart';
 import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
+import '../../notebooks/controllers/notebook_switcher_controller.dart';
+import '../../notebooks/viewmodels/notebook_deck_entries.dart';
+import '../../notebooks/widgets/notebook_switcher/notebook_switcher_gesture.dart';
+import '../../notebooks/widgets/notebook_switcher/notebook_switcher_overlay.dart';
+import '../../app_surface/widgets/on_glass.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/action_loading_overlay.dart';
@@ -98,6 +104,7 @@ part '../controllers/diaries_page_feedback.dart';
 part '../controllers/diary_list_transition_coordinator.dart';
 part '../controllers/diaries_page_controller.dart';
 part '../controllers/diaries_notebook_scope_controller.dart';
+part '../controllers/diaries_notebook_switcher_host.dart';
 part '../controllers/diaries_notebook_membership_controller.dart';
 part '../controllers/diaries_tag_batch_controller.dart';
 part '../controllers/diaries_reading_selection_controller.dart';
@@ -286,6 +293,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   late final DiariesReadingSelectionController _readingSelection;
   late final DiariesSelectAllController _selectAll;
 
+  // ==================== 日记本卡组 ====================
+  /// 右滑 / 点切换胶囊拉出的日记本卡组（见 [NotebookSwitcherController]）。
+  late final NotebookSwitcherController _switcher;
+
+  /// 卡组是否在屏上：看得见时系统返回先收起它（PopScope），拉动提示暂停。
+  bool _switcherVisible = false;
+
+  /// 列表栏（卡组的手势层与左缘）与切换胶囊（卡组的起点 / 落点）。
+  final GlobalKey _switcherPaneKey = GlobalKey(debugLabel: 'diaries_pane');
+  final GlobalKey _switcherChipKey = GlobalKey(debugLabel: 'notebook_chip');
+
   bool get _isSelectionMode =>
       _selectedDiaryIds.isNotEmpty || _selectionKeptOpen;
 
@@ -324,6 +342,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
     _readingSelection = DiariesReadingSelectionController(this);
     _selectAll = DiariesSelectAllController(this, feedback: _feedback);
+    final switcherHost = DiariesNotebookSwitcherHost(this);
+    _switcher = NotebookSwitcherController(vsync: this, host: switcherHost);
+    switcherHost.attach(_switcher);
     _tagFilterExpansionController = AnimationController(
       vsync: this,
       duration: _tagFilterSnapDuration,
@@ -353,8 +374,37 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
   }
 
+  /// 所在 Tab 的 TickerMode：只旁听、不建立依赖——切 Tab 与首页的快照保持
+  /// 都会翻转它，建立依赖会让整页跟着重建。
+  ValueListenable<TickerModeData>? _tickerMode;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tickerMode = TickerMode.getValuesNotifier(context);
+    if (!identical(tickerMode, _tickerMode)) {
+      _tickerMode?.removeListener(_handleTickerModeChanged);
+      _tickerMode = tickerMode..addListener(_handleTickerModeChanged);
+    }
+  }
+
+  /// 切到别的 Tab 时卡组立即收掉（浮层画在首页路由上，不随 Tab 隐藏）；
+  /// 只是被推入的页面盖住（卡组里点了新建、管理，或上锁本的验证页）时
+  /// 留着，回来接着用。
+  void _handleTickerModeChanged() {
+    final enabled = _tickerMode?.value.enabled ?? true;
+    if (_switcher.isVisible &&
+        !enabled &&
+        mounted &&
+        !Navigator.of(context).canPop()) {
+      _switcher.dismissImmediately();
+    }
+  }
+
   @override
   void dispose() {
+    _tickerMode?.removeListener(_handleTickerModeChanged);
+    _switcher.dispose();
     widget.onCreateActionChanged?.call(null);
     widget.onSearchActionChanged?.call(null);
     _transitionCoordinator.dispose();
@@ -419,7 +469,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
     ref.listen<bool>(
       appFeaturesProvider.select((features) => features.notebooks),
-      (_, bool enabled) => _scopeController.handleFeatureToggled(enabled),
+      (_, bool enabled) {
+        if (!enabled) _switcher.dismissImmediately();
+        _scopeController.handleFeatureToggled(enabled);
+      },
     );
     ref.listen<HomeNotebookScopeResolution>(
       homeNotebookScopeResolutionProvider,
@@ -548,7 +601,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               child: TagFilterPullHintSync(
                 controller: _pullHint,
                 settings: settingsService,
-                enabled: !_isSelectionMode && !_tagFiltersExpanded,
+                enabled:
+                    !_isSelectionMode &&
+                    !_tagFiltersExpanded &&
+                    !_switcherVisible,
                 child: DiaryTagFilterBar(
                   tags: visibleTagFilters,
                   expansionProgress: _tagFilterExpansionController,
@@ -568,10 +624,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   onPullHintTap: () => _animateTagFiltersTo(true),
                   onHiddenTagsChanged: _pullHint.reportHiddenTags,
                   leading: notebooksEnabled
-                      ? NotebookSwitcherChip(
-                          notebook: currentNotebook,
-                          unfiled: scopeResolution.isUnfiled,
-                          onTap: () => unawaited(_scopeController.openShelf()),
+                      ? _notebookChip(
+                          NotebookSwitcherChip(
+                            notebook: currentNotebook,
+                            unfiled: scopeResolution.isUnfiled,
+                            onTap: _scopeController.openSwitcher,
+                          ),
                         )
                       : null,
                   leadingWidth: notebooksEnabled
@@ -1042,89 +1100,166 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         return Scaffold(
           backgroundColor: pageBgColor,
           resizeToAvoidBottomInset: false,
-          body: Stack(
-            children: [
-              // 返回键优先处理页面内部状态，再交给路由栈。范围里只有子本拦下
-              // 返回（回到上级）：全部日记、未收录与顶层本子都直接放行，应用
-              // 退到后台、留在这个范围里（#196），冷启动经记住的范围恢复。
-              PopScope(
-                canPop:
-                    !_isSelectionMode &&
-                    !_tagFiltersExpanded &&
-                    scopeResolution.notebook?.parentId == null &&
-                    ref.watch(aiChatReturnProvider) == null,
-                onPopInvokedWithResult: (didPop, result) {
-                  if (didPop) {
-                    return;
-                  }
-                  _handlePopBlocked();
-                },
-                child: Focus(
-                  focusNode: _keyboardFocusNode,
-                  autofocus: true,
-                  onKeyEvent: _readingSelection.handleKeyEvent,
-                  // 按日记页拿到的宽度排布（宽窗口里已扣掉左侧导航栏）：
-                  // 紧凑窗口与改版前一致；中等窗口内容列限宽居中；展开窗口
-                  // 为双栏，右栏阅读选中的一篇。左栏始终是 Row 的第一个
-                  // 孩子、外包同一种 SizedBox，跨过分界时列表不会被重新挂载
-                  // （滚动位置与顶栏状态保留），选中也留着，回到双栏时
-                  // 重新显示。
-                  child: LayoutBuilder(
-                    builder:
-                        (BuildContext context, BoxConstraints constraints) {
-                          final layout = DiariesPageLayout.resolve(
-                            windowClass: AppBreakpoints.of(context),
-                            width: constraints.maxWidth,
-                            waterfall: _layoutMode == DiaryLayoutMode.waterfall,
-                          );
-                          final twoPane = layout.twoPane;
-                          _twoPane = twoPane;
-                          // 列表可用宽度再扣掉左右安全区（竖屏手机为 0；双栏
-                          // 时右侧安全区归右栏）。
-                          final listWidth =
-                              layout.listWidth -
-                              viewPadding.left -
-                              (twoPane ? 0 : viewPadding.right);
-                          final readingId = twoPane ? _readingDiaryId : null;
-                          final readingItem = _readingItem(
-                            displayedItems,
-                            readingId,
-                          );
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              SizedBox(
-                                width: layout.listPaneWidth,
-                                child: listPane(
-                                  layout,
-                                  listWidth: listWidth,
-                                  readingId: readingId,
-                                ),
-                              ),
-                              if (twoPane)
-                                Expanded(
-                                  child: DiaryDetailPane(
-                                    diary: readingItem,
-                                    host: _readingSelection.host,
-                                    paging: readingItem == null
-                                        ? null
-                                        : _readingSelection.pagingFor(
-                                            context,
-                                            readingItem.diary.diaryId,
-                                          ),
+          // 日记本卡组画在首页路由之上（盖住底栏、新建按钮与侧边栏），之后
+          // 推入的页面（验证、编辑、管理）照常盖在它上面。
+          body: OverlayPortal(
+            controller: _switcher.portal,
+            overlayChildBuilder: (BuildContext context) =>
+                NotebookSwitcherOverlay(
+                  controller: _switcher,
+                  chipReplica: _buildChipReplica,
+                ),
+            child: Stack(
+              children: [
+                // 返回键优先处理页面内部状态，再交给路由栈。范围里只有子本拦下
+                // 返回（回到上级）：全部日记、未收录与顶层本子都直接放行，应用
+                // 退到后台、留在这个范围里（#196），冷启动经记住的范围恢复。
+                PopScope(
+                  canPop:
+                      !_switcherVisible &&
+                      !_isSelectionMode &&
+                      !_tagFiltersExpanded &&
+                      scopeResolution.notebook?.parentId == null &&
+                      ref.watch(aiChatReturnProvider) == null,
+                  onPopInvokedWithResult: (didPop, result) {
+                    if (didPop) {
+                      return;
+                    }
+                    _handlePopBlocked();
+                  },
+                  child: Focus(
+                    focusNode: _keyboardFocusNode,
+                    autofocus: true,
+                    onKeyEvent: _handleKeyEvent,
+                    // 按日记页拿到的宽度排布（宽窗口里已扣掉左侧导航栏）：
+                    // 紧凑窗口与改版前一致；中等窗口内容列限宽居中；展开窗口
+                    // 为双栏，右栏阅读选中的一篇。左栏始终是 Row 的第一个
+                    // 孩子、外包同一种 SizedBox，跨过分界时列表不会被重新挂载
+                    // （滚动位置与顶栏状态保留），选中也留着，回到双栏时
+                    // 重新显示。
+                    child: LayoutBuilder(
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                            final layout = DiariesPageLayout.resolve(
+                              windowClass: AppBreakpoints.of(context),
+                              width: constraints.maxWidth,
+                              waterfall:
+                                  _layoutMode == DiaryLayoutMode.waterfall,
+                            );
+                            final twoPane = layout.twoPane;
+                            _twoPane = twoPane;
+                            // 列表可用宽度再扣掉左右安全区（竖屏手机为 0；双栏
+                            // 时右侧安全区归右栏）。
+                            final listWidth =
+                                layout.listWidth -
+                                viewPadding.left -
+                                (twoPane ? 0 : viewPadding.right);
+                            final readingId = twoPane ? _readingDiaryId : null;
+                            final readingItem = _readingItem(
+                              displayedItems,
+                              readingId,
+                            );
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: layout.listPaneWidth,
+                                  // 列表栏上右滑拉出日记本卡组（右栏阅读区
+                                  // 不接）。
+                                  child: NotebookSwitcherGesture(
+                                    controller: _switcher,
+                                    enabled:
+                                        notebooksEnabled &&
+                                        !_isSelectionMode &&
+                                        !_tagFiltersExpanded,
+                                    onDragStart:
+                                        _pullHint.handleUserInteraction,
+                                    child: KeyedSubtree(
+                                      key: _switcherPaneKey,
+                                      child: listPane(
+                                        layout,
+                                        listWidth: listWidth,
+                                        readingId: readingId,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                            ],
-                          );
-                        },
+                                if (twoPane)
+                                  Expanded(
+                                    child: DiaryDetailPane(
+                                      diary: readingItem,
+                                      host: _readingSelection.host,
+                                      paging: readingItem == null
+                                          ? null
+                                          : _readingSelection.pagingFor(
+                                              context,
+                                              readingItem.diary.diaryId,
+                                            ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  /// 标签栏最前面的切换胶囊：卡组占着它的位置时不画（由卡组里的副本代替），
+  /// 卡组落回时弹一下（[NotebookSwitcherController.chipBounce]）。
+  Widget _notebookChip(Widget chip) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _switcher.chipHidden,
+      child: ScaleTransition(
+        scale: _switcher.chipBounce,
+        child: KeyedSubtree(key: _switcherChipKey, child: chip),
+      ),
+      builder: (BuildContext context, bool hidden, Widget? child) => Visibility(
+        visible: !hidden,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: child!,
+      ),
+    );
+  }
+
+  /// 卡组收进 / 从切换胶囊打开时盖在胶囊位置上的副本：与真实胶囊同一个
+  /// 组件、同一个范围；真实胶囊在玻璃上时副本也按玻璃上的样式画。
+  Widget _buildChipReplica(BuildContext context) {
+    return Consumer(
+      builder: (BuildContext context, WidgetRef ref, Widget? _) {
+        final resolution = ref.watch(homeNotebookScopeResolutionProvider);
+        Widget chip = NotebookSwitcherChip(
+          notebook: resolution.notebook,
+          unfiled: resolution.isUnfiled,
+          onTap: () {},
+        );
+        final chipContext = _switcherChipKey.currentContext;
+        if (chipContext != null &&
+            chipContext.getInheritedWidgetOfExactType<OnGlass>() != null) {
+          chip = OnGlass(child: chip);
+        }
+        return chip;
+      },
+    );
+  }
+
+  /// 日记页的按键：卡组开着时 Esc 先收起它，其余交给双栏阅读的方向键处理。
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (_switcherVisible &&
+        event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape) {
+      _switcher.close();
+      return KeyEventResult.handled;
+    }
+    return _readingSelection.handleKeyEvent(node, event);
   }
 
   /// 右栏要显示的那一篇：在当前显示的列表里按 [readingId] 找（找不到时为
@@ -1174,13 +1309,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
   }
 
-  /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → AI 卡片带过来的
-  /// 回到那段对话（`aiChatReturnProvider`）→ 子本里回到上级本子。顶层本子与
-  /// 未收录不拦返回，不在这里回到全部日记。
+  /// 返回被拦下时的顺序：收起日记本卡组 → 退出多选 → 收起展开的标签栏 →
+  /// AI 卡片带过来的回到那段对话（`aiChatReturnProvider`）→ 子本里回到上级
+  /// 本子。顶层本子与未收录不拦返回，不在这里回到全部日记。
   ///
   /// 日记页在 Home 里保活，切到别的 Tab 后它的 PopScope 仍会收到返回；那时
   /// 返回只用于切回日记页（Home 处理），后两步只在日记页可见时执行。
   void _handlePopBlocked() {
+    if (_switcher.isVisible) {
+      _switcher.close();
+      return;
+    }
     if (_isSelectionMode) {
       _controller.clearSelection();
       return;

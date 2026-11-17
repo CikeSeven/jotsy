@@ -1,22 +1,36 @@
 # 待办（清单、重复、提醒、日历与日记联动）
 
-> 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.35。
+> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.35。
 
-- 必须：待办独立于日记，存 Drift `todo_lists` / `todos` 两张表（schema v19，`app_database_todo_schema.dart`）：业务 id 为 `list_id` / `todo_id`（UUID v4），`list_id` 为 NULL 即收集箱（收集箱不是一行数据），截止日 `due_date` 存本地日期文本 `YYYY-MM-DD`、截止时刻另存 `due_minute`（一天中的分钟数，NULL 为全天），不存时间戳；步骤、提醒、重复与扩展字段是 JSON 文本列，模型与逐字段容错解码只在 `todo_rules.dart`（认不出的提醒 / 步骤跳过、认不出的重复按不重复推算，行里的原文不改写），重复日期推算只经纯函数 `TodoRecurrence`（`todo_recurrence.dart`，月底与 2 月 29 日顺延到月末，法定工作日直接读 tyme `LegalHoliday`）；禁止页面自行换算日期或解析 JSON 列。日记正文里的 `todo_list` 块与独立待办互不相干，禁止自动迁移或双向同步；只提供手动的“转为独立待办”（日记正文不改动）。
-- 必须：读写只经 `_AppDatabaseTodoQueries` / `_AppDatabaseTodoOps` / `_AppDatabaseTodoCompleteOps` / `_AppDatabaseTodoListOps` / `_AppDatabaseTodoBatchOps`：逐项修改每次只写一列（外加 `updated_at`），不整行写回；多选的批量操作（`completeTodos` / `setTodosDue` / `setTodosListId` / `setTodosPriority` / `deleteTodos`）各在一个事务里、每行复用单条方法的规则，值本来相同的行不写，撤销经 `undoTodoCompletion`（倒序逐条）/ `restoreTodoFields` / `restoreTodos`；批量改为全天时在库里去掉 `beforeDue` 提醒；清单进度只经 `watchTodoListProgress`（`TodoListProgress`）；排序 `sort_order` 为 REAL，拖动只把被拖的那一行改为两邻居的中点（`TodoSortOrder`），分不开时才整清单重新编号（重新编号不刷新 `updated_at`），禁止为待办另加同步顺序列表。完成重复待办只经 `completeTodo`：原行推到下一次（`TodoRecurrence.nextDueAfterCompletion`：按截止日时取“当前截止日与完成当天较晚者”之后的下一次，按完成日时从完成当天加一个间隔并把起点挪过去）、步骤重置、稍后提醒作废、`metadata.repeatDone` 加一，另插一条已完成副本（id 只经 `todoOccurrenceId(todoId, 这一次的日期)`，两台设备各自完成同一次只得一条）；次数用完或过了截止日期时只把原行标为完成。撤销只经 `undoTodoCompletion`。
-- 必须：删除都是硬删除并给可撤销提示（`todo_actions.dart` / `todo_list_actions.dart` 经 `showTrackedSnackBar`）：删清单连同其中的待办（含已完成）在同一事务里删掉，确认框写明条数；彻底删除日记在同一事务里清空 `todos.linked_diary_id`。备份：随完整备份导出（载荷键 `todoLists` / `todos`）、覆盖恢复，合并按业务 id（`BackupTodoMerge`，合并并覆盖时清单的拖动顺序保留本机的），所在清单不在载荷里的待办落回收集箱；日记包不带待办。局域网同步见 `lan_sync.md`（两个实体、整条记录后写者胜，悬空的清单 / 日记引用由规划器置空）。
-- 必须：待办 Tab 为 `HomeTab.todos`（固定在日记之后的第二格：日记、待办、日历、探索，见 `visibleHomeTabs`），受 `AppFeatures.todos` 控制（默认关闭，属于数据类开关、局域网同步只同步开启）；关闭时隐藏 Tab、设置首页“整理”组的“待办”行、日历上的待办、预览页的待办入口，并停掉全部提醒，数据保留。页面只装配（`todos_page.dart`，列表列经 `buildTodosPageList`），视图与分组只经纯函数 `buildTodoGroups`（今天为逾期 / 今天，显示已完成时底部加可折叠的“今天已完成”；计划按截止时刻分组；重要为高优先级；全部按清单分组；收集箱与清单底部可折叠“已完成”；已完成按完成日期分组），概览卡的数字只经 `todoTodaySummary` / `todoSmartViewCounts` / `watchTodoListProgress`；当前视图是页面临时状态，“打开时显示”存进设置。窄窗口（< 1024）切换视图只经页头标题“今天 ▾”弹出的 `showTodoViewSheet`（智能视图方块 + 清单进度行）；宽窗口左栏 `TodoSidebar`，可用宽度够放“左栏 + 360 列表 + 384 详情栏”时点开待办放进右侧 `TodoDetailPane`，否则弹底部面板。新建入口：窄窗口为首页 FAB（玻璃底栏为并排按钮，只在日记 / 待办 Tab，`HomeTab.hasCreateFab`），待办 Tab 上新建待办（`TodosPage` 经 `onCreateActionChanged` 注册）；宽窗口外壳（`HomeChromeScope.wideShellOf`）没有 FAB，新待办在页头；Ctrl / ⌘ + N 在待办 Tab 新建待办；列表末尾另有内联新建 `TodoInlineAddRow`（“已完成”视图没有）。快速新建只经 `showTodoQuickAddSheet`（回车即写库、面板留着接着记），与内联新建一样按视图预填清单 / 今天（“今天”与“计划”视图；计划只列有日期的待办，不预填会建了看不见）/ 高优先级。
-- 必须：待办页头的“更多”是弹出菜单 `TodosPageMenu`（`ExpressiveMenuButton`，用户要求由底部面板改来，不受 AGENTS.md §6 “约 4 项以内”的限制）：分隔线分三组——排序方式 ›（二级菜单，四种排序点了即生效、菜单保持打开，选中态由二级菜单页自己维护；“已完成”视图没有）、显示或隐藏已完成（清单视图）、清除已完成（有已完成时）｜编辑清单、删除清单（清单视图）｜管理清单；动作项点按先关菜单再执行。
-- 必须：待办相关页面只经 `todo_navigation.dart`（`openTodoDetail` / `openTodoSearch` / `openTodoListsManage` / `openTodoSettings`）打开；面板只经 `showTodoSheet`（`showAppModalBottomSheet` 之上统一按内容高度展开、减少动态效果时直接出现）。详情只有一份内容 `TodoDetailBody`：`openTodoDetail` 弹可拖动的底部面板 `showTodoDetailSheet`（日历、日记、搜索、通知点开与窄窗口待办页都经它），宽窗口待办页由页面放进 `TodoDetailPane`；禁止另建详情页。详情改一项写一项（字段面板经 `TodoFieldEditors`），标题与备注经 `TodoDebouncedWriter` 防抖写库、卸载（面板关闭、详情栏换一条）时立即写掉，存在期间登记为 `EditingSessionBlocker`；删除先关面板 / 详情栏，再在下层页面弹可撤销提示。列表与清单管理的拖动排序经 `ReorderEditingGuard`。待办方框统一用 `TodoCheckBoxVisual`（与日记正文的待办块同一种方框），禁止另画方框。优先级配色只经 `TodoPriorityColors`（`todo_priority_colors.dart`：高红、中橙、低蓝三个固定种子经 `ColorScheme.fromSeed` 的 fidelity 按明暗换算，与主题色无关，灰色与黑白主题下也分得清；`TodoLabels.priorityColor` / `priorityOnColor` 委托它），禁止改回跟随主题色槽：有优先级的方框为 2dp 强调色描边 + 半透明淡底、勾选后强调色填充，无优先级为 `outline` 细描边空心；列表行上不另放优先级胶囊（用户要求去掉），优先级只由方框表达。清单的强调色与图标只经 `TodoListStyle`（颜色与日记模板、日记本同一套 `diaryTemplateAccentColors` 换算，图标共用 `NotebookIcon`，默认 `listCheck`），禁止直接涂种子色。
-- 必须：列表里勾选完成先播行内动效（`TodoTile`：方框弹一下、删除线与灰字随进度显现、`lightImpact`），再经 `TodoCompletionQueue` 收起这一行（`ListItemPresence`，`medium`）后写库并弹可撤销提示；“收起中”在新数据到达（这一行离开未完成或 `updated_at` 变了）时才去掉，页面卸载时还在计时的直接写库。日历与日记里的待办行不收起、勾选即写。手机列表右滑完成 / 恢复、左滑删除只经 `DiarySwipeActionItem`（`startAction` 为右滑），多选时关闭；桌面不提供滑动，改为右键菜单 `TodoTileContextMenu`（完成 / 恢复、改到今天、移到清单…、删除）。
-- 必须：多选只经 `TodoPageSelection`（页面临时状态）：手机长按、桌面 Ctrl / ⌘ 点按进入，点行增减，× / 返回键 / Esc / 换视图 / 批量操作后退出；多选期间页头换成 `TodoSelectionHeader`（已选 N、全选、退出），底部浮出 `TodoSelectionActionBar`（完成、日期、清单、优先级、删除），并经 `onSelectionModeChanged` 告诉首页隐藏新建入口、返回键不切 Tab。批量操作与逾期组的“全部改到今天”只经 `todo_batch_actions.dart`，各自一条可撤销提示；批量改日期不选时刻时每条保留自己的时刻（按时刻分组写），不会把有时刻的待办改成全天。
-- 必须：新建时的智能识别只经纯函数 `parseTodoQuickInput`（`todo_quick_parse.dart`，规则在 `todo_quick_parse_rules.dart` / `todo_quick_parse_time_rules.dart`）：中 / 英 / 日 / 俄四种写法同时生效、与界面语言无关，识别日期、时刻、`#清单`（前缀匹配已有清单）与 `!` / `!!` / `!!!` 优先级，只认独立成词的片段；输入框里经 `TodoQuickInputController` 高亮、点 × 把这一种加进忽略集合（原文留在标题里）。生效顺序：手动选的 > 识别出的 > 视图预填的；整段都被识别走时用原文当标题。设置“智能识别”（`TodoSettings.smartParse`，默认开）关闭时整段文字就是标题。
-- 必须：待办的偏好只存单个 JSON 设置键 `app.settings.todos`（`TodoSettings`：显示已完成、默认清单、排序、打开时显示、全天待办的提醒时刻、稍后提醒时长、锁屏隐藏内容、智能识别），逐字段容错，随备份导出（失败回滚），全部为默认时移除该键；禁止另加零散设置键。排序默认为优先级（今天 / 计划视图里每个日期组内高的在前、同级按时刻；收集箱与清单只有“手动”排序才能拖动），存在 JSON 字段 `sortMode`；旧版本的 `sort` 字段只认 `due / priority / created`，`manual`（旧版顺带写出的默认值）视为未选、落到默认值。数据 provider 一律基于 `.watch()`，不必登记 `syncedDataRefreshProvider`。
-- 必须：提醒一律相对截止日（`onDay` 的天数只能是 0 或负数）；提醒面板的“自定义时间…”可选截止日之前 28 天到之后任意一天，换算只经纯函数 `resolveTodoReminderPick`（`todo_reminder_pick.dart`）：选在截止时间之后时截止时间顺延过去（日期晚于截止日改到那天、全天仍全天；有时刻且当天晚于截止时刻则截止时刻改为提醒时刻、提醒为“准时”），面板经 `onDueMoved` 先交出顺延（详情写库、快速新建改草稿并成为手动选的日期）再交出提醒；禁止回到只许选到截止日（新建时截止日按今天算，会选不了今天之后）。
-- 必须：提醒只经 `todoReminderSchedulerProvider`（`NodeDiaryApp` 常驻监听）→ 纯函数 `planTodoReminders`（`todo_reminder_planner.dart`：只排今后 30 天，重复待办展开窗口内的各次并按剩余次数截断，全天待办跳过“准时 / 提前若干分钟”，加上 `snoozed_until`，取最早的 200 条，iOS 60 条）→ 与系统里已排的待办通知对账（只认 payload 前缀 `todo:`，按 id 与内容指纹只取消多出来的、只补缺的或内容变了的）。通知 id 只经 `todoReminderNotificationId(todoId, fireAt)`。触发重排的只有：未完成待办的 `.watch()`（本机编辑、同步、导入都经它）、`TodoSettings`、界面语言、功能开关、回到前台，桌面另每 15 分钟一次；功能关闭时取消全部待办通知。禁止在别处直接调用通知插件排提醒。
-- 必须：系统通知只经 `TodoNotificationGateway`：手机为 `PluginTodoNotificationGateway`（`zonedSchedule` 按本机时区排，时区名经原生通道 `com.jotsy.diary/notifications` 读取、读不到退回 UTC；`canScheduleExactNotifications` 为否时退回不精确闹钟），桌面为 `DesktopTodoNotificationGateway`（应用运行期间进程内计时 + `show`，关着时不提醒，设置页写明），平台门控为 `AppPlatform.supportsReminders` / `supportsBackgroundReminders` / `supportsNotificationVisibility`。Android 声明 `POST_NOTIFICATIONS`、`RECEIVE_BOOT_COMPLETED`、`USE_EXACT_ALARM`（应用不上架 Play）与 `SCHEDULE_EXACT_ALARM`（≤ API 32），插件三个 receiver 与脱糖库；状态栏图标 `ic_stat_todo` 经 `res/raw/keep.xml` 保留。通知外观只经 `todoNotificationDetails`（渠道 `todo_reminders`，id 不改；锁屏隐藏内容为 `NotificationVisibility.private`）。通知权限只在用户自己加提醒时经 `ensureTodoReminderPermission` 请求（每次运行一次，被拒给出跳系统设置的提示）与设置页的权限行，禁止启动时主动弹权限框。
-- 必须：通知的点开与“完成 / 稍后提醒”按钮（按钮 id 带稍后提醒的分钟数）只经 `TodoNotificationEvent` → `applyTodoNotificationAction` 写库：完成只在通知那一次仍是当前截止日时生效，稍后提醒写 `snoozed_until`。Android 上插件在后台 isolate 回调的 `todoNotificationBackgroundHandler`（顶层、`vm:entry-point`）先经 `IsolateNameServer`（`TodoNotificationActionPort`）转交主 isolate，3 秒内没有应答才自己打开数据库写入，并直接排“稍后提醒”的一次性通知、取消同一次剩下的提醒。点开经 `todoNotificationOpenRequestProvider` 交给首页：切到待办 Tab 再 `openTodoDetail`（应用锁遮罩在导航之上，解锁前看不到内容）。
-- 必须：日历上的待办只经 `todoCalendarIndexProvider`（`TodoCalendarIndex`：未完成的落在截止日，重复待办把之后 400 天内的各次投影进来、按剩余次数截断，已完成的落在截止日），只在 `AppFeatures.todos` 且 `CalendarDisplayOptions.showTodos`（默认开）时订阅；日期格角标为方框勾（`CalendarCellLeadingBadge` 的 `todoMark`，优先级在纪念日心形之后、天气之前），选中日下方“这天的待办”为 `TodoCalendarSection`（`calendar_page_todos.dart`，投影出来的以后某一次只显示、不能勾选），长按日期面板的“添加待办”以那一天为截止日快速新建。日历测试夹具 `pumpCalendarPage` 覆盖了待办的数据 provider。
-- 必须：AI 智能体的待办工具（`lib/ui/ai/tools/ai_tools_todo*.dart`，规则见 `ai_assistant.md`）只经上面的待办 ops 读写，口径与待办页一致：设提醒或重复时没有截止日按详情页定为今天，批量改日期不给时刻时各自保留时刻，完成重复待办经 `completeTodos`、撤销倒序 `undoTodoCompletion`，删清单连同其中的待办（先确认）；`TodoSettings` 只经 `change_settings` 的设置清单改。
-- 必须：日记互通只有三处：预览页“更多”的“添加待办”（预填标题、关联这篇）与“转为独立待办”（只在正文有待办列表项时出现，项目只经纯函数 `diaryTodoItems` 取出，`showTodoConvertSheet` 批量建成关联这篇、`metadata.sourceDiaryId` 记来源的待办，正文不改动），以及正文之后的“相关待办”（`DiaryLinkedTodosSection`，经 `diaryPreviewTrailing`，功能关闭时不订阅、不占位）。待办详情的“关联日记”选择暂用纪念日的日记选择面板（`showAnniversaryDiaryPicker`），打开日记只经 `openDiaryPage`。
+## 数据
+- 必须：待办独立于日记，存 `todo_lists` / `todos` 两表；收集箱不是一行数据；截止日存本地日期与分钟数，不存时间戳。
+- 必须：JSON 列只在 `todo_rules.dart` 容错解码，重复日期只经 `TodoRecurrence`；禁止页面自行换算日期或解析 JSON 列。
+- 禁止：日记正文的待办块与独立待办自动迁移或双向同步；只提供手动“转为独立待办”，正文不改动。
+- 必须：逐项修改只写那一列，不整行写回；批量在一个事务里，值本来相同的行不写。
+- 禁止：为待办另加同步顺序列表；拖动只改被拖的那一行。
+- 必须：完成重复待办只经 `completeTodo`：原行推到下一次，另插已完成副本（id 只经 `todoOccurrenceId`，两台设备完成同一次只得一条）。
+- 必须：删除为硬删除并可撤销；删清单在同一事务连其中待办删掉（确认框写明条数）；彻底删除日记时清空待办的关联。
+- 必须：随完整备份导出与覆盖恢复，合并按业务 id，清单缺失的落回收集箱；日记包不带。局域网同步见 `lan_sync.md`。
+- 必须：偏好只存 `app.settings.todos`，随备份导出（失败回滚）；排序默认按优先级，智能识别默认开。
+- 例外：待办数据 provider 都基于 `.watch()`，不必登记 `syncedDataRefreshProvider`。
 
+## 功能与入口
+- 必须：受 `AppFeatures.todos` 控制（默认关闭）；关闭时隐藏 Tab、设置行、日历与预览页入口，并取消全部提醒。
+- 必须：页面只经 `todo_navigation.dart` 打开，面板只经 `showTodoSheet`，快速新建只经 `showTodoQuickAddSheet`。
+- 必须：详情只有一份 `TodoDetailBody`，禁止另建详情页；改一项写一项，标题与备注防抖、关闭时立即写。
+- 必须：方框只用 `TodoCheckBoxVisual`，优先级配色只经 `TodoPriorityColors`（禁止改回跟随主题色），清单配色只经 `TodoListStyle`。
+- 例外：页头“更多”用弹出菜单（用户要求），不受 AGENTS.md §6“约 4 项以内”限制。
+- 必须：列表里勾选先收起这一行再写库；日历与日记里勾选即写。滑动操作只在手机，桌面改右键菜单。
+- 必须：批量操作只经 `todo_batch_actions.dart`，各一条可撤销提示；批量改日期不选时刻时各自保留时刻。
+- 必须：智能识别只经 `parseTodoQuickInput`，中英日俄写法同时生效、与界面语言无关；手动选的 > 识别的 > 视图预填。
+- 必须：日记互通只有“添加待办”“转为独立待办”与正文后的“相关待办”；功能关闭时不订阅、不占位。
+- 必须：日历上的待办只经 `todoCalendarIndexProvider`，待办开启且 `showTodos` 时才订阅；AI 工具口径见 `ai_assistant.md`。
+
+## 提醒与通知
+- 必须：提醒一律相对截止日；自定义时间可选到截止日之后、截止日随之顺延，禁止改回只许选到截止日。
+- 必须：排提醒只经 `planTodoReminders` 与系统已排通知对账：只排今后 30 天、最多 200 条（iOS 60）；禁止在别处直接调通知插件。
+- 必须：系统通知只经 `TodoNotificationGateway`：手机交给系统定时，不许精确闹钟时退回不精确；桌面只在应用运行时提醒，设置页写明。
+- 必须：通知小图标 `ic_stat_todo` 在 `res/raw/keep.xml` 登记保留，以免 release 资源裁剪删掉。
+- 禁止：启动时主动请求通知权限；只在用户加提醒时与设置页权限行请求。
+- 必须：通知按钮写库只经 `applyTodoNotificationAction`，“完成”只在那一次仍是当前截止日时生效；后台与主 isolate 不同时写库。
+- 必须：点开通知先切到待办 Tab 再打开详情，应用锁遮罩在上。

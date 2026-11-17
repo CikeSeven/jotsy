@@ -1,21 +1,24 @@
 # 应用锁、应用密码与身份验证
 
-- 必须：验证身份只经 `IdentityVerifier`（`lib/ui/app_lock/controllers/identity_verifier.dart`，`identityVerifierProvider`）。验证方式是全局的一个设置：设了应用密码就用应用密码，否则用系统验证（指纹、面容或锁屏密码，`DeviceAuthService` → local_auth）。应用锁、上锁的日记本（进入、编辑、合并、删除与重锁遮罩）与局域网配对确认都经这里。
-- 禁止：在 `lib/ui/app_lock/` 与 `device_auth_service.dart` 之外读 `deviceAuthServiceProvider`、使用 `DeviceAuthService` 或引入 local_auth（`test/ui/app_lock/app_lock_source_test.dart` 兜底）：这样的代码在应用密码方式下仍会弹系统验证，在 Linux 上则直接打不开。
-- 必须：应用密码有两种形式，设置时三选一（`PasscodeForm`）：6 位数字、4 位数字、3×3 图案（至少连 4 个点，越过的中间点自动补上，与系统图案锁一致）。数字一律在应用内的数字键盘（`PasscodeKeypad`）上输入，输满即核对，不弹系统键盘、不用输入框（这是锁屏本身的输入方式，不违反“输入框用普通键盘”的约定）；桌面可直接用实体键盘的数字键、小键盘与 Backspace。图案抬手即核对，少于 4 个点只提示、不算输错。
-- 必须：页面里的验证用 `IdentityVerifier.verify(context, …)`，应用密码方式下打开 `PasscodeVerifyPage`。锁屏遮罩（`AppLockOverlay`、`NotebookLockLayer`）挂在 Navigator 之上，打不开页面：应用密码方式下遮罩里直接放 `PasscodeUnlockView`（外框 `AppLockSurface` 补上 `Material` 与 `Overlay.wrap`），系统方式下用 `verifySystem`。遮罩里不能弹对话框（`showAppDialog` 需要 Navigator），说明一律原地展开。
-- 必须：验证分两种用途。`IdentityPurpose.unlock`（解锁、进入日记本、配对）在开着快捷解锁时允许指纹 / 面容；`IdentityPurpose.sensitive`（关闭应用锁、切换验证方式、修改密码）只认应用密码，防止拿到已解锁手机的人借机主的指纹改掉密码。会削弱保护的改动都要先按当前方式验证：
-  - 系统验证 → 应用密码：先做一次系统验证，设备没有系统验证时直接设置；
-  - 应用密码 → 系统验证：先输入应用密码，且设备必须能弹出系统验证，通过后清除密码；
-  - 修改密码（可以换形式）：先输入当前密码；
-  - 打开指纹快捷解锁：先验一次指纹。关闭不用验证。
-- 必须：应用密码只存本机，放在单个 JSON 键 `app.security.passcode`（`AppPasscodeStore`，与 `AiProviderStore` 同样和 SettingsService 分离），不随备份导出，也不参与局域网同步。设置页那一条仍然是 `appLockEnabled`：它随备份，不同步。“方式”不单独存：有有效的摘要即为应用密码，摘要、形式或位数无效即为系统验证，不会出现方式与密码对不上的状态。存储加载失败时按系统验证处理，仍然要验证。形式与数字位数明文保存（界面要据此画圆点或九宫格）。
-- 必须：摘要只经 `AppPasscodeHasher`：PBKDF2-HMAC-SHA256，16 字节随机盐，默认 6 万次迭代，在 `Isolate.run` 里计算，常数时间比较；原文为 `AppPasscodeRules.material`（形式前缀 + 数字串或图案格子序号）。迭代次数随摘要保存，以后调高只影响新设的密码。测试经 `appPasscodeHasherProvider` 换成不进 isolate、低迭代的实例。数字密码取值空间小，真正挡住乱试的是下面的限流。
-- 必须：输错限流：第 5 次输错起依次要等 30 秒、1 分、5 分，之后每次 15 分。次数与截止时刻写在同一个键里，杀进程不会清零；系统时钟往回调时，截止时刻收回到“现在 + 当前档位”。输对或指纹通过后清零。界面倒数与存储共用 `appPasscodeClockProvider`。上锁日记本的重锁遮罩在应用密码方式下不按“连续两次”退回全部日记，由这里统一限流。
-- 必须：没有找回途径（用户的决定），设置页底部与锁屏上的“忘记密码？”都要明确说明：只能清除应用数据或重装，再从备份恢复。
-- 必须：平台差异只经 `AppPlatform`。`supportsDeviceAuth`（系统验证）不含 Linux；`supportsBiometricOnly`（只认生物识别的快捷解锁）只有 Android、iOS、macOS，Windows Hello 不支持 `biometricOnly`。“这台设备能不能上锁”看 `identityVerificationPossible`：设了应用密码，或平台有系统验证。Linux 设了应用密码后，应用锁与上锁日记本都能用。
-- 必须：上锁时机只经 `AppLockController`（`lib/ui/app_lock/controllers/app_lock_controller.dart`，由 `NodeDiaryApp` 创建，遮罩画在 `AppLockLayer` 里）。应用锁开着时冷启动与打开开关总是上锁；运行中另按 `AppLockOptions` 上锁：离开应用（hidden：切到其他应用、回到桌面、窗口最小化）后“立即 / 1、5、15、30 分钟 / 1 小时 / 从不（默认，改版前的行为）”；“锁屏时上锁”（只在 `supportsScreenOffLock`，Android 熄屏广播，应用在后台也会当场盖上）；“闲置时上锁”（只在 `supportsIdleLock`，桌面：窗口在前台但 1、5、15、30 分钟没有指针与实体键盘操作）。在后台盖上的锁回到前台才弹验证；“自动弹出验证”（默认开）关掉时锁屏停在“立即解锁”或密码输入上，不自动弹系统验证与指纹。
-- 必须：应用自己打开的界面（选图片、拍照、选文件、系统分享面板、手机锁屏密码页）不算离开：Android 经 `AppLockPlatform.leftForOwnActivity`（`MainActivity.startActivityForResult` 记下自上次回到前台后打开过界面，且本应用任务的最上层已不是 `MainActivity`）判断，系统验证进行中另看 `IdentityVerifier.systemPromptActive`。“立即”与上锁日记本的重锁遮罩都先当场盖上、确认是自己的界面后再撤回；判断不了或回答晚于用户回来时按离开处理（宁可多锁一次）。离开时长按墙上时钟计算（单调时钟在深度睡眠中不走），回来时早于离开时刻（时钟被往回调）按超时处理；闲置计时遇到时钟回拨从现在重新算，定时器每次最长 30 秒，休眠醒来后很快补上锁。
-- 必须：应用锁与上锁日记本的重锁遮罩同时盖着时，解开应用锁即一并解开日记本（`AppLockController.onUnlocked`，同一个人、同一种验证方式），不连着验证两次。
-- 必须：上锁时机与防截屏存于单个本机 JSON 键 `app.settings.app_lock_options`（`AppLockOptions`，逐字段容错，经 `appLockOptionsProvider` 读取、`saveAppLockOptions` 写入），不随备份导出、不参与同步。防截屏（只在 `supportsSecureScreen`，Android 窗口 `FLAG_SECURE`：截屏、录屏与最近任务都只有黑屏）与应用锁开关无关，没开应用锁也能单独打开。应用锁开着时，放宽保护的改动（`AppLockOptions.loosenedBy`：离开后更晚上锁、关掉锁屏 / 闲置上锁、关掉防截屏）先按 `IdentityPurpose.sensitive` 验证，收紧与“自动弹出验证”不用。
-- 必须：设置入口为 设置首页「数据与安全」组 → 应用锁与密码（`SettingsAppLockTile` → `AppLockSettingsPage`），操作编排在 `AppLockSettingsFlow`，输入状态在 `PasscodeEntryController`（解锁）与 `PasscodeSetupController`（两步设置），界面规格见 DESIGN.md §5.31。
+> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.31。
+
+## 验证入口
+- 必须：验证身份只经 `IdentityVerifier`；方式全局唯一：设了应用密码用应用密码，否则用系统验证。
+- 禁止：在 `lib/ui/app_lock/` 与 `device_auth_service.dart` 之外使用 `DeviceAuthService` 或引入 local_auth（`app_lock_source_test.dart` 兜底）。
+- 必须：敏感操作（关闭应用锁、切换方式、改密码）只认应用密码、不许指纹；削弱保护的改动先按当前方式验证。
+- 必须：锁屏遮罩在 Navigator 之上，禁止弹对话框，说明一律原地展开。
+
+## 应用密码
+- 必须：形式只有 6 位数字、4 位数字与 3×3 图案（至少 4 个点）；数字只用应用内数字键盘输入。
+- 必须：密码只存单个本机 JSON 键 `app.security.passcode`，不随备份、不同步；读取失败按系统验证处理。
+- 必须：摘要只经 `AppPasscodeHasher`（PBKDF2 加随机盐，迭代次数随摘要保存）。
+- 必须：第 5 次输错起依次等 30 秒、1 分、5 分，之后每次 15 分；持久化，杀进程与时钟回拨都不能绕过。
+- 必须：没有找回途径（用户的决定），“忘记密码？”须说明只能清除数据或重装再从备份恢复。
+
+## 上锁时机
+- 必须：上锁只经 `AppLockController`；冷启动总是上锁，离开后上锁默认“从不”，“自动弹出验证”默认开。
+- 必须：锁屏时上锁只在 Android，闲置时上锁只在桌面，防截屏只在 Android 且与应用锁开关无关（各经 `AppPlatform` 门控）。
+- 必须：应用自己打开的界面（选图、拍照、分享、系统验证）不算离开；判断不了按离开处理。
+- 必须：应用锁与日记本重锁遮罩同时盖着时，解开应用锁即一并解开。
+- 必须：上锁时机与防截屏只存本机 JSON 键 `app.settings.app_lock_options`，不随备份、不同步（开关 `appLockEnabled` 随备份、不同步）；应用锁开着时放宽它们先按敏感操作验证。
+- 必须：能否上锁只看 `identityVerificationPossible`；Linux 设了应用密码后应用锁与上锁日记本照常可用。

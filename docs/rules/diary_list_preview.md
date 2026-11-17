@@ -1,19 +1,57 @@
 # 日记列表、打开与预览
 
-> 从 `AGENTS.md` 拆出的专题约束，与 `AGENTS.md` 同等效力（必须 / 禁止 / 例外）。改动本主题的代码前先读本文件；本主题新增或修改的规则写在这里，不写回 `AGENTS.md`。界面规格见 DESIGN.md §5.8 / §5.17 / §5.24 / §5.33。
+> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.2 / §5.8 / §5.17 / §5.24 / §5.33。
 
-- 必须：发布面板标签子页（`PublishTagPickerPage`）的排序方式（`TagPickerSort`：默认排序即标签管理里的顺序 / 按字母）只存于设置键 `app.settings.tag_picker_sort`（随备份导出），经 `tagPickerSortProvider` 读写；筛选与分组只经 `TagPickerView`，检索词只在子页内存里。汉字的 A–Z 归组、拼音排序与拼音检索只经 `NameIndexKey`（`lib/utils/pinyin/`），拼音表 `pinyin_table.dart` 由 `tool/generate_pinyin_table.dart` 从 Unihan `kMandarin` 生成，禁止手改，禁止为此引入把整本字典编进安装包的拼音库；列表的字母索引条复用 `AlphabetIndexBar`。首页多选的“设置标签”（多选顶栏“更多”菜单）经三态面板 `showDiaryTagBatchSheet` 挑选：挑选区复用标签子页的 `PublishTagPickerPane`（同一 `TagPickerView` / `tagPickerSortProvider`），三态的初始状态与点按循环与日记本选本面板同为 `TriStatePickSelection`，从检索词新建标签与发布面板同经 `runCreateTagFlow`；写入只经 `applyDiaryTagBatch`（单事务只改 `diary_tags`、不改 `updatedAt`、不删标签本身，没有变化时不写库），撤销只经 `restoreDiaryTagBatch`（只收回本次的增减），流程只在 `DiariesTagBatchController`（退出多选、4 秒撤销提示 `persist: false`；去掉正在筛选的标签时卡片先收起、撤销时回来；写入失败恢复多选并提示），禁止另写批量改标签的写库路径。视觉规范见 DESIGN.md §5.17。
-- 必须：预览页双击正文进入编辑只在手机上（`!AppPlatform.isDesktop`，桌面双击仍是选词）且阅读行为 `DiaryPreviewBehavior.doubleTapToEdit`（默认开，开关在预览页样式“正文”页，与其他阅读行为同存 `diaryPreviewStyleRaw`）开启时生效：双击只经 `DiaryPreviewDoubleTap`（`Listener` 只观察指针、不加入手势竞争，禁止改成双击识别器——会让链接、图片、待办的单击都等满双击超时），落点只经 `diaryTextPositionAt`（`widgets/diary_editor/diary_text_hit_test.dart`：只认文字块的文字区域，行首标记、勾选框、折叠三角与嵌入块不算），经 `DiaryPreviewActions.onEditAt` → `openDiaryEditorFromPreview(caret:)` → `EditDiaryPage(initialCaret:)`，编辑页经 `DiaryEditorController.collapsedSelectionAt` 校验位置后放光标、入场转场结束再聚焦。
-- 必须：各入口（首页列表、搜索、日历、归档、探索与媒体画廊、纪念日、日记本目录与统计）点开一篇日记一律经 `openDiaryPage`（`controllers/diary_open_flow.dart`），禁止直接 push `DiaryPreviewPage`。阅读行为 `DiaryPreviewBehavior.openInEditor`（“打开日记时直接编辑”，开关在设置 → 编辑器设置的「编辑行为」组，默认关，与其他阅读行为同存 `diaryPreviewStyleRaw`、随备份导出、不随预设改变）开启时直接推入编辑页（经 `openDiaryEditorFromPreview`，入口的数据经 `initialDetail` 渲染首帧、抓取的封面共享元素经 `coverHero` 交给编辑页头图；编辑页里删除时返回 `DiaryPreviewResult.deleted`，入口照常给撤销）；导图日记（`isMindMapDiary`）没有预览页，不看该开关一律直接进编辑页，宽窗口日记页点按导图日记的卡片同样直接推入编辑页、不在右栏阅读；未解封的时间胶囊（`canOpenDiaryInEditor`）与查不到的日记仍进预览页，禁止绕过封存页；入口没带数据时先按 id 读一次本地库再决定（读到的数据交给预览页首帧）。宽窗口日记页的右栏选中不算“打开”，不受该开关影响。搜索页点开结果时经 `openDiaryPage(findQuery: DiaryFindQuery.fromSearchTerms(...))` 带上搜索词：预览页（含翻到的每一篇）/ 编辑页打开后显示正文查找栏、标出这些词并跳到第一处（不弹键盘，正文里没有时不打开，见 `editor.md` 查找与替换）。
-- 必须：点开日记的卡片（`DiaryCard` 及日历时间线卡片、`CalendarDiaryMiniCard`）一律包 `ContainerTransformSource`（标签 `diaryCardTransitionTag(diaryId)`，`lib/ui/widgets/container_transform/`），点按时经 `ContainerTransformSource.capture`（取点按处、在来源之内的 context）量出卡片的位置与圆角，随 `DiaryOpenCallback` 的第三个参数 `origin` 交给 `openDiaryPage(origin:)`；有 `origin` 时预览页 / 编辑页（`openDiaryEditorFromPreview(origin:)`）/ 未解封胶囊的封存页经 `ContainerTransformPageRoute` 从卡片展开、返回时缩回（删除后的结果经 `returnsToOrigin` 改为原地淡出），没有时照旧 `MaterialPageRoute`；容器的 `backdrop` 必须经 `AppPageBackgroundFill(area: AppBackgroundArea.preview)` 复用预览区域的背景（编辑已有日记与封存页同一区域），图片缺失或解码中垫页面底色；容器必须全程不透明（底与页面始终完全不透明，禁止让列表 / 背景从容器里透出来；只有无处可回的原地退场整层淡出），卡片 ↔ 页面的渐变只在容器里面：卡片的样子必须从下层快照（`ContainerTransformBelowSnapshotController.image`）里裁，禁止另截卡片或隐藏原卡片；卡片显出的那段容器高度必须收成卡片比例，禁止在卡片下方拖出一截页面或空底；转场途中下层路由经 `delegatedTransition` 包 `ContainerTransformBelowSnapshot` 画成快照并暂停其动画，禁止换回 SDK 的 `SnapshotWidget`（它在未挂载的图层树里拍照，玻璃卡片的预模糊取样跟随的 Leader 不在，快照里的卡片变透明）；页面的缩放必须以位图施加（`ImageFilter.matrix`），禁止改回直接变换画布（文字逐帧换字号会重建字形图集，转场掉帧）。不作为转场来源的卡片（设置页预览、宽窗口双栏，`enableCoverHero: false`）不包来源。预览页左右翻页后经 `ContainerTransformPageRoute.setReturnTag` 把返回目标换成当前这一篇（`DiaryPreviewPager`）。容器转场期间路由关闭页内 Hero（闸门看真正的控制器而不是 `animation` 代理），禁止在这类路由上再让列表封面单独飞到头图。等待路由入场结束一律经 `RouteEntranceWaiter`（推入后的第一帧路由 offstage、`animation` 被代理成已完成），禁止直接读 `ModalRoute.of(context)?.animation` 判断入场。视觉规范见 DESIGN.md §4.3“从卡片展开”。
-- 必须：点按标签打开这个标签的搜索（探索页标签卡与周期回顾、预览页与阅读式编辑页信息栏的标签胶囊、日记本统计页“常用标签”）一律经 `openDiaryTagSearch`（`controllers/diary_tag_search_flow.dart`，推入 `DiarySearchPage` 并选中这个标签），禁止各处另拼搜索路由；日记本统计页传入这本的统计范围（`notebookStatsScope`）与名称、图标，搜索页里为可移除的日记本条件，其余入口为全局搜索（`DiaryListScope.globalSearch`：隐藏日记本里的日记也搜得到，上锁的照常排除，见 `notebooks.md`）。设置页预览不传点按，标签不可点；`DiaryPreviewChip` 可点与不可点时排布一致。
-- 必须：搜索页（`DiarySearchPage`）只做装配，搜索会话（防抖、条件、分页窗口）只在 `DiarySearchController`（`controllers/diary_search_controller.dart`），筛选面板的流程只在 `diary_search_filter_flows.dart`（经 `showNotebookRuleEditorSheet(onChanged:)` 的实时模式，没有“完成”、改动即生效）；页内条件不回写首页的 `diaryFilterProvider`。关键词一律经 `splitSearchTerms`（`lib/core/database/diary_search_terms.dart`：按空白拆词、去重、最多 8 个，LIKE 一律经 `escapeLike` 转义）拆词，数据库（`_writeActiveDiaryFilter`，`app_database_diary_search_sql.dart`）、留言命中与界面高亮（`viewmodels/search_highlight.dart`，卡片经 `DiariesListSection.highlightTerms`）共用这一处口径，禁止各处另写拆词或高亮。筛选（时间、心情、媒体、天气、地点）只经 `DiarySearchFilters`（每项即一条智能日记本规则，`predicate()` 经 `compileNotebookRules` 编译为 `DiaryPageQuery.filter`）、“含归档”只经 `DiaryPageQuery.includeArchived`，两者都必须一路传到结果数（`searchDiaryCountProvider`）与预览翻页（`DiaryPreviewListQuery` → `getActiveDiaryIds`），口径与列表一致。“存为智能日记本”只经 `runSaveSearchAsSmartNotebook(filterRules:)`（日记本范围与“含归档”不进规则）。最近搜索与结果排序只存本机设置键 `app.search.preferences`（`DiarySearchPreferences`，经 `diarySearchPreferencesProvider` 读写；不随备份导出、不参与同步）。胶囊形搜索框统一经 `SearchPillField`（`lib/ui/widgets/search_pill_field.dart`，发布面板子页的 `PublishPanelSearchField` 是它的封装）。
-- 必须：预览页左右滑动切换日记统一经 `DiaryPreviewPage(sequence:)`：入口传进入时所在列表的 `DiaryPreviewSequence`（打开时冻结顺序；首页 / 搜索还有没加载的部分时带 `DiaryPreviewListQuery`，由 `getActiveDiaryIds` 按同一筛选与排序接上），单篇入口不传；翻页器为 `DiaryPreviewPager` → `DiaryPagerView`（设置页预览复用同一个）。手势冲突只靠起滑距离倍数（外层放大、页内还原）与页内始终可滚动的 physics 解决，禁止另写翻页手势识别器，禁止在预览页内放横向滚动容器（会抢走翻页）。预览页的删除结果带被删日记的 id（`DiaryPreviewResult.deleted(id)`），入口按它撤销；预览页勾选待办只经 `updateDiaryContent` 写正文，禁止用会取消归档 / 删除、重写标签的 `updateDiary`。
-- 必须：日记页列表的快速滚动条只经 `DiariesFastScroller`（`widgets/diaries_fast_scroller.dart`）→ `FastScroller`（`lib/ui/widgets/fast_scroller/`），列表 sliver 外层挂 `listKey` 供它读取布局（`FastScrollListGeometry`），该滚动视图经 `scrollBehavior` 关掉系统默认滚动条；“顶线”高度由页面经 `pinnedExtent` 给出常量（标签栏 + 玻璃顶栏的状态栏条 + 多选时固定的刊头），禁止改回读 sliver 约束的 overlap（列表从顶栏下方滑入时它随位置变化，跳转会每帧来回振荡、刊头反复弹出收起）；位置一律按“第几篇”换算，标签与分段只经 `DiaryTimelineIndex` 按排序方式生成（时间排序：月份 + 年份、跨年分年否则分月；标题排序：`NameIndexKey` 首字母；书序：章节名），总篇数与未加载部分的排序依据只经 `watchDiaryTimeline`（与 `watchDiaries` 同一筛选、范围与排序，不带正文）→ `diaryTimelineProvider`（key 为 `DiaryPageQuery.timelineKey`，用户滚动过列表才订阅）；跳到未加载部分时经 `onNeedItems` 一次放大分页窗口，禁止逐页追加；远距离跳转只经 `FastScrollSeek` 逐帧限步（途经卡片的图片按滚动速度推迟解码），禁止直接 `jumpTo` 跨过上千篇。替换 `pagedDiariesProvider` 且会滚动长列表的测试须同时替换 `diaryTimelineProvider`，不打开真实数据库。视觉规范见 DESIGN.md §5.24。
-- 必须：首页标签筛选栏的选择（#196）分单选 / 多选两种模式，模式只存于 `DiaryFilterState.multiSelect`（读 `isMultiSelect`：选中两个以上一定是多选）：单选模式下单击只经 `DiaryFilterNotifier.selectOnlyTag`（只选这一个，已是唯一选中的再点取消）；长按（桌面上另有按住 Ctrl / ⌘ 点击，只在 `AppPlatform.isDesktop` 生效）进入多选模式并经 `toggleTag` 选上它（长按已选中的唯一一个只经 `enterMultiSelect` 换模式），多选模式下单击同样经 `toggleTag` 增减、其余保留（多选为“同时带有”），取消到一个都不剩时 `toggleTag` 直接回到单选模式（与 ✕ 结果相同）；✕ 只在多选模式（或选中了不在标签条上的标签）时出现，只经 `clearTags` 清空并回到单选模式；`setTags`（标签记忆恢复、切换日记本还原）按数量推断模式。流程在 `DiariesPageController.selectTagFilter` / `toggleTagFilter` / `clearTagFilters`。单击换掉已选标签时的多选提示为 `FeatureTip.tagFilterMultiSelect`（每次启动最多一次，长按即学会）。禁止让单击恢复成增减。视觉规范见 DESIGN.md §5.2。
-- 必须：首页布局（列表 / 瀑布流，设置键 `app.settings.diary_layout_mode`，存 `DiaryLayoutMode` 枚举名，随备份导出）没选过时默认瀑布流，空串与认不出的值同样回落瀑布流（`SettingsService.diaryLayoutModeRaw`、`DiaryViewPreferences`）：列表卡片可左滑归档，与左右滑动切 Tab、上下滑动时的斜向手势容易混淆而误归档（#311），瀑布流不挂侧滑；不另加“是否选过”的标记键。从设置进入卡片样式页时预览与编辑同一布局（`DiaryCardStylePage` 不传 `initialMode` 时取它）。
-- 必须：首页列表的整体切换（标签筛选、排序、日记本与章节、布局）只经 `DiaryListTransitionCoordinator.queueFilterMutation` / `switchLayout` 与 `DiaryListSwitchMotion`（`controllers/diary_list_switch_motion.dart`：退场 → 等新查询首帧 → 换数据 → 级联入场），列表项只经 `DiariesListSection.switchMotion` → `DiaryListSwitchReveal` 进出场；禁止再给列表 sliver 套整块 `SliverFadeTransition` 或另起淡入淡出。点标签与 ✕ 清空传 `directional: true`，左右方向只经 `tagStripPosition` / `tagSwitchDirection`（`viewmodels/tag_switch_direction.dart`）按冻结时与最新的标签条位置算，其余变更纵向进出。标签切换（单击、长按、清空）传 `scrollToListStart: true` 回到列表开头，定位只经 `jumpDiaryListToStart`（`controllers/diary_list_start_scroll.dart`：刊头保持原状、标签栏不动），禁止改成跳到最顶（浮动刊头会弹出、标签栏下移）。标签栏单选模式下选中底色只由 `TagSelectionPillController` 的滑动色块画（`widgets/tag_selection_pill.dart`，胶囊传 `paintsSelectedSurface: false`），多选模式下各胶囊自己画；`TagFilterChip` 的外框尺寸与选中无关，`TagFilterLayoutCache` 一律按粗体与选中描边测量，禁止重新让选中改变胶囊宽度。视觉规范见 DESIGN.md §5.2“首页列表的切换动效 / 首页筛选栏的选中动效”。
-- 必须：一次性功能提示（用户没用过某个功能时提示一下，用过即不再出现）的进度只存于单个本机设置键 `app.settings.feature_tips`（`FeatureTips`，`lib/core/services/feature_tips.dart`：每条提示一个 `FeatureTip`，记是否学会与出现次数，逐字段容错、认不出的条目原样保留；不随备份导出、不参与同步）；新增功能提示在 `FeatureTip` 登记，禁止另加设置键；几条提示共用这个键，写回一律经 `SettingsService.updateFeatureTips` 从最新的整份进度改自己那一条（`FeatureTips.withRecord` / `markShown` / `markLearned`），禁止把自己缓存的整份进度直接写回（会覆盖别的提示刚写的进度）。首页标签栏的“下拉展开”提示只经 `TagFilterPullHintController`（`controllers/tag_filter_pull_hint_controller.dart`）决定时序：只在首页入场编排播完之后（`LaunchRevealScope` 不存在时不提示，应用锁盖着时编排暂缓、提示随之推迟）、日记 Tab 可见且路由在最上层、不在多选、标签栏收着、收起的一行放不下全部标签时出现；每次冷启动最多一次，累计 `maxShows`（3）次或标签栏完全展开过一次（拖动或点提示行都算，没看到提示自己展开的也算）后不再出现；用户滑动列表、拖动标签栏或条件失效时立即收起，等待期间用户操作则推迟。提示行与轻推演示只经 `DiaryTagFilterBar` 的 `pullHint*` 参数绘制（`TagFilterPullHint`），视觉规格见 DESIGN.md §5.2。
-- 必须：预览页与阅读式编辑页的顶栏右侧固定为分享、编辑位置与“更多”（`DiaryPreviewTopBar`），“更多”是弹出菜单（`ExpressiveMenuButton`），条目只经 `widgets/diary_preview/diary_preview_more_menu.dart` 的 `diaryMoreMenuItems` 分组排列（预览页经 `diaryPreviewMoreItems`、在 build 里 `ref.watch` 功能开关；编辑页经 `_readingMoreItems`，开关来自这一帧的 `_ReadingFrame.menu`），禁止改回底部面板或另拼一份条目。预览页“更多”不放分享（在顶栏）、写留言与 AI 回应（页尾留言区 / 回应区的末行）、存为模板（编辑页里有）；编辑页“更多”不放页面样式（预览页“更多”里有），AI 相关的动作（写作灵感、生成标题、推荐标签与心情、AI 回应）只收在一个“AI”二级菜单（`ExpressiveSubmenuItem`，`_readingAiMenuItems`）里，禁止在主菜单平铺；平时不放分享、导出、写留言与 AI 回应（从预览页进入，返回即是），只在不经过预览页时（`DiaryPreviewBehavior.openInEditor` 开启，`_ReadingMenuOptions.skipsPreview`）列出；导图日记的“更多”另有一份精简条目（`_mindMapDiaryMoreItems`，见 `mind_maps.md`）。“转为独立待办”的候选取 `DiaryPreviewViewData.todoItems`（按正文记忆化），禁止在 build 里每次重新解析正文。视觉规范见 DESIGN.md §5.8。
-- 必须：编辑已有日记（`EditDiaryPage` 编辑模式，所有入口）一律是阅读式版式：整页主题、底色、背景区域（`AppBackgroundArea.preview`）、头图、标题样式、信息栏、边距与正文列宽、页尾都取预览页样式，经预览页的共用部件绘制——`DiaryPreviewResolvedStyle`、`DiaryPreviewTopBar(sliver: false)`、`diaryPreviewCoverGeometry` + `PublishDiaryCoverFrame`（`DiaryReadingCover`）、`diaryPreviewTitleTextStyle`、`DiaryPreviewColumn`、`DiaryPreviewMeta`、`diaryPreviewTrailing` 与 `DiaryPreviewExtras`（留言、提到这篇的日记、AI 回应的显隐口径），禁止另写一套近似的阅读样式。流程只在 `controllers/edit_diary_reading_flow.dart`（版式）与 `edit_diary_reading_actions.dart`（面板开合、更多、分享导出与删除）：信息栏与配色基调读面板草稿的当前值（`DiaryReadingSnapshotBuilder`，标签按名称排序与库里一致），借用首图、字数与“最后编辑于”按自动保存写库后的节拍更新（`_onReadingSaved`），不在每次按键时扫描正文；信息栏里的“N 条留言”与预览页一样滚到留言区（页尾在编辑器虚拟列表里，经 `DiaryEditorScrollHandle.revealFooter` 先按列表下标滚出来，再 `DiaryCommentsSection.reveal`），标签胶囊经 `openDiaryTagSearch`、日记本胶囊经 `openNotebookFromAnywhere`（它会关掉首页之上的页面、绕过编辑页的返回补存，所以两者都先 `flushEditAutoSave`，失败时留在本页），其余位置打开信息面板；信息面板平时不挂载，只经信息栏或“更多 → 编辑信息”打开（`PublishDiaryPanel(hideWhenCollapsed: true)`，收回到底后卸载），页面上不留收起栏；正文之后的非正文内容包 `DiaryEditorTrailingRegion`（点按不开始编辑、不补空段落）；分享不提供长图（`DiaryPreviewExportController` 不给截图节点时 `supportsLongImage` 为 false），分享、导出、AI 回应与删除前先补存（手动保存时不写，见下条）；删除只经确认后的 `softDeleteDiary(touchUpdatedAt: false)` 并以 true 结束。编辑页只经 `ModalRoute.isCurrentOf`（`_onRouteCurrentChanged`）防别处的修改：被盖住时立即补存（`settleEditAutoSave`，自动保存时即 flush）；回到最上层时先 flush，再读库比对这一篇——已删除则提示并退出（继续写会经 `updateDiary` 把它从回收站带回来），更新时间（`updateDiary` 返回库里存下的值，按库的秒级精度）或标签集合与本页知道的不同，则经 `_initializeFromDetail(reload: true)` 换成库里的内容并提示；禁止在回到前台时直接把本页的内存副本写回去。新建日记（草稿 → 发布页）保持表单式版式。视觉规范见 DESIGN.md §5.8“阅读式编辑页”。
-- 必须：编辑已有日记怎样写库只看 `DiaryEditPrefs`（设置 → 编辑器设置 →「编辑行为」的“手动保存修改”，单个 JSON 设置键 `app.settings.diary_edit_prefs`，逐字段容错，全为默认时不存；随备份导出、导入失败时回滚，经 `diaryEditPrefsProvider` 读取、`saveDiaryEditPrefs` 写入；新建页不受影响，照常存草稿箱）。默认自动保存（上条）。手动保存时仍是同一个 `DebouncedAutoSaveController`（`manual:`）：不再防抖写库，只节流比对快照维护 `unsaved`；写库只经顶栏编辑位置的“保存”与桌面 Ctrl / ⌘ + S（`saveEditManually`）和询问框的“保存并退出”；离开本页（返回键、顶栏返回、桌面 Esc、信息栏的日记本胶囊、桌面关闭窗口经 `confirmManualExit`）一律经 `_settleBeforeLeaving`：有未保存的修改（`hasUnsavedEditChanges` 当场比对，只移动光标、改了又改回不算）时弹统一的 `showUnsavedChangesDialog`（取消 / 退出 / 保存并退出），没有时照常离开；切后台、被盖住、标签胶囊、分享导出、AI 回应与删除一律经 `settleEditAutoSave`（只等进行中的保存，不写库），回到最上层时有未保存的修改不换成库里的内容（已删除仍提示并退出）。设置中途切回自动保存时，没存的修改按自动保存的节拍写下。禁止为手动保存另写写库流程或另起询问框，禁止在手动保存时于上述时机悄悄写库。视觉规范见 DESIGN.md §5.8“手动保存修改”。
+## 打开日记
+- 必须：“打开日记时直接编辑”（默认关）开启时跳过预览页；导图日记一律直接进编辑页（见 `mind_maps.md`）。
+- 禁止：未解封的时间胶囊与查不到的日记绕过预览页（封存页）；宽窗口右栏选中不算打开。
+- 必须：从搜索结果打开时带上搜索词，打开查找栏并跳到第一处、不弹键盘（见 `editor.md`）。
+- 必须：可点开的日记卡片包 `ContainerTransformSource`，经 `openDiaryPage(origin:)` 从卡片展开。
+- 禁止：转场容器透出列表、另截或隐藏原卡片，或换回 SDK `SnapshotWidget`（玻璃卡片会变透明）。
+- 必须：等待路由入场结束只经 `RouteEntranceWaiter`，禁止直接读路由 `animation`。
+
+## 预览页
+- 必须：左右翻页只经 `DiaryPreviewPage(sequence:)`，顺序取进入时的列表并冻结，单篇入口不传。
+- 禁止：另写翻页手势识别器，或在预览页内放横向滚动容器（会抢走翻页）。
+- 必须：删除结果带被删日记 id，入口按它撤销；勾选待办只经 `updateDiaryContent`（`updateDiary` 会移出归档）。
+- 必须：双击正文进编辑只在手机上、阅读行为开启（默认开）时生效，禁止改成双击识别器（单击会等超时）。
+- 必须：预览页与编辑页的“更多”条目只经 `diaryMoreMenuItems` 分组，禁止改回底部面板或另拼一份。
+
+## 阅读式编辑页与保存
+- 必须：编辑已有日记一律是阅读式版式，只经预览页样式与共用部件绘制；新建日记保持表单式。
+- 必须：点标签 / 日记本胶囊、分享、导出、AI 回应与删除前先补存，失败留在本页。
+- 必须：被盖住时立即补存；回到最上层时读库比对，已删除则退出、别处改过则换成库里内容。
+- 禁止：回到前台时把内存副本直接写回；删除只经 `softDeleteDiary(touchUpdatedAt: false)`。
+- 必须：写库方式只看 `DiaryEditPrefs`（单个 JSON 键，随备份导出、失败回滚），默认自动保存。
+- 必须：手动保存只经“保存”、Ctrl / ⌘ + S 与 `showUnsavedChangesDialog` 的“保存并退出”写库，其余时机一律不写。
+
+## 搜索
+- 必须：搜索会话只在 `DiarySearchController`，页内条件不回写首页筛选。
+- 必须：关键词只经 `splitSearchTerms`（最多 8 个、LIKE 转义），查询、留言命中与高亮共用，禁止另写。
+- 必须：筛选只经 `DiarySearchFilters`（每项一条智能日记本规则），它与“含归档”都传到结果数与翻页。
+- 必须：未解封胶囊只按标题匹配、不标命中；隐藏日记本可搜到、上锁的排除（见 `notebooks.md`）。
+- 必须：“存为智能日记本”只经 `runSaveSearchAsSmartNotebook`，范围与“含归档”不进规则。
+- 必须：最近搜索（只记关键词）与排序只存本机键 `app.search.preferences`，不随备份、不同步。
+- 必须：`openDiaryTagSearch` 从日记本统计页进入时带这本的范围，其余为全局搜索。
+- 必须：胶囊形搜索框（搜索页、标签子页）统一经 `SearchPillField`。
+
+## 首页列表与标签
+- 必须：布局存 `app.settings.diary_layout_mode`（随备份导出），未选过或认不出时为瀑布流。
+- 必须：只有列表布局可左滑归档，瀑布流不挂侧滑（易与切 Tab 混淆误归档，#311）。
+- 必须：标签筛选单击只选这一个、再点取消，长按（桌面 Ctrl / ⌘ 点击）进多选；禁止让单击恢复成增减（#196）。
+- 必须：列表整体切换只经 `DiaryListSwitchMotion`，禁止给列表套整块淡入淡出。
+- 必须：切换标签后只经 `jumpDiaryListToStart` 回到列表开头，禁止跳到最顶（刊头会弹出）。
+- 必须：标签子页排序只存 `app.settings.tag_picker_sort`（随备份导出），检索词只在内存里。
+- 必须：拼音归组、排序与检索只经 `NameIndexKey`；拼音表由脚本生成、禁止手改，禁止引入整本字典的库。
+- 必须：批量改标签只经 `applyDiaryTagBatch`（单事务、不动更新时间），撤销只经 `restoreDiaryTagBatch`。
+
+## 快速滚动条
+- 必须：只经 `DiariesFastScroller`，按“第几篇”换算，总篇数只经同口径、不带正文的 `watchDiaryTimeline`。
+- 禁止：跳往未加载部分时逐页追加，或远距离直接 `jumpTo`（须逐帧限步）。
+- 必须：替换 `pagedDiariesProvider` 且会滚动长列表的测试，同时替换 `diaryTimelineProvider`。
+
+## 功能提示
+- 必须：一次性提示进度只存本机键 `app.settings.feature_tips`（不随备份、不同步），新提示登记为 `FeatureTip`。
+- 禁止：把缓存的整份进度写回；只经 `SettingsService.updateFeatureTips` 改自己那条。
+- 必须：标签“下拉展开”提示只在入场编排后、不在多选且一行放不下时出现，每次冷启动最多一次。
+- 必须：下拉提示累计 3 次或展开过一次后不再出现；多选提示每次启动最多一次，长按过即不再出现。

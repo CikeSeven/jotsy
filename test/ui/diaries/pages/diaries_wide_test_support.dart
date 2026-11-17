@@ -145,6 +145,12 @@ class WideDiaryDatabase extends AppDatabase {
   }
 }
 
+/// 首页布局选为列表的设置：没选过时默认瀑布流（#311），测列表专属行为
+/// （内容列宽、左滑归档）的用例经 [pumpWideDiariesPage] 的 `preferences` 传入。
+const Map<String, Object> wideListLayoutPreferences = <String, Object>{
+  'app.settings.diary_layout_mode': 'list',
+};
+
 /// 以 [size] 的窗口挂载日记页（不经首页外壳：页面拿到整个窗口宽度）。
 Future<WideDiaryStore> pumpWideDiariesPage(
   WidgetTester tester, {

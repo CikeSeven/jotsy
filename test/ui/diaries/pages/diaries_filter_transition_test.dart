@@ -50,6 +50,7 @@ Future<void> _pumpPage(
   int oldCount = 1,
   int freshCount = 1,
   bool reduceMotion = false,
+  String? layout,
 }) async {
   tester.view.physicalSize = const Size(390, 800);
   tester.view.devicePixelRatio = 1;
@@ -59,7 +60,9 @@ Future<void> _pumpPage(
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
   }
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  SharedPreferences.setMockInitialValues(<String, Object>{
+    'app.settings.diary_layout_mode': ?layout,
+  });
   final settings = await SettingsService.create();
   final theme = expressiveTestTheme(Brightness.light);
   await tester.pumpWidget(
@@ -369,7 +372,11 @@ void main() {
   testWidgets('switching layout exits before the grid replaces the list', (
     tester,
   ) async {
-    await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
+    await _pumpPage(
+      tester,
+      filteredDelay: const Duration(milliseconds: 20),
+      layout: 'list',
+    );
     final l10n = tester.element(find.byType(DiariesPage)).l10n;
 
     await tester.tap(find.byTooltip(l10n.autoT0125));

@@ -53,11 +53,12 @@ Future<(SettingsService, AppLocalizations)> _pumpPage(
   WidgetTester tester, {
   Brightness brightness = Brightness.light,
   Size size = const Size(400, 860),
+  Map<String, Object> prefs = const <String, Object>{},
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  SharedPreferences.setMockInitialValues(prefs);
   final settings = (await tester.runAsync(SettingsService.create))!;
   await tester.pumpWidget(
     ProviderScope(
@@ -458,18 +459,38 @@ void main() {
     await _dismissSnackBars(tester);
   });
 
+  DiaryLayoutMode previewLayout(WidgetTester tester) => tester
+      .widget<DiariesListSection>(find.byType(DiariesListSection))
+      .layoutMode;
+
+  testWidgets('opens on the waterfall layout when none was chosen', (
+    tester,
+  ) async {
+    await _pumpPage(tester);
+    expect(previewLayout(tester), DiaryLayoutMode.waterfall);
+  });
+
+  testWidgets('opens on the list layout the home page was set to', (
+    tester,
+  ) async {
+    await _pumpPage(
+      tester,
+      prefs: const <String, Object>{'app.settings.diary_layout_mode': 'list'},
+    );
+    expect(previewLayout(tester), DiaryLayoutMode.list);
+  });
+
   testWidgets('the layout toggle edits the waterfall-only options', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(tester);
+    final (settings, l10n) = await _pumpPage(
+      tester,
+      prefs: const <String, Object>{'app.settings.diary_layout_mode': 'list'},
+    );
+    expect(previewLayout(tester), DiaryLayoutMode.list);
     await tester.tap(find.text(l10n.autoT0147));
     await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<DiariesListSection>(find.byType(DiariesListSection))
-          .layoutMode,
-      DiaryLayoutMode.waterfall,
-    );
+    expect(previewLayout(tester), DiaryLayoutMode.waterfall);
     await _openTab(tester, l10n.diaryCardStyleTabLayout);
     expect(find.text(l10n.diaryCardStyleWaterfallGroup), findsOneWidget);
     await _tapVisible(tester, find.text(l10n.diaryCardStyleColumnsValue(3)));

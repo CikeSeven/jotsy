@@ -36,7 +36,10 @@ Future<void> _pumpHome(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  // 列表布局：滚动用例按单列卡片的高度取滚动距离（瀑布流两列只有一半高）。
+  SharedPreferences.setMockInitialValues(<String, Object>{
+    'app.settings.diary_layout_mode': 'list',
+  });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
   final settings = await SettingsService.create();

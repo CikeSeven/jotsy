@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_features.dart';
@@ -160,6 +161,7 @@ void main() {
       tester,
       size: const Size(800, 800),
       diaries: _diaries('noswipe', 2),
+      preferences: wideListLayoutPreferences,
     );
     expect(find.byType(DiarySwipeActionItem), findsNothing);
     await unmountWideDiariesPage(tester);
@@ -170,8 +172,25 @@ void main() {
       tester,
       size: const Size(400, 800),
       diaries: _diaries('swipe', 2),
+      // 侧滑只挂在列表布局上（瀑布流不挂，#311）。
+      preferences: wideListLayoutPreferences,
     );
     expect(find.byType(DiarySwipeActionItem), findsNWidgets(2));
+    await unmountWideDiariesPage(tester);
+  });
+
+  testWidgets('the default waterfall layout has no swipe-to-archive', (
+    tester,
+  ) async {
+    // #311：没选过布局时首页是瀑布流，左右滑动切 Tab 不会误归档。
+    await pumpWideDiariesPage(
+      tester,
+      size: const Size(400, 800),
+      diaries: _diaries('default', 2),
+    );
+    expect(find.byType(SliverMasonryGrid), findsOneWidget);
+    expect(wideListCards, findsNWidgets(2));
+    expect(find.byType(DiarySwipeActionItem), findsNothing);
     await unmountWideDiariesPage(tester);
   });
 
@@ -183,6 +202,7 @@ void main() {
       size: const Size(400, 800),
       diaries: _diaries('swipeoff', 2),
       preferences: <String, Object>{
+        ...wideListLayoutPreferences,
         'app.settings.app_features': const AppFeatures(
           swipeArchive: false,
         ).encode(),

@@ -19,6 +19,7 @@ void main() {
         diaries: <DiaryWithTags>[
           for (var index = 0; index < 6; index++) wideDiary('medium', index),
         ],
+        preferences: wideListLayoutPreferences,
       );
 
       // 刊头铺满页宽，标题与其他 Tab 一样距左缘 16（#308）；标签栏跟内容
@@ -56,6 +57,7 @@ void main() {
       diaries: <DiaryWithTags>[
         for (var index = 0; index < 4; index++) wideDiary('phone', index),
       ],
+      preferences: wideListLayoutPreferences,
     );
 
     expect(find.byType(DiaryDetailPane), findsNothing);

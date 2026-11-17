@@ -7,6 +7,8 @@ import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../diaries/models/diary_card_style/diary_card_style.dart';
+import '../../diaries/sections/diary_head_section.dart';
+import '../../diaries/viewmodels/diary_view_preferences.dart';
 import '../controllers/diary_card_style_editor_controller.dart';
 import '../sections/diary_card_style/diary_card_style_color_tab.dart';
 import '../sections/diary_card_style/diary_card_style_content_tab.dart';
@@ -33,13 +35,14 @@ class DiaryCardStylePage extends StatefulWidget {
   const DiaryCardStylePage({
     super.key,
     required this.settingsService,
-    this.initialMode = DiaryCardMode.list,
+    this.initialMode,
   });
 
   final SettingsService settingsService;
 
-  /// 打开时预览与编辑的布局（从日记页进入时取当前布局）。
-  final DiaryCardMode initialMode;
+  /// 打开时预览与编辑的布局：从日记页进入时传页面当前布局；不传（从设置等
+  /// 处进入）时取日记页保存的布局，与首页看到的一致。
+  final DiaryCardMode? initialMode;
 
   @override
   State<DiaryCardStylePage> createState() => _DiaryCardStylePageState();
@@ -49,8 +52,20 @@ class _DiaryCardStylePageState extends State<DiaryCardStylePage> {
   late final DiaryCardStyleEditorController _controller =
       DiaryCardStyleEditorController(
         settingsService: widget.settingsService,
-        initialMode: widget.initialMode,
+        initialMode: widget.initialMode ?? _savedHomeMode(),
       );
+
+  DiaryCardMode _savedHomeMode() {
+    final layout = DiaryViewPreferences.fromRaw(
+      sortRaw: widget.settingsService.diarySortModeRaw,
+      layoutRaw: widget.settingsService.diaryLayoutModeRaw,
+    ).layoutMode;
+    return switch (layout) {
+      DiaryLayoutMode.list => DiaryCardMode.list,
+      DiaryLayoutMode.waterfall => DiaryCardMode.waterfall,
+    };
+  }
+
   List<DiaryWithTags>? _samples;
 
   @override

@@ -26,7 +26,7 @@ Diaries always stays; Calendar and Explore can be turned off. The To-dos page is
 - To its right: AI assistant (only once AI is turned on and set up), Drafts (with a number badge when you have drafts), and More (Archived diaries; sort order; layout: list or waterfall, and card style; Settings).
 - Below it is the tag bar. Tap a tag to show only that tag, long-press to combine several, and drag down to see all tags. With notebooks turned on, the first chip is the notebook switcher (it normally reads "All entries"); tap it to open the shelf and jump to a notebook or to "Not in a notebook".
 - The New button at the bottom right writes a new entry. Inside a notebook it reads "Write in" plus the notebook's name.
-- On a phone, swipe a card left to archive it, or long-press to select several (add to notebook, archive, delete, pin, set tags, export and more). On desktop, use the right-click menu.
+- On a phone, in the List layout, swipe a card left to archive it (the default Waterfall layout has no swipe, so switching tabs can't archive by accident), or long-press to select several (add to notebook, archive, delete, pin, set tags, export and more). On desktop, use the right-click menu.
 
 ## Write your first entry
 

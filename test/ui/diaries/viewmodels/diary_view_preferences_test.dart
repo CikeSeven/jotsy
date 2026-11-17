@@ -24,11 +24,16 @@ void main() {
     expect(_parseSort('relevanceDesc'), DiarySortMode.updatedDesc);
   });
 
-  test('layout parsing is unchanged', () {
-    DiaryLayoutMode parseLayout(String raw) =>
-        DiaryViewPreferences.fromRaw(sortRaw: '', layoutRaw: raw).layoutMode;
+  DiaryLayoutMode parseLayout(String raw) =>
+      DiaryViewPreferences.fromRaw(sortRaw: '', layoutRaw: raw).layoutMode;
+
+  test('saved layout choices keep their meaning', () {
     expect(parseLayout('waterfall'), DiaryLayoutMode.waterfall);
     expect(parseLayout('list'), DiaryLayoutMode.list);
-    expect(parseLayout('grid'), DiaryLayoutMode.list);
+  });
+
+  test('empty or unknown layout values fall back to the waterfall default', () {
+    expect(parseLayout(''), DiaryLayoutMode.waterfall);
+    expect(parseLayout('grid'), DiaryLayoutMode.waterfall);
   });
 }

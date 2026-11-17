@@ -238,6 +238,7 @@ void main() {
       'chapters are shown', (tester) async {
     late String travel;
     final h = await pumpHome(tester, (h) async {
+      await h.settings.setDiaryLayoutModeRaw('list');
       travel = await chaptered(h, sort: NotebookSort.book);
       final a = await h.diary('甲', notebookIds: <String>[travel]);
       final b = await h.diary('乙', notebookIds: <String>[travel]);

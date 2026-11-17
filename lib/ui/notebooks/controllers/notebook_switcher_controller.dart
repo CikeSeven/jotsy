@@ -539,40 +539,66 @@ class NotebookSwitcherController extends ChangeNotifier {
     _setPhase(NotebookSwitcherPhase.closing);
     if (target == NotebookSwitcherOrigin.chip) {
       chipHidden.value = true;
-      _springStage(
-        1,
-        ExpressiveMotion.springPage,
-        velocity: velocity,
-        onDone: () {
-          _finish();
-          // 胶囊接住容器：先被压小一点再弹回。
-          if (!_reduceMotion) {
-            chipBounce.value = 1;
-            ExpressiveMotion.springTo(
-              host.context,
-              chipBounce,
-              1,
-              spring: ExpressiveMotion.morphLandBounce,
-              kick: ExpressiveMotion.morphLandKick(0.08),
-            );
-          }
-        },
-      );
+      _landInChip();
     } else {
       if (_armed) _setArmed(false);
       _springStage(
         0,
         ExpressiveMotion.springPage,
         velocity: velocity,
+        tolerance: _closeTolerance,
         onDone: _finish,
       );
     }
+  }
+
+  /// 收回左缘的弹簧停稳判定：差一个像素以内就算到了。默认的极小容差会让
+  /// 弹簧在终点前拖一段看不出来的尾巴，浮层多挂几百毫秒、挡住点按与右滑。
+  static const Tolerance _closeTolerance = Tolerance(
+    distance: 0.004,
+    velocity: 0.06,
+  );
+
+  /// 收进切换胶囊：与新建日记收进角标同一套落点动效——容器按
+  /// [ExpressiveMotion.morphLandCurve] 带着余速撞进胶囊（不在终点前减速
+  /// 到停、拖一段尾巴），撞上的同一帧换回真胶囊，由胶囊接着回弹
+  /// （[ExpressiveMotion.morphLandBounce]）。离胶囊越近走得越快。
+  void _landInChip() {
+    _stageTarget = 1;
+    if (_reduceMotion) {
+      stage.value = 1;
+      _finish();
+      return;
+    }
+    final remaining = ((stage.value - 1) / 1).clamp(0.35, 1.0);
+    stage
+        .animateTo(
+          1,
+          duration: ExpressiveMotion.morphLand * remaining,
+          curve: ExpressiveMotion.morphLandCurve,
+        )
+        .then((_) {
+          if (_stageTarget != 1 || _phase != NotebookSwitcherPhase.closing) {
+            return;
+          }
+          _finish();
+          // 胶囊接住容器：先被压小一点再弹回。
+          chipBounce.value = 1;
+          ExpressiveMotion.springTo(
+            host.context,
+            chipBounce,
+            1,
+            spring: ExpressiveMotion.morphLandBounce,
+            kick: ExpressiveMotion.morphLandKick(0.08),
+          );
+        });
   }
 
   void _springStage(
     double target,
     SpringDescription spring, {
     double velocity = 0,
+    Tolerance tolerance = const Tolerance(distance: 0.0005, velocity: 0.005),
     VoidCallback? onDone,
   }) {
     _stageTarget = target;
@@ -589,7 +615,7 @@ class NotebookSwitcherController extends ChangeNotifier {
             stage.value,
             target,
             current + velocity.clamp(-12.0, 12.0),
-            tolerance: const Tolerance(distance: 0.0005, velocity: 0.005),
+            tolerance: tolerance,
             snapToEnd: true,
           ),
         )

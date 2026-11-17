@@ -246,7 +246,11 @@ class NotebookSwitcherController extends ChangeNotifier {
     );
     _pull = caught ? _pullForStage(stage.value) : 0;
     _armed = _pull >= armDistance;
-    if (!caught) _panelAnchor = null;
+    // 收回途中被新的手指接住算重新唤出：面板悬浮到这根手指的高度（浮层把
+    // 位置变化做成滑过去）；没接住时等武装再定。
+    _panelAnchor = caught && _armed
+        ? NotebookPanelAnchor.center(position.dy)
+        : null;
     _fingerY = position.dy;
     _setPhase(NotebookSwitcherPhase.dragging);
     if (!caught) {
@@ -266,12 +270,19 @@ class NotebookSwitcherController extends ChangeNotifier {
   /// 进度在 2 上换起点不会跳）；正收向胶囊途中被接住则仍以胶囊为起点，
   /// 往回拉最多回到胶囊处，松手收回时也收进胶囊。纵向中心跟着手指。
   void closeDragStart(Offset position) {
+    final closing = _phase == NotebookSwitcherPhase.closing;
     final catchable =
         _phase == NotebookSwitcherPhase.open ||
-        (_phase == NotebookSwitcherPhase.closing && _landingEntry == null);
+        (closing && _landingEntry == null);
     final pane = _pane;
     if (!catchable || pane == null) return;
     stage.stop();
+    // 收回途中被接住：多半是想重新拉开，算在这根手指处重新唤出——面板悬浮
+    // 到手指的高度（浮层把位置变化做成滑过去），不再停在上次打开的地方；
+    // 打开着时起手只是往回收，位置不动。以切换胶囊为起点时仍贴在胶囊下方。
+    if (closing && _origin == NotebookSwitcherOrigin.edge) {
+      _panelAnchor = NotebookPanelAnchor.center(position.dy);
+    }
     if (_origin == NotebookSwitcherOrigin.chip) {
       _span = (pane.width * 0.4).clamp(minSpan, maxSpan);
       if (stage.value >= 1.98) {

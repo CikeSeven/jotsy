@@ -73,7 +73,7 @@ class NotebookSwitcherOverlay extends ConsumerStatefulWidget {
 
 class _NotebookSwitcherOverlayState
     extends ConsumerState<NotebookSwitcherOverlay>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   /// 面板高度（展开 / 收起子本时弹簧到新高度）。
   late final AnimationController _height = AnimationController.unbounded(
     vsync: this,
@@ -111,7 +111,24 @@ class _NotebookSwitcherOverlayState
   bool _precached = false;
 
   @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_handleAnchorChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant NotebookSwitcherOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.controller, widget.controller)) {
+      oldWidget.controller.removeListener(_handleAnchorChanged);
+      widget.controller.addListener(_handleAnchorChanged);
+    }
+  }
+
+  @override
   void dispose() {
+    widget.controller.removeListener(_handleAnchorChanged);
+    _topShift.dispose();
     _height.dispose();
     super.dispose();
   }
@@ -181,6 +198,7 @@ class _NotebookSwitcherOverlayState
     required double sign,
     required NotebookPanelAnchor? anchor,
     required double fallbackY,
+    bool record = false,
   }) {
     const margin = NotebookSwitcherOverlay.margin;
     final padding = view.padding;
@@ -205,33 +223,73 @@ class _NotebookSwitcherOverlayState
       height,
       compact ? room : math.min(NotebookSwitcherOverlay.wideMaxHeight, room),
     );
-    final double top = _anchoredTop(
-      anchor,
-      fallbackY,
-      h,
-    ).clamp(topBound, math.max(topBound, bottomBound - h));
+    final maxTop = math.max(topBound, bottomBound - h);
+    final double settled;
+    if (anchor == null) {
+      settled = (fallbackY - h / 2).clamp(topBound, maxTop);
+    } else {
+      // 第一次见到的锚点（从切换胶囊打开时一开始就有）直接定下顶边；之后
+      // 的更换由 [_handleAnchorChanged] 在构建之外处理。
+      if (!identical(anchor, _topAnchor)) _adoptAnchor(anchor, h);
+      settled = _anchorTop.clamp(topBound, maxTop);
+    }
+    final top = settled + _topShift.value;
+    if (record) {
+      _lastTop = top;
+      _lastHeight = h;
+      _lastTopBound = topBound;
+      _lastMaxTop = maxTop;
+    }
     return Rect.fromLTWH(left, top, width, h);
   }
 
-  /// 锚点对应的面板顶边。以中心定位的锚点只在第一次见到时按当时的高度
-  /// 换算成顶边并记住：之后展开子本、面板变高时顶边不动、只往下长（手指
-  /// 刚点的角标不会被推走），碰到底边才由夹取往上让。
-  double _anchoredTop(
-    NotebookPanelAnchor? anchor,
-    double fallbackY,
-    double height,
-  ) {
-    if (anchor == null) return fallbackY - height / 2;
-    if (anchor.top) return anchor.y;
-    if (!identical(anchor, _topAnchor)) {
-      _topAnchor = anchor;
-      _anchorTop = anchor.y - height / 2;
-    }
-    return _anchorTop;
-  }
-
+  /// 当前锚点与它换算出的面板顶边（未夹取）。以中心定位的锚点只在第一次
+  /// 见到时按当时的高度换算并记住：之后展开子本、面板变高时顶边不动、只
+  /// 往下长（手指刚点的角标不会被推走），碰到底边才由夹取往上让。
   NotebookPanelAnchor? _topAnchor;
   double _anchorTop = 0;
+
+  void _adoptAnchor(NotebookPanelAnchor anchor, double height) {
+    _topAnchor = anchor;
+    _anchorTop = anchor.top ? anchor.y : anchor.y - height / 2;
+  }
+
+  /// 锚点更换时面板顶边的过渡位移：从旧位置出发，弹簧归零。
+  late final AnimationController _topShift = AnimationController.unbounded(
+    vsync: this,
+  );
+
+  /// 上一帧面板的顶边、高度与顶边的夹取范围（锚点更换时据此算出位移）。
+  double? _lastTop;
+  double _lastHeight = 0;
+  double _lastTopBound = 0;
+  double _lastMaxTop = 0;
+
+  /// 控制器换了锚点（收回途中在别处被手指接住、拉回阈值内换个高度再武装）：
+  /// 面板已经在屏上时从原来的位置滑到新位置，而不是瞬移。在监听回调里
+  /// 处理（不在构建中启动动画）。
+  void _handleAnchorChanged() {
+    final anchor = widget.controller.panelAnchor;
+    if (identical(anchor, _topAnchor)) return;
+    if (anchor == null) {
+      _topAnchor = null;
+      return;
+    }
+    final hadAnchor = _topAnchor != null;
+    final previous = _lastTop;
+    _adoptAnchor(anchor, _lastHeight);
+    if (!hadAnchor || previous == null || !mounted) return;
+    final next = _anchorTop.clamp(_lastTopBound, _lastMaxTop);
+    final shift = previous - next;
+    if (shift.abs() < 0.5) return;
+    _topShift.value = shift;
+    ExpressiveMotion.springTo(
+      context,
+      _topShift,
+      0,
+      spring: ExpressiveMotion.springSpatial,
+    );
+  }
 
   /// 左缘胶囊在进度 [t]（0–1）时的矩形。
   Rect _pillRect(Rect pane, double t, double fingerY, double sign) {
@@ -372,6 +430,7 @@ class _NotebookSwitcherOverlayState
             controller.stage,
             controller.armPop,
             _height,
+            _topShift,
           ]),
           child: panel,
           builder: (BuildContext context, Widget? panel) =>
@@ -408,6 +467,7 @@ class _NotebookSwitcherOverlayState
       sign: sign,
       anchor: controller.panelAnchor,
       fallbackY: controller.fingerY,
+      record: true,
     );
     final useChip = fromChip && chip != null;
     final anchor = useChip

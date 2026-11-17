@@ -160,6 +160,35 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('re-pulling while it closes floats to the new finger', (
+    tester,
+  ) async {
+    final h = await pumpHome(tester, seed: seedTwo);
+    final screen = MediaQuery.sizeOf(tester.element(find.byType(DiariesPage)));
+    await pull(tester, 120, y: 160);
+    await h.settleAll();
+    expect(panelRect(tester).top, closeTo(NotebookSwitcherOverlay.margin, 1));
+
+    // 返回后收回动画还在走，马上在靠下的地方再右滑：面板滑到下面去，
+    // 而不是停在上一次打开的位置。
+    expect(await systemBackLeavesApp(tester), isFalse);
+    await tester.pump(const Duration(milliseconds: 60));
+    await pull(tester, 120, y: screen.height - 40);
+    await h.settleAll();
+    expect(
+      panelRect(tester).bottom,
+      closeTo(screen.height - NotebookSwitcherOverlay.margin, 1),
+    );
+
+    // 再反过来：从下面回到上面。
+    expect(await systemBackLeavesApp(tester), isFalse);
+    await tester.pump(const Duration(milliseconds: 60));
+    await pull(tester, 120, y: 160);
+    await h.settleAll();
+    expect(panelRect(tester).top, closeTo(NotebookSwitcherOverlay.margin, 1));
+    await h.unmount();
+  });
+
   testWidgets('a deck opened from the chip hangs below the chip', (
     tester,
   ) async {

@@ -16,8 +16,8 @@ import 'diary_export_pdf_text_effects.dart';
 ///
 /// - 每条留言拆成说明行与文字两个组件交给 `MultiPage` 分页：放进同一个
 ///   Column 会成为不可分页的整体，很长的留言整页放不下时排版会失败；
-/// - 留言文字（含开头的心情）里的 emoji 经 [emoji] 画成图片（嵌入字体没有
-///   emoji 字形，见 `DiaryPdfEmoji`）；有格式的留言按正文的行内样式写出
+/// - 说明行（开头是心情）与留言文字里的 emoji 经 [emoji] 画成图片（嵌入字体
+///   没有 emoji 字形，见 `DiaryPdfEmoji`）；有格式的留言按正文的行内样式写出
 ///   （[DiaryExportLabels.commentLines]，每行一段、可分页），没有格式的照旧；
 /// - 留言图片：[images] 为已读出、已计入总量的图片（来源 → 字节），在文字
 ///   下面排成一行 [_imageExtent] 见方的圆角缩略图；不在其中的（不带媒体、
@@ -60,7 +60,13 @@ List<pw.Widget> buildDiaryPdfComments(
       unrenderedImages: comment.imagePaths.length - shown.length,
     );
     widgets
-      ..add(pw.Text(labels.commentMetaLine(entry, comment), style: muted))
+      ..add(
+        buildDiaryPdfText(
+          labels.commentMetaLine(entry, comment),
+          emoji: emoji,
+          style: muted,
+        ),
+      )
       ..add(pw.SizedBox(height: 2));
     if (labels.commentHasFormats(comment)) {
       // 有格式的留言：每行一段，片段经正文同一套行内样式

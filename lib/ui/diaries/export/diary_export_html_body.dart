@@ -109,7 +109,8 @@ class DiaryHtmlBody {
   }
 
   /// 留言区（没有留言时不写）：标题比日记标题低一级，每条留言为一行说明
-  /// 加心情与文字；文字按原样换行（`pre-wrap`），不必把换行改写成 `<br>`。
+  /// （心情在开头，[DiaryExportLabels.commentMetaLine]）加文字；文字按原样
+  /// 换行（`pre-wrap`），不必把换行改写成 `<br>`。
   /// 有格式的留言按正文的行内写法写出（[DiaryExportLabels.commentLines]），
   /// 没有格式的照旧写纯文字。
   /// 留言图片在文字下面排成一行方形缩略图（[images] 里有的，即开启了媒体且

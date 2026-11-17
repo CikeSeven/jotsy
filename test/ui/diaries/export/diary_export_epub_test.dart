@@ -421,7 +421,9 @@ void main() {
         '<td>第一段<br/>第二段</td>',
         '<p>另一篇日记</p>',
         '<h2>留言</h2>',
-        '<p class="comment-text">😊 第一条留言\n第二行 &lt;b&gt;</p>',
+        // 心情排在说明行开头，不混进留言文字（#309）。
+        '<p class="meta">😊 写下后 2 天 · ',
+        '<p class="comment-text">第一条留言\n第二行 &lt;b&gt;</p>',
         // 第二条留言：一张写成图片，找不到的那张写成占位。
         '<p class="comment-text">[图片]</p><div class="comment-images"><img src="../images/0002.jpg" alt=""/></div>',
       ]) {

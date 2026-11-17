@@ -43,6 +43,15 @@ void main() {
       createdAt: DateTime(2026, 4, 3, 22),
     ),
   ];
+  // 只有心情的留言：界面上写不出来，但旧数据、同步或导入里可能有。
+  final moodOnly = DiaryCommentRow(
+    id: 4,
+    commentId: 'c4',
+    diaryId: 'c',
+    content: '',
+    mood: '😀',
+    createdAt: DateTime(2026, 4, 4, 8),
+  );
 
   DiaryExportEntry entry({List<DiaryCommentRow> withComments = const []}) {
     return DiaryExportEntry.parse(
@@ -91,17 +100,29 @@ void main() {
   });
 
   group('labels', () {
-    test('meta line shares one wording; the text starts with the mood', () {
+    test('meta line shares one wording and starts with the mood', () {
       final e = entry(withComments: comments);
       expect(
         testExportLabels.commentMetaLine(e, comments[0]),
-        '写下后 2 天 · 4-5 21:30 · 已编辑',
+        '😀 写下后 2 天 · 4-5 21:30 · 已编辑',
       );
+      // 没选心情时说明行开头不留空格。
       expect(
         testExportLabels.commentMetaLine(e, comments[1]),
         '当天写下 · 4-3 22:00',
       );
-      expect(testExportLabels.commentText(comments[0]), startsWith('😀 第一行'));
+      // 心情只在说明行里，不混进留言文字（#309）。
+      expect(testExportLabels.commentText(comments[0]), '第一行 <b>\n# 第二行');
+    });
+
+    test('a mood-only comment has a meta line and no text', () {
+      final e = entry(withComments: <DiaryCommentRow>[moodOnly]);
+      expect(
+        testExportLabels.commentMetaLine(e, moodOnly),
+        '😀 写下后 1 天 · 4-4 08:00',
+      );
+      expect(testExportLabels.commentText(moodOnly), isEmpty);
+      expect(testExportLabels.commentsPlainText(e), '😀 写下后 1 天 · 4-4 08:00');
     });
 
     test('app labels use the relative label and the full date', () async {
@@ -112,7 +133,8 @@ void main() {
       // 导出文件以后在别处打开：时间总带完整日期，不按“今天”省略。
       expect(
         labels.commentMetaLine(entry(), comments[0]),
-        '写下后 2 天 · ${l10n.formatDateTimeMinute(comments[0].createdAt)} · 已编辑',
+        '😀 写下后 2 天 · '
+        '${l10n.formatDateTimeMinute(comments[0].createdAt)} · 已编辑',
       );
       expect(l10n.formatDateTimeMinute(comments[0].createdAt), contains('年'));
     });
@@ -131,8 +153,8 @@ void main() {
         markdown,
         endsWith(
           '正文\n\n## 留言\n\n'
-          '- *写下后 2 天 · 4-5 21:30 · 已编辑*\n\n'
-          '  😀 第一行 \\<b\\>\n\n'
+          '- *😀 写下后 2 天 · 4-5 21:30 · 已编辑*\n\n'
+          '  第一行 \\<b\\>\n\n'
           '  \\# 第二行\n\n'
           '- *当天写下 · 4-3 22:00*\n\n'
           '  =SUM(1)\n',
@@ -158,7 +180,7 @@ void main() {
         labels: testExportLabels,
         mediaPathOf: (_) => null,
       );
-      expect(markdown, contains('正文\n\n### 留言\n\n- *写下后 2 天'));
+      expect(markdown, contains('正文\n\n### 留言\n\n- *😀 写下后 2 天'));
     });
 
     test('plain text adds a ruled comments block', () {
@@ -173,7 +195,7 @@ void main() {
         text,
         endsWith(
           '正文\n\n——— 留言 ———\n'
-          '写下后 2 天 · 4-5 21:30 · 已编辑\n😀 第一行 <b>\n# 第二行\n\n'
+          '😀 写下后 2 天 · 4-5 21:30 · 已编辑\n第一行 <b>\n# 第二行\n\n'
           '当天写下 · 4-3 22:00\n=SUM(1)\n',
         ),
       );
@@ -197,8 +219,16 @@ void main() {
         expect(
           page,
           contains(
-            '<p class="meta">写下后 2 天 · 4-5 21:30 · 已编辑</p>'
-            '<p class="comment-text">😀 第一行 &lt;b&gt;\n# 第二行</p>',
+            '<p class="meta">😀 写下后 2 天 · 4-5 21:30 · 已编辑</p>'
+            '<p class="comment-text">第一行 &lt;b&gt;\n# 第二行</p>',
+          ),
+        );
+        // 只有心情的留言只写说明行，不留空的文字段。
+        expect(
+          await html(entry(withComments: <DiaryCommentRow>[moodOnly])),
+          contains(
+            '<div class="comment">'
+            '<p class="meta">😀 写下后 1 天 · 4-4 08:00</p></div>',
           ),
         );
         expect(page, contains('.comment-text{white-space:pre-wrap}'));
@@ -238,7 +268,7 @@ void main() {
       expect(
         withComments,
         contains(
-          ',"写下后 2 天 · 4-5 21:30 · 已编辑\n😀 第一行 <b>\n# 第二行\n\n'
+          ',"😀 写下后 2 天 · 4-5 21:30 · 已编辑\n第一行 <b>\n# 第二行\n\n'
           '当天写下 · 4-3 22:00\n=SUM(1)"\r\n',
         ),
       );
@@ -269,8 +299,8 @@ void main() {
         containsAllInOrder(<String>[
           '正文',
           '留言',
-          '写下后 2 天 · 4-5 21:30 · 已编辑',
-          '😀 第一行 <b>',
+          '😀 写下后 2 天 · 4-5 21:30 · 已编辑',
+          '第一行 <b>',
           '# 第二行',
           '当天写下 · 4-3 22:00',
           '=SUM(1)',
@@ -318,6 +348,7 @@ void main() {
       commentId: 'c3',
       diaryId: 'c',
       content: content,
+      mood: '😀',
       createdAt: DateTime(2026, 4, 4, 8),
       delta: encodeDiaryCommentDelta(const <InlineTextRun>[
         InlineTextRun('粗', InlineTextMarks(bold: true)),
@@ -332,6 +363,8 @@ void main() {
     test('labels split the lines and keep only web links', () {
       final lines = testExportLabels.commentLines(formatted);
       expect(lines, hasLength(2));
+      // 心情在说明行里，第一行从留言文字开始。
+      expect(lines.first.first.text, '粗');
       expect(lines.first.first.bold, isTrue);
       expect(lines.first[2].link, 'https://example.com');
       expect(lines.first[4].text, '本篇');

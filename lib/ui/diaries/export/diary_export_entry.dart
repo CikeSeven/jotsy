@@ -253,28 +253,32 @@ class DiaryExportLabels {
     ].join(' · ');
   }
 
-  /// 一条留言的说明行：“写下后 3 天 · 4月5日 21:30”，改过的末尾加
+  /// 一条留言的说明行：“😀 写下后 3 天 · 4月5日 21:30”，改过的末尾加
   /// “· 已编辑”。各写出器共用，说法一致。
+  ///
+  /// 心情 emoji 放在说明行开头、空一格（没有心情时不留空格）：预览页里
+  /// 心情是与说明行对齐的时间线节点，属于这条留言的“状态”，不混进留言
+  /// 文字（#309：EPUB 里心情曾排在正文第一行开头）。
   String commentMetaLine(DiaryExportEntry entry, DiaryCommentRow comment) {
-    return <String>[
+    final line = <String>[
       commentAge(entry.createdAt, comment.createdAt),
       commentTime(comment.createdAt),
       if (comment.editedAt != null) commentEdited,
     ].join(' · ');
+    final mood = comment.mood;
+    return mood == null || mood.isEmpty ? line : '$mood $line';
   }
 
-  /// 一条留言的文字，心情 emoji 在前、空一格。
+  /// 一条留言的文字（心情在说明行里，见 [commentMetaLine]）。
   ///
   /// 留言带图片时，没有以图片写出的那几张在文字后另起一行写成
   /// “[图片]” / “[图片 ×N]”（[commentImagesNote]），只有图片的留言就只有这
   /// 一行：[unrenderedImages] 为这几张的张数，缺省为全部（纯文本、表格这类
   /// 写不了图片的格式）；能写图片的格式传入没写成的张数（关闭了媒体、文件
-  /// 缺失或格式不支持）。没有图片的留言与加图片之前逐字节相同。
+  /// 缺失或格式不支持）。只有心情、没有文字也没有占位时为空串，各写出器
+  /// 此时只写说明行。
   String commentText(DiaryCommentRow comment, {int? unrenderedImages}) {
-    final text = <String>[
-      ?comment.mood,
-      if (comment.hasText) comment.content,
-    ].join(' ');
+    final text = comment.hasText ? comment.content : '';
     final missing = unrenderedImages ?? comment.imagePaths.length;
     return <String>[
       if (text.isNotEmpty) text,
@@ -288,16 +292,14 @@ class DiaryExportLabels {
       comment.textRuns.any((InlineTextRun run) => !run.marks.isEmpty);
 
   /// 带格式的写出器（网页 / EPUB、Markdown、Word、PDF）用的留言文字：按行
-  /// 切好的行内片段，口径同 [commentText]（心情在第一行开头、空一格；图片
-  /// 占位另起一行）。粗体、斜体、下划线、删除线与网址链接随文字带上，日记 /
-  /// 日记本链接只留文字（[ExportInline.fromAttributes]，与正文一致）。
+  /// 切好的行内片段，口径同 [commentText]（不含心情；图片占位另起一行）。
+  /// 粗体、斜体、下划线、删除线与网址链接随文字带上，日记 / 日记本链接只留
+  /// 文字（[ExportInline.fromAttributes]，与正文一致）。
   List<List<ExportInline>> commentLines(
     DiaryCommentRow comment, {
     int? unrenderedImages,
   }) {
     final inlines = <ExportInline>[
-      if (comment.mood case final mood?)
-        ExportInline(comment.hasText ? '$mood ' : mood),
       if (comment.hasText)
         for (final run in comment.textRuns)
           for (final (index, part)
@@ -326,15 +328,16 @@ class DiaryExportLabels {
   String commentImagesNote(int count) =>
       count == 1 ? '[$image]' : '[$image ×$count]';
 
-  /// 一篇的全部留言写成纯文本：每条为说明行 + 心情与文字（带图片时再加
-  /// 一行占位），条与条之间空一行。纯文本导出的留言区与表格的留言一格共用；
-  /// 没有留言时为空串。
+  /// 一篇的全部留言写成纯文本：每条为说明行（含心情）+ 文字（带图片时再加
+  /// 一行占位；没有文字时只有说明行），条与条之间空一行。纯文本导出的留言区
+  /// 与表格的留言一格共用；没有留言时为空串。
   String commentsPlainText(DiaryExportEntry entry) {
     return entry.comments
-        .map(
-          (DiaryCommentRow comment) =>
-              '${commentMetaLine(entry, comment)}\n${commentText(comment)}',
-        )
+        .map((DiaryCommentRow comment) {
+          final meta = commentMetaLine(entry, comment);
+          final text = commentText(comment);
+          return text.isEmpty ? meta : '$meta\n$text';
+        })
         .join('\n\n');
   }
 }

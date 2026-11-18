@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_editor_resume_scroll.dart';
 
 /// 精确避让叠在原生编辑器之上的面板。上游自动滚动使用固定边缘距离，无法
 /// 得知工具栏的实际高度；这里按光标全局矩形与本帧视口校正，只在文字/选区
@@ -20,6 +21,9 @@ import '../../controllers/diary_editor_controller.dart';
 /// 遮挡高度本身变高（[coveredHeight]：面板展开、录音面板打开这类一次性
 /// 变化）时滚动带动画（`medium` / `effects`），与浮层的展开同步；键盘逐帧
 /// 升高与平时的输入、选区变化仍直接跳到位。
+///
+/// 拉起键盘编辑时切到别的应用再回来：键盘回来时放回离开前的滚动位置，
+/// 不按光标揭示（见 [DiaryEditorResumeScroll]）。
 class DiaryEditorViewport extends StatefulWidget {
   const DiaryEditorViewport({
     super.key,
@@ -51,11 +55,29 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
   /// 待核对的这一次由 [DiaryEditorViewport.coveredHeight] 变高触发，滚动
   /// 带动画。
   bool _animate = false;
+
+  late final DiaryEditorResumeScroll _resume = DiaryEditorResumeScroll(
+    position: () => widget.controller.state.scrollableState?.position,
+    onSettled: _resumeSettled,
+  );
+  bool _metricsSynced = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _bind();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_metricsSynced) return;
+    _metricsSynced = true;
+    // 页面可能在键盘已升起时才建出正文：以挂载时的键盘高度为起点，之后
+    // 的度量变化才按升高 / 降低处理。
+    final view = View.of(context);
+    _keyboard = view.viewInsets.bottom / view.devicePixelRatio;
+    _resume.syncKeyboard(_keyboard);
   }
 
   void _bind() {
@@ -72,6 +94,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
                 _text(op.attributes['delta']) !=
                     _text(op.oldAttributes['delta'])),
       )) {
+        _resume.cancel();
         _schedule();
       }
     });
@@ -97,6 +120,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     final next = widget.controller.state.selection;
     if (next == _selection) return;
     _selection = next;
+    _resume.cancel();
     _schedule();
   }
 
@@ -107,10 +131,26 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     final inset = view.viewInsets.bottom / view.devicePixelRatio;
     final grew = inset > _keyboard;
     _keyboard = inset;
+    if (_resume.keyboardChanged(inset)) return;
     if (grew) {
       _coverGrew = true;
       _schedule();
     }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    _resume.lifecycleChanged(state, focused: _focused);
+  }
+
+  /// 放回结束（或放弃等待键盘）：补一次核对。键盘回来时高度变了，光标
+  /// 仍要露在遮挡上方；放回期间被压下的遮挡变高按无动画处理。
+  void _resumeSettled() {
+    if (!mounted) return;
+    _coverGrew = true;
+    _animate = false;
+    _schedule();
   }
 
   @override
@@ -152,7 +192,12 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     _coverGrew = false;
     _animate = false;
     final controller = widget.controller;
-    if (!_focused || controller.isDisposed || controller.draggingBlock) return;
+    if (_resume.pending ||
+        !_focused ||
+        controller.isDisposed ||
+        controller.draggingBlock) {
+      return;
+    }
     final state = widget.controller.state;
     final selection = state.selection;
     if (selection == null || (!selection.isCollapsed && !coverGrew)) return;
@@ -263,10 +308,22 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
   @override
   void dispose() {
     _unbind(widget);
+    _resume.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
+  /// 用户拖动正文（拖动开始的滚动通知带 dragDetails；放回与揭示用的
+  /// jumpTo / animateTo 不带）：不再放回离开前的位置。
+  bool _onScrollStart(ScrollStartNotification notification) {
+    if (notification.dragDetails != null) _resume.cancel();
+    return false;
+  }
+
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) =>
+      NotificationListener<ScrollStartNotification>(
+        onNotification: _onScrollStart,
+        child: widget.child,
+      );
 }

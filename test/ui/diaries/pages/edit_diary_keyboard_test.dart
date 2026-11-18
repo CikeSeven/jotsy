@@ -206,6 +206,63 @@ void main() {
     await unmount(tester);
   });
 
+  // 拉起键盘编辑时切到别的应用再回来：离开时键盘与悬浮工具栏一起收起，
+  // 视口变高、末尾留白变少，靠近末尾的滚动位置被夹回去；回来后应停回原处，
+  // 而不是只把光标顶到工具栏上方（整页像是自己往上滚了一截）。
+  testWidgets('switching to another app and back keeps the body in place', (
+    tester,
+  ) async {
+    await pumpCreatePage(tester);
+    await fillBody(tester);
+    final position = bodyScroll(tester);
+    position.jumpTo(position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    final controller = bodyController(tester);
+    final middle = controller.document.root.children.lastWhere((node) {
+      final rect = node.rect;
+      return rect.height > 0 && rect.center.dy > 250 && rect.center.dy < 350;
+    });
+    controller.select(
+      quill.Selection.collapsed(quill.Position(path: middle.path)),
+    );
+    await tester.pumpAndSettle();
+    final before = position.pixels;
+    final caretBefore = caretBottom(tester);
+
+    for (final state in [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+    ]) {
+      tester.binding.handleAppLifecycleStateChanged(state);
+    }
+    for (var step = 9; step >= 0; step -= 1) {
+      tester.view.viewInsets = FakeViewPadding(bottom: 30.0 * step);
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await tester.pumpAndSettle();
+    expect(position.pixels, lessThan(before - 100));
+
+    for (final state in [
+      AppLifecycleState.hidden,
+      AppLifecycleState.inactive,
+      AppLifecycleState.resumed,
+    ]) {
+      tester.binding.handleAppLifecycleStateChanged(state);
+    }
+    for (var step = 1; step <= 10; step += 1) {
+      tester.view.viewInsets = FakeViewPadding(bottom: 30.0 * step);
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+
+    expect(position.pixels, moreOrLessEquals(before, epsilon: 0.5));
+    expect(caretBottom(tester), moreOrLessEquals(caretBefore, epsilon: 0.5));
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
   testWidgets('formatting does not pull the view back to the caret', (
     tester,
   ) async {

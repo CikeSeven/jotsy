@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../viewmodels/calendar_lunar_day.dart';
+import 'calendar_cell_head.dart';
 
 /// 日期格内部排版：数字居中，指示物贴底；角标挂在数字两侧而不是格子角上。
 ///
 /// 圆点/心情/标签色样式的格子没有可见边框，角标若放在格子四角，会落在
 /// 两个日期数字之间，看不出属于哪一天；紧贴数字左上、右上（各留 1.5dp
-/// 间隙，不与数字重叠）归属才明确，也不遮挡日期。角标以固定宽度的槽位
-/// 挂在数字框外侧，不改变数字的居中位置。
+/// 间隙，不与数字重叠）归属才明确，也不遮挡日期。角标挂在数字框外侧，
+/// 不改变数字的居中位置；格子窄、放不下时由 [CalendarCellHead] 收进格子
+/// 的可见形状（[bounds]）之内。
 ///
 /// 显示农历时排成三层：数字、农历小字（[subtitle]）、底部指示物。数字与
 /// 小字作为一组，在扣掉底部 [bottomReserve] 后的区域内居中，指示物仍贴底；
@@ -18,6 +20,7 @@ class CalendarCellLayout extends StatelessWidget {
   const CalendarCellLayout({
     super.key,
     required this.number,
+    required this.bounds,
     this.indicator,
     this.leadingBadge,
     this.trailingBadge,
@@ -25,15 +28,16 @@ class CalendarCellLayout extends StatelessWidget {
     this.bottomReserve = 0,
   });
 
-  /// 角标槽位宽度：放得下“9+”上标与带底的照片角标（13dp）。
-  static const double _slot = 13;
-  static const double _gap = 1.5;
-
   /// 三层排版时为底部指示物预留的高度：最高的指示物是心情 emoji（10dp），
   /// 贴底 3dp，与上方小字再留 1dp。
   static const double indicatorBand = 14;
 
   final Widget number;
+
+  /// 格子可见形状（填色底块、热力格或照片）相对本排版（整格内容区）的
+  /// 位置，角标不会越出它。
+  final CalendarCellBounds bounds;
+
   final Widget? indicator;
 
   /// 数字左上方：未解封胶囊的锁、休/班或天气（见 CalendarCellLeadingBadge）。
@@ -51,83 +55,31 @@ class CalendarCellLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final head = buildHead(
-      number: number,
-      leadingBadge: leadingBadge,
-      trailingBadge: trailingBadge,
-    );
-    final subtitle = this.subtitle;
     final indicator = this.indicator;
     return Stack(
       fit: StackFit.expand,
       clipBehavior: Clip.none,
       children: <Widget>[
-        if (subtitle == null && bottomReserve == 0)
-          Center(child: head)
-        else
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: bottomReserve,
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                // 宽度固定为格子宽度，小字的 FittedBox 才拿得到宽度上限；
-                // 外层 FittedBox 只在整组高过可用区域时生效。
-                return FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: SizedBox(
-                    width: constraints.maxWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        head,
-                        if (subtitle != null) ...<Widget>[
-                          const SizedBox(height: 1),
-                          subtitle,
-                        ],
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: bottomReserve,
+          child: CalendarCellHead(
+            number: number,
+            subtitle: subtitle,
+            leadingBadge: leadingBadge,
+            trailingBadge: trailingBadge,
+            // 数字组只占指示物带以上的部分，可见形状的下边还要往下延。
+            bounds: bounds.extendBottom(bottomReserve),
           ),
+        ),
         if (indicator != null)
           Positioned(
             left: 0,
             right: 0,
             bottom: 3,
             child: Center(child: indicator),
-          ),
-      ],
-    );
-  }
-
-  /// 数字 + 两侧角标：角标以固定宽度的槽位挂在数字框外侧，不改变数字的
-  /// 居中位置。记了心情的日期格（CalendarMoodTile）用同一套挂法。
-  static Widget buildHead({
-    required Widget number,
-    Widget? leadingBadge,
-    Widget? trailingBadge,
-  }) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: <Widget>[
-        number,
-        if (leadingBadge != null)
-          Positioned(
-            top: -5,
-            left: -(_slot + _gap),
-            width: _slot,
-            child: Align(alignment: Alignment.topRight, child: leadingBadge),
-          ),
-        if (trailingBadge != null)
-          Positioned(
-            top: -2,
-            right: -(_slot + _gap),
-            width: _slot,
-            child: Align(alignment: Alignment.topLeft, child: trailingBadge),
           ),
       ],
     );

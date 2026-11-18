@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
-import 'calendar_cell_layout.dart';
+import 'calendar_cell_head.dart';
 import 'day_mood_face.dart';
 
 /// 记了心情的日期格内容：整格铺上心情的底色，日期数字缩小放到顶部，下面
@@ -14,7 +14,8 @@ import 'day_mood_face.dart';
 ///
 /// 排版：数字组（数字 + 角标 + 农历小字）贴顶，最多占格子高度的一半，系统
 /// 大字号下整组等比缩小而不是挤掉脸；脸取余下区域里最大的正方形居中。格子
-/// 有可见的底色，数字缩到顶部仍一眼看得出属于哪一格。
+/// 有可见的底色，数字缩到顶部仍一眼看得出属于哪一格。数字贴顶时挂在外侧的
+/// 角标离格子上沿只有 1–2dp，由 [CalendarCellHead] 收进心情底色之内。
 class CalendarMoodTile extends StatelessWidget {
   const CalendarMoodTile({
     super.key,
@@ -68,6 +69,7 @@ class CalendarMoodTile extends StatelessWidget {
             final height = constraints.maxHeight;
             // 宽窗口的格子更大，数字跟着放大一点（手机 ~11、宽窗口到 13）。
             final numberSize = (height * 0.27).clamp(10.5, 13.0);
+            final topGap = height * 0.07;
             final number = Text(
               '$day',
               style: TextStyle(
@@ -79,29 +81,23 @@ class CalendarMoodTile extends StatelessWidget {
             );
             return Column(
               children: <Widget>[
-                SizedBox(height: height * 0.07),
+                SizedBox(height: topGap),
                 ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: height * 0.5),
-                  // 宽度固定为格子宽：农历小字的 FittedBox 拿得到宽度上限，
-                  // 过长只缩小自己；外层只在整组超高时整体缩小。
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: SizedBox(
-                      width: width,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          CalendarCellLayout.buildHead(
-                            number: number,
-                            leadingBadge: leadingBadge,
-                            trailingBadge: trailingBadge,
-                          ),
-                          if (subtitle != null) ...<Widget>[
-                            const SizedBox(height: 1),
-                            subtitle,
-                          ],
-                        ],
-                      ),
+                  // 宽度为格子宽：农历小字拿得到宽度上限，过长只缩小自己；
+                  // 整组超过一半高度时整体缩小。
+                  constraints: BoxConstraints(
+                    maxWidth: width,
+                    maxHeight: height * 0.5,
+                  ),
+                  child: CalendarCellHead(
+                    number: number,
+                    subtitle: subtitle,
+                    leadingBadge: leadingBadge,
+                    trailingBadge: trailingBadge,
+                    // 数字组在格子顶下 topGap 处、与格子同宽。
+                    bounds: CalendarCellBounds(
+                      outset: EdgeInsets.only(top: topGap),
+                      radius: borderRadius.topLeft.x,
                     ),
                   ),
                 ),

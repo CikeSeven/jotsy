@@ -7,6 +7,7 @@ import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
 import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
+import 'calendar_cell_head.dart';
 import 'calendar_cell_layout.dart';
 import 'calendar_cell_marks.dart';
 import 'calendar_day_cell_parts.dart';
@@ -62,6 +63,18 @@ class CalendarDayCell extends StatelessWidget {
 
   static const double _radius = 14;
   static const double _ringGap = 2;
+
+  /// 填充形态：底色铺满外层圆角矩形，内容区在 2dp 恒定描边之内。
+  static const CalendarCellBounds _fillBounds = CalendarCellBounds(
+    outset: EdgeInsets.all(2),
+    radius: _radius,
+  );
+
+  /// 描边形态：内容区就是内层的数据底块（热力色、照片），圆角为外圈半径
+  /// 减去描边与间隙。
+  static const CalendarCellBounds _innerBounds = CalendarCellBounds(
+    radius: _radius - 2 - _ringGap,
+  );
 
   final DateTime day;
   final CalendarDisplayOptions options;
@@ -219,6 +232,7 @@ class CalendarDayCell extends StatelessWidget {
     );
     return CalendarCellLayout(
       number: _buildNumber(context, colorScheme, onFill: onFill),
+      bounds: _fillBounds,
       indicator: indicator,
       leadingBadge: _leadingBadge(colorScheme, onFill: onFill),
       trailingBadge: CalendarCellCountMark.resolve(
@@ -315,6 +329,7 @@ class CalendarDayCell extends StatelessWidget {
                     onFill: isSelected ? colorScheme.onPrimary : null,
                   ),
                 ),
+                bounds: _innerBounds,
                 leadingBadge: _leadingBadge(colorScheme, onPhoto: true),
                 bottomReserve: _indicatorReserve,
               ),
@@ -332,6 +347,7 @@ class CalendarDayCell extends StatelessWidget {
           ),
           child: CalendarCellLayout(
             number: _buildNumber(context, colorScheme),
+            bounds: _innerBounds,
             indicator: CalendarCellIndicator.resolve(
               colorScheme,
               summary: summary,
@@ -374,6 +390,7 @@ class CalendarDayCell extends StatelessWidget {
         ),
         child: CalendarCellLayout(
           number: _buildNumber(context, colorScheme, onFill: foreground),
+          bounds: _innerBounds,
           leadingBadge: _leadingBadge(colorScheme, onFill: foreground),
           trailingBadge: CalendarCellCountMark.resolve(
             summary: summary,

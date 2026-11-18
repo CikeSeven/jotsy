@@ -157,11 +157,15 @@ class SettingsService {
   final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
   final ValueNotifier<String?> diaryToolbarCurrentTimeFormatRawNotifier;
+
+  /// 心情符号（10 个，JSON 数组）；未设置为 null（默认符号）。不随备份导出，
+  /// 但随局域网同步始终同步（日记里存的是符号本身，见 docs/lan_sync.md
+  /// §2.2 prefs 行）。
   final ValueNotifier<String?> moodOptionsRawNotifier;
 
   /// 心情颜色（单个 JSON 字符串，按心情槽位稀疏记录用户改过的颜色）；解析
-  /// 与默认色板由 `DiaryMoodColors` 负责，服务层只保存原文。与心情符号同为
-  /// 本机偏好，不随备份导出。
+  /// 与默认色板由 `DiaryMoodColors` 负责，服务层只保存原文。本机偏好，不随
+  /// 备份导出、不参与同步。
   final ValueNotifier<String?> moodColorsRawNotifier;
 
   /// 日历页显示选项（单个 JSON 字符串）；解析与默认值由日历模块负责，

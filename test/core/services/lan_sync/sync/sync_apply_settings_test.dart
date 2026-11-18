@@ -65,15 +65,18 @@ void main() {
     });
   }
 
-  /// 本机现在的 prefs 记录，[tagOrder] / [features] 覆盖其中的分面。
+  /// 本机现在的 prefs 记录，[tagOrder] / [features] / [moodOptions] 覆盖其中
+  /// 的分面（[moodOptions] 为 `{'value': …}` 形式的分面值）。
   Future<SyncRecord> prefsRecord({
     List<String>? tagOrder,
     Map<String, bool> features = const {},
+    Map<String, Object?>? moodOptions,
   }) async {
     final current = (await rig.records(settings: capture()))[prefsKey]!;
     return SyncRecord(prefsKey, {
       ...current.facets,
       if (tagOrder != null) SyncPrefsFacet.tagOrder: {'value': tagOrder},
+      if (moodOptions != null) SyncPrefsFacet.moodOptions: moodOptions,
       for (final entry in features.entries)
         SyncPrefsFacet.feature(entry.key): SyncPrefsFacet.featureValue(
           entry.value,
@@ -161,6 +164,33 @@ void main() {
     expect(features.todos, isTrue);
     expect(features.notebooks, isTrue, reason: '关闭不会同步过来');
     expect(features.calendar, isFalse);
+  });
+
+  test('心情符号（prefs）：写入对方改过的符号；对方恢复默认时本机也恢复默认', () async {
+    final custom = <String>[
+      '😡',
+      ...SettingsService.defaultMoodOptions.sublist(1, 9),
+      '🥰',
+    ];
+    final target = await prefsRecord(moodOptions: {'value': custom});
+    // 不开“同步设置”也会应用。
+    final result = await rig.applier.apply(
+      await rig.planFor([target], settings: capture()),
+    );
+
+    expect(result.skipped, isEmpty);
+    expect(settings.moodOptions, custom);
+    expect(result.manifest![prefsKey], target.hashes);
+    expect((await prefsRecord()).hashes, target.hashes);
+
+    final reset = await prefsRecord(
+      moodOptions: SyncPrefsFacet.defaultMoodOptionsValue,
+    );
+    final resetResult = await applySettings(reset);
+    expect(resetResult.skipped, isEmpty);
+    expect(settings.moodOptionsRaw, isNull);
+    expect(settings.moodOptions, SettingsService.defaultMoodOptions);
+    expect((await prefsRecord()).hashes, reset.hashes);
   });
 
   test('没存过功能开关、也没有要打开的：保持“没存过”', () async {

@@ -13,6 +13,7 @@ part of 'sync_apply.dart';
 /// - `restore` 对几个键的空值什么也不做（保留本机值），而同步要的是“与对方
 ///   相同”，这些情形直接调用对应的 setter（见 [_applyEmptyValues]）；否则
 ///   本机规范值不变，下次同步又判成差异；
+/// - 心情符号不随备份、`restore` 不认识，单独应用（[_applySyncMoodOptions]）；
 /// - 任一步失败：[SettingsBackupSnapshot.restore] 回滚到应用前的值，返回
 ///   false（这条写入记为 [SyncSkipReason.settingsFailed]，下次同步再来）。
 Future<bool> _applySyncSettings(
@@ -41,6 +42,7 @@ Future<bool> _applySyncSettings(
   try {
     await BackupSettings.restore(settings, node, clearLegacyDraft: false);
     await _applyEmptyValues(settings, node);
+    await _applySyncMoodOptions(settings, node);
     return true;
   } catch (error, stack) {
     debugPrint('LAN sync settings apply failed: $error\n$stack');
@@ -89,6 +91,23 @@ Future<void> _applyEmptyValues(
             : await settings.setDiaryLocationPrecisionRaw('');
     }
   }
+}
+
+/// prefs 的心情符号（[kSyncMoodOptionsRawKey]）：null 为对方用的是默认符号，
+/// 恢复默认（删掉本机的键，与对方一样“没改过”）；否则写入对方的符号。
+Future<void> _applySyncMoodOptions(
+  SettingsService settings,
+  Map<String, Object?> node,
+) async {
+  if (!node.containsKey(kSyncMoodOptionsRawKey)) return;
+  final raw = node[kSyncMoodOptionsRawKey];
+  if (raw == null) {
+    await settings.resetMoodOptions();
+    return;
+  }
+  await settings.setMoodOptions(
+    SettingsService.decodeMoodOptions(raw as String),
+  );
 }
 
 /// 设置记录里本次真正变化的分面（与写入前的本机哈希不同的）。规划器只在

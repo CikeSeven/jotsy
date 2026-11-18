@@ -30,7 +30,10 @@ import 'package:meta/meta.dart';
 ///   的留言与版本 3 的规范值逐字节相同，历史哈希仍有效；提升版本让旧版设备
 ///   拒绝同步——它认不出这个字段，写入时会丢掉格式，下次同步再把“没有格式”
 ///   的版本当作冲突的一方传回来。
-const int kSyncFormatVersion = 4;
+/// - 5：prefs 多出心情符号 `moodOptions`。已有记录的规范值不变，历史哈希仍
+///   有效；提升版本让旧版设备拒绝同步——它认不出这个分面，写入时不会应用，
+///   两边的心情符号永远对不上。
+const int kSyncFormatVersion = 5;
 
 /// 规范值里托管媒体引用的前缀：`jotsy-media:diary_images/media_x/a.jpg`。
 const String kSyncMediaRefPrefix = 'jotsy-media:';
@@ -57,7 +60,7 @@ enum SyncEntity {
   /// 只在两端都开启“同步设置”时参与的设置（界面与编辑器偏好）。
   settings,
 
-  /// 始终同步的数据偏好：标签顺序与数据类功能开关（规格 §2.2）。
+  /// 始终同步的数据偏好：标签顺序、心情符号与数据类功能开关（规格 §2.2）。
   prefs;
 
   static SyncEntity? tryParse(String name) => values.asNameMap()[name];
@@ -115,6 +118,22 @@ abstract final class SyncPrefsFacet {
 
   /// “开启”的分面哈希：规划器不读记录就能判断哪一侧是开着的。
   static final String onHash = syncHashValue(featureValue(true));
+
+  /// 心情符号：`{"value": [10 个符号…]}`，与默认符号相同时为
+  /// `{"value": null}`。日记里存的是符号本身，自定义的符号只有经这份设置
+  /// 才认得出槽位（心情色、统计、日历），所以与标签顺序一样始终同步。没有
+  /// 共同祖先时改过的一侧胜出（§4.1）。
+  static const String moodOptions = 'moodOptions';
+
+  /// 默认心情符号的分面值。
+  static const Map<String, Object?> defaultMoodOptionsValue = <String, Object?>{
+    'value': null,
+  };
+
+  /// 默认心情符号的分面哈希：规划器不读记录就能判断哪一侧没改过。
+  static final String defaultMoodOptionsHash = syncHashValue(
+    defaultMoodOptionsValue,
+  );
 }
 
 /// prefs 记录的唯一 id。

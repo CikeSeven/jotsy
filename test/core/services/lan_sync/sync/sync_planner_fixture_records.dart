@@ -192,11 +192,18 @@ SyncRecord settingsRecord(Map<String, Object?> values) =>
     });
 
 /// prefs 记录：标签顺序与数据类功能开关（没给的开关不出现）。
+/// [moodOptions]：不传时没有心情符号分面，传 null 为默认符号，传列表为改过
+/// 的符号。
 SyncRecord prefsRecord({
   List<String> tagOrder = const <String>[],
   Map<String, bool> features = const <String, bool>{},
+  Object? moodOptions = _noMoodOptions,
 }) => SyncRecord(prefsKey, <String, Object?>{
   SyncPrefsFacet.tagOrder: <String, Object?>{'value': tagOrder},
+  if (!identical(moodOptions, _noMoodOptions))
+    SyncPrefsFacet.moodOptions: <String, Object?>{'value': moodOptions},
   for (final entry in features.entries)
     SyncPrefsFacet.feature(entry.key): SyncPrefsFacet.featureValue(entry.value),
 });
+
+const Object _noMoodOptions = Object();

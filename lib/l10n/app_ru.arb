@@ -14339,7 +14339,7 @@
   "@lanSyncSyncSettings": {
     "description": "Switch: also sync app settings."
   },
-  "lanSyncSyncSettingsSubtitle": "Если включить на обоих устройствах, синхронизируются и настройки оформления, редактора и другие. Порядок тегов и включение функций вроде комментариев или блокнотов синхронизируются всегда",
+  "lanSyncSyncSettingsSubtitle": "Если включить на обоих устройствах, синхронизируются и настройки оформления, редактора и другие. Порядок тегов, эмодзи настроения и включение функций вроде комментариев или блокнотов синхронизируются всегда",
   "@lanSyncSyncSettingsSubtitle": {
     "description": "Subtitle of the sync settings switch."
   },

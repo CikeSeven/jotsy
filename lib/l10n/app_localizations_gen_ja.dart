@@ -10159,7 +10159,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get lanSyncSyncSettingsSubtitle =>
-      '両方のデバイスでオンにすると、外観やエディターなどの設定も同期されます。タグの並び順と、コメントや日記帳などの機能の有効化は常に同期されます';
+      '両方のデバイスでオンにすると、外観やエディターなどの設定も同期されます。タグの並び順、気分の絵文字、コメントや日記帳などの機能の有効化は常に同期されます';
 
   @override
   String get lanSyncOnline => 'オンライン';

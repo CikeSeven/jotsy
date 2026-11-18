@@ -198,6 +198,65 @@ void main() {
     });
   });
 
+  test('心情符号在 prefs（不开同步设置也同步）：默认为 null，改过为 10 个符号', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    final rows = await a.db.readSyncRows();
+    SyncRecord prefsOf() => prefsRecord(
+      rows,
+      syncCaptureSettings(settings, includeSettings: false),
+    );
+    expect(prefsOf().facets[SyncPrefsFacet.moodOptions], {'value': null});
+    expect(
+      prefsOf().hashes[SyncPrefsFacet.moodOptions],
+      SyncPrefsFacet.defaultMoodOptionsHash,
+    );
+
+    // 手动改回与默认相同的符号：仍是“没改过”。
+    await settings.setMoodOptions(SettingsService.defaultMoodOptions);
+    expect(prefsOf().facets[SyncPrefsFacet.moodOptions], {'value': null});
+    // 读不出来的原文按默认处理，不让脏数据传到另一台。
+    settings.moodOptionsRawNotifier.value = 'not json';
+    expect(prefsOf().facets[SyncPrefsFacet.moodOptions], {'value': null});
+
+    final custom = <String>[
+      '😡',
+      ...SettingsService.defaultMoodOptions.sublist(1, 9),
+      '🥰',
+    ];
+    await settings.setMoodOptions(custom);
+    final prefs = prefsOf();
+    expect(prefs.facets[SyncPrefsFacet.moodOptions], {'value': custom});
+    // 不在 settings 记录里（不受“同步设置”控制）。
+    expect(
+      settingsRecord(
+        rows,
+        capture(settings),
+      ).facets.containsKey(kSyncMoodOptionsRawKey),
+      isFalse,
+    );
+
+    final node = syncPrefsRestoreNode(
+      prefs,
+      facets: <String>[SyncPrefsFacet.moodOptions],
+      tagIdsByName: const <String, int>{},
+      localAppFeaturesRaw: null,
+    );
+    expect(node, <String, Object?>{
+      kSyncMoodOptionsRawKey: SettingsService.encodeMoodOptions(custom),
+    });
+    final defaultNode = syncPrefsRestoreNode(
+      SyncRecord(prefs.key, {
+        ...prefs.facets,
+        SyncPrefsFacet.moodOptions: SyncPrefsFacet.defaultMoodOptionsValue,
+      }),
+      facets: <String>[SyncPrefsFacet.moodOptions],
+      tagIdsByName: const <String, int>{},
+      localAppFeaturesRaw: null,
+    );
+    expect(defaultNode, <String, Object?>{kSyncMoodOptionsRawKey: null});
+  });
+
   test('不同步设置时只有 prefs，没有 settings', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final settings = await SettingsService.create();

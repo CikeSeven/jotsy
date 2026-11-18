@@ -1,7 +1,7 @@
 part of 'settings_service.dart';
 
-/// 备份导入前保留设置的原始值和通知状态，失败时恢复“未设置”与已有值。
-/// 只覆盖备份会写入的键，不触碰连接凭据或其他不在备份中的偏好。
+/// 备份导入与局域网同步写设置前保留原始值和通知状态，失败时恢复“未设置”与
+/// 已有值。只覆盖备份会写入的键，不触碰连接凭据或其他不在备份中的偏好。
 extension SettingsServiceBackup on SettingsService {
   SettingsBackupSnapshot captureBackupSnapshot() {
     const keys = [
@@ -39,6 +39,8 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyDiaryLocationPrecision,
       SettingsService._keyAppLocaleCode,
       SettingsService._keyAppLockEnabled,
+      SettingsService._keyMoodOptions,
+      SettingsService._keyMoodColors,
     ];
     return SettingsBackupSnapshot._(
       _prefs,
@@ -69,6 +71,8 @@ extension SettingsServiceBackup on SettingsService {
         _notifierRollback(diaryEditPrefsRawNotifier),
         _notifierRollback(todoSettingsRawNotifier),
         _notifierRollback(aiPrefsRawNotifier),
+        _notifierRollback(moodOptionsRawNotifier),
+        _notifierRollback(moodColorsRawNotifier),
       ],
     );
   }

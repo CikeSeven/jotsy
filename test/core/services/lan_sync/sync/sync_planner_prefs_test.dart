@@ -5,7 +5,7 @@ import 'package:node_diary/core/services/lan_sync/sync/sync_plan.dart';
 import 'sync_planner_fixtures.dart';
 
 /// prefs 记录（规格 §2.2、§4.1）：标签顺序按列表合并，数据类功能开关只同步
-/// “开启”；两者都不计入“以哪边为准”。
+/// “开启”，心情符号没有共同祖先时改过的一侧胜出；都不计入“以哪边为准”。
 void main() {
   Object? orderOf(PlanDevice device) =>
       (device.records[prefsKey]!.facets[SyncPrefsFacet.tagOrder]!
@@ -173,5 +173,99 @@ void main() {
     applyBoth(a, b, plan);
     expect(orderOf(a), ['a3', 'a1', 'new', 'a2']);
     expect(a.manifest.toJson(), b.manifest.toJson());
+  });
+
+  group('心情符号', () {
+    const custom = ['😡', '😢', '😞', '😕', '😐', '🙂', '😊', '😄', '😀', '🥰'];
+    const other = ['💀', '😢', '😞', '😕', '😐', '🙂', '😊', '😄', '😀', '🤩'];
+
+    Object? moodOf(PlanDevice device) =>
+        (device.records[prefsKey]!.facets[SyncPrefsFacet.moodOptions]!
+            as Map)['value'];
+
+    test('首次同步（含刚升级、两侧都没有历史）：改过的一侧胜出，与 deviceId 无关', () {
+      // deviceId 平手时 b 胜：把改过的放在 a 和 b 上各验一次。
+      for (final customOn in ['a', 'b']) {
+        final a = PlanDevice('a')
+          ..put(prefsRecord(moodOptions: customOn == 'a' ? custom : null))
+          ..commit(1);
+        final b = PlanDevice('b')
+          ..put(prefsRecord(moodOptions: customOn == 'b' ? custom : null))
+          ..commit(1);
+        for (final choice in SyncSideChoice.values) {
+          final plan = planBetween(
+            a,
+            b,
+            options: SyncPlanOptions(
+              nowMillis: 0,
+              firstSyncWithPeer: true,
+              sideChoice: choice,
+            ),
+          ).plan;
+          expect(plan.confirmations.sideChoiceNeeded, isFalse);
+        }
+        final plan = planBetween(a, b).plan;
+        applyBoth(a, b, plan);
+        expect(moodOf(a), custom, reason: 'custom on $customOn');
+        expect(moodOf(b), custom, reason: 'custom on $customOn');
+      }
+    });
+
+    test('同步过之后一台恢复默认：默认传过去（谁发起都一样）', () {
+      for (final resetFirst in [true, false]) {
+        final a = PlanDevice('a')
+          ..put(prefsRecord(moodOptions: custom))
+          ..commit(1000);
+        final b = PlanDevice('b')
+          ..put(prefsRecord(moodOptions: custom))
+          ..commit(1000);
+        a
+          ..put(prefsRecord(moodOptions: null))
+          ..commit(2000);
+        final (local, remote) = resetFirst ? (a, b) : (b, a);
+        applyBoth(local, remote, planBetween(local, remote).plan);
+        expect(moodOf(a), isNull);
+        expect(moodOf(b), isNull);
+      }
+    });
+
+    test('心情颜色同理：首次同步改过的一侧胜出，与 deviceId 无关', () {
+      const colors = '{"1":"#FF112233"}';
+      Object? colorsOf(PlanDevice device) =>
+          (device.records[prefsKey]!.facets[SyncPrefsFacet.moodColors]!
+              as Map)['value'];
+      for (final customOn in ['a', 'b']) {
+        final a = PlanDevice('a')
+          ..put(prefsRecord(moodColors: customOn == 'a' ? colors : null))
+          ..commit(1);
+        final b = PlanDevice('b')
+          ..put(prefsRecord(moodColors: customOn == 'b' ? colors : null))
+          ..commit(1);
+        final plan = planBetween(
+          a,
+          b,
+          options: const SyncPlanOptions(nowMillis: 0, firstSyncWithPeer: true),
+        ).plan;
+        expect(plan.confirmations.sideChoiceNeeded, isFalse);
+        applyBoth(a, b, plan);
+        expect(colorsOf(a), colors, reason: 'custom on $customOn');
+        expect(colorsOf(b), colors, reason: 'custom on $customOn');
+      }
+    });
+
+    test('两侧都改过、没有共同祖先：按变化时间取一侧，两边收敛', () {
+      final a = PlanDevice('a')
+        ..put(prefsRecord(moodOptions: null))
+        ..commit(1000)
+        ..put(prefsRecord(moodOptions: custom))
+        ..commit(3000);
+      final b = PlanDevice('b')
+        ..put(prefsRecord(moodOptions: other))
+        ..commit(2000);
+      final plan = planBetween(b, a).plan;
+      applyBoth(b, a, plan);
+      expect(moodOf(a), custom, reason: 'a 改得更晚');
+      expect(a.manifest.toJson(), b.manifest.toJson());
+    });
   });
 }

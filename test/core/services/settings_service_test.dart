@@ -1172,6 +1172,83 @@ void main() {
     );
   });
 
+  group('SettingsService mood options and colors backup', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    final custom = <String>[
+      '😡',
+      ...SettingsService.defaultMoodOptions.sublist(1, 9),
+      '🥰',
+    ];
+    const colors = '{"1":"#FF112233"}';
+
+    test(
+      'backups carry mood options and colors; restore applies them',
+      () async {
+        final source = await SettingsService.create();
+        await source.setMoodOptions(custom);
+        await source.setMoodColorsRaw(colors);
+        final node = BackupSettings.capture(source);
+        expect(
+          node['moodOptionsRaw'],
+          SettingsService.encodeMoodOptions(custom),
+        );
+        expect(node['moodColorsRaw'], colors);
+
+        SharedPreferences.setMockInitialValues(<String, Object>{});
+        final target = await SettingsService.create();
+        await BackupSettings.restore(target, node);
+        expect(target.moodOptions, custom);
+        expect(target.moodColorsRaw, colors);
+        // 重启后仍在（写进了持久化存储）。
+        final reloaded = await SettingsService.create();
+        expect(reloaded.moodOptions, custom);
+        expect(reloaded.moodColorsRaw, colors);
+      },
+    );
+
+    test(
+      'older backups keep local values; explicit null resets to defaults',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setMoodOptions(custom);
+        await settings.setMoodColorsRaw(colors);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.moodOptions, custom);
+        expect(settings.moodColorsRaw, colors);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'moodOptionsRaw': null,
+          'moodColorsRaw': null,
+        });
+        expect(settings.moodOptionsRaw, isNull);
+        expect(settings.moodOptions, SettingsService.defaultMoodOptions);
+        expect(settings.moodColorsRaw, isNull);
+      },
+    );
+
+    test(
+      'hand-edited backups: array options and object colors are accepted',
+      () async {
+        final settings = await SettingsService.create();
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'moodOptionsRaw': <Object?>['😡', null, ' '],
+          'moodColorsRaw': <String, dynamic>{'1': '#FF112233'},
+        });
+        expect(settings.moodOptions, <String>[
+          '😡',
+          ...SettingsService.defaultMoodOptions.sublist(1),
+        ]);
+        expect(settings.moodColorsRaw, colors);
+      },
+    );
+  });
+
   group('SettingsService diary export options', () {
     const key = 'app.settings.diary_export_options';
 

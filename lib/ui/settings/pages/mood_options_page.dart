@@ -6,6 +6,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../diaries/models/diary_mood_palette.dart';
 import '../../diaries/viewmodels/diary_card_colors.dart';
+import '../../widgets/editing_session_blocker.dart';
 import '../../widgets/form_width.dart';
 import '../widgets/mood_option_row.dart';
 import '../widgets/mood_palette_strip.dart';
@@ -22,7 +23,9 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 ///   内置色时删除设置键），“重置”把两者都恢复为默认（同样要保存才生效）；
 /// - 保存到 SettingsService，符号供发布/编辑面板、日历聚合和探索趋势共用，
 ///   颜色供预览页“心情”配色基调与卡片心情色使用；
-/// - 不负责历史日记迁移，历史默认符号仍由权重映射兼容。
+/// - 不负责历史日记迁移，历史默认符号仍由权重映射兼容；
+/// - 打开期间是局域网同步的阻塞者（[EditingSessionBlocker]）：符号与颜色随
+///   同步写入，而保存会把打开时读到的草稿整份写回、覆盖同步来的改动。
 class MoodOptionsPage extends StatefulWidget {
   const MoodOptionsPage({super.key, required this.settingsService});
 
@@ -32,7 +35,11 @@ class MoodOptionsPage extends StatefulWidget {
   State<MoodOptionsPage> createState() => _MoodOptionsPageState();
 }
 
-class _MoodOptionsPageState extends State<MoodOptionsPage> {
+class _MoodOptionsPageState extends State<MoodOptionsPage>
+    with EditingSessionBlocker<MoodOptionsPage> {
+  @override
+  String get editingSessionLabel => 'mood-options';
+
   late final List<TextEditingController> _controllers;
   late final Listenable _emojis;
   late DiaryMoodColors _colors;

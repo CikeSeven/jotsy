@@ -10006,7 +10006,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lanSyncSyncSettingsSubtitle =>
-      '两台设备都开启时，外观、编辑器等设置也一并同步。标签顺序和留言、日记本等功能的开启总会同步';
+      '两台设备都开启时，外观、编辑器等设置也一并同步。标签顺序、心情符号（含颜色）和留言、日记本等功能的开启总会同步';
 
   @override
   String get lanSyncOnline => '在线';

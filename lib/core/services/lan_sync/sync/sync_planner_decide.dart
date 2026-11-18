@@ -63,12 +63,20 @@ extension _Decide on _Planner {
     // 功能开关），与对方天然没有共同哈希，却谈不上“两边都改过”：不计入、
     // 也不受“以哪边为准”影响。列表（含标签顺序）按列表规则合并（没有祖先
     // 时取并集，选了哪一边最终都要恰好是两边记录的并集，见
-    // [_Lists.resolveOrderLists]）；功能开关开着的一侧胜出（只同步“开启”）。
+    // [_Lists.resolveOrderLists]）；功能开关开着的一侧胜出（只同步“开启”）；
+    // 心情符号与颜色改过的一侧胜出（新设备或刚升级时两侧都没有这个分面的
+    // 历史，按变化时间比只剩 deviceId，会随机把自定义的换回默认），两侧都
+    // 改过才按变化时间。
     if (key.entity == SyncEntity.orderList) return _Pick.conflict;
     if (key.entity == SyncEntity.prefs) {
       if (facet == SyncPrefsFacet.tagOrder) return _Pick.conflict;
       if (SyncPrefsFacet.isFeature(facet)) {
         return lh == SyncPrefsFacet.onHash ? _Pick.local : _Pick.remote;
+      }
+      if (SyncPrefsFacet.prefersCustomized(facet)) {
+        if (lh == SyncPrefsFacet.unsetHash) return _Pick.remote;
+        if (rh == SyncPrefsFacet.unsetHash) return _Pick.local;
+        return _Pick.conflict;
       }
     }
     ancestryLess.add(key);

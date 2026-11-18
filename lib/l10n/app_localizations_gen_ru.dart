@@ -19698,4 +19698,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notebookDeckHideChildren => 'Скрыть вложенные блокноты';
+
+  @override
+  String get diaryThumbnailMoveEarlier => 'Переместить раньше';
+
+  @override
+  String get diaryThumbnailMoveLater => 'Переместить позже';
 }

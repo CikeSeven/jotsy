@@ -16,6 +16,7 @@
 - 必须：正文图片点按菜单只经 `showDiaryImageOptions`，禁止回退到上游 `ImageOptionsMenu`。
 - 必须：小图只存于图片 / 视频块的 `data.thumbnail`（只认 `true`，取消删键，缩放宽高保留）；只读正文不提供切换。
 - 必须：正文顶层连续小图（图片与视频可混排）三张一排只是显示分组，每张仍是独立块；分排只经 `diaryThumbnailRows`。
+- 必须：编辑页长按小图只在它所在的那一串连续小图里拖动排序，经 `DiaryThumbnailReorderLayer`；写入只经 `moveDiaryThumbnail`（一步撤销、不把页面拉向光标）；只读正文与独自一张的小图不能拖。
 - 必须：紧跟小图插入的图片与视频也设为小图（附件除外）；导出、分享与复制出去的仍是原图。
 - 必须：视频宽度上限只存于 `data.width`；小图的帧只经 `VideoPosterCache`，禁止为小图创建播放器。
 - 必须：导出视频只经 `runDiaryVideoExport`，全屏只经 `openDiaryVideoFullscreen`。

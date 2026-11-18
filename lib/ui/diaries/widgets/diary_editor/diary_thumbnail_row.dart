@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import '../../../widgets/width_layout_builder.dart';
 import '../../models/diary_thumbnail_rows.dart';
 import '../diary_image_thumbnail.dart';
+import 'diary_thumbnail_reorder_cell.dart';
 
 /// 页面块（`DiaryScrollPage` / `DiaryInlinePage`）里并排的一排小图。
 ///
@@ -17,17 +18,26 @@ import '../diary_image_thumbnail.dart';
 /// 整排的宽度算，经 [DiaryThumbnailExtent] 交给每张小图），格间
 /// [kDiaryThumbnailRowGap]；整排按第一张的对齐靠行首 / 居中 / 居右。
 ///
+/// 编辑页（有 [DiaryThumbnailReorderScope]）里每格包一层
+/// [DiaryThumbnailReorderCell]：长按拿起、拖动时让位（见
+/// `DiaryThumbnailReorderLayer`）。格子按节点带 key，排序后同一排里的格子
+/// 跟着块走。
+///
 /// 只按宽度构建（[WidthLayoutBuilder]）：键盘升降逐帧改变高度时不重建这一
 /// 排。
 class DiaryThumbnailRowView extends StatelessWidget {
   const DiaryThumbnailRowView({
     super.key,
     required this.align,
+    required this.nodes,
     required this.children,
-  });
+  }) : assert(nodes.length == children.length);
 
   /// 第一张图片块的 `data.align`（center / right，其余靠行首）。
   final Object? align;
+
+  /// 这一排的块，与 [children] 一一对应。
+  final List<af.Node> nodes;
 
   final List<Widget> children;
 
@@ -35,6 +45,7 @@ class DiaryThumbnailRowView extends StatelessWidget {
   Widget build(BuildContext context) => WidthLayoutBuilder(
     builder: (context, width) {
       final extent = diaryThumbnailExtentFor(width);
+      final reorder = DiaryThumbnailReorderScope.maybeOf(context);
       return DiaryThumbnailExtent(
         extent: extent,
         child: Align(
@@ -49,7 +60,17 @@ class DiaryThumbnailRowView extends StatelessWidget {
             children: [
               for (var i = 0; i < children.length; i++) ...[
                 if (i > 0) const SizedBox(width: kDiaryThumbnailRowGap),
-                SizedBox(width: extent, child: children[i]),
+                SizedBox(
+                  key: ObjectKey(nodes[i]),
+                  width: extent,
+                  child: reorder == null
+                      ? children[i]
+                      : DiaryThumbnailReorderCell(
+                          host: reorder,
+                          node: nodes[i],
+                          child: children[i],
+                        ),
+                ),
               ],
             ],
           ),

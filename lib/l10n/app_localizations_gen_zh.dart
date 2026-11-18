@@ -16633,4 +16633,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookDeckHideChildren => '收起子日记本';
+
+  @override
+  String get diaryThumbnailMoveEarlier => '前移';
+
+  @override
+  String get diaryThumbnailMoveLater => '后移';
 }

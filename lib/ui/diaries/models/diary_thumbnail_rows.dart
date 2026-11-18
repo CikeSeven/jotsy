@@ -114,6 +114,36 @@ DiaryThumbnailRow? diaryThumbnailRowOf(af.Node node) {
   return (start: start, end: end);
 }
 
+/// 正文顶层的小图 [node] 所在的那一串连续小图（可能跨几排）；不是顶层小图
+/// 时为 null。长按拖动排序只在这一串里挪（见 `DiaryThumbnailReorderLayer`）。
+DiaryThumbnailRow? diaryThumbnailRunOf(af.Node node) {
+  final parent = node.parent;
+  if (parent == null || parent.parent != null || !isDiaryThumbnailMedia(node)) {
+    return null;
+  }
+  final siblings = parent.children;
+  final index = node.path.last;
+  var start = index;
+  while (start > 0 && isDiaryThumbnailMedia(siblings[start - 1])) {
+    start--;
+  }
+  var end = index + 1;
+  while (end < siblings.length && isDiaryThumbnailMedia(siblings[end])) {
+    end++;
+  }
+  return (start: start, end: end);
+}
+
+/// 页面块是否把 [row] 画成并排的一排（`DiaryThumbnailRowView`）：多张的
+/// 一排，以及一串小图末尾只剩一张的那排——它也能拖动排序，要与前几排
+/// 一样包成格子。独自一张的小图仍按普通块画。
+bool diaryThumbnailRowInGrid(List<af.Node> siblings, DiaryThumbnailRow row) =>
+    row.end - row.start > 1 ||
+    (row.start > 0 &&
+        row.start < siblings.length &&
+        isDiaryThumbnailMedia(siblings[row.start]) &&
+        isDiaryThumbnailMedia(siblings[row.start - 1]));
+
 /// 顶层第 [index] 块在页面列表里由哪一项画出：并排的小图都画在这一排第一张
 /// 那一项里，其余的项是空的。用于按下标跳转（揭示某块、拖动时固定锚点）。
 int diaryThumbnailRowLeader(af.Node root, int index) {

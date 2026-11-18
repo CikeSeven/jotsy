@@ -29793,6 +29793,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide sub-notebooks'**
   String get notebookDeckHideChildren;
+
+  /// Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place earlier in its group.
+  ///
+  /// In en, this message translates to:
+  /// **'Move earlier'**
+  String get diaryThumbnailMoveEarlier;
+
+  /// Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group.
+  ///
+  /// In en, this message translates to:
+  /// **'Move later'**
+  String get diaryThumbnailMoveLater;
 }
 
 class _AppLocalizationsDelegate

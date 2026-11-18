@@ -18996,4 +18996,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookDeckHideChildren => 'Hide sub-notebooks';
+
+  @override
+  String get diaryThumbnailMoveEarlier => 'Move earlier';
+
+  @override
+  String get diaryThumbnailMoveLater => 'Move later';
 }

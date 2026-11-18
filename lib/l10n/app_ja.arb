@@ -22275,5 +22275,13 @@
   "notebookDeckHideChildren": "サブ日記帳を隠す",
   "@notebookDeckHideChildren": {
     "description": "Screen reader text of the sub-notebook badge on a notebook deck card while its sub-notebooks are shown."
+  },
+  "diaryThumbnailMoveEarlier": "前へ移動",
+  "@diaryThumbnailMoveEarlier": {
+    "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place earlier in its group."
+  },
+  "diaryThumbnailMoveLater": "後ろへ移動",
+  "@diaryThumbnailMoveLater": {
+    "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
   }
 }

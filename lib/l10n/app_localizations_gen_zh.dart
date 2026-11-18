@@ -11517,10 +11517,25 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aiToolAppendDiary => '在日记末尾添加内容';
+  String get aiToolUpdateDiary => '修改日记信息';
 
   @override
-  String get aiToolUpdateDiary => '修改日记信息';
+  String get aiToolEditDiary => '修改日记正文';
+
+  @override
+  String aiToolEditDiaryNamed(String name) {
+    return '修改「$name」的正文';
+  }
+
+  @override
+  String aiToolEditReplace(String from, String to) {
+    return '「$from」→「$to」';
+  }
+
+  @override
+  String aiToolEditRemove(String text) {
+    return '删去「$text」';
+  }
 
   @override
   String aiToolDiaryChanged(String name) {
@@ -11924,7 +11939,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String aiPromptAgentImagesAttached(String refs) {
-    return '这条消息附带的图片（按顺序）：$refs。可用 create_diary / append_to_diary 的 `images` 参数或正文里的 ![](P1) 把它们加进日记。';
+    return '这条消息附带的图片（按顺序）：$refs。在 create_diary 的正文或 edit_diary 的新文字里单独一行写 ![](P1) 就能把它们放进日记（create_diary 也可以用 `images` 参数）。';
   }
 
   @override
@@ -11953,6 +11968,19 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String aiPromptDiaryImage(int index) {
     return '[图片 $index]';
+  }
+
+  @override
+  String aiPromptDiaryEmbedKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'video': '视频',
+      'audio': '录音',
+      'file': '附件',
+      'link': '链接卡片',
+      'mindmap': '思维导图',
+      'other': '嵌入内容',
+    });
+    return '$_temp0';
   }
 
   @override
@@ -15023,6 +15051,7 @@ class AppLocalizationsZh extends AppLocalizations {
       'arg_weather': '天气',
       'arg_location': '地点',
       'arg_text': '内容',
+      'arg_edits': '改动',
       'arg_body': '正文',
       'arg_priority': '优先级',
       'arg_list': '清单',

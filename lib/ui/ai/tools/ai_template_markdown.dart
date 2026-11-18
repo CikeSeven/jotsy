@@ -66,25 +66,39 @@ void _writeBlocks(
   int depth,
   List<String> lines,
 ) {
-  final indent = '  ' * depth;
   var number = 0;
   for (final node in nodes) {
     final type = node[kDiaryBlockTypeKey];
     number = type == kDiaryBlockNumberedList ? number + 1 : 0;
-    switch (type) {
-      case kDiaryBlockDivider:
-        lines.add('$indent---');
-      case kDiaryBlockTable:
-        // 格子是表格的结构，不是子块。
-        _writeTable(node, indent, lines);
-        continue;
-      case kDiaryBlockCode:
-        _writeCode(node, indent, lines);
-      default:
-        lines.add('$indent${_textLine(node, type, number)}');
-    }
+    lines.addAll(aiTemplateBlockLines(node, depth: depth, number: number));
+    // 格子是表格的结构，不是子块。
+    if (type == kDiaryBlockTable) continue;
     _writeBlocks(diaryBlockChildren(node), depth + 1, lines);
   }
+}
+
+/// 一个块（不含子块）写成的行：分隔线、表格、代码块占各自的写法，其余按
+/// 文字块写（媒体等非文字块由调用方另行处理）。[depth] 为缩进层级，
+/// [number] 为它在连续的编号列表里的序号。日记正文的读写同样经这里
+/// （`ai_diary_markdown.dart`），与模板逐字同一写法。
+List<String> aiTemplateBlockLines(
+  Map<String, Object?> node, {
+  int depth = 0,
+  int number = 1,
+}) {
+  final indent = '  ' * depth;
+  final lines = <String>[];
+  switch (node[kDiaryBlockTypeKey]) {
+    case kDiaryBlockDivider:
+      lines.add('$indent---');
+    case kDiaryBlockTable:
+      _writeTable(node, indent, lines);
+    case kDiaryBlockCode:
+      _writeCode(node, indent, lines);
+    case final type:
+      lines.add('$indent${_textLine(node, type, number)}');
+  }
+  return lines;
 }
 
 String _textLine(Map<String, Object?> node, Object? type, int number) {
@@ -207,8 +221,13 @@ void _writeTable(Map<String, Object?> node, String indent, List<String> lines) {
 }
 
 String _cellParagraph(Map<String, Object?> block) {
-  final text = aiTemplateInlineMarkdown(diaryBlockDelta(block), cell: true);
+  var text = aiTemplateInlineMarkdown(diaryBlockDelta(block), cell: true);
+  // 只有 `-`（可带两端冒号）的格子像分隔行的一格：转义开头，一整行都是
+  // 这样的格子时才不会被读成下一张表格的分隔行。
+  if (_delimiterCell.hasMatch(text)) text = '\\$text';
   final align = diaryBlockData(block)[kDiaryBlockAlignKey];
   if (align is String) return '$text {align=$align}'.trimLeft();
   return aiTemplateEscapeSuffix(text);
 }
+
+final RegExp _delimiterCell = RegExp(r'^:?-+:?$');

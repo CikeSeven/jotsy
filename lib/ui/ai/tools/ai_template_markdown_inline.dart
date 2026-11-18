@@ -146,6 +146,7 @@ String aiTemplateInlineMarkdown(
         final value = _groupValue(group, attributes);
         if (value == null) continue;
         open[group] = value;
+        if (group == _Group.link) _escapeTrailingBang(out);
         out.write(_open(group, value));
       }
     }
@@ -186,6 +187,18 @@ String aiTemplateInlineMarkdown(
 }
 
 bool _isSpace(String char) => char == ' ' || char == '\t';
+
+/// 链接前紧挨着文字里的 `!` 时转义它：否则 `![文字](地址)` 读回来是图片
+/// （模板与日记正文都不收，整个去掉），文字与链接一起丢了。
+void _escapeTrailingBang(StringBuffer out) {
+  final text = out.toString();
+  final last = text.length - 1;
+  if (last < 0 || text[last] != '!' || _escapedAt(text, last)) return;
+  out
+    ..clear()
+    ..write(text.substring(0, last))
+    ..write(r'\!');
+}
 
 /// [text] 第 [index] 个字符前是否紧跟奇数个 `\`（即它已被转义）。
 bool _escapedAt(String text, int index) {

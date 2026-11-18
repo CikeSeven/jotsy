@@ -13432,10 +13432,25 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get aiToolAppendDiary => 'Дописать в запись';
+  String get aiToolUpdateDiary => 'Изменить данные записи';
 
   @override
-  String get aiToolUpdateDiary => 'Изменить данные записи';
+  String get aiToolEditDiary => 'Изменить текст записи';
+
+  @override
+  String aiToolEditDiaryNamed(String name) {
+    return 'Изменить текст записи «$name»';
+  }
+
+  @override
+  String aiToolEditReplace(String from, String to) {
+    return '«$from» → «$to»';
+  }
+
+  @override
+  String aiToolEditRemove(String text) {
+    return 'Удалить «$text»';
+  }
 
   @override
   String aiToolDiaryChanged(String name) {
@@ -13976,7 +13991,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String aiPromptAgentImagesAttached(String refs) {
-    return 'Фото, приложенные к этому сообщению, по порядку: $refs. Добавить их в записи можно параметром `images` у create_diary или append_to_diary либо через ![](P1) в тексте.';
+    return 'Фото, приложенные к этому сообщению, по порядку: $refs. Чтобы добавить их в запись, напиши ![](P1) отдельной строкой в тексте create_diary или в новом тексте edit_diary (у create_diary есть и параметр `images`).';
   }
 
   @override
@@ -14006,6 +14021,19 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String aiPromptDiaryImage(int index) {
     return '[Фото $index]';
+  }
+
+  @override
+  String aiPromptDiaryEmbedKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'video': 'Видео',
+      'audio': 'Аудио',
+      'file': 'Файл',
+      'link': 'Карточка-ссылка',
+      'mindmap': 'Карта мыслей',
+      'other': 'Вставка',
+    });
+    return '$_temp0';
   }
 
   @override
@@ -17907,6 +17935,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'arg_weather': 'Погода',
       'arg_location': 'Место',
       'arg_text': 'Текст',
+      'arg_edits': 'Изменения',
       'arg_body': 'Текст записи',
       'arg_priority': 'Приоритет',
       'arg_list': 'Список',

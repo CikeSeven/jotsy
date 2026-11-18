@@ -5,9 +5,11 @@
 //   description / minimum / maximum（Gemini 不认 additionalProperties、
 //   oneOf、format 等，日期的格式写在 description 里）；
 // - 转换（模型常见的小偏差，照单收下而不是报错）：数字写成字符串、布尔写成
-//   "true"、数组只给了一个值、整数写成 3.0；
+//   "true"、数组只给了一个值或写成了 JSON 字符串、整数写成 3.0；
 // - 报错（回传给模型让它改正）：缺必填、未知参数、类型不对、超出范围、
 //   不在枚举里、日期格式不对。错误信息用英文，指明参数路径。
+
+import 'dart:convert';
 
 /// 参数不合法：[message] 原样回传模型。
 class AiToolArgumentError implements Exception {
@@ -232,8 +234,11 @@ class AiArraySchema extends AiSchema {
 
   @override
   Object? coerce(Object? value, String path) {
-    // 只给了一个值时当作一项的数组。
-    final list = value is List ? value : <Object?>[value];
+    // 只给了一个值时当作一项的数组；整个数组写成 JSON 字符串时（有的模型
+    // 这样传对象数组）按 JSON 读。
+    final list = value is List
+        ? value
+        : (value is String ? _jsonList(value) : null) ?? <Object?>[value];
     final limit = maxItems;
     if (limit != null && list.length > limit) {
       throw AiSchema._error(path, 'at most $limit items');
@@ -241,6 +246,18 @@ class AiArraySchema extends AiSchema {
     return <Object?>[
       for (var i = 0; i < list.length; i++) items.coerce(list[i], '$path[$i]'),
     ];
+  }
+}
+
+/// 看起来是 JSON 数组的字符串读成列表；不是时为 null。
+List<Object?>? _jsonList(String text) {
+  final trimmed = text.trim();
+  if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) return null;
+  try {
+    final decoded = jsonDecode(trimmed);
+    return decoded is List ? decoded.cast<Object?>() : null;
+  } on FormatException {
+    return null;
   }
 }
 

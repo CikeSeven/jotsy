@@ -6,11 +6,11 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
 import 'package:node_diary/core/services/ai/ai_vision.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/ai/tools/ai_tools_images.dart';
+import 'package:node_diary/ui/ai/tools/ai_diary_markdown.dart';
 
-/// 发给 AI 的正文里图片的“[图片 n]”标记：与 view_images 的编号
-/// （`AiVisionImages.sourcesOf`）处处一致——嵌套在列表里的、旧版多键嵌入
-/// 里的、同一张图出现两次的都一样；其余文字与纯文本镜像一字不差。
+/// 发给智能体的正文（正文 Markdown）里图片的“[图片 n]”标记：与 view_images
+/// 的编号（`AiVisionImages.sourcesOf`）处处一致——嵌套在列表里的、旧版多键
+/// 嵌入里的、同一张图出现两次的都一样。
 void main() {
   final zh = lookupAppLocalizations(const Locale('zh'));
 
@@ -26,6 +26,14 @@ void main() {
     'type': 'image',
     'data': {'url': url},
   };
+  AiContextDiary diaryOf(Map<String, Object?> document) => AiContextDiary(
+    diaryId: 'd',
+    title: '',
+    contentText: diaryBlocksPlainText(document),
+    createdAt: DateTime(2026, 11, 10),
+    isArchived: false,
+    contentJson: jsonEncode(document),
+  );
 
   test('marks follow the same numbering as view_images', () {
     final document = <String, Object?>{
@@ -56,24 +64,18 @@ void main() {
         ],
       },
     };
-    final content = jsonEncode(document);
-    expect(AiVisionImages.sourcesOf(content), ['/a.jpg', '/b.jpg', '/c.jpg']);
-    final diary = AiContextDiary(
-      diaryId: 'd',
-      title: '',
-      contentText: diaryBlocksPlainText(document),
-      createdAt: DateTime(2026, 11, 10),
-      isArchived: false,
-      contentJson: content,
-    );
-    final text = aiDiaryTextWithImageMarks(zh, diary);
+    expect(AiVisionImages.sourcesOf(jsonEncode(document)), [
+      '/a.jpg',
+      '/b.jpg',
+      '/c.jpg',
+    ]);
     expect(
-      text,
+      aiDiaryMarkdownText(zh, diaryOf(document)),
       [
         '开头',
         zh.aiPromptDiaryImage(1),
-        '列表',
-        zh.aiPromptDiaryImage(2),
+        '- 列表',
+        '  ${zh.aiPromptDiaryImage(2)}',
         zh.aiPromptDiaryImage(3),
         zh.aiPromptDiaryImage(1),
         '结尾',
@@ -81,23 +83,31 @@ void main() {
     );
   });
 
-  test('without photos the text is the stored mirror', () {
+  test('plain text is written as it is; without block JSON the mirror', () {
     final document = <String, Object?>{
       'document': {
         'type': 'page',
         'children': [paragraph('只有字')],
       },
     };
-    final diary = AiContextDiary(
+    expect(aiDiaryMarkdownText(zh, diaryOf(document)), '只有字');
+    final mirrorOnly = AiContextDiary(
       diaryId: 'd',
       title: '',
-      contentText: '只有字',
+      contentText: '只有镜像',
       createdAt: DateTime(2026, 11, 10),
       isArchived: false,
-      contentJson: jsonEncode(document),
     );
-    expect(aiDiaryTextWithImageMarks(zh, diary), '只有字');
-    // 不给回调时与原来的镜像完全相同。
-    expect(diaryBlocksPlainText(document), '只有字');
+    expect(aiDiaryMarkdownText(zh, mirrorOnly), '只有镜像');
+    // 原文为空、镜像有字的异常数据：按镜像读，改的也是这些字。
+    final emptyContent = AiContextDiary(
+      diaryId: 'd',
+      title: '',
+      contentText: '镜像里的字',
+      createdAt: DateTime(2026, 11, 10),
+      isArchived: false,
+      contentJson: '',
+    );
+    expect(aiDiaryMarkdownText(zh, emptyContent), '镜像里的字');
   });
 }

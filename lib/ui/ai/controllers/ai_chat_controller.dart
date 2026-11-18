@@ -58,6 +58,7 @@ import '../models/ai_preference_parts.dart';
 import '../models/ai_preferences.dart';
 import '../providers/ai_guide_provider.dart';
 import '../providers/ai_providers.dart';
+import '../tools/ai_diary_markdown.dart';
 import '../tools/ai_tool.dart';
 import '../tools/ai_tool_registry.dart';
 import '../tools/ai_tools_images.dart';

@@ -6,6 +6,10 @@
 // 提到同一层；代码块与表格各占连续几行。结果最后经模板白名单
 // （`sanitizeDiaryTemplateBlocks`）清洗：认不出的属性、不安全的链接与媒体
 // 一律去掉，与保存模板同一道关。
+//
+// 智能体读写日记正文用的是同一套写法（`ai_diary_markdown*.dart`）：逐行读
+// [aiMarkdownBlockEntries]（带行号，另加媒体标记与对话图片的读法）、挂树
+// [aiNestMarkdownBlocks]，不经模板白名单（日记里的媒体与日记链接要留下）。
 
 import 'dart:math' as math;
 
@@ -17,20 +21,53 @@ import 'ai_template_markdown.dart';
 import 'ai_template_markdown_inline_parse.dart';
 
 /// 读出模板 Markdown，返回清洗过的块文档。
-Map<String, Object?> aiTemplateBodyFromMarkdown(String markdown) {
+Map<String, Object?> aiTemplateBodyFromMarkdown(String markdown) =>
+    sanitizeDiaryTemplateBlocks(<String, Object?>{
+      kDiaryBlocksDocumentKey: <String, Object?>{
+        kDiaryBlockTypeKey: kDiaryBlockPage,
+        kDiaryBlockChildrenKey: aiNestMarkdownBlocks([
+          for (final entry in aiMarkdownBlockEntries(markdown))
+            (depth: entry.depth, node: entry.node),
+        ]),
+      },
+    });
+
+/// 逐行读出的一个块：缩进层级、块本身（能有子块的类型带一个空的子块列表，
+/// 由 [aiNestMarkdownBlocks] 挂上）与它占的行 `[start, end)`。
+typedef AiMarkdownBlockEntry = ({
+  int depth,
+  Map<String, Object?> node,
+  int start,
+  int end,
+});
+
+/// 一行（去掉缩进与行尾空白后的内容）的另一种读法：返回块列表时代替通常的
+/// 读法（可以为空：这一行不成块），返回 null 照常读。日记正文的媒体标记与
+/// 对话图片用它（`ai_diary_markdown_edit.dart`），模板不用。代码块与表格里的
+/// 行不经过这里。
+typedef AiMarkdownLineReader =
+    List<Map<String, Object?>>? Function(String content);
+
+/// 把模板 Markdown 逐行读成块（未挂树、未清洗），并记下每块占的行，供日记
+/// 正文的修改按行对照原文。[line] 见 [AiMarkdownLineReader]。
+List<AiMarkdownBlockEntry> aiMarkdownBlockEntries(
+  String markdown, {
+  AiMarkdownLineReader? line,
+}) {
   final lines = markdown
       .replaceAll('\r\n', '\n')
       .replaceAll('\r', '\n')
       .split('\n');
-  final entries = <({int depth, Map<String, Object?> node})>[];
+  final entries = <AiMarkdownBlockEntry>[];
   var i = 0;
   while (i < lines.length) {
+    final start = i;
     final (:spaces, :content) = _indentOf(lines[i]);
     final depth = spaces ~/ 2;
     final fence = _fenceOpen.firstMatch(content);
     if (fence != null) {
       final (node, next) = _code(lines, i, spaces, fence);
-      entries.add((depth: depth, node: node));
+      entries.add((depth: depth, node: node, start: start, end: next));
       i = next;
       continue;
     }
@@ -38,21 +75,19 @@ Map<String, Object?> aiTemplateBodyFromMarkdown(String markdown) {
     final tableAt = noHeader ? i + 1 : i;
     if (_isTableStart(lines, tableAt)) {
       final (node, next) = _table(lines, tableAt, headerRow: !noHeader);
-      entries.add((depth: depth, node: node));
+      entries.add((depth: depth, node: node, start: start, end: next));
       i = next;
       continue;
     }
     i++;
     // 注释与单独一行的结束标签（模型照 HTML 习惯写成多行时）不成块。
     if (_comment.hasMatch(content) || _closingTag.hasMatch(content)) continue;
-    entries.add((depth: depth, node: _block(content)));
+    final special = line?.call(content);
+    for (final node in special ?? [aiMarkdownLineBlock(content)]) {
+      entries.add((depth: depth, node: node, start: start, end: i));
+    }
   }
-  return sanitizeDiaryTemplateBlocks(<String, Object?>{
-    kDiaryBlocksDocumentKey: <String, Object?>{
-      kDiaryBlockTypeKey: kDiaryBlockPage,
-      kDiaryBlockChildrenKey: _nest(entries),
-    },
-  });
+  return entries;
 }
 
 ({int spaces, String content}) _indentOf(String line) {
@@ -87,9 +122,11 @@ String _trimRightUnescaped(String text) {
 }
 
 /// 按缩进挂成树：比上一行深一层的挂到它下面（它不能有子块时挂到最近的
-/// 能有子块的祖先，即提到同一层）；一次多缩进好几层的按一层算。
-List<Map<String, Object?>> _nest(
-  List<({int depth, Map<String, Object?> node})> entries,
+/// 能有子块的祖先，即提到同一层）；一次多缩进好几层的按一层算。父块的
+/// 子块列表不是可追加的 `List<Map<String, Object?>>` 时换成一个新的（原有的
+/// 子块排在前面），不改动传进来的列表。
+List<Map<String, Object?>> aiNestMarkdownBlocks(
+  Iterable<({int depth, Map<String, Object?> node})> entries,
 ) {
   final roots = <Map<String, Object?>>[];
   final stack = <({int depth, Map<String, Object?> node})>[];
@@ -109,9 +146,17 @@ List<Map<String, Object?>> _nest(
     if (parent == null) {
       roots.add(entry.node);
     } else {
-      (parent.node[kDiaryBlockChildrenKey] as List<Map<String, Object?>>).add(
-        entry.node,
-      );
+      final existing = parent.node[kDiaryBlockChildrenKey];
+      if (existing is List<Map<String, Object?>>) {
+        existing.add(entry.node);
+      } else {
+        parent.node[kDiaryBlockChildrenKey] = <Map<String, Object?>>[
+          if (existing is List)
+            for (final child in existing)
+              if (child is Map) child.cast<String, Object?>(),
+          entry.node,
+        ];
+      }
     }
     stack.add((depth: depth, node: entry.node));
   }
@@ -132,7 +177,9 @@ final RegExp _attribute = RegExp(
   r'''([a-zA-Z-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?''',
 );
 
-Map<String, Object?> _block(String content) {
+/// 一行（去掉缩进后的内容）读成一个块：分隔线、标题、列表、待办、引用、
+/// 提示块、折叠块或段落，行尾 `{…}` 为块属性。返回的块带一个空的子块列表。
+Map<String, Object?> aiMarkdownLineBlock(String content) {
   if (_divider.hasMatch(content)) {
     return <String, Object?>{kDiaryBlockTypeKey: kDiaryBlockDivider};
   }
@@ -284,7 +331,11 @@ bool _isTableStart(List<String> lines, int index) {
 }) {
   final rows = <List<String>>[_cells(lines[start])];
   var i = start + 2;
-  while (i < lines.length && lines[i].trim().startsWith('|')) {
+  // 紧跟着的下一张表格（表头行 + 分隔行）不并进这张；表体里恰好全是
+  // `---` 的一行写出时已转义（见 `aiTemplateBlockLines`），不会被当成分隔行。
+  while (i < lines.length &&
+      lines[i].trim().startsWith('|') &&
+      !_isTableStart(lines, i)) {
     rows.add(_cells(lines[i]));
     i++;
   }

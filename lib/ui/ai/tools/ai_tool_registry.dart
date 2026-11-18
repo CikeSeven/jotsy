@@ -7,6 +7,7 @@ import 'ai_tools_app.dart';
 import 'ai_tools_calendar.dart';
 import 'ai_tools_calendar_writes.dart';
 import 'ai_tools_diaries.dart';
+import 'ai_tools_diary_edit.dart';
 import 'ai_tools_diary_writes.dart';
 import 'ai_tools_images.dart';
 import 'ai_tools_organize.dart';
@@ -43,7 +44,7 @@ const List<AiTool> aiTools = <AiTool>[
   OpenPageTool(),
   // 日记。
   CreateDiaryTool(),
-  AppendToDiaryTool(),
+  EditDiaryTool(),
   UpdateDiaryTool(),
   TagDiariesTool(),
   PinDiariesTool(),
@@ -95,7 +96,16 @@ final Map<String, AiTool> _byName = <String, AiTool>{
   for (final tool in aiTools) tool.name: tool,
 };
 
-AiTool? aiToolByName(String name) => _byName[name];
+/// 已经撤下、但以前的对话记录里还有调用的工具 → 接手它的工具：卡片标题、
+/// 可读详情与“撤销”照常（撤销数据的格式相同）。不发给模型。
+/// - `append_to_diary`（在末尾追加正文）：由 `edit_diary` 取代，撤销同样是
+///   写回原正文。
+const Map<String, String> _retiredTools = <String, String>{
+  'append_to_diary': 'edit_diary',
+};
+
+AiTool? aiToolByName(String name) =>
+    _byName[name] ?? _byName[_retiredTools[name]];
 
 /// 会改动数据的工具（写与删除类）。
 bool aiToolChangesData(AiTool tool) =>

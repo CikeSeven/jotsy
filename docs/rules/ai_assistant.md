@@ -17,7 +17,7 @@
 - 必须：单篇功能经 `aiDiaryAllowed`，私密日记只在打开“允许对私密日记使用 AI”后可用。
 - 必须：引用写作 `[Dn]`，复制、分享、另存时去掉；正文写回只经 `diary_ai_editing.dart`（一步撤销），写作面板禁止放进工具栏卡片。
 - 必须：另存为日记只经 `saveAiTextAsDiary`（原样未动不算草稿）；例外：智能体 `create_diary` 经 `publishNewDiaryDirectly`，可撤销。
-- 必须：附图存进 `ai_messages.images`，存储管理删除只写墓碑；超出请求上限时永久换成占位，禁止悄悄丢图；写进日记只认 P 编号，禁止让模型给本机路径。
+- 必须：附图存进 `ai_messages.images`，存储管理删除只写墓碑；超出请求上限时永久换成占位，禁止悄悄丢图；写进日记只认 P 编号（经 `AiChatPhotoRefs` 写前全部校验），禁止让模型给本机路径。
 
 ## 智能体
 - 必须：工具只登记在 `ai_tool_registry.dart`，读写只经现有 ops / 控制器，禁止另写 SQL；打开页面只经 `AiDestination`；功能关闭或本平台没有的不出现。
@@ -30,5 +30,6 @@
 - 必须：删除类执行前在对话里确认；“允许 AI 改动数据”关掉时改动类工具不出现；有编辑页登记时改动类工具不执行。
 - 必须：写日记只经 `aiWritableDiary`，批量有一条不合规整批不做；只动手动、非私密的日记本；待办写法同待办页（见 `todos.md`）。
 - 必须：模板工具正文只经模板 Markdown 进出，禁止让模型写块文档 JSON；模板白名单扩充时在 `ai_template_markdown_test.dart` 覆盖往返。
+- 必须：智能体读写日记正文只经正文 Markdown（`ai_diary_markdown.dart` 写出、`aiEditDiaryMarkdown` 改写；`read_diaries`、对话固定的那篇、`create_diary`、`edit_diary` 同一写法）：改正文只重读改到的行、其余块原样保留，写前全部校验、有一处不对整次不写，媒体只按标记保留 / 删除 / 挪动；新增块类型须在写法里有表达或标记，并在 `ai_diary_markdown_edit_test.dart` 覆盖。撤下的工具在 `ai_tool_registry.dart` 的 `_retiredTools` 交给接手的工具，旧对话的卡片与撤销照常。
 - 禁止：给智能体彻底删除、清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、同步配对、应用锁、私密设置、AI 自身设置、存储清理的工具，只给 `open_page`。
 - 必须：使用指南只在 `assets/ai_guide/zh|en/<id>.md`，禁止写不存在的功能；用户可见功能改动须同步文章（`ai_guide_test.dart` 兜底）。

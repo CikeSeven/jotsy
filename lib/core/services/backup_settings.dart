@@ -47,6 +47,9 @@ class BackupSettings {
     'tagFilterMemoryEnabled': settingsService.isTagFilterMemoryEnabled,
     'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
     'diaryLocationPrecisionRaw': settingsService.diaryLocationPrecisionRaw,
+    // 心情符号与心情颜色：日记里存的是符号本身，换台设备恢复后要认得出。
+    'moodOptionsRaw': settingsService.moodOptionsRaw,
+    'moodColorsRaw': settingsService.moodColorsRaw,
   };
 
   /// 按 [settingsNode] 应用设置；只含部分键的节点只改这些键。
@@ -299,6 +302,36 @@ class BackupSettings {
     if (settingsNode.containsKey('aiPrefsRaw')) {
       final aiPrefsRaw = settingsNode['aiPrefsRaw'];
       await settingsService.setAiPrefsRaw(switch (aiPrefsRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 心情符号：旧版备份没有时保留本机的；显式 null（或空串）时恢复默认。
+    // 值是 JSON 数组原文；手工编辑成数组的同样接受，逐项规整成 10 个符号。
+    if (settingsNode.containsKey('moodOptionsRaw')) {
+      final moodOptionsRaw = settingsNode['moodOptionsRaw'];
+      final options = switch (moodOptionsRaw) {
+        String value when value.trim().isNotEmpty =>
+          SettingsService.decodeMoodOptions(value),
+        List<dynamic> value => SettingsService.normalizeMoodOptions(
+          value.map((item) => item?.toString() ?? ''),
+        ),
+        _ => null,
+      };
+      if (options == null) {
+        await settingsService.resetMoodOptions();
+      } else {
+        await settingsService.setMoodOptions(options);
+      }
+    }
+
+    // 心情颜色同上：旧版备份没有时保留本机的，显式 null 时恢复内置色。
+    if (settingsNode.containsKey('moodColorsRaw')) {
+      final moodColorsRaw = settingsNode['moodColorsRaw'];
+      await settingsService.setMoodColorsRaw(switch (moodColorsRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

@@ -209,7 +209,7 @@ void main() {
     expect(prefsOf().facets[SyncPrefsFacet.moodOptions], {'value': null});
     expect(
       prefsOf().hashes[SyncPrefsFacet.moodOptions],
-      SyncPrefsFacet.defaultMoodOptionsHash,
+      SyncPrefsFacet.unsetHash,
     );
 
     // 手动改回与默认相同的符号：仍是“没改过”。
@@ -248,13 +248,52 @@ void main() {
     final defaultNode = syncPrefsRestoreNode(
       SyncRecord(prefs.key, {
         ...prefs.facets,
-        SyncPrefsFacet.moodOptions: SyncPrefsFacet.defaultMoodOptionsValue,
+        SyncPrefsFacet.moodOptions: SyncPrefsFacet.unsetValue,
       }),
       facets: <String>[SyncPrefsFacet.moodOptions],
       tagIdsByName: const <String, int>{},
       localAppFeaturesRaw: null,
     );
     expect(defaultNode, <String, Object?>{kSyncMoodOptionsRawKey: null});
+  });
+
+  test('心情颜色在 prefs：没改过为 null，改过为原文；还原节点交给 restore', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    final rows = await a.db.readSyncRows();
+    SyncRecord prefsOf() => prefsRecord(
+      rows,
+      syncCaptureSettings(settings, includeSettings: false),
+    );
+    expect(
+      prefsOf().hashes[SyncPrefsFacet.moodColors],
+      SyncPrefsFacet.unsetHash,
+    );
+
+    const raw = '{"1":"#FF112233"}';
+    await settings.setMoodColorsRaw(' $raw ');
+    final prefs = prefsOf();
+    expect(prefs.facets[SyncPrefsFacet.moodColors], {'value': raw});
+    expect(
+      settingsRecord(
+        rows,
+        capture(settings),
+      ).facets.containsKey(kSyncMoodColorsRawKey),
+      isFalse,
+    );
+
+    final node = syncPrefsRestoreNode(
+      prefs,
+      facets: <String>[SyncPrefsFacet.moodColors],
+      tagIdsByName: const <String, int>{},
+      localAppFeaturesRaw: null,
+    );
+    expect(node, <String, Object?>{kSyncMoodColorsRawKey: raw});
+
+    // 另一台按节点还原后，规范值逐字节相同。
+    await settings.setMoodColorsRaw(null);
+    await BackupSettings.restore(settings, node);
+    expect(prefsOf().hashes, prefs.hashes);
   });
 
   test('不同步设置时只有 prefs，没有 settings', () async {

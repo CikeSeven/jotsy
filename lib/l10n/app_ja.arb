@@ -14339,7 +14339,7 @@
   "@lanSyncSyncSettings": {
     "description": "Switch: also sync app settings."
   },
-  "lanSyncSyncSettingsSubtitle": "両方のデバイスでオンにすると、外観やエディターなどの設定も同期されます。タグの並び順、気分の絵文字、コメントや日記帳などの機能の有効化は常に同期されます",
+  "lanSyncSyncSettingsSubtitle": "両方のデバイスでオンにすると、外観やエディターなどの設定も同期されます。タグの並び順、気分の絵文字と色、コメントや日記帳などの機能の有効化は常に同期されます",
   "@lanSyncSyncSettingsSubtitle": {
     "description": "Subtitle of the sync settings switch."
   },

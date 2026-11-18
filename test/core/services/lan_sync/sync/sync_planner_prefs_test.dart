@@ -229,6 +229,30 @@ void main() {
       }
     });
 
+    test('心情颜色同理：首次同步改过的一侧胜出，与 deviceId 无关', () {
+      const colors = '{"1":"#FF112233"}';
+      Object? colorsOf(PlanDevice device) =>
+          (device.records[prefsKey]!.facets[SyncPrefsFacet.moodColors]!
+              as Map)['value'];
+      for (final customOn in ['a', 'b']) {
+        final a = PlanDevice('a')
+          ..put(prefsRecord(moodColors: customOn == 'a' ? colors : null))
+          ..commit(1);
+        final b = PlanDevice('b')
+          ..put(prefsRecord(moodColors: customOn == 'b' ? colors : null))
+          ..commit(1);
+        final plan = planBetween(
+          a,
+          b,
+          options: const SyncPlanOptions(nowMillis: 0, firstSyncWithPeer: true),
+        ).plan;
+        expect(plan.confirmations.sideChoiceNeeded, isFalse);
+        applyBoth(a, b, plan);
+        expect(colorsOf(a), colors, reason: 'custom on $customOn');
+        expect(colorsOf(b), colors, reason: 'custom on $customOn');
+      }
+    });
+
     test('两侧都改过、没有共同祖先：按变化时间取一侧，两边收敛', () {
       final a = PlanDevice('a')
         ..put(prefsRecord(moodOptions: null))

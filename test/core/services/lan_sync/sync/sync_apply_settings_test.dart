@@ -65,18 +65,20 @@ void main() {
     });
   }
 
-  /// 本机现在的 prefs 记录，[tagOrder] / [features] / [moodOptions] 覆盖其中
-  /// 的分面（[moodOptions] 为 `{'value': …}` 形式的分面值）。
+  /// 本机现在的 prefs 记录，[tagOrder] / [features] / [moodOptions] /
+  /// [moodColors] 覆盖其中的分面（后两者为 `{'value': …}` 形式的分面值）。
   Future<SyncRecord> prefsRecord({
     List<String>? tagOrder,
     Map<String, bool> features = const {},
     Map<String, Object?>? moodOptions,
+    Map<String, Object?>? moodColors,
   }) async {
     final current = (await rig.records(settings: capture()))[prefsKey]!;
     return SyncRecord(prefsKey, {
       ...current.facets,
       if (tagOrder != null) SyncPrefsFacet.tagOrder: {'value': tagOrder},
       if (moodOptions != null) SyncPrefsFacet.moodOptions: moodOptions,
+      if (moodColors != null) SyncPrefsFacet.moodColors: moodColors,
       for (final entry in features.entries)
         SyncPrefsFacet.feature(entry.key): SyncPrefsFacet.featureValue(
           entry.value,
@@ -166,13 +168,17 @@ void main() {
     expect(features.calendar, isFalse);
   });
 
-  test('心情符号（prefs）：写入对方改过的符号；对方恢复默认时本机也恢复默认', () async {
+  test('心情符号与颜色（prefs）：写入对方改过的；对方恢复默认时本机也恢复默认', () async {
     final custom = <String>[
       '😡',
       ...SettingsService.defaultMoodOptions.sublist(1, 9),
       '🥰',
     ];
-    final target = await prefsRecord(moodOptions: {'value': custom});
+    const colors = '{"1":"#FF112233","10":"#FF445566"}';
+    final target = await prefsRecord(
+      moodOptions: {'value': custom},
+      moodColors: {'value': colors},
+    );
     // 不开“同步设置”也会应用。
     final result = await rig.applier.apply(
       await rig.planFor([target], settings: capture()),
@@ -180,16 +186,19 @@ void main() {
 
     expect(result.skipped, isEmpty);
     expect(settings.moodOptions, custom);
+    expect(settings.moodColorsRaw, colors);
     expect(result.manifest![prefsKey], target.hashes);
     expect((await prefsRecord()).hashes, target.hashes);
 
     final reset = await prefsRecord(
-      moodOptions: SyncPrefsFacet.defaultMoodOptionsValue,
+      moodOptions: SyncPrefsFacet.unsetValue,
+      moodColors: SyncPrefsFacet.unsetValue,
     );
     final resetResult = await applySettings(reset);
     expect(resetResult.skipped, isEmpty);
     expect(settings.moodOptionsRaw, isNull);
     expect(settings.moodOptions, SettingsService.defaultMoodOptions);
+    expect(settings.moodColorsRaw, isNull);
     expect((await prefsRecord()).hashes, reset.hashes);
   });
 

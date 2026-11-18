@@ -17,7 +17,7 @@
 
 ## 心情色
 - 必须：心情颜色只经 `DiaryMoodPalette`，禁止自行按心情符号换算；十档相邻色相至少约 20°（测试兜底）。
-- 必须：用户改的心情颜色只存 `app.settings.mood_colors`，本机偏好，不随备份、不同步，只在心情符号页编辑。
+- 必须：用户改的心情符号与颜色只存 `app.settings.mood_options` / `app.settings.mood_colors`，随备份、局域网同步时始终同步，只在心情符号页编辑。
 - 禁止：日历年视图与探索心情图表改用心情色板（只经 `MoodBandPalette`）。
 
 ## 导航栏

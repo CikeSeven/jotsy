@@ -15,13 +15,14 @@ import 'sync_settings_fonts.dart';
 ///
 /// - 取值（[syncCaptureSettings]，主 isolate）：`BackupSettings.capture` 的键，
 ///   去掉 `appLockEnabled`（应用锁是本机安全设置）与
-///   `rememberedTagFilterIdsRaw`（本地标签 id、本机的筛选记忆），再加上不随
-///   备份、只随同步的心情符号原文 `moodOptionsRaw`；
+///   `rememberedTagFilterIdsRaw`（本地标签 id、本机的筛选记忆）；
 /// - prefs 记录（[syncPrefsRecord]，始终同步）：标签顺序 `tagOrderRaw`（本地
 ///   标签 id 串）换成按名称的列表 `tagOrderNames`（经标签表换算，查不到的 id
 ///   丢掉）；心情符号 `moodOptions`（[syncMoodOptionsValue]：规整后的 10 个
-///   符号，与默认相同时为 null）；数据类功能开关（[kSyncDataFeatures]：日记本、纪念日、日记模板、
-///   时间胶囊、留言、待办）每项一个分面 `feature.<字段>` → `{"on": bool}`，取
+///   符号，与默认相同时为 null）与心情颜色 `moodColors`
+///   （[syncMoodColorsValue]：设置原文，全部为内置色时为 null）；数据类功能
+///   开关（[kSyncDataFeatures]：日记本、纪念日、日记模板、时间胶囊、留言、
+///   待办）每项一个分面 `feature.<字段>` → `{"on": bool}`，取
 ///   `AppFeatures.decode` 之后的值（没存过开关时即默认值）；
 /// - settings 记录（[syncSettingsRecord]，只在两端都开启“同步设置”时）：其余
 ///   每个键一个分面 `{"value": …}`；`appFeaturesRaw` 只留界面类开关
@@ -31,8 +32,7 @@ import 'sync_settings_fonts.dart';
 ///   本机 id 换成按文件内容的引用 `jotsy-font:<sha256>`（见
 ///   sync_settings_fonts.dart，写入时换回本机 id）；
 /// - 反向（[syncSettingsRestoreNode] / [syncPrefsRestoreNode]）：给出
-///   `BackupSettings.restore` 能直接使用的部分节点，只含调用方要应用的分面
-///   （心情符号 `moodOptionsRaw` 不在 `restore` 里，由写入层单独应用）；
+///   `BackupSettings.restore` 能直接使用的部分节点，只含调用方要应用的分面；
 ///   功能开关与本机当前的开关合并成整份 `appFeaturesRaw`（另一类开关保持
 ///   本机值），数据类开关只会被打开、从不被关掉（用户的决定：对方关掉某个
 ///   功能不该连带藏起本机的内容，关闭“日记本”在本机有私密本子时还必须先确认，
@@ -69,10 +69,10 @@ const List<String> kSyncUiFeatures = <String>[
 
 const String _kTagOrderRawKey = 'tagOrderRaw';
 
-/// 心情符号原文（`SettingsService.moodOptionsRaw`）在取值与 prefs 反向节点
-/// 里的键。不在 `BackupSettings` 里（不随备份），写入层见
-/// `_applySyncMoodOptions`。
+/// 心情符号与心情颜色在 `BackupSettings` 里的键：在 prefs 记录里，不进
+/// settings 记录。
 const String kSyncMoodOptionsRawKey = 'moodOptionsRaw';
+const String kSyncMoodColorsRawKey = 'moodColorsRaw';
 const String _kAppSurfaceRawKey = 'appSurfaceRaw';
 const String _kAppFeaturesRawKey = 'appFeaturesRaw';
 
@@ -88,8 +88,7 @@ class SyncSettingsCapture {
     this.fontRefs = const <String, String>{},
   });
 
-  /// 参与同步的设置键 → 原值（[BackupSettings.capture] 的口径，另加
-  /// [kSyncMoodOptionsRawKey]）。
+  /// 参与同步的设置键 → 原值（[BackupSettings.capture] 的口径）。
   final Map<String, Object?> values;
   final bool includeSettings;
 
@@ -109,7 +108,6 @@ SyncSettingsCapture syncCaptureSettings(
     for (final entry in BackupSettings.capture(settings).entries)
       if (!kSyncExcludedSettingsKeys.contains(entry.key))
         entry.key: entry.value,
-    kSyncMoodOptionsRawKey: settings.moodOptionsRaw,
   },
   includeSettings: includeSettings,
   fontRefs: fontRefs,
@@ -133,6 +131,9 @@ SyncRecord syncPrefsRecord(
     SyncPrefsFacet.moodOptions: <String, Object?>{
       'value': syncMoodOptionsValue(captured[kSyncMoodOptionsRawKey]),
     },
+    SyncPrefsFacet.moodColors: <String, Object?>{
+      'value': syncMoodColorsValue(captured[kSyncMoodColorsRawKey]),
+    },
     for (final name in kSyncDataFeatures)
       SyncPrefsFacet.feature(name): SyncPrefsFacet.featureValue(
         features[name]!,
@@ -151,6 +152,7 @@ SyncRecord syncSettingsRecord(
     if (kSyncExcludedSettingsKeys.contains(entry.key)) continue;
     if (entry.key == _kTagOrderRawKey) continue;
     if (entry.key == kSyncMoodOptionsRawKey) continue;
+    if (entry.key == kSyncMoodColorsRawKey) continue;
     if (entry.key == _kAppFeaturesRawKey) {
       final features = _decodeFeatures(entry.value);
       facets[entry.key] = <String, Object?>{
@@ -229,10 +231,10 @@ Map<String, Object?> syncSettingsRestoreNode(
 /// [tagIdsByName] 为本机（写入标签之后的）标签名称 → 本地 id，
 /// `tagOrderNames` 据此换回 `tagOrderRaw`，本机没有的名称丢掉（换出空串时
 /// 写入层另行清空，见 docs/lan_sync.md §6 第 5 步）。心情符号给出
-/// [kSyncMoodOptionsRawKey] → 编码后的原文，默认符号为 null（写入层据此
-/// 恢复默认）。数据类功能开关只打开
-/// 本机关着的（见文件头），与 [localAppFeaturesRaw] 合并成整份原文；没有要
-/// 打开的就不放进节点。
+/// [kSyncMoodOptionsRawKey] → 编码后的原文、心情颜色给出
+/// [kSyncMoodColorsRawKey] → 原文，默认为 null（`restore` 据此恢复默认）。
+/// 数据类功能开关只打开本机关着的（见文件头），与 [localAppFeaturesRaw]
+/// 合并成整份原文；没有要打开的就不放进节点。
 Map<String, Object?> syncPrefsRestoreNode(
   SyncRecord record, {
   Iterable<String>? facets,
@@ -267,6 +269,14 @@ Map<String, Object?> syncPrefsRestoreNode(
             ]);
       continue;
     }
+    if (entry.key == SyncPrefsFacet.moodColors) {
+      final value = _facetField(entry.key, entry.value, 'value');
+      if (value != null && value is! String) {
+        throw FormatException('设置分面 ${entry.key} 格式不对', value);
+      }
+      node[kSyncMoodColorsRawKey] = value;
+      continue;
+    }
     if (!SyncPrefsFacet.isFeature(entry.key)) continue;
     final name = entry.key.substring(SyncPrefsFacet.featurePrefix.length);
     if (!kSyncDataFeatures.contains(name)) continue;
@@ -293,6 +303,15 @@ List<String>? syncMoodOptionsValue(Object? raw) {
     if (options[index] != defaults[index]) return options;
   }
   return null;
+}
+
+/// 心情颜色原文 → prefs 分面的值：去掉首尾空白的原文（与
+/// `SettingsService.setMoodColorsRaw` 写入的口径相同，往返后逐字节相同），
+/// 没存过时为 null。原文由心情符号页按 `DiaryMoodColors.encode` 写入，全部
+/// 为内置色时就是删除键，所以 null 即“没改过”；解析留给界面层。
+String? syncMoodColorsValue(Object? raw) {
+  final value = raw is String ? raw.trim() : null;
+  return value == null || value.isEmpty ? null : value;
 }
 
 Object? _facetField(String name, Object? facet, String field) {

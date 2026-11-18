@@ -4,6 +4,7 @@ import 'package:html/parser.dart' as html_parser;
 import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
 import '../database/diary_blocks/diary_blocks_walk.dart';
+import '../database/diary_blocks/diary_link_target.dart';
 import 'journal_import_block_writer.dart';
 import 'journal_import_blocks.dart';
 import 'journal_import_html_style.dart';
@@ -128,12 +129,8 @@ class JournalHtmlConverter {
       case 'a':
         final href = node.attributes['href']?.trim();
         final styled = _styled(node, inline);
-        final attachment =
-            href == null ||
-                RegExp(
-                  r'^(https?|mailto):',
-                  caseSensitive: false,
-                ).hasMatch(href)
+        final link = _keptLink(href);
+        final attachment = href == null || link != null
             ? null
             : resolveLink?.call(href);
         if (attachment != null) {
@@ -142,13 +139,7 @@ class JournalHtmlConverter {
         }
         _visitChildren(
           node,
-          href != null &&
-                  RegExp(
-                    r'^(https?|mailto):',
-                    caseSensitive: false,
-                  ).hasMatch(href)
-              ? {...styled, 'link': href}
-              : styled,
+          link != null ? {...styled, 'link': link} : styled,
           block,
         );
       case 'span' || 'font' || 'mark' || 'big' || 'small' || 'sup' || 'sub':
@@ -312,6 +303,17 @@ class JournalHtmlConverter {
     }
   }
 
+  /// 原样保留为链接的地址：网址，与原文直接写的 `jotsy://` 内部地址（写成
+  /// 日记链接，目标不在本机时由打开链接的地方提示）。其余地址可能是导出里
+  /// 的附件，交给 [resolveLink]；内部地址不是文件，交给它会让表格试写作废。
+  static String? _keptLink(String? href) {
+    if (href == null) return null;
+    if (RegExp(r'^(https?|mailto):', caseSensitive: false).hasMatch(href)) {
+      return href;
+    }
+    return DiaryLinkTarget.tryParse(href)?.toHref();
+  }
+
   /// 规整的表格写成表格块，写出时返回 true；不规整时什么都不写、返回
   /// false，由调用方照旧按格展开成文字。规整即：
   /// - 行只来自 `<thead>` / `<tbody>` / `<tfoot>` / `<tr>`（`<colgroup>` 忽略），
@@ -320,7 +322,8 @@ class JournalHtmlConverter {
   ///   上限内（[journalImportTableFits]）；
   /// - 格子里只有行内格式、`<br>` 与 `<p>`（没有图片、列表、嵌套表格等
   ///   块级结构），也不含要经解析器换成媒体或附件的引用（解析器可能有
-  ///   副作用，试写时一律不调用，遇到即按不规整处理）。
+  ///   副作用，试写时一律不调用，遇到即按不规整处理；没有链接解析器时
+  ///   链接只留文字，不算）。
   /// 首行在 `<thead>` 里或全是 `<th>` 时首行为表头。格子的对齐写在格内
   /// 段落上，行内格式照常保留。
   bool _appendTable(
@@ -354,7 +357,7 @@ class JournalHtmlConverter {
         final converter = JournalHtmlConverter(
           sub,
           resolveEmbed: trap,
-          resolveLink: trap,
+          resolveLink: resolveLink == null ? null : trap,
         ).._baseRatio = _baseRatio;
         converter._visitBlock(
           cell,

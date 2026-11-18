@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_schema.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_table.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_walk.dart';
 import 'package:node_diary/core/services/journal_import_block_writer.dart';
@@ -289,6 +290,35 @@ void main() {
       expect(_top(document).any((node) => node['type'] == 'table'), isFalse);
     });
 
+    test('a cell diary link stays a table without asking the resolver', () {
+      var calls = 0;
+      final document = _html(
+        '<table><tr><th>When</th><th>Link</th></tr>'
+        '<tr><td>1</td><td><a href="jotsy://diary/d1">one</a></td></tr>'
+        '</table>',
+        resolve: (_) {
+          calls++;
+          return null;
+        },
+      );
+      final grid = DiaryTableGrid.of(_top(document).single)!;
+      expect(diaryBlockDelta(grid.textBlocksAt(1, 1).single), [
+        {
+          'insert': 'one',
+          'attributes': {kDiaryInlineHref: 'jotsy://diary/d1'},
+        },
+      ]);
+      expect(calls, 0);
+    });
+
+    test('without a link resolver, local cell links keep the table', () {
+      final document = _html(
+        '<table><tr><td><a href="notes/a.html">a</a></td></tr></table>',
+      );
+      final grid = DiaryTableGrid.of(_top(document).single)!;
+      expect(grid.rowTexts().toList(), ['a']);
+    });
+
     test('more than 12 columns stays flattened text', () {
       final cells = List.generate(13, (i) => '<td>$i</td>').join();
       final document = _html('<table><tr>$cells</tr></table>');
@@ -329,6 +359,49 @@ void main() {
       final grid = DiaryTableGrid.of(_top(document).first)!;
       expect(grid.rowTexts().toList(), ['a | b', '1 | 2']);
       expect(diaryBlockText(_top(document).last), 'next');
+    });
+
+    test('a cell diary link stays a table without asking the resolver', () {
+      var calls = 0;
+      final document = _markdown(
+        '| 时间 | 测试 |\n'
+        '| --- | --- |\n'
+        '| 2026-11-01 | [条目一 · 点我跳转](jotsy://diary/d1) |\n'
+        '| 2026-11-06 | 不放链接 |',
+        resolve: (_) {
+          calls++;
+          return null;
+        },
+      );
+      final grid = DiaryTableGrid.of(_top(document).single)!;
+      expect((grid.rows, grid.cols), (3, 2));
+      expect(diaryBlockDelta(grid.textBlocksAt(1, 1).single), [
+        {
+          'insert': '条目一 · 点我跳转',
+          'attributes': {kDiaryInlineHref: 'jotsy://diary/d1'},
+        },
+      ]);
+      expect(calls, 0);
+      _expectRoundTrip(document);
+    });
+
+    test('local cell links keep the table only without a link resolver', () {
+      const markdown = '| a |\n| --- |\n| [see](notes/a.md) |';
+      final plain = DiaryTableGrid.of(_top(_markdown(markdown)).single)!;
+      expect(plain.rowTexts().toList(), ['a', 'see']);
+
+      // 有解析器时它可能把链接换成附件：试写不调用它，按不规整展开，
+      // 逐行写时只调用一次。
+      var calls = 0;
+      final resolved = _markdown(
+        markdown,
+        resolve: (_) {
+          calls++;
+          return null;
+        },
+      );
+      expect(_top(resolved).any((node) => node['type'] == 'table'), isFalse);
+      expect(calls, 1);
     });
 
     test('a malformed pipe table stays plain lines', () {

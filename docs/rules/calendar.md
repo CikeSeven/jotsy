@@ -9,4 +9,5 @@
 - 必须：这天的心情与各篇日记的心情相互独立，存 `day_moods` 表（一天一行，认不出的值按无心情显示、原值保留）；随完整备份导出与覆盖恢复，合并按日期，日记包不带。
 - 必须：法定节假日只取 tyme 的 `LegalHoliday`，收录到依赖发布时已公布的年份，之后不标。
 - 必须：日期格左上角标只经 `CalendarCellLeadingBadge` 取一个、心情格只经 `CalendarMoodTile` 绘制，禁止另加角标位置或另画心情格。
+- 必须：日期格的数字组（数字、农历小字与两侧角标）只经 `CalendarCellHead` 排版（`CalendarCellLayout` 与 `CalendarMoodTile` 共用），调用方必须传入格子可见形状 `CalendarCellBounds`，由它把角标收在形状之内（#312：窄屏手机上角标曾挂到圆角外）；禁止再用 `Positioned` 等固定偏移把角标挂到数字外侧。
 - 必须：日历上的待办口径见 `todos.md`。

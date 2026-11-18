@@ -84,8 +84,8 @@ abstract final class CalendarCellSubtitle {
 /// 内容是否可看，最先；休/班是这一天本身的属性，比“当天第一篇的天气”更该
 /// 一眼看到；心形只在不显示农历时出现（显示农历时纪念日名称写在小字行）；
 /// 待办是用户要做的事，排在天气之前。
-/// 角标与数字之间的间隙、槽位宽度由 [CalendarCellLayout] 统一负责，这里
-/// 只决定画什么和用什么颜色。
+/// 角标与数字之间的间隙、槽位宽度以及窄格里的避让由 `CalendarCellHead`
+/// 统一负责，这里只决定画什么和用什么颜色。
 abstract final class CalendarCellLeadingBadge {
   /// [onFill] 为选中/今天/热力等有底色的格子的前景色：彩色角标放在
   /// primary/tertiary 底上会撞色，统一改用前景色；[onPhoto] 时垫圆底。

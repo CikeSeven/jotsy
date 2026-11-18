@@ -40,7 +40,6 @@ class JournalNoteLinkIndex {
         (_byName[name] ??= <_Note>[]).add(entry);
       }
       _byFile[absolute] = entry;
-      _targets.add(entry.target);
     }
   }
 
@@ -48,7 +47,6 @@ class JournalNoteLinkIndex {
   /// 笔记、上万个链接的库也不必逐篇比较。
   final Map<String, List<_Note>> _byName = <String, List<_Note>>{};
   final Map<String, _Note> _byFile = <String, _Note>{};
-  final Set<DiaryLinkTarget> _targets = <DiaryLinkTarget>{};
 
   /// Obsidian 双链 `[[linkPath]]`（已去掉 `#标题` 与 `|别名`）的目标，口径与
   /// Obsidian 的链接解析一致，不区分大小写，`.md` 扩展名可写可不写：
@@ -86,19 +84,16 @@ class JournalNoteLinkIndex {
     return _closest(candidates.toList(), source)?.target;
   }
 
-  /// 普通 Markdown 链接 `[文字](href)` 的目标：
-  /// - 双链改写后写出的日记链接地址（[rewriteJournalWikiLinks]），只认这次
-  ///   导入里的笔记；
-  /// - 指向导出里另一篇笔记的路径（Obsidian 关闭“使用 Wiki 链接”时的
-  ///   `笔记.md`、Notion 的 `标题%20<ID>.md`，可带 `#标题`），按 [files]
-  ///   的口径查找（相对路径优先，再按唯一的文件名）。
+  /// 普通 Markdown 链接 `[文字](href)` 指向导出里另一篇笔记的路径时的
+  /// 目标（Obsidian 关闭“使用 Wiki 链接”时的 `笔记.md`、Notion 的
+  /// `标题%20<ID>.md`，可带 `#标题`），按 [files] 的口径查找（相对路径
+  /// 优先，再按唯一的文件名）。`jotsy://` 内部地址（含双链改写后写出的，
+  /// [rewriteJournalWikiLinks]）由转换器直接认，不经这里。
   DiaryLinkTarget? markdownTarget(
     String href, {
     required String from,
     required JournalImportFiles files,
   }) {
-    final internal = DiaryLinkTarget.tryParse(href);
-    if (internal != null) return _targets.contains(internal) ? internal : null;
     final path = files.resolve(href, from: p.dirname(from));
     return path == null ? null : _byFile[path]?.target;
   }

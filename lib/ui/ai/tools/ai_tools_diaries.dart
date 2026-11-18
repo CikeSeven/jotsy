@@ -201,8 +201,10 @@ class ReadDiariesTool extends AiTool {
       'Read the full text of diary entries by id or reference like D3 (from '
       'search_diaries). The body is Markdown, one line per block (the format '
       'edit_diary takes); photos, files, link cards and mind maps are their '
-      'own lines like [Photo n]; use view_images to look at photos. Long '
-      'entries may be cut when the per-turn text budget runs out.';
+      'own lines like [Photo n]; use view_images to look at photos. A \\ '
+      'before a character is escaping added by this view (a paragraph that '
+      'starts with | or # shows as \\| or \\#), not text saved in the entry. '
+      'Long entries may be cut when the per-turn text budget runs out.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'ids'};

@@ -215,13 +215,46 @@ Back to [[#Plan]] and [[Nowhere]]; ![[photo.jpg|300]]
       expect(media.missingCount, 0);
     });
 
-    test('an internal address not from this import is not kept', () {
-      write('Vault/Note.md', '[forged](jotsy://diary/somebody-else)');
+    test('an internal address written in the note is kept as written', () {
+      write(
+        'Vault/Note.md',
+        '[elsewhere](jotsy://diary/somebody-else) and '
+            '![Card](jotsy://diary/card-id)',
+      );
 
       final note = parse()['Vault/Note.md']!;
 
-      expect(_links(note), isEmpty);
-      expect(note.contentText, 'forged');
+      expect(_links(note), {'elsewhere': 'jotsy://diary/somebody-else'});
+      expect(
+        _cards(note).single[kDiaryLinkCardTargetKey],
+        'jotsy://diary/card-id',
+      );
+      expect(media.missingCount, 0);
+    });
+
+    test('a pipe table whose cells link to diaries stays a table', () {
+      write(
+        'Vault/Table.md',
+        '---\ntitle: "测试表格"\n---\n\n'
+            '| 时间 | 测试 |\n'
+            '| --- | --- |\n'
+            '| 2026-11-01 | [条目一 · 点我跳转](jotsy://diary/d433fa4a) |\n'
+            '| 2026-11-02 | [Other](Other.md) |\n'
+            '| 2026-11-06 | 不放链接 |\n',
+      );
+      write('Vault/Other.md', 'other');
+
+      final table = parse()['Vault/Table.md']!;
+      final top = diaryBlockChildren(
+        diaryBlocksRoot(jsonDecode(table.contentJson) as Map<String, Object?>)!,
+      );
+
+      expect(top.map((node) => node[kDiaryBlockTypeKey]), contains('table'));
+      expect(_links(table), {
+        '条目一 · 点我跳转': 'jotsy://diary/d433fa4a',
+        'Other': _href('Vault/Other.md'),
+      });
+      expect(media.missingCount, 0);
     });
   });
 

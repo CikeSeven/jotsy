@@ -35,7 +35,8 @@ typedef JournalNoteLinkResolver = DiaryLinkTarget? Function(String href);
 /// 文件的链接（如 `[说明书.pdf](resources/…)`）转为附件嵌入，返回 null 时
 /// 保留链接文字。[resolveNoteLink] 认出指向导出里另一篇笔记的链接时，文字
 /// 写成日记链接、图片语法写成日记链接卡片（先于 [resolveLink]）；只做查找、
-/// 没有副作用，表格试写时照常使用。
+/// 没有副作用，表格试写时照常使用。原文直接写的 `jotsy://` 内部地址同样
+/// 写成日记链接 / 卡片。
 class JournalMarkdownConverter {
   JournalMarkdownConverter(
     this.writer, {
@@ -129,7 +130,8 @@ class JournalMarkdownConverter {
   /// 逐行写成文字。不规整即：表体某行的格数多于表头（短的行补空格子）、
   /// 行列数超出上限（[journalImportTableFits]），或格子里有图片、分隔线
   /// 这类块级内容，或有要经解析器换成媒体 / 附件的引用（试写时不调用
-  /// 解析器，以免它的副作用发生两次）。`\|` 是格子里的竖线。
+  /// 解析器，以免它的副作用发生两次；没有链接解析器时链接只留文字，不算）。
+  /// `\|` 是格子里的竖线。
   int? _appendPipeTable(List<String> lines, int start) {
     final rows = journalPipeTableRows(lines, start, _isOtherBlock);
     if (rows == null) return null;
@@ -147,7 +149,7 @@ class JournalMarkdownConverter {
         final converter = JournalMarkdownConverter(
           sub,
           resolveEmbed: trap,
-          resolveLink: trap,
+          resolveLink: resolveLink == null ? null : trap,
           resolveNoteLink: resolveNoteLink,
           inlineHtml: inlineHtml,
         );
@@ -425,10 +427,14 @@ class JournalMarkdownConverter {
     if (data != null) writer.embed(data, line);
   }
 
+  /// 链接地址指向的日记 / 日记本：原文直接写的内部地址（`jotsy://…`）照写，
+  /// 目标不在本机时由打开链接的地方提示；它不是文件，绝不交给附件解析器
+  /// （否则表格试写会把它当附件，整张表退回文字）。其余交给
+  /// [resolveNoteLink] 认导出里的另一篇笔记。
   DiaryLinkTarget? _noteLink(String href) {
     final value = href.trim();
     if (value.isEmpty || _isWebLink(value)) return null;
-    return resolveNoteLink?.call(value);
+    return DiaryLinkTarget.tryParse(value) ?? resolveNoteLink?.call(value);
   }
 
   static bool _isWebLink(String href) =>

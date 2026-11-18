@@ -65,6 +65,25 @@ void main() {
     // 显式的 null 当作没给。
     expect(args.containsKey('sort'), isFalse);
     expect(schema.validate({'query': 'x', 'limit': 3.0})['limit'], 3);
+    // 整个数组写成了 JSON 字符串（有的模型这样传对象数组）。
+    expect(schema.validate({'query': 'x', 'tags': '["a", "b"]'})['tags'], [
+      'a',
+      'b',
+    ]);
+    // 不是 JSON 的方括号文字仍是一个值。
+    expect(schema.validate({'query': 'x', 'tags': '[旅行'})['tags'], ['[旅行']);
+    const edits = AiObjectSchema(
+      properties: <String, AiSchema>{
+        'edits': AiArraySchema(
+          items: AiObjectSchema(
+            properties: <String, AiSchema>{'old': AiStringSchema()},
+          ),
+        ),
+      },
+    );
+    expect(edits.validate({'edits': '[{"old": "x"}]'})['edits'], [
+      {'old': 'x'},
+    ]);
   });
 
   test('reports mistakes the model should fix', () {

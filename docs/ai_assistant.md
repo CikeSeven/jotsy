@@ -146,7 +146,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 - 这一轮能不能发图（`AiToolEnv.vision`）在开始时定下：图片理解开着，且 `AiService.acceptsImages`（模型设置接受图片、本次运行里没被拒过）。不能发时图片位置一律换成说明为什么没发的占位，`view_images` 不提供；用户照样能发图，AI 仍能按编号把图加进日记。
 - 用户附图：编号 `P1…` 整段对话连续，发送时定下、记在 `meta.imageRefs`，之后不变（删别的消息、存储里删图都不换号）；提问全文写“附带的图片：P1, P2”，图片放在提问文字之前。
 - 列日记的工具（`search_diaries`、`get_calendar_day`）在每篇的头部写图片张数（`aiDiaryPhotoCounts`，只数列出来的那几篇）：模型不必为了知道有没有图去读全文，也不会把“摘要里没提到图片”当成没有图（实测出现过这种误判）。
-- `read_diaries` 在正文的图片位置写“[图片 n]”（编号按正文顺序去重，`AiVisionImages.sourcesOf`，与 `view_images` 同一口径）。`view_images` 按 `diary_id` + `images`（任意序号）或 `attachments`（P 编号）取图，一次最多“每次最多发送”张，多要的列进 `not_sent_yet`；图片附在这一步全部工具结果之后（同一条用户消息，按调用顺序），结果 JSON 按顺序写明附上的是哪几张（Anthropic 会把图片挪到文字前，不能靠相邻对应）；调用记录存看过哪张（`AiAgentImageRecord`，不算存储引用）。
+- `read_diaries` 与对话固定的那篇按正文 Markdown（见下）给正文，图片单独一行写“[图片 n]”（编号按正文顺序去重，`AiVisionImages.sourcesOf`，与 `view_images` 同一口径）。`view_images` 按 `diary_id` + `images`（任意序号）或 `attachments`（P 编号）取图，一次最多“每次最多发送”张，多要的列进 `not_sent_yet`；图片附在这一步全部工具结果之后（同一条用户消息，按调用顺序），结果 JSON 按顺序写明附上的是哪几张（Anthropic 会把图片挪到文字前，不能靠相邻对应）；调用记录存看过哪张（`AiAgentImageRecord`，不算存储引用）。
 - 历史里的图片每轮原样重发（同样的字节、同样的位置），回放时重新检查来源（日记变私密、被排除或删除，文件不在 → 占位）。一次请求最多 20 张、12 MB（`kAiRequestMaxImages` / `kAiRequestMaxImageBytes`），超出时从最旧的开始一次换掉一批、降到一半以下（高水位分段，`resolveAiImageSlots`；判定只取决于对话内容，前缀只往前移，缓存只在越过上限那一轮断一次）；这一轮 `view_images` 在剩余额度里累加，满了就请模型先就已看的作答。历史窗口里每张图按 1500 字计。
 - 服务端拒收图片（400）时去图重试，只有去图后的那次成功才记住“不认图片”；去掉的图片换成 `AiRequest.imageOmittedText`。
 
@@ -162,7 +162,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 |---|---|---|
 | `get_app_context` | 今天（含农历、节气、法定节假日）、平台、界面语言、开启的功能、心情选项、本轮剩余字数 | `CalendarLunarDay`、`AppPlatform`、`AppFeatures`、`SettingsService.moodOptions` |
 | `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题、摘录与图片张数（`photos`，没有图片的不写，说明里写明“没写就是没有”） | `getAiContextDiaries`、`aiRankDiaries`、`aiDiaryPhotoCounts` |
-| `read_diaries` | 按 id 读全文（一次最多 10 篇），图片位置写“[图片 n]”并给出张数 | `aiAgentReadDiary`（`getAiDiary`；私密日记、排除的本子与标签一律不给） |
+| `read_diaries` | 按 id 读全文（一次最多 10 篇），正文为正文 Markdown（`edit_diary` 照这份改），图片写“[图片 n]”并给出张数 | `aiAgentReadDiary`（`getAiDiary`；私密日记、排除的本子与标签一律不给） |
 | `view_images` | 看日记里的图片（按序号）或对话里用户发的图片（按 P 编号），能发图的一轮才有 | `aiAgentReadDiary`、`AiVisionImages`、`AiImageBudget` |
 | `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组 | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
 | `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题与图片张数）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
@@ -180,8 +180,8 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 | 工具 | 作用 | 写库 | 撤销 |
 |---|---|---|---|
-| `create_diary` | 新建日记（Markdown 正文、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本）；`images`（P 编号）与正文里的 `![](P1)` 把对话里的图片放进正文（`aiDiaryBodyWithImages`：写之前全部校验，有一个不对就整次不写） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
-| `append_to_diary` | 在日记末尾追加 Markdown，同样可带对话里的图片 | `updateDiaryContent` | 写回原正文 |
+| `create_diary` | 新建日记（正文 Markdown、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本）；正文里单独一行的 `![](P1)` 与 `images`（P 编号，接在正文后）把对话里的图片放进正文（与 `edit_diary` 同一套读法：对空正文整段替换，写之前全部校验，有一个不对就整次不写） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
+| `edit_diary` | 改正文：`edits[]`（old_text → new_text，按正文 Markdown 精确替换）或 `body`（整段替换），见下“正文 Markdown 与改正文”；导图日记不改 | `updateDiaryContent`（不碰标题、元数据、归档与删除） | 写回原正文 |
 | `update_diary` | 改标题、日期、时刻、心情、天气、地点（空字符串清空） | `patchDiaryFields`（不碰归档、删除、标签与正文） | 写回原值 |
 | `tag_diaries` | 批量加减标签 | `applyDiaryTagBatch` | `restoreDiaryTagBatch` |
 | `pin_diaries` / `archive_diaries` | 置顶 / 归档（或取消） | batch writes | 按每篇原来的状态写回 |
@@ -206,7 +206,9 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `set_theme` / `set_app_language` / `set_font_scale` / `set_feature_enabled` | 明暗与主题色 / 界面语言 / 字体大小 / 功能开关（不含 AI 本身；有私密本时不关日记本） | `SettingsService` / `saveAppFeatures` | 写回原值 |
 | `change_settings` | 一次改一项或几项设置，每个参数是一项（清单只在 `ai_setting_specs.dart` 的 `aiSettingSpecs`）：编辑器（打开日记时直接编辑、返回时直接发表新日记、手动保存修改、自动显示当天照片、始终显示工具栏）、日记模板（新建时提示选择模板）、日记预览页（左右滑动切换、允许勾选待办、长按选字、双击编辑）、日历（一周起始日、周末着色、周数、农历与节气、法定节假日、月度概览、那年今日、这天的心情、显示待办、纪念日）、待办（显示已完成、排序、打开时显示、默认清单（按名称）、智能识别、全天待办的提醒时刻、稍后提醒时长、锁屏隐藏内容）；本平台没有的项不进 schema，所属功能关着的整次拒绝；全部校验通过才写，值相同的不写 | 各设置自己的模型与保存函数（在最新的存储值上只改这一项） | 逐项写回改动前的值（同一页里之后改的别的设置不受影响） |
 
-**模板 Markdown**（`ai_template_markdown*.dart`）：模板正文进出智能体的唯一写法，与模板白名单（`sanitizeDiaryTemplateBlocks`）一一对应、读写对称（全部内置模板与全格式样本往返逐字不变，`ai_template_markdown_test.dart` 兜底）。一行一个块，空行是空段落（留给用户填写）；`#` 标题、`- ` / `1. ` / `- [ ] ` 列表与待办、`> ` 引用、`---`、代码围栏、GFM 表格（上一行 `<!-- no header row -->` 表示无表头，格内多段以 `<br>` 分开）、`<callout icon tone>` 提示块、`<toggle collapsed|open>` 折叠块；子块缩进两格；行尾 `{align= indent= list=}` 为块属性；行内 `**` `*` `~~` `` ` `` 链接与 `<u>` `<sup>` `<sub>` `<span style="color / background-color / font-size">`，颜色优先写颜色面板的预设名（亮暗主题都清楚）。`*` 与 `~~` 按成对的开关读（不用 CommonMark 的左右侧规则，中文全角标点旁的粗体照样认），`_` 一律是文字（填空线）。读出后再经白名单，媒体、不安全的链接一律去掉。
+**正文 Markdown 与改正文**（`ai_diary_markdown.dart` / `ai_diary_markdown_edit.dart`，`ai_diary_markdown_edit_test.dart` 兜底）：智能体读写日记正文的唯一写法，读到的就是改的。写法与下面的模板 Markdown 逐字相同（同一个渲染与逐行读法），另加日记才有的内容：图片单独一行写“[图片 n]”，视频、录音、附件、链接卡片、思维导图与认不出的块写“[视频 1]”“[附件 1: 名称]”这样的标记（按种类编号，冒号后是说明），软换行（异常数据）写成空格。改法借鉴编码智能体 pi 的文件编辑：`edits[]` 每段 old_text 都对改动前的正文匹配、必须恰好一次、互不重叠；先精确匹配，找不到再宽松匹配一次（弯引号、破折号、各种空格、全角字母与标点按半角比，匹配到的那段里模型没改的字换回原文写法）；整行换成空文字时连同换行删掉；`body` 为整段替换。写回时只重读改到的行（一个块一行，代码块、表格占几行），其余块原样保留；改到的几行里一字不差的仍用原来的块（按行做最长公共子序列，`sequence_lcs.dart`），一对一改写且类型没变的带过写法表达不了的块属性（如编号列表的起始号、格子的其他属性）。标记行按标记取回原来的块：留着、删掉、挪动都照做，改字或写出不存在的编号整次拒绝；对话图片只认单独一行或行内的 `![](P1)`，别的 `![…](…)` 整次拒绝。新写的链接只认网址、邮件、电话与原文里已有的日记链接，其余只留文字并告诉模型。只改了编号列表的序号这类“文字变了、块没变”的算没有改动。结果告诉模型删掉了哪些标记、加了几张图片。
+
+**模板 Markdown**（`ai_template_markdown*.dart`）：模板正文进出智能体的唯一写法，与模板白名单（`sanitizeDiaryTemplateBlocks`）一一对应、读写对称（全部内置模板与全格式样本往返逐字不变，`ai_template_markdown_test.dart` 兜底）。一行一个块，空行是空段落（留给用户填写）；`#` 标题、`- ` / `1. ` / `- [ ] ` 列表与待办、`> ` 引用、`---`、代码围栏、GFM 表格（上一行 `<!-- no header row -->` 表示无表头，格内多段以 `<br>` 分开）、`<callout icon tone>` 提示块、`<toggle collapsed|open>` 折叠块；子块缩进两格；行尾 `{align= indent= list=}` 为块属性；行内 `**` `*` `~~` `` ` `` 链接与 `<u>` `<sup>` `<sub>` `<span style="color / background-color / font-size">`，颜色优先写颜色面板的预设名（亮暗主题都清楚）。`*` 与 `~~` 按成对的开关读（不用 CommonMark 的左右侧规则，中文全角标点旁的粗体照样认），`_` 一律是文字（填空线）。读出后再经白名单，媒体、不安全的链接一律去掉。表格的分隔行只认紧跟表头的那一行（紧挨的两张表各自成表，只有 `-` 的格子写出时转义），链接前紧挨的 `!` 写出时转义（否则读回来成了图片）。
 
 **设置清单**（`aiSettingSpecs`）：每项一个稳定的参数名、schema（说明写在 schema 里）、设置页里的名称（卡片写作“页面 · 设置名”，经工具的 `argLabel` 显示在可读详情里，不另进 `aiToolArgName`）、按存储口径的读写函数、依附的功能开关与平台，以及可选的取值说法与写前校验。只收用户在设置页里点一下就能改、改错了也无伤的开关与选项；AI 助手自己的设置（权限、隐私、服务商）一律不收，应用锁与密码、备份 / 网盘 / 同步 / 存储、各样式页只给前往。
 

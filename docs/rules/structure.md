@@ -50,7 +50,7 @@
 - `mind_maps/`：思维导图：`layout/` 布局引擎、画布与工作区、样式 / 导出 / AI 面板、嵌入导图编辑页与查看页；导图日记经 `diaries/` 的编辑页接入。
 - `diary_templates/`：日记模板：`models/built_in/` 内置模板、套用与撤销、管理页与编辑页。
 - `notebooks/`：日记本：首页卡组 `widgets/notebook_switcher/`（状态机 `controllers/notebook_switcher_controller.dart`）、编辑、目录与章节、智能规则、统计、上锁、嵌套树、封面 `widgets/notebook_cover/`；`controllers/notebook_navigation.dart`（`openNotebookFromAnywhere`）、选本流程 `diary_notebook_pick_flow.dart`、首页范围 `providers/home_notebook_scope_provider.dart`。
-- `ai/`：AI 助手界面（`docs/ai_assistant.md`）：入口 `controllers/ai_assistant_entry.dart`（`openAiAssistant`）、对话 / 写作 / 回顾 / 回应流程、设置页 `pages/settings/`、对话页分区 `sections/chat/`；`tools/` 为智能体工具，清单只在 `ai_tool_registry.dart`，撤销在 `controllers/ai_agent_undo_flow.dart`。
+- `ai/`：AI 助手界面（`docs/ai_assistant.md`）：入口 `controllers/ai_assistant_entry.dart`（`openAiAssistant`）、对话 / 写作 / 回顾 / 回应流程、设置页 `pages/settings/`、对话页分区 `sections/chat/`；`tools/` 为智能体工具，清单只在 `ai_tool_registry.dart`，撤销在 `controllers/ai_agent_undo_flow.dart`；日记正文的读写写法在 `ai_diary_markdown.dart`（写出）与 `ai_diary_markdown_edit.dart`（按替换改写），复用模板 Markdown 的 `ai_template_markdown*.dart`。
 - `app_lock/`：应用锁与应用密码界面：统一验证 `controllers/identity_verifier.dart`（`IdentityVerifier`）、运行时上锁 `app_lock_controller.dart`、密码设置 / 验证页与锁屏遮罩。
 - `lan_sync/`：局域网同步界面（同步页、设备详情页、扫码页）；界面控制器包着 `LanSyncService`，生产装配 `providers/lan_sync_engine_assembly.dart`。
 - `storage/`：存储管理界面（总览、媒体页），操作流程 `controllers/storage_flows.dart`。
@@ -72,7 +72,7 @@
 
 ## lib/l10n 与 lib/utils
 - `l10n/`：ARB（`app_en.arb` 为模板，另有 zh / ja / ru）、语言清单 `app_languages.dart`（`appLanguages`）、`context.l10n` 封装 `app_localizations.dart`；`app_localizations_gen*.dart` 为生成文件。
-- `utils/`：字数 `text_stats.dart`（`TextStats` / `DiaryWordCounts`）、查询保活、日期与时间格式化、日期选择统一范围 `date_picker_range.dart`、三态选择；`pinyin/` 为拼音表与 A–Z 索引。
+- `utils/`：字数 `text_stats.dart`（`TextStats` / `DiaryWordCounts`）、查询保活、日期与时间格式化、日期选择统一范围 `date_picker_range.dart`、三态选择、序列的最长公共子序列 `sequence_lcs.dart`；`pinyin/` 为拼音表与 A–Z 索引。
 
 ## 其他顶层目录
 - `assets/`：内置字体、天气图标、应用图标、示例与收款图片、AI 使用指南 `ai_guide/zh|en/`（`docs/releases/` 也作为资源打进应用）。

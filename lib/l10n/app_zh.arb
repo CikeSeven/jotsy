@@ -15936,13 +15936,43 @@
       }
     }
   },
-  "aiToolAppendDiary": "在日记末尾添加内容",
-  "@aiToolAppendDiary": {
-    "description": "AI 步骤卡片：在日记末尾追加内容。"
-  },
   "aiToolUpdateDiary": "修改日记信息",
   "@aiToolUpdateDiary": {
     "description": "AI 步骤卡片：修改日记的标题、日期、心情等。"
+  },
+  "aiToolEditDiary": "修改日记正文",
+  "@aiToolEditDiary": {
+    "description": "AI 步骤卡片：修改日记正文。"
+  },
+  "aiToolEditDiaryNamed": "修改「{name}」的正文",
+  "@aiToolEditDiaryNamed": {
+    "description": "AI 步骤卡片：修改某篇日记的正文（name 为标题，没有标题时为日期）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolEditReplace": "「{from}」→「{to}」",
+  "@aiToolEditReplace": {
+    "description": "AI 步骤详情：一处正文改动，原文 → 新文（都已截短）。",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolEditRemove": "删去「{text}」",
+  "@aiToolEditRemove": {
+    "description": "AI 步骤详情：删去的一段正文（已截短）。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
   },
   "aiToolDiaryChanged": "已修改「{name}」",
   "@aiToolDiaryChanged": {
@@ -16584,7 +16614,7 @@
       }
     }
   },
-  "aiPromptAgentImagesAttached": "这条消息附带的图片（按顺序）：{refs}。可用 create_diary / append_to_diary 的 `images` 参数或正文里的 ![](P1) 把它们加进日记。",
+  "aiPromptAgentImagesAttached": "这条消息附带的图片（按顺序）：{refs}。在 create_diary 的正文或 edit_diary 的新文字里单独一行写 ![](P1) 就能把它们放进日记（create_diary 也可以用 `images` 参数）。",
   "@aiPromptAgentImagesAttached": {"description": "提示词（智能体）：用户这条消息附带的图片编号。", "placeholders": {"refs": {"type": "String"}}},
   "aiPromptImageNotSent": "[图片 {label} 没有发给你：当前模型或设置不发送图片]",
   "@aiPromptImageNotSent": {"description": "提示词占位：因不发送图片而没发的那张图。", "placeholders": {"label": {"type": "String"}}},
@@ -16598,12 +16628,14 @@
   "@aiPromptImagesRejected": {"description": "提示词占位：服务端拒收图片、去掉图片重试时的说明。"},
   "aiPromptDiaryImage": "[图片 {index}]",
   "@aiPromptDiaryImage": {"description": "发给 AI 的日记正文里第 n 张图片的标记（view_images 用同一编号）。", "placeholders": {"index": {"type": "int"}}},
+  "aiPromptDiaryEmbedKind": "{kind, select, video{视频} audio{录音} file{附件} link{链接卡片} mindmap{思维导图} other{嵌入内容}}",
+  "@aiPromptDiaryEmbedKind": {"description": "发给 AI 的日记正文里，图片以外的块的标记名称（视频、录音、附件、链接卡片、思维导图、其他）。", "placeholders": {"kind": {"type": "String"}}},
   "aiToolViewImages": "查看图片",
   "@aiToolViewImages": {"description": "步骤卡片标题：智能体查看图片。"},
   "aiToolViewedImages": "{count, plural, =0{没有发出图片} other{看了 {count} 张图片}}",
   "@aiToolViewedImages": {"description": "步骤卡片结果：智能体看了几张图片。", "placeholders": {"count": {"type": "int"}}},
   "aiToolWithImages": "附 {count} 张图片",
-  "@aiToolWithImages": {"description": "确认卡片的一行：新建 / 追加的日记带着对话里的图片。", "placeholders": {"count": {"type": "int"}}},
+  "@aiToolWithImages": {"description": "确认卡片的一行：新建的日记带着对话里的图片。", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最多输出（token）",
   "@aiModelMaxOutput": {
     "description": "模型最多输出输入框。"
@@ -19584,7 +19616,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} arg_images{图片} arg_attachments{对话里的图片} arg_kind_template{模板} arg_add_rules{添加时间段} arg_remove_rules{删除时间段} arg_clear_rules{清除全部时间段} arg_default_template_id{默认模板} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日期} arg_due_range{截止日期} arg_merge_from{合并这些标签} arg_query{关键词} arg_tags{标签} arg_mood{心情} arg_include_archived{包括已归档} arg_sort{排序} arg_limit{最多} arg_group_by{分组} arg_date{日期} arg_time{时间} arg_title{标题} arg_name{名称} arg_note{备注} arg_color{颜色} arg_weather{天气} arg_location{地点} arg_text{内容} arg_edits{改动} arg_body{正文} arg_priority{优先级} arg_list{清单} arg_status{状态} arg_scale{字体大小} arg_repeat{重复} arg_remove{去掉的标签} arg_add{加上的标签} arg_remind_before_minutes{提前提醒} arg_parent_id{上级日记本} arg_offset{从第几个字读起} arg_new_name{新名称} arg_mode{外观} arg_language{语言} arg_into{合并到} arg_feature{功能} arg_enabled{开启} arg_clear_due{清除截止日期} arg_kind_diary{日记} arg_kind_notebook{日记本} arg_kind_tag{标签} arg_kind_todo{待办} arg_kind_anniversary{纪念日} arg_kind_day{日期} arg_steps{步骤} arg_reminders{提醒} arg_add_steps{添加步骤} arg_check_steps{勾选步骤} arg_uncheck_steps{取消勾选} arg_remove_steps{删除步骤} arg_all_day{全天} arg_kind_todoList{待办清单} arg_images{图片} arg_attachments{对话里的图片} arg_kind_template{模板} arg_add_rules{添加时间段} arg_remove_rules{删除时间段} arg_clear_rules{清除全部时间段} arg_default_template_id{默认模板} other{}}",
   "@aiToolArgName": {
     "description": "工具详情里参数的名称（arg_参数名）；空串表示没有译名，界面显示参数名。",
     "placeholders": {

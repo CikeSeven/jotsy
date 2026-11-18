@@ -4,7 +4,7 @@
 //   未解封胶囊、不存在当作找不到；私密日记一律不给（比单篇功能更严）；
 //   AI 隐私里排除的日记本与标签不给。回放旧图片时也按它重新检查；
 // - 日记里的图片按正文顺序编号（去重，`AiVisionImages.sourcesOf`），
-//   `read_diaries` 在正文的图片位置写“[图片 n]”（[aiDiaryTextWithImageMarks]），
+//   `read_diaries` 在正文的图片位置写“[图片 n]”（`ai_diary_markdown.dart`），
 //   `view_images` 按同样的编号取图：可以指定任意几张（如 4、5、6），日记有
 //   十张、一次只发三张时也看得到后面的；
 // - 一次最多发 AI 设置里“每次最多发送”那么多张（1–20），多要的在结果里
@@ -16,8 +16,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
-import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 import '../../../core/services/ai/agent/ai_tool_schema.dart';
 import '../../../core/services/ai/ai_vision.dart';
 import '../../../core/services/app_service.dart';
@@ -57,36 +55,6 @@ Future<({AiContextDiary? diary, String? refusal})> aiAgentReadDiary(
       !(await aiDiaryAllowedIn(container, id));
   if (excluded) return (diary: null, refusal: _excluded);
   return (diary: diary, refusal: null);
-}
-
-/// 发给 AI 的正文：与纯文本镜像相同，只是图片的位置写“[图片 n]”（编号同
-/// `AiVisionImages.sourcesOf`）。没有图片时就是原来的镜像。
-String aiDiaryTextWithImageMarks(AppLocalizations l10n, AiContextDiary diary) {
-  final content = diary.contentJson;
-  if (content == null) return diary.contentText;
-  final sources = AiVisionImages.sourcesOf(content);
-  if (sources.isEmpty) return diary.contentText;
-  final numbers = <String, int>{
-    for (final (index, source) in sources.indexed) source: index + 1,
-  };
-  final Map<String, Object?> document;
-  try {
-    document = decodeStoredDiaryBlocks(content);
-  } catch (_) {
-    return diary.contentText;
-  }
-  return diaryBlocksPlainText(
-    document,
-    embedText: (node) {
-      final marks = [
-        for (final media in diaryNodeMedia(node))
-          if (media.kind == DiaryBlockMediaKind.image)
-            if (numbers[media.path] case final number?)
-              l10n.aiPromptDiaryImage(number),
-      ];
-      return marks.isEmpty ? null : marks.join(' ');
-    },
-  );
 }
 
 /// 这些日记各有几张图片（编号口径同 `AiVisionImages.sourcesOf`）；没有

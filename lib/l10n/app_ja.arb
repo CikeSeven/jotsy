@@ -16503,13 +16503,43 @@
       }
     }
   },
-  "aiToolAppendDiary": "日記の末尾に追記",
-  "@aiToolAppendDiary": {
-    "description": "AI step card: adding text to the end of an entry."
-  },
   "aiToolUpdateDiary": "日記の情報を変更",
   "@aiToolUpdateDiary": {
     "description": "AI step card: changing an entry's title, date, mood and so on."
+  },
+  "aiToolEditDiary": "日記の本文を編集",
+  "@aiToolEditDiary": {
+    "description": "AI step card: editing the text of an entry."
+  },
+  "aiToolEditDiaryNamed": "「{name}」の本文を編集",
+  "@aiToolEditDiaryNamed": {
+    "description": "AI step card: editing the text of a specific entry (name is its title, or its date when untitled).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolEditReplace": "「{from}」→「{to}」",
+  "@aiToolEditReplace": {
+    "description": "AI step details: one change to the text, old → new (both shortened).",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolEditRemove": "「{text}」を削除",
+  "@aiToolEditRemove": {
+    "description": "AI step details: a piece of text that was removed (shortened).",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
   },
   "aiToolDiaryChanged": "「{name}」を変更しました",
   "@aiToolDiaryChanged": {
@@ -17151,7 +17181,7 @@
       }
     }
   },
-  "aiPromptAgentImagesAttached": "このメッセージに添付された画像（順番どおり）：{refs}。create_diary / append_to_diary の `images` パラメーター、または本文の ![](P1) で日記に追加できます。",
+  "aiPromptAgentImagesAttached": "このメッセージに添付された画像（順番どおり）：{refs}。create_diary の本文や edit_diary の新しいテキストに ![](P1) を 1 行で書くと日記に追加できます（create_diary は `images` パラメーターも使えます）。",
   "@aiPromptAgentImagesAttached": {"description": "Prompt line (agent): the photo references attached to the user's message.", "placeholders": {"refs": {"type": "String"}}},
   "aiPromptImageNotSent": "[画像 {label} は送られていません：このモデルまたは設定では画像を送りません]",
   "@aiPromptImageNotSent": {"description": "Prompt placeholder for a photo that is not sent because images are off.", "placeholders": {"label": {"type": "String"}}},
@@ -17165,12 +17195,14 @@
   "@aiPromptImagesRejected": {"description": "Prompt placeholder used when the service rejects images and they are removed before retrying."},
   "aiPromptDiaryImage": "[画像 {index}]",
   "@aiPromptDiaryImage": {"description": "Prompt mark for the n-th photo in an entry's text sent to the AI (view_images uses the same number).", "placeholders": {"index": {"type": "int"}}},
+  "aiPromptDiaryEmbedKind": "{kind, select, video{動画} audio{録音} file{添付ファイル} link{リンクカード} mindmap{マインドマップ} other{埋め込み}}",
+  "@aiPromptDiaryEmbedKind": {"description": "Name used in the prompt mark for non-photo blocks in an entry sent to the AI (video, audio, file, link card, mind map, other).", "placeholders": {"kind": {"type": "String"}}},
   "aiToolViewImages": "画像を見る",
   "@aiToolViewImages": {"description": "Step card title: the agent looks at photos."},
   "aiToolViewedImages": "{count, plural, =0{画像は送られていません} other{画像を {count} 枚見ました}}",
   "@aiToolViewedImages": {"description": "Step card result: how many photos the agent looked at.", "placeholders": {"count": {"type": "int"}}},
   "aiToolWithImages": "画像 {count} 枚付き",
-  "@aiToolWithImages": {"description": "Confirmation card line: the new or appended entry text comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
+  "@aiToolWithImages": {"description": "Confirmation card line: the new entry comes with photos from the chat.", "placeholders": {"count": {"type": "int"}}},
   "aiModelMaxOutput": "最大出力トークン数",
   "@aiModelMaxOutput": {
     "description": "Model max output field."
@@ -20151,7 +20183,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} arg_kind_template{テンプレート} arg_add_rules{時間帯を追加} arg_remove_rules{時間帯を削除} arg_clear_rules{時間帯をすべて削除} arg_default_template_id{既定のテンプレート} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_edits{変更} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} arg_kind_template{テンプレート} arg_add_rules{時間帯を追加} arg_remove_rules{時間帯を削除} arg_clear_rules{時間帯をすべて削除} arg_default_template_id{既定のテンプレート} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {

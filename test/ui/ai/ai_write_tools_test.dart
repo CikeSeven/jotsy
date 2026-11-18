@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
+import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
 import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/http_cancel_token.dart';
@@ -12,6 +15,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/ai/models/ai_preferences.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool.dart';
 import 'package:node_diary/ui/ai/tools/ai_tool_registry.dart';
+import 'package:node_diary/ui/ai/tools/ai_tool_writes.dart';
 import 'package:node_diary/ui/ai/models/ai_tool_subject.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
@@ -29,7 +33,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 这里补往返测试。
 const Set<String> _covered = <String>{
   'create_diary',
-  'append_to_diary',
+  'edit_diary',
   'update_diary',
   'tag_diaries',
   'pin_diaries',
@@ -219,32 +223,100 @@ void main() {
     );
 
     test(
-      'append_to_diary adds text; undo restores, or reports a later edit',
+      'edit_diary changes the body; undo restores, or reports a later edit',
       () async {
         final id = await diary('周末');
-        final outcome = await run('append_to_diary', {
+        final outcome = await run('edit_diary', {
           'id': id,
-          'text': '补一句：晚上看了电影。',
+          'edits': [
+            {'old_text': '的正文', 'new_text': '的正文\n晚上看了电影。'},
+          ],
         });
-        expect((await row(id)).contentText, contains('晚上看了电影'));
-        await undo('append_to_diary', outcome);
-        expect((await row(id)).contentText, isNot(contains('晚上看了电影')));
+        expect((await row(id)).contentText, '周末 的正文\n晚上看了电影。');
+        expect(
+          aiToolByName('edit_diary')!.labelWith(zh, outcome.undo!, [
+            AiToolSubject.diary(id, title: '周末', date: DateTime(2026, 11, 1)),
+          ]),
+          zh.aiToolEditDiaryNamed('周末'),
+        );
+        await undo('edit_diary', outcome);
+        expect((await row(id)).contentText, '周末 的正文');
 
-        final again = await run('append_to_diary', {'id': id, 'text': '再补一句'});
+        final again = await run('edit_diary', {'id': id, 'body': '全部重写'});
+        expect((await row(id)).contentText, '全部重写');
         await Future<void>.delayed(const Duration(milliseconds: 5));
         await db.updateDiaryContent(
           diaryId: id,
           contentDocJson: '',
           contentText: '用户自己又改了',
         );
-        expect(
-          () => undo('append_to_diary', again),
-          throwsA(isA<AiUndoConflict>()),
-        );
-        await undo('append_to_diary', again, force: true);
-        expect((await row(id)).contentText, isNot(contains('再补一句')));
+        expect(() => undo('edit_diary', again), throwsA(isA<AiUndoConflict>()));
+        await undo('edit_diary', again, force: true);
+        expect((await row(id)).contentText, '周末 的正文');
       },
     );
+
+    test(
+      'edit_diary takes edits or body, and leaves mind maps alone',
+      () async {
+        final id = await diary('周末');
+        for (final args in <Map<String, Object?>>[
+          {'id': id},
+          {
+            'id': id,
+            'body': 'x',
+            'edits': [
+              {'old_text': '周末', 'new_text': 'x'},
+            ],
+          },
+        ]) {
+          expect(() => run('edit_diary', args), throwsA(isA<AiToolFailure>()));
+        }
+        final map = await db.createDiary(
+          title: '导图',
+          contentDocJson: encodeDiaryBlocks(
+            mindMapDiaryDocument(MindMapDocument.blank(text: '中心')),
+          ),
+          contentText: '中心',
+          metadataJson: '{}',
+        );
+        expect(
+          () => run('edit_diary', {'id': map, 'body': '一段字'}),
+          throwsA(
+            isA<AiToolFailure>().having(
+              (e) => e.message,
+              'message',
+              contains('mind map'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test('steps of the retired append_to_diary still undo', () async {
+      final id = await diary('周末');
+      final before = await row(id);
+      await db.updateDiaryContent(
+        diaryId: id,
+        contentDocJson: '',
+        contentText: '周末 的正文\n追加的',
+      );
+      // 不再发给模型，但以前对话里的调用由 edit_diary 接手（撤销同为写回
+      // 原正文）。
+      expect(
+        aiTools.map((tool) => tool.name),
+        isNot(contains('append_to_diary')),
+      );
+      final retired = aiToolByName('append_to_diary')!;
+      expect(retired.name, 'edit_diary');
+      await retired.undo(container, <String, Object?>{
+        'id': id,
+        'content': before.content,
+        'text': before.contentText,
+        'fingerprint': aiDiaryFingerprint(await row(id)),
+      });
+      expect((await row(id)).contentText, '周末 的正文');
+    });
 
     test('update_diary changes details but keeps the archive state', () async {
       final id = await diary('旧');
@@ -277,7 +349,7 @@ void main() {
       final id = await diary('秘密');
       await db.addDiariesToNotebook(await privateNotebook(), [id]);
       expect(
-        () => run('append_to_diary', {'id': id, 'text': 'x'}),
+        () => run('edit_diary', {'id': id, 'body': 'x'}),
         throwsA(isA<AiToolFailure>()),
       );
       expect(

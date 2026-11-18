@@ -20982,17 +20982,35 @@ abstract class AppLocalizations {
   /// **'Saved \"{name}\"'**
   String aiToolDiaryCreated(String name);
 
-  /// AI step card: adding text to the end of an entry.
-  ///
-  /// In en, this message translates to:
-  /// **'Add text to an entry'**
-  String get aiToolAppendDiary;
-
   /// AI step card: changing an entry's title, date, mood and so on.
   ///
   /// In en, this message translates to:
   /// **'Change entry details'**
   String get aiToolUpdateDiary;
+
+  /// AI step card: editing the text of an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit an entry\'s text'**
+  String get aiToolEditDiary;
+
+  /// AI step card: editing the text of a specific entry (name is its title, or its date when untitled).
+  ///
+  /// In en, this message translates to:
+  /// **'Edit the text of \"{name}\"'**
+  String aiToolEditDiaryNamed(String name);
+
+  /// AI step details: one change to the text, old → new (both shortened).
+  ///
+  /// In en, this message translates to:
+  /// **'\"{from}\" → \"{to}\"'**
+  String aiToolEditReplace(String from, String to);
+
+  /// AI step details: a piece of text that was removed (shortened).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{text}\"'**
+  String aiToolEditRemove(String text);
 
   /// AI step card: the entry was changed (title or date).
   ///
@@ -21609,7 +21627,7 @@ abstract class AppLocalizations {
   /// Prompt line (agent): the photo references attached to the user's message.
   ///
   /// In en, this message translates to:
-  /// **'Photos attached to this message, in order: {refs}. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.'**
+  /// **'Photos attached to this message, in order: {refs}. To put them into an entry, write ![](P1) on its own line in the body of create_diary or in the new text of edit_diary (create_diary also takes an `images` parameter).'**
   String aiPromptAgentImagesAttached(String refs);
 
   /// Prompt placeholder for a photo that is not sent because images are off.
@@ -21648,6 +21666,12 @@ abstract class AppLocalizations {
   /// **'[Photo {index}]'**
   String aiPromptDiaryImage(int index);
 
+  /// Name used in the prompt mark for non-photo blocks in an entry sent to the AI (video, audio, file, link card, mind map, other).
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, video{Video} audio{Audio} file{File} link{Link card} mindmap{Mind map} other{Embed}}'**
+  String aiPromptDiaryEmbedKind(String kind);
+
   /// Step card title: the agent looks at photos.
   ///
   /// In en, this message translates to:
@@ -21660,7 +21684,7 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No photos sent} =1{Looked at 1 photo} other{Looked at {count} photos}}'**
   String aiToolViewedImages(int count);
 
-  /// Confirmation card line: the new or appended entry text comes with photos from the chat.
+  /// Confirmation card line: the new entry comes with photos from the chat.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{With 1 photo} other{With {count} photos}}'**
@@ -26923,7 +26947,7 @@ abstract class AppLocalizations {
   /// Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.
   ///
   /// In en, this message translates to:
-  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} other{}}'**
+  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_edits{Changes} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} other{}}'**
   String aiToolArgName(String key);
 
   /// Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.

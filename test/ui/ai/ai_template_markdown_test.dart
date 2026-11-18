@@ -172,6 +172,41 @@ void main() {
       );
     });
 
+    test('adjacent tables, dash-only cells and "!" before a link survive', () {
+      Map<String, Object?> dashes() => {
+        'type': 'table',
+        'children': [
+          for (var row = 0; row < 2; row++)
+            for (var col = 0; col < 2; col++)
+              {
+                'type': 'table/cell',
+                'children': [
+                  _p([_t(row == 1 ? (col == 0 ? '---' : ':-:') : '表头$col')]),
+                ],
+                'data': {'rowPosition': row, 'colPosition': col},
+              },
+        ],
+        'data': {'colsLen': 2, 'rowsLen': 2, 'headerRow': true},
+      };
+      final document = _doc([
+        _table(headerRow: true),
+        // 紧挨着的第二张表不能并进第一张；只有 `-` 的一行不能当成分隔行。
+        _table(headerRow: true),
+        dashes(),
+        _p([
+          _t('哇!'),
+          _t('链接', {'href': 'https://example.com'}),
+        ]),
+      ]);
+      final markdown = aiTemplateMarkdownOf(document);
+      expect(markdown, contains(r'哇\![链接](https://example.com)'));
+      expect(
+        _canonical(aiTemplateBodyFromMarkdown(markdown)),
+        _canonical(document),
+        reason: markdown,
+      );
+    });
+
     test('an empty body is a single empty paragraph', () {
       expect(aiTemplateMarkdownOf(_doc([_p([])])), '');
       expect(

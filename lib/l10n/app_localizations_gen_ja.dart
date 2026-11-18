@@ -11719,10 +11719,25 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get aiToolAppendDiary => '日記の末尾に追記';
+  String get aiToolUpdateDiary => '日記の情報を変更';
 
   @override
-  String get aiToolUpdateDiary => '日記の情報を変更';
+  String get aiToolEditDiary => '日記の本文を編集';
+
+  @override
+  String aiToolEditDiaryNamed(String name) {
+    return '「$name」の本文を編集';
+  }
+
+  @override
+  String aiToolEditReplace(String from, String to) {
+    return '「$from」→「$to」';
+  }
+
+  @override
+  String aiToolEditRemove(String text) {
+    return '「$text」を削除';
+  }
 
   @override
   String aiToolDiaryChanged(String name) {
@@ -12128,7 +12143,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String aiPromptAgentImagesAttached(String refs) {
-    return 'このメッセージに添付された画像（順番どおり）：$refs。create_diary / append_to_diary の `images` パラメーター、または本文の ![](P1) で日記に追加できます。';
+    return 'このメッセージに添付された画像（順番どおり）：$refs。create_diary の本文や edit_diary の新しいテキストに ![](P1) を 1 行で書くと日記に追加できます（create_diary は `images` パラメーターも使えます）。';
   }
 
   @override
@@ -12157,6 +12172,19 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String aiPromptDiaryImage(int index) {
     return '[画像 $index]';
+  }
+
+  @override
+  String aiPromptDiaryEmbedKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'video': '動画',
+      'audio': '録音',
+      'file': '添付ファイル',
+      'link': 'リンクカード',
+      'mindmap': 'マインドマップ',
+      'other': '埋め込み',
+    });
+    return '$_temp0';
   }
 
   @override
@@ -15280,6 +15308,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'arg_weather': '天気',
       'arg_location': '場所',
       'arg_text': '内容',
+      'arg_edits': '変更',
       'arg_body': '本文',
       'arg_priority': '優先度',
       'arg_list': 'リスト',

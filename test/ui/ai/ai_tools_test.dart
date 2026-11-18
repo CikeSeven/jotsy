@@ -132,7 +132,7 @@ void main() {
         'read_diaries': {'ids'},
         'view_images': {'diary_id'},
         'open_page': {'diary_id'},
-        'append_to_diary': {'id'},
+        'edit_diary': {'id'},
         'update_diary': {'id'},
         'tag_diaries': {'ids'},
         'pin_diaries': {'ids'},

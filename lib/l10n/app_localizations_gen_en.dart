@@ -13016,10 +13016,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get aiToolAppendDiary => 'Add text to an entry';
+  String get aiToolUpdateDiary => 'Change entry details';
 
   @override
-  String get aiToolUpdateDiary => 'Change entry details';
+  String get aiToolEditDiary => 'Edit an entry\'s text';
+
+  @override
+  String aiToolEditDiaryNamed(String name) {
+    return 'Edit the text of \"$name\"';
+  }
+
+  @override
+  String aiToolEditReplace(String from, String to) {
+    return '\"$from\" → \"$to\"';
+  }
+
+  @override
+  String aiToolEditRemove(String text) {
+    return 'Remove \"$text\"';
+  }
 
   @override
   String aiToolDiaryChanged(String name) {
@@ -13529,7 +13544,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String aiPromptAgentImagesAttached(String refs) {
-    return 'Photos attached to this message, in order: $refs. Add them to entries with the `images` parameter of create_diary or append_to_diary, or with ![](P1) in the body.';
+    return 'Photos attached to this message, in order: $refs. To put them into an entry, write ![](P1) on its own line in the body of create_diary or in the new text of edit_diary (create_diary also takes an `images` parameter).';
   }
 
   @override
@@ -13559,6 +13574,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String aiPromptDiaryImage(int index) {
     return '[Photo $index]';
+  }
+
+  @override
+  String aiPromptDiaryEmbedKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'video': 'Video',
+      'audio': 'Audio',
+      'file': 'File',
+      'link': 'Link card',
+      'mindmap': 'Mind map',
+      'other': 'Embed',
+    });
+    return '$_temp0';
   }
 
   @override
@@ -17239,6 +17267,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'arg_weather': 'Weather',
       'arg_location': 'Place',
       'arg_text': 'Text',
+      'arg_edits': 'Changes',
       'arg_body': 'Body',
       'arg_priority': 'Priority',
       'arg_list': 'List',

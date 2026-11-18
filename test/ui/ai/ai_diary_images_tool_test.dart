@@ -17,9 +17,9 @@ import 'package:node_diary/ui/ai/viewmodels/ai_chat_images.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_prompt_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// AI 把对话里的图片加进日记：create_diary / append_to_diary 的 `images`
-/// 写成正文的图片块（与消息共用同一个托管文件），编号不对时什么都不写，
-/// 撤销照常。
+/// AI 把对话里的图片加进日记：create_diary 的 `images` 与正文里的
+/// `![](P1)`、edit_diary 新文字里的 `![](P1)` 写成正文的图片块（与消息共用
+/// 同一个托管文件），编号不对时什么都不写，撤销照常。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase db;
@@ -138,21 +138,23 @@ void main() {
     expect(await db.select(db.diaries).get(), hasLength(before.length));
   });
 
-  test('photos can be appended to an entry and undone', () async {
+  test('photos can be put into an entry and undone', () async {
     final id = await db.createDiary(
       title: '旧',
       contentDocJson: '',
       contentText: '原来的',
       metadataJson: '{}',
     );
-    final outcome = await run('append_to_diary', {
+    final outcome = await run('edit_diary', {
       'id': id,
-      'text': '',
-      'images': ['P2', 'P1'],
+      'edits': [
+        {'old_text': '原来的', 'new_text': '![](P2)\n原来的\n![](P1)'},
+      ],
     });
     expect(await imagesOf(id), [hill, sea]);
+    expect((outcome.data! as Map)['photos_added'], 2);
 
-    await aiToolByName('append_to_diary')!.undo(container, outcome.undo!);
+    await aiToolByName('edit_diary')!.undo(container, outcome.undo!);
     expect(await imagesOf(id), isEmpty);
     expect((await db.getDiaryWithTagsByDiaryId(id))!.diary.contentText, '原来的');
   });

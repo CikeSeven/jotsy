@@ -1,10 +1,12 @@
-// 日记的写工具：新建、追加正文、改信息、加减标签、置顶、归档、移入回收站。
+// 日记的写工具：新建、改信息、加减标签、置顶、归档、移入回收站（改正文见
+// `ai_tools_diary_edit.dart`）。
 //
 // 都复用现有的写库路径：新建与“返回时直接发表”同一条
 // `publishNewDiaryDirectly`（组元数据、未来的日期回落到现在、功能关闭时去掉
-// 日记本）；只改正文用 `updateDiaryContent`、只改信息用 `patchDiaryFields`
-// （都不碰归档与删除标记）；批量的置顶 / 归档 / 删除用 batch writes。每个都
-// 带撤销数据；撤销前按内容指纹核对这篇之后有没有被改过。
+// 日记本）；只改信息用 `patchDiaryFields`（不碰归档与删除标记）；批量的
+// 置顶 / 归档 / 删除用 batch writes。每个都带撤销数据；撤销前按内容指纹核对
+// 这篇之后有没有被改过。新建的正文与改正文同一套写法（正文 Markdown，
+// `ai_diary_markdown_edit.dart`）：模型读到的写法原样写得回来。
 
 import 'dart:convert';
 
@@ -19,19 +21,15 @@ import '../../diaries/controllers/publish_new_diary_directly.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/publish_metadata_composer.dart';
 import '../models/ai_tool_subject.dart';
+import '../viewmodels/ai_citations.dart';
+import 'ai_diary_markdown_edit.dart';
 import 'ai_tool.dart';
-import 'ai_tool_diary_images.dart';
 import 'ai_tool_writes.dart';
 
 String _firstLine(String text, [int max = 40]) {
   final line = text.trim().split('\n').first.trim();
   return line.length > max ? '${line.substring(0, max)}…' : line;
 }
-
-/// 日记在卡片上的称呼：标题，没有标题时为日期。
-String _diaryName(Diary diary) => diary.title.trim().isNotEmpty
-    ? diary.title.trim()
-    : aiToolDate(diary.createdAt);
 
 /// 心情只能取用户自己的心情选项。
 Future<String?> _checkedMood(AiToolContext context, Object? raw) async {
@@ -60,13 +58,15 @@ class CreateDiaryTool extends AiTool {
 
   @override
   String get description =>
-      'Write a new diary entry. `body` is Markdown. Without `date` it is '
-      'dated now; a date alone keeps the current time of day; future dates '
-      'fall back to now. Tags that do not exist are created. `mood` must be '
-      'one of the mood options from get_app_context. Only manual, '
-      'non-private notebooks can be chosen. To add photos the user sent in '
-      'this chat, list their references (P1…) in `images` (added after the '
-      'body) or put ![](P1) in the body where a photo belongs.';
+      'Write a new diary entry. `body` uses the same Markdown as read_diaries '
+      'shows (one line per paragraph or block; an empty line is an empty '
+      'paragraph; see edit_diary). Without `date` it is dated now; a date '
+      'alone keeps the current time of day; future dates fall back to now. '
+      'Tags that do not exist are created. `mood` must be one of the mood '
+      'options from get_app_context. Only manual, non-private notebooks can '
+      'be chosen. To add photos the user sent in this chat, put ![](P1) on '
+      'its own line where a photo belongs, or list references (P1…) in '
+      '`images` to add them after the body.';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -123,15 +123,30 @@ class CreateDiaryTool extends AiTool {
   ) async {
     final database = context.database;
     final features = context.env.features;
-    // 正文与图片先转好：图片编号有一个不对就整次不写（下面任何写入之前）。
-    final body = aiDiaryBodyWithImages(
-      args['body']! as String,
-      images: (args['images'] as List?)?.cast<String>() ?? const <String>[],
-      chatImages: context.chatImages,
-    );
-    if (body.children.isEmpty) {
-      throw const AiToolFailure('`body` is empty and no `images` were given.');
+    // 正文先转好（与 edit_diary 同一套写法；`images` 接在正文后面）：图片
+    // 编号有一个不对就整次不写（下面任何写入之前）。引用编号 [Dn] 离开对话
+    // 没有意义，与另存为日记一样去掉。
+    final images = (args['images'] as List?)?.cast<String>() ?? const [];
+    final markdown = [
+      aiStripCitations(args['body']! as String).trimRight(),
+      for (final ref in images) '![]($ref)',
+    ].where((part) => part.isNotEmpty).join('\n');
+    const empty = AiToolFailure('`body` is empty and no `images` were given.');
+    if (markdown.trim().isEmpty) throw empty;
+    final Map<String, Object?> document;
+    try {
+      document = aiEditDiaryMarkdown(
+        diaryBlocksFromPlainText(''),
+        l10n: context.kit.l10n,
+        chatImages: context.chatImages,
+        body: markdown,
+      ).document;
+    } on AiToolFailure catch (failure) {
+      // 只有空行：与空正文同一种说法。
+      if (failure.message.startsWith('Nothing changed')) throw empty;
+      rethrow;
     }
+    if (!diaryBlocksHaveVisibleContent(document)) throw empty;
     final mood = await _checkedMood(context, args['mood']);
     final notebookId = args['notebook_id'] as String?;
     if (notebookId != null) {
@@ -158,9 +173,6 @@ class CreateDiaryTool extends AiTool {
         : minute == null
         ? date
         : DateTime(date.year, date.month, date.day, minute ~/ 60, minute % 60);
-    final document = <String, Object?>{
-      'document': <String, Object?>{'type': 'page', 'children': body.children},
-    };
     final id = await publishNewDiaryDirectly(
       database: database,
       draft: NewDiaryDraft(
@@ -193,7 +205,7 @@ class CreateDiaryTool extends AiTool {
         if (requested != null && requested.isAfter(context.now))
           'note': 'The date was in the future, so it is dated now.',
       },
-      summary: context.l10n.aiToolDiaryCreated(_diaryName(created)),
+      summary: context.l10n.aiToolDiaryCreated(aiDiaryName(created)),
       subjects: [aiDiarySubject(created)],
       undo: <String, Object?>{
         'id': id,
@@ -224,113 +236,6 @@ class CreateDiaryTool extends AiTool {
   }
 }
 
-class AppendToDiaryTool extends AiTool {
-  const AppendToDiaryTool();
-
-  @override
-  String get name => 'append_to_diary';
-
-  @override
-  AiToolGroup get group => AiToolGroup.diaries;
-
-  @override
-  AiToolEffect get effect => AiToolEffect.write;
-
-  @override
-  String get description =>
-      'Add Markdown text to the end of an existing entry (by id). The rest '
-      'of the entry is left as it is. To add photos the user sent in this '
-      'chat, list their references (P1…) in `images` (added after the text) '
-      'or put ![](P1) in the text where a photo belongs.';
-
-  @override
-  Set<String> get diaryIdArgs => const <String>{'id'};
-
-  @override
-  AiObjectSchema get schema => const AiObjectSchema(
-    properties: <String, AiSchema>{
-      'id': AiStringSchema(),
-      'text': AiStringSchema(
-        description: 'Markdown to append; may be empty when `images` is given.',
-        allowEmpty: true,
-      ),
-      'images': AiArraySchema(
-        items: AiStringSchema(),
-        maxItems: 20,
-        description: 'Photo references like P1 from this chat.',
-      ),
-    },
-    required: <String>['id', 'text'],
-  );
-
-  @override
-  String label(AppLocalizations l10n, Map<String, Object?> args) =>
-      l10n.aiToolAppendDiary;
-
-  @override
-  Future<AiToolOutcome> run(
-    AiToolContext context,
-    Map<String, Object?> args,
-  ) async {
-    final found = await aiWritableDiary(context, args['id']! as String);
-    final diary = found.diary;
-    final added = aiDiaryBodyWithImages(
-      args['text']! as String,
-      images: (args['images'] as List?)?.cast<String>() ?? const <String>[],
-      chatImages: context.chatImages,
-    ).children;
-    if (added.isEmpty) {
-      throw const AiToolFailure('`text` is empty and no `images` were given.');
-    }
-    final document = decodeStoredDiaryBlocks(diary.content);
-    final page = (document['document']! as Map).cast<String, Object?>();
-    final next = <String, Object?>{
-      ...document,
-      'document': <String, Object?>{
-        ...page,
-        'children': [...(page['children'] as List? ?? const []), ...added],
-      },
-    };
-    await context.database.updateDiaryContent(
-      diaryId: diary.diaryId,
-      contentDocJson: encodeDiaryBlocks(next),
-      contentText: diaryBlocksPlainText(next),
-    );
-    aiRefreshDiaries(context.container, [diary.diaryId]);
-    return AiToolOutcome(
-      data: const <String, Object?>{'ok': true},
-      summary: context.l10n.aiToolDiaryChanged(_diaryName(diary)),
-      subjects: [aiDiarySubject(diary)],
-      undo: <String, Object?>{
-        'id': diary.diaryId,
-        'content': diary.content,
-        'text': diary.contentText,
-        'fingerprint': await aiDiaryFingerprintOf(
-          context.database,
-          diary.diaryId,
-        ),
-      },
-    );
-  }
-
-  @override
-  Future<void> undo(
-    ProviderContainer container,
-    Map<String, Object?> data, {
-    bool force = false,
-  }) async {
-    final database = container.read(appDatabaseProvider);
-    final id = data['id']! as String;
-    await aiCheckUnchanged(database, id, data['fingerprint'], force: force);
-    await database.updateDiaryContent(
-      diaryId: id,
-      contentDocJson: data['content']! as String,
-      contentText: data['text']! as String,
-    );
-    aiRefreshDiaries(container, [id]);
-  }
-}
-
 class UpdateDiaryTool extends AiTool {
   const UpdateDiaryTool();
 
@@ -347,7 +252,7 @@ class UpdateDiaryTool extends AiTool {
   String get description =>
       "Change an entry's title, date, time, mood, weather or location (by "
       'id). Pass only what changes; an empty string clears mood, weather or '
-      'location. The body is not touched (use append_to_diary to add text).';
+      'location. The body is not touched (use edit_diary for it).';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'id'};
@@ -436,7 +341,7 @@ class UpdateDiaryTool extends AiTool {
     aiRefreshDiaries(context.container, [diary.diaryId]);
     return AiToolOutcome(
       data: const <String, Object?>{'ok': true},
-      summary: context.l10n.aiToolDiaryChanged(_diaryName(diary)),
+      summary: context.l10n.aiToolDiaryChanged(aiDiaryName(diary)),
       subjects: [aiDiarySubject(diary)],
       undo: <String, Object?>{
         'id': diary.diaryId,
@@ -750,7 +655,7 @@ class TrashDiariesTool extends AiTool {
       title: label(context.l10n, args),
       lines: [
         for (final found in diaries.take(8))
-          '${aiToolDate(found.diary.createdAt)}  ${_diaryName(found.diary)}',
+          '${aiToolDate(found.diary.createdAt)}  ${aiDiaryName(found.diary)}',
         if (diaries.length > 8) '…',
       ],
     );

@@ -55,6 +55,11 @@ Future<DiaryWithTags> aiWritableDiary(
   return found;
 }
 
+/// 日记在卡片上的称呼：标题，没有标题时为日期。
+String aiDiaryName(Diary diary) => diary.title.trim().isNotEmpty
+    ? diary.title.trim()
+    : aiToolDate(diary.createdAt);
+
 /// 一批日记 id 都得能改，否则整批不做（不留半截改动）。
 Future<List<DiaryWithTags>> aiWritableDiaries(
   AiToolContext context,

@@ -21,6 +21,7 @@ import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_recap_material.dart';
 import '../viewmodels/ai_retrieval.dart';
 import '../models/ai_tool_subject.dart';
+import 'ai_diary_markdown.dart';
 import 'ai_tool.dart';
 import 'ai_tools_images.dart';
 
@@ -198,9 +199,10 @@ class ReadDiariesTool extends AiTool {
   @override
   String get description =>
       'Read the full text of diary entries by id or reference like D3 (from '
-      'search_diaries). Photos are marked in the text as [Photo n]; use '
-      'view_images to look at them. Long entries may be cut when the '
-      'per-turn text budget runs out.';
+      'search_diaries). The body is Markdown, one line per block (the format '
+      'edit_diary takes); photos, files, link cards and mind maps are their '
+      'own lines like [Photo n]; use view_images to look at photos. Long '
+      'entries may be cut when the per-turn text budget runs out.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'ids'};
@@ -243,10 +245,11 @@ class ReadDiariesTool extends AiTool {
         results.add(<String, Object?>{'id': id, 'error': access.refusal});
         continue;
       }
-      // 正文里的图片写成“[图片 n]”，编号与 view_images 相同。
+      // 正文写成正文 Markdown（edit_diary 照这份改）；图片写成“[图片 n]”，
+      // 编号与 view_images 相同。
       final diary = aiDiaryWithText(
         found,
-        aiDiaryTextWithImageMarks(context.kit.l10n, found),
+        aiDiaryMarkdownText(context.kit.l10n, found),
       );
       final photoCount = AiVisionImages.sourcesOf(
         found.contentJson ?? '',

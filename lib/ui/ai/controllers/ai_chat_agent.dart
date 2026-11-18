@@ -67,14 +67,20 @@ extension _AiChatAgent on AiChatController {
     var fixedWords = 0;
     switch (scope.kind) {
       case AiChatScopeKind.diary:
-        final diary = textReplay.scopeDiaries.contains(scope.diaryId)
+        final found = textReplay.scopeDiaries.contains(scope.diaryId)
             ? null
             : await database.getAiDiary(scope.diaryId!);
         final allowed =
-            diary != null &&
+            found != null &&
             (prefs.privacy.allowPrivate ||
-                !(await database.isDiaryPrivate(diary.diaryId)));
+                !(await database.isDiaryPrivate(found.diaryId)));
         if (allowed) {
+          // 正文与 read_diaries 同一写法（正文 Markdown）：模型据此直接改正文
+          // 时，照抄的原文对得上。
+          final diary = aiDiaryWithText(
+            found,
+            aiDiaryMarkdownText(kit.l10n, found),
+          );
           final words =
               TextStats.countWords(diary.contentText) +
               TextStats.countWords(diary.title);

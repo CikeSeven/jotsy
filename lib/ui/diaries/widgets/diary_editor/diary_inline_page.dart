@@ -59,9 +59,10 @@ class _InlinePage extends af.BlockComponentStatelessWidget {
           if (rows[i].start == i)
             Padding(
               padding: padding,
-              child: rows[i].end - i > 1
+              child: diaryThumbnailRowInGrid(children, rows[i])
                   ? DiaryThumbnailRowView(
                       align: children[i].attributes['align'],
+                      nodes: children.sublist(i, rows[i].end),
                       children: [
                         for (var j = i; j < rows[i].end; j++)
                           state.renderer.build(context, children[j]),

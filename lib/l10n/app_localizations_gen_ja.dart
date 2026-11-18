@@ -16903,4 +16903,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notebookDeckHideChildren => 'サブ日記帳を隠す';
+
+  @override
+  String get diaryThumbnailMoveEarlier => '前へ移動';
+
+  @override
+  String get diaryThumbnailMoveLater => '後ろへ移動';
 }

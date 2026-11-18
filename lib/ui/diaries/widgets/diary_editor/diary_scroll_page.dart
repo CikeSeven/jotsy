@@ -120,9 +120,10 @@ class _DiaryScrollPage extends af.BlockComponentStatelessWidget {
       final row = diaryThumbnailRowOf(node);
       if (row != null && row.start != position) return const SizedBox.shrink();
       final Widget child;
-      if (row != null && row.end - row.start > 1) {
+      if (row != null && diaryThumbnailRowInGrid(items, row)) {
         child = DiaryThumbnailRowView(
           align: node.attributes['align'],
+          nodes: [for (var i = row.start; i < row.end; i++) items[i]],
           children: [
             for (var i = row.start; i < row.end; i++) block(context, items[i]),
           ],

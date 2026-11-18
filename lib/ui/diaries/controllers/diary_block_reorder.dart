@@ -42,12 +42,14 @@ enum DiaryBlockMoveSelection {
 ///
 /// [recordUndo] 为 false 时是拖动中的预览（见 [DiaryBlockDragSession]）：
 /// 不进撤销栈，选区以 remote 原因更新，上游不会因此自动滚向光标——手指
-/// 下的落点会随滚动继续变化。
+/// 下的落点会随滚动继续变化。[quiet] 为 true 时照常记撤销、选区同样以
+/// remote 原因更新：拖动小图排序时光标可能在别处，松手不该把页面拉过去。
 bool moveDiaryEditorBlocks(
   DiaryEditorController controller,
   Iterable<af.Node> nodes,
   af.Path destination, {
   bool recordUndo = true,
+  bool quiet = false,
   DiaryBlockMoveSelection selection = DiaryBlockMoveSelection.caretAtEnd,
   af.Selection? follow,
 }) {
@@ -76,7 +78,9 @@ bool moveDiaryEditorBlocks(
     case DiaryBlockMoveSelection.none:
       break;
   }
-  if (!recordUndo) transaction.reason = af.SelectionUpdateReason.remote;
+  if (!recordUndo || quiet) {
+    transaction.reason = af.SelectionUpdateReason.remote;
+  }
   controller.apply(
     transaction,
     recordUndo: recordUndo,

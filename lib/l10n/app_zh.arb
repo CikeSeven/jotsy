@@ -21708,5 +21708,13 @@
   "notebookDeckHideChildren": "收起子日记本",
   "@notebookDeckHideChildren": {
     "description": "日记本卡组卡片上子本角标的读屏说明（子本展开时）。"
+  },
+  "diaryThumbnailMoveEarlier": "前移",
+  "@diaryThumbnailMoveEarlier": {
+    "description": "编辑页并排小图的读屏操作：把这张图片或视频在这一组里往前挪一位。"
+  },
+  "diaryThumbnailMoveLater": "后移",
+  "@diaryThumbnailMoveLater": {
+    "description": "编辑页并排小图的读屏操作：把这张图片或视频在这一组里往后挪一位。"
   }
 }

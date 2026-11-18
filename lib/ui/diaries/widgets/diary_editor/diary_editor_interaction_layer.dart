@@ -11,11 +11,12 @@ import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
 import 'diary_find_revealer.dart';
 import 'diary_read_only_shortcuts.dart';
+import 'diary_thumbnail_reorder_layer.dart';
 
 /// 原生正文外围的交互层：手机选区菜单、软键盘扩选兼容、点回插入点重新弹出
 /// 键盘与点文末空白处补可写的行（[DiaryEditorKeyboardReopen]）、编辑态段落
-/// 把手与光标避让，以及查找时把当前匹配滚进视野（[DiaryFindRevealer]，编辑
-/// 与只读正文都有）。
+/// 把手、长按拖动小图排序（[DiaryThumbnailReorderLayer]）与光标避让，以及
+/// 查找时把当前匹配滚进视野（[DiaryFindRevealer]，编辑与只读正文都有）。
 /// 与块注册/主题解析分开，键盘约束变化时只更新这一层。
 class DiaryEditorInteractionLayer extends StatelessWidget {
   const DiaryEditorInteractionLayer({
@@ -136,7 +137,13 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
       coveredHeight: shrinkWrap ? 0 : coveredHeight,
       pinPath: pinPath,
       revealPath: revealPath,
-      child: content,
+      // 长按小图拖动排序（只在编辑态）：拖动宿主在正文之上，格子在并排的
+      // 小图里登记。
+      child: DiaryThumbnailReorderLayer(
+        controller: controller,
+        coveredHeight: shrinkWrap ? 0 : coveredHeight,
+        child: content,
+      ),
     );
     return shrinkWrap
         ? DiaryFindRevealer(

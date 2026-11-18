@@ -42,7 +42,7 @@
   - `models/`、`viewmodels/`、`providers/`：筛选、偏好与派生状态；卡片样式 `models/diary_card_style/`、预览页样式 `models/diary_preview_style/`、样式库 `models/style_library/`、代码块 `models/diary_code_block/`。
   - `export/`：导出写出器（PDF / EPUB / Word / Markdown / 网页 / 纯文本 / CSV）与成书结构。
   - `sections/`：页面区块，含分享面板 `diary_share_sheet.dart`（`showDiaryShareSheet`）。
-  - `widgets/diary_editor/`：共用编辑器 `diary_editor.dart`（`DiaryEditor`，编辑与只读正文）、块渲染、段落把手与选择模式、光标菜单。
+  - `widgets/diary_editor/`：共用编辑器 `diary_editor.dart`（`DiaryEditor`，编辑与只读正文）、块渲染、段落把手与选择模式、小图长按排序（`diary_thumbnail_reorder_layer.dart`）、光标菜单。
   - `widgets/` 其余：`diary_card/` 共用日记卡片，`diary_preview/` 预览页，`publish_panel/` 发布与编辑共用的信息面板，`diary_color_panel/` 等为工具栏面板，另有查找栏、链接、留言、这天的照片、宽窗口右栏 `diary_detail_pane/`。
 - `app_surface/`：背景与材质设置模型、背景解码缓存；`widgets/` 为 `AppPageBackground`、`AppPageBackdrop`、`AppGlass.of`（`app_glass_scope.dart`）与 `AppGlassSurface` / `AppCardSurface` / `AppGlassFab` / `AppGlassField`。
 - `anniversaries/`：纪念日与倒数日（列表、详情、编辑页）。

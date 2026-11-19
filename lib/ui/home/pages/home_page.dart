@@ -20,7 +20,7 @@ import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/todos/controllers/todo_navigation.dart';
 import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
-import 'package:node_diary/ui/home/controllers/home_bar_scroll_hider.dart';
+import 'package:node_diary/ui/widgets/scroll_chrome_hider.dart';
 import 'package:node_diary/ui/home/controllers/page_position_listenable.dart';
 import 'package:node_diary/ui/home/controllers/page_spring_driver.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
@@ -222,7 +222,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// 最近一次 build 时“滚动时隐藏底栏”是否生效（有底栏且开启该行为）；
   /// 滚动回调在 build 之外，读这里而不是重新解析样式。
   bool _barHideOnScrollEnabled = false;
-  final HomeBarScrollHider _barScrollHider = HomeBarScrollHider();
+  final ScrollChromeHider _barScrollHider = ScrollChromeHider();
 
   /// 最近一次 build 时窗口是否为宽窗口（≥ 600，左侧导航栏外壳）。切页
   /// 控制器在 build 之外读它，决定滑动切页还是淡入切页。
@@ -672,7 +672,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  /// 首页内容的纵向滚动 → 底栏显隐（判定规则见 [HomeBarScrollHider]）。
+  /// 首页内容的纵向滚动 → 底栏显隐（判定规则见 [ScrollChromeHider]）。
   /// 只读不拦截：始终返回 false，通知继续向上冒泡。
   bool _handleScrollForBar(ScrollNotification notification) {
     if (!_barHideOnScrollEnabled) {

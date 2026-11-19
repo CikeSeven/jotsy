@@ -132,10 +132,12 @@ class DiaryPreviewSurface extends StatelessWidget {
               content
             else
               DiaryPreviewTopBarHost(
-                chrome: chrome,
-                resolved: resolved,
-                barColor: diaryPreviewPageColors(context, resolved).bar,
-                scrollController: scrollController,
+                entry: DiaryPreviewChromeEntry(
+                  chrome: chrome,
+                  resolved: resolved,
+                  barColor: diaryPreviewPageColors(context, resolved).bar,
+                  scrollController: scrollController,
+                ),
                 child: content,
               ),
             // 叠层带 key：开关某一层时其余层的状态不会错位复用。

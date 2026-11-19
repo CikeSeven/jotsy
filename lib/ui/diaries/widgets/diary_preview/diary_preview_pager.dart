@@ -17,8 +17,10 @@ import '../../providers/diary_detail_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../diary_card/diary_card.dart' show diaryCardTransitionTag;
 import 'diary_pager_view.dart';
+import 'diary_preview_chrome_board.dart';
 import 'diary_preview_find.dart';
 import 'diary_preview_neighbors.dart';
+import 'diary_preview_top_bar.dart';
 import 'diary_preview_view.dart';
 
 /// 预览页的左右翻页：按进入时所在列表的顺序（[DiaryPreviewSequence]）在
@@ -88,6 +90,9 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
   /// 每页上次交给翻页器的组件与它的输入（见 [_pageAt]）。
   final Map<int, _PageMemo> _pages = <int, _PageMemo>{};
 
+  /// 各篇登记的浮岛内容：浮岛画在所有页之上、不随页面滑走，只画当前这篇。
+  final DiaryPreviewChromeBoard _chrome = DiaryPreviewChromeBoard();
+
   @override
   void initState() {
     super.initState();
@@ -112,6 +117,7 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
 
   @override
   void dispose() {
+    _chrome.dispose();
     _entrance.dispose();
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
     widget.coverHero?.dispose();
@@ -266,20 +272,38 @@ class _DiaryPreviewPagerState extends ConsumerState<DiaryPreviewPager> {
     final navigation = ref.watch(
       diaryPreviewStyleProvider.select((style) => style.navigation),
     );
+    final pager = DiaryPagerView(
+      itemCount: _ids.length,
+      initialPage: _initialIndex,
+      navigation: navigation,
+      behavior: behavior,
+      locked: _busy.isNotEmpty,
+      cacheNeighbors: _entered,
+      desktopControls: true,
+      onPageChanged: _handlePageChanged,
+      itemBuilder: (BuildContext context, DiaryPagerPosition position) =>
+          _pageAt(l10n, position),
+    );
     // Ctrl / ⌘ + F 在翻页器（含 DesktopPageKeys）外面接住，交给当前这一篇。
     return DiaryPreviewFindShortcuts(
       currentDiaryId: () => _ids[_current],
-      child: DiaryPagerView(
-        itemCount: _ids.length,
-        initialPage: _initialIndex,
-        navigation: navigation,
-        behavior: behavior,
-        locked: _busy.isNotEmpty,
-        cacheNeighbors: _entered,
-        desktopControls: true,
-        onPageChanged: _handlePageChanged,
-        itemBuilder: (BuildContext context, DiaryPagerPosition position) =>
-            _pageAt(l10n, position),
+      child: DiaryPreviewChromeScope(
+        board: _chrome,
+        // 只有浮岛这一层随登记变化重建，翻页器原样交回、不重建。换篇时
+        // 浮岛立即回来，颜色按新的一篇过渡。
+        child: ListenableBuilder(
+          listenable: _chrome,
+          child: pager,
+          builder: (BuildContext context, Widget? pager) {
+            final id = _ids[_current];
+            return DiaryPreviewTopBarHost(
+              entry: _chrome[id],
+              resetKey: id,
+              themed: true,
+              child: pager!,
+            );
+          },
+        ),
       ),
     );
   }

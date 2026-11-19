@@ -178,23 +178,16 @@ class DiaryMoreMenuIslandButton extends StatelessWidget {
   }
 }
 
-/// 一篇预览的浮岛顶栏：把 [child]（整页内容）放在浮岛下面。
-///
-/// - 独立页面：左侧返回岛，状态栏那一条垫 [barColor]（玻璃时为玻璃），
-///   状态栏图标按这一篇的整页主题；
-/// - 嵌在宽窗口右栏（[DiaryPreviewHostScope]）：只有右侧动作岛，不画状态栏
-///   底条（右栏上方没有状态栏），也没有标题胶囊（右栏本就是阅读区）。
-///
-/// 岛与正文列对齐（[DiaryPreviewResolvedStyle.maxContentWidth]）。
-class DiaryPreviewTopBarHost extends StatelessWidget {
-  const DiaryPreviewTopBarHost({
-    super.key,
+/// 一篇预览画浮岛要用的全部东西：要显示的标题与动作，以及整页样式、
+/// 状态栏底色与这一篇的滚动控制器（点标题胶囊回到顶部）。翻页时由各篇
+/// 登记给翻页器（见 `DiaryPreviewChromeBoard`）。
+@immutable
+class DiaryPreviewChromeEntry {
+  const DiaryPreviewChromeEntry({
     required this.chrome,
     required this.resolved,
     required this.barColor,
     required this.scrollController,
-    required this.child,
-    this.resetKey,
   });
 
   final DiaryPreviewChrome chrome;
@@ -202,30 +195,62 @@ class DiaryPreviewTopBarHost extends StatelessWidget {
 
   /// 状态栏底条在经典材质下的颜色（纸色，或让位给背景时的实色栏底色）。
   final Color barColor;
-
-  /// 点标题胶囊时回到顶部用。
   final ScrollController scrollController;
+}
+
+/// 预览的浮岛顶栏：把 [child]（一篇的整页内容，或翻页器）放在浮岛下面。
+///
+/// - 独立页面：左侧返回岛，状态栏那一条垫 [DiaryPreviewChromeEntry.barColor]
+///   （玻璃时为玻璃），状态栏图标按这一篇的整页主题；
+/// - 嵌在宽窗口右栏（[DiaryPreviewHostScope]）：只有右侧动作岛，不画状态栏
+///   底条（右栏上方没有状态栏），也没有标题胶囊（右栏本就是阅读区）；
+/// - [entry] 为 null（翻页器里当前这篇还没登记）：暂不画浮岛，结构不变，
+///   [child] 不会因为浮岛出现而重新挂载。
+///
+/// 岛与正文列对齐（[DiaryPreviewResolvedStyle.maxContentWidth]）。翻页器在
+/// 所有页之上画浮岛时传 [themed]：浮岛按当前这篇的整页主题着色，换篇时
+/// 过渡（各篇自己画时已在这篇的主题之下）。
+class DiaryPreviewTopBarHost extends StatelessWidget {
+  const DiaryPreviewTopBarHost({
+    super.key,
+    required this.entry,
+    required this.child,
+    this.resetKey,
+    this.themed = false,
+  });
+
+  final DiaryPreviewChromeEntry? entry;
   final Widget child;
 
   /// 见 `FloatingTopBarHost.resetKey`。
   final Object? resetKey;
+  final bool themed;
 
   @override
   Widget build(BuildContext context) {
     final embedded = DiaryPreviewHostScope.isEmbedded(context);
-    final actions = chrome.actions;
+    final entry = this.entry;
+    final chrome = entry?.chrome;
+    final actions = chrome?.actions;
     return FloatingTopBarHost(
       resetKey: resetKey,
-      hideOnScroll: chrome.hideOnScroll,
-      contentMaxWidth: resolved.maxContentWidth,
-      statusBarColor: embedded ? null : barColor,
-      leading: embedded ? null : FloatingBackIsland(onPressed: actions.onBack),
-      trailing: DiaryPreviewActionsIsland(actions: actions),
-      title: embedded ? null : chrome.title,
-      titleSemantics: chrome.titleSemantics,
-      titleAnchor: chrome.titleAnchor,
+      theme: themed ? entry?.resolved.theme : null,
+      hideOnScroll: chrome?.hideOnScroll ?? false,
+      contentMaxWidth: entry?.resolved.maxContentWidth,
+      statusBarColor: embedded ? null : entry?.barColor,
+      leading: embedded || actions == null
+          ? null
+          : FloatingBackIsland(onPressed: actions.onBack),
+      trailing: actions == null
+          ? null
+          : DiaryPreviewActionsIsland(actions: actions),
+      title: embedded ? null : chrome?.title,
+      titleSemantics: chrome?.titleSemantics,
+      titleAnchor: chrome?.titleAnchor,
       titleTooltip: context.l10n.diaryPreviewBackToTop,
-      onTitleTap: () => scrollDiaryPreviewToTop(context, scrollController),
+      onTitleTap: entry == null
+          ? null
+          : () => scrollDiaryPreviewToTop(context, entry.scrollController),
       child: child,
     );
   }

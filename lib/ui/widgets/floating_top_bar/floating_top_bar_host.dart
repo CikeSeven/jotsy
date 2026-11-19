@@ -35,6 +35,7 @@ class FloatingTopBarHost extends StatefulWidget {
     this.statusBarColor,
     this.contentMaxWidth,
     this.resetKey,
+    this.theme,
   });
 
   final Widget child;
@@ -54,6 +55,11 @@ class FloatingTopBarHost extends StatefulWidget {
   final Color? statusBarColor;
   final double? contentMaxWidth;
   final Object? resetKey;
+
+  /// 只给浮岛与状态栏底条用的主题（内容保持自己的主题）；变化时补间过渡。
+  /// null 时沿用所在位置的主题。翻页器在所有页之上画浮岛时传当前这篇的
+  /// 整页主题，换篇时浮岛颜色随之过渡。
+  final ThemeData? theme;
 
   @override
   State<FloatingTopBarHost> createState() => _FloatingTopBarHostState();
@@ -165,6 +171,20 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
     }
   }
 
+  /// 给浮岛与底条套上 [FloatingTopBarHost.theme]（有时）。
+  Widget _themed(BuildContext context, Widget child) {
+    final theme = widget.theme;
+    if (theme == null) {
+      return child;
+    }
+    return AnimatedTheme(
+      data: theme,
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      curve: ExpressiveMotion.effects,
+      child: child,
+    );
+  }
+
   /// 此刻被状态栏与浮岛盖住的部分的下缘（全局纵坐标）：浮岛显示时到岛那
   /// 一行的下缘，收起途中按显隐进度缩短，完全收起时只剩状态栏。
   double _coveredBottom() {
@@ -201,20 +221,23 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
           top: 0,
           left: 0,
           right: 0,
-          child: FloatingTopBar(
-            reveal: _reveal,
-            contentMaxWidth: widget.contentMaxWidth,
-            leading: widget.leading,
-            trailing: widget.trailing,
-            middle: title == null
-                ? null
-                : FloatingTitleChip(
-                    title: title,
-                    visible: widget.titleAnchor == null || _titlePast,
-                    onTap: widget.onTitleTap,
-                    tooltip: widget.titleTooltip,
-                    semanticsLabel: widget.titleSemantics,
-                  ),
+          child: _themed(
+            context,
+            FloatingTopBar(
+              reveal: _reveal,
+              contentMaxWidth: widget.contentMaxWidth,
+              leading: widget.leading,
+              trailing: widget.trailing,
+              middle: title == null
+                  ? null
+                  : FloatingTitleChip(
+                      title: title,
+                      visible: widget.titleAnchor == null || _titlePast,
+                      onTap: widget.onTitleTap,
+                      tooltip: widget.titleTooltip,
+                      semanticsLabel: widget.titleSemantics,
+                    ),
+            ),
           ),
         ),
         if (statusBarColor != null)
@@ -222,7 +245,10 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
             top: 0,
             left: 0,
             right: 0,
-            child: FloatingTopBarStatusStrip(color: statusBarColor),
+            child: _themed(
+              context,
+              FloatingTopBarStatusStrip(color: statusBarColor),
+            ),
           ),
       ],
     );

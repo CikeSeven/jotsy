@@ -35,6 +35,7 @@ import '../../providers/diary_mood_palette_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
+import 'diary_preview_chrome_board.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
 import 'diary_preview_find.dart';
@@ -121,6 +122,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
 
   /// 页头末尾的锚点：浮岛的标题胶囊在它滚过之后浮出。
   final GlobalKey _titleAnchor = GlobalKey();
+
+  /// 翻页器收浮岛内容的看板（不在翻页器里时为 null），销毁时从上面撤下。
+  DiaryPreviewChromeBoard? _chromeBoard;
   final ScrollController _scrollController = ScrollController();
   late final DiaryPreviewExportController _export =
       DiaryPreviewExportController(
@@ -157,6 +161,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
 
   @override
   void dispose() {
+    _chromeBoard?.retract(widget.diaryId);
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
     if (widget.ownsCoverHero) {
       widget.coverHero?.dispose();
@@ -378,6 +383,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
       now: DateTime.now(),
     );
     if (capsuleState.isLocked) {
+      // 封存页自己画返回岛，翻页器不再替这一篇画浮岛。
+      DiaryPreviewChromeScope.maybeOf(context)?.retract(widget.diaryId);
       return LockedDiaryPage(
         diaryId: widget.diaryId,
         initialDetail: detail,
@@ -443,18 +450,30 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
         onFind: _controller == null ? null : openFind,
       ),
     );
+    final chrome = DiaryPreviewChrome.of(
+      context.l10n,
+      diary: detail.diary,
+      style: style.page,
+      actions: actions,
+      paging: widget.paging,
+      titleAnchor: _titleAnchor,
+    );
+    // 在翻页器里时浮岛由翻页器画在所有页之上（不随页面滑走），这里只登记。
+    final board = _chromeBoard = DiaryPreviewChromeScope.maybeOf(context);
+    board?.publish(
+      widget.diaryId,
+      DiaryPreviewChromeEntry(
+        chrome: chrome,
+        resolved: resolved,
+        barColor: diaryPreviewPageColors(context, resolved).bar,
+        scrollController: _scrollController,
+      ),
+    );
     return wrapFindPopScope(
       DiaryPreviewSurface(
         resolved: resolved,
         scrollController: _scrollController,
-        chrome: DiaryPreviewChrome.of(
-          context.l10n,
-          diary: detail.diary,
-          style: style.page,
-          actions: actions,
-          paging: widget.paging,
-          titleAnchor: _titleAnchor,
-        ),
+        chrome: board == null ? chrome : null,
         // 正文查找的悬浮卡片（见 DiaryPreviewFindHost）。
         bottomBar: buildFindBar(context),
         content: WidgetShotPlus(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../glass/glass_reveal.dart';
@@ -143,7 +144,17 @@ class FloatingTopBarStatusStrip extends StatelessWidget {
             showBorder: false,
             child: SizedBox.expand(),
           )
-        : ColoredBox(color: color);
+        // 翻页换篇时纸色随之过渡，不在半途硬切。
+        : TweenAnimationBuilder<Color?>(
+            tween: ColorTween(end: color),
+            duration: ExpressiveMotion.duration(
+              context,
+              ExpressiveMotion.medium,
+            ),
+            curve: ExpressiveMotion.effects,
+            builder: (BuildContext context, Color? value, Widget? _) =>
+                ColoredBox(color: value ?? color),
+          );
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyleOf(Theme.of(context)),
       child: IgnorePointer(

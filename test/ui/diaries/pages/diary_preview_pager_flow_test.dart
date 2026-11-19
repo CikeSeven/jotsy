@@ -1,3 +1,4 @@
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_island.dart';
 import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:drift/native.dart';
@@ -185,6 +186,48 @@ void main() {
     await _swipe(tester, forward: false);
     expect(find.text('甲'), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
+    await _unmount(tester);
+  });
+
+  testWidgets('the islands stay put while paging and follow the diary on '
+      'screen', (tester) async {
+    final diaries = await _seed(tester, database, <String>['甲', '乙', '丙']);
+    await _open(
+      tester,
+      database,
+      diaryId: diaries[0].diary.diaryId,
+      initialDetail: diaries[0],
+      sequence: DiaryPreviewSequence.fromItems(diaries),
+      style: _positionTitle,
+    );
+    // 浮岛画在所有页之上：只有一份，不在任何一页里面。
+    expect(find.byType(FloatingBackIsland), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(DiaryPreviewView),
+        matching: find.byType(FloatingBackIsland),
+      ),
+      findsNothing,
+    );
+    final rest = tester.getRect(find.byType(FloatingBackIsland));
+
+    // 拖到一半：页面在动，浮岛不动。
+    final gesture = await tester.startGesture(const Offset(300, 500));
+    for (var i = 0; i < 12; i++) {
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    expect(tester.getRect(find.byType(FloatingBackIsland)), rest);
+    for (var i = 0; i < 18; i++) {
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 / 3'), findsOneWidget);
+    expect(find.text('1 / 3'), findsNothing);
+    expect(tester.getRect(find.byType(FloatingBackIsland)), rest);
     await _unmount(tester);
   });
 
@@ -427,6 +470,8 @@ void main() {
         ),
       ),
     );
+    // 浮岛由翻页器画在所有页之上，各篇构建时才登记内容：下一帧出现。
+    await tester.pump();
     expect(find.text('1 / 2+'), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.text('1 / 2'), findsOneWidget);

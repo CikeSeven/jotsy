@@ -58,16 +58,18 @@ Widget _page({
   final scroll = ScrollController();
   void ignore() {}
   final host = DiaryPreviewTopBarHost(
-    chrome: DiaryPreviewChrome.of(
-      lookupAppLocalizations(const Locale('zh')),
-      diary: _diary(title: title),
-      style: page,
-      actions: DiaryPreviewActions(onEdit: ignore, onShare: ignore),
-      titleAnchor: anchor,
+    entry: DiaryPreviewChromeEntry(
+      chrome: DiaryPreviewChrome.of(
+        lookupAppLocalizations(const Locale('zh')),
+        diary: _diary(title: title),
+        style: page,
+        actions: DiaryPreviewActions(onEdit: ignore, onShare: ignore),
+        titleAnchor: anchor,
+      ),
+      resolved: resolved,
+      barColor: _paper,
+      scrollController: scroll,
     ),
-    resolved: resolved,
-    barColor: _paper,
-    scrollController: scroll,
     child: CustomScrollView(
       controller: scroll,
       slivers: <Widget>[

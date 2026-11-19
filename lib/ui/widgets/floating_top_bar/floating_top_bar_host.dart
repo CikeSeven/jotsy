@@ -30,6 +30,7 @@ class FloatingTopBarHost extends StatefulWidget {
     this.titleAnchor,
     this.onTitleTap,
     this.titleTooltip,
+    this.titleSemantics,
     this.hideOnScroll = false,
     this.statusBarColor,
     this.contentMaxWidth,
@@ -45,6 +46,7 @@ class FloatingTopBarHost extends StatefulWidget {
   final GlobalKey? titleAnchor;
   final VoidCallback? onTitleTap;
   final String? titleTooltip;
+  final String? titleSemantics;
   final bool hideOnScroll;
 
   /// 状态栏底条的颜色（经典材质时；玻璃时为玻璃）；null 时不画底条（嵌在
@@ -163,15 +165,36 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
     }
   }
 
+  /// 此刻被状态栏与浮岛盖住的部分的下缘（全局纵坐标）：浮岛显示时到岛那
+  /// 一行的下缘，收起途中按显隐进度缩短，完全收起时只剩状态栏。
+  double _coveredBottom() {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.attached) {
+      return 0;
+    }
+    final reveal = _reveal.value.clamp(0.0, 1.0);
+    return box.localToGlobal(Offset.zero).dy +
+        _statusBar +
+        FloatingTopBar.extent * reveal;
+  }
+
+  /// 最近一次构建时的状态栏高度（[_coveredBottom] 在构建之外调用，不在那里
+  /// 读 MediaQuery）。
+  double _statusBar = 0;
+
   @override
   Widget build(BuildContext context) {
     final title = widget.title;
     final statusBarColor = widget.statusBarColor;
+    _statusBar = MediaQuery.viewPaddingOf(context).top;
     return Stack(
       children: <Widget>[
         NotificationListener<ScrollNotification>(
           onNotification: _handleScroll,
-          child: widget.child,
+          child: FloatingTopBarCover(
+            coveredBottom: _coveredBottom,
+            child: widget.child,
+          ),
         ),
         // 浮岛隐藏时上移，从状态栏底条下面退出屏幕。
         Positioned(
@@ -190,6 +213,7 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
                     visible: widget.titleAnchor == null || _titlePast,
                     onTap: widget.onTitleTap,
                     tooltip: widget.titleTooltip,
+                    semanticsLabel: widget.titleSemantics,
                   ),
           ),
         ),
@@ -203,4 +227,32 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
       ],
     );
   }
+}
+
+/// 浮岛顶栏盖住内容顶部的范围，给下面的内容查询：正文的光标避让、选区菜单
+/// 与查找跳转据此把“看得见的范围”的上沿压到岛的下面（日记编辑器经
+/// `diaryEditorVisibleRange` 与 `DiaryEditorViewport` 读取）。
+///
+/// 只提供查询函数、不随浮岛显隐通知重建：显隐每帧都在变，读取方只在指针
+/// 事件与帧回调里按需取值。
+class FloatingTopBarCover extends InheritedWidget {
+  const FloatingTopBarCover({
+    super.key,
+    required this.coveredBottom,
+    required super.child,
+  });
+
+  /// 被状态栏与浮岛盖住的部分的下缘（全局纵坐标）。
+  final double Function() coveredBottom;
+
+  /// [context] 上方浮岛盖住部分的下缘（全局纵坐标）；不在浮岛顶栏之下时为
+  /// null。不建立依赖。
+  static double? coveredBottomOf(BuildContext context) {
+    final element = context
+        .getElementForInheritedWidgetOfExactType<FloatingTopBarCover>();
+    return (element?.widget as FloatingTopBarCover?)?.coveredBottom();
+  }
+
+  @override
+  bool updateShouldNotify(FloatingTopBarCover oldWidget) => false;
 }

@@ -17,6 +17,7 @@ import '../../../diaries/widgets/diary_preview/diary_pager_view.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_content.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_neighbors.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_surface.dart';
+import '../../../diaries/widgets/diary_preview/diary_preview_top_bar.dart';
 import '../../controllers/diary_preview_style_editor_controller.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import '../../widgets/style_editor/style_preview_background.dart';
@@ -139,6 +140,7 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
     readOnly: true,
   );
   final ScrollController _scroll = ScrollController();
+  final GlobalKey _titleAnchor = GlobalKey();
   late final DiaryPreviewViewData _viewData = DiaryPreviewViewData.resolve(
     widget.detail.diary,
   );
@@ -204,9 +206,22 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
       firstTagColor: detail.tags.isEmpty ? null : detail.tags.first.color,
     );
     void ignore() {}
+    final actions = DiaryPreviewActions(
+      onEdit: ignore,
+      onShare: ignore,
+      onBack: ignore,
+    );
     return DiaryPreviewSurface(
       resolved: resolved,
       scrollController: _scroll,
+      chrome: DiaryPreviewChrome.of(
+        context.l10n,
+        diary: detail.diary,
+        style: controller.style.page,
+        actions: actions,
+        paging: widget.paging,
+        titleAnchor: _titleAnchor,
+      ),
       content: DiaryPreviewContent(
         detail: detail,
         viewData: viewData,
@@ -218,11 +233,8 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
         paging: widget.paging,
         comments: _sampleComments(detail.diary),
         onOpenImage: (_, _, hero) => hero?.dispose(),
-        actions: DiaryPreviewActions(
-          onEdit: ignore,
-          onShare: ignore,
-          onBack: ignore,
-        ),
+        actions: actions,
+        titleAnchor: _titleAnchor,
       ),
     );
   }

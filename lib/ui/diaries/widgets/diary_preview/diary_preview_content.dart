@@ -21,7 +21,6 @@ import 'diary_preview_body.dart';
 import 'diary_preview_header.dart';
 import 'diary_preview_meta.dart';
 import 'diary_preview_neighbors.dart';
-import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
 import 'diary_preview_trailing.dart';
 
@@ -33,40 +32,16 @@ typedef DiaryPreviewImageOpener =
       ImageViewerHero? hero,
     );
 
-/// 预览页顶栏的动作。
-class DiaryPreviewActions {
-  const DiaryPreviewActions({
-    required this.onEdit,
-    required this.onShare,
-    this.moreItems = const <Widget>[],
-    this.onBack,
-    this.onEditAt,
-  });
-
-  final VoidCallback onEdit;
-
-  /// 双击正文进入编辑，光标放在 [Position] 处；null 时双击不进入编辑（设置页
-  /// 预览）。是否识别双击还看阅读行为 `doubleTapToEdit` 与平台，见
-  /// [DiaryPreviewContent]。
-  final ValueChanged<Position>? onEditAt;
-  final VoidCallback onShare;
-
-  /// 顶栏“更多”弹出菜单的条目；为空时（设置页预览）按钮点了没反应，见
-  /// [DiaryPreviewTopBar.moreItems]。
-  final List<Widget> moreItems;
-
-  /// 返回按钮；null 时返回上一页。
-  final VoidCallback? onBack;
-}
-
-/// 预览页的整页内容：顶栏、头图、标题、信息栏、正文与留言区组成的滚动视图，
-/// 版式全部来自 [DiaryPreviewResolvedStyle]。
+/// 预览页的整页内容：头图、标题、信息栏、正文与留言区组成的滚动视图，
+/// 版式全部来自 [DiaryPreviewResolvedStyle]。浮岛顶栏不在这里，由
+/// `DiaryPreviewSurface`（翻页时由翻页器）叠在上面；这里只在顶端让出状态栏
+/// 与浮岛的高度（见 [diaryPreviewIslandClearance]）。
 ///
 /// 输入：已解封的日记、它的派生数据与只读块控制器、解析后的样式与阅读
 /// 行为，以及顶栏动作与看图回调；不读写数据库，也不持有状态，设置页的实时
 /// 预览可以直接复用。默认样式下产出的部件结构与改版前逐项相同。
 ///
-/// 放在翻页器里时传入 [paging]：顶栏可显示位置，正文末尾可显示上一篇 /
+/// 放在翻页器里时传入 [paging]：正文末尾可显示上一篇 /
 /// 下一篇，滚动视图改为始终可滚动——正文不满一屏时也要有竖向识别器参与
 /// 手势竞争，斜着滑才不会被当成翻页（见 `DiaryPagerView`）。
 class DiaryPreviewContent extends ConsumerWidget {
@@ -92,9 +67,11 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.backlinks,
     this.aiRepliesFor,
     this.onAiContinueChat,
+    this.titleAnchor,
   });
 
-  /// 截取长图时代替顶栏的上边距：加上标题自带的 14，与页尾的 28 留白相当。
+  /// 截取长图时代替顶部留白的上边距：加上标题自带的 14，与页尾的 28 留白
+  /// 相当。
   static const double _longImageTopGap = 16;
 
   final DiaryWithTags detail;
@@ -115,13 +92,8 @@ class DiaryPreviewContent extends ConsumerWidget {
   final ui.Image? coverPlaceholder;
 
   /// 正在截取分享长图：头图换成静态头图（见 [DiaryPreviewCover]），不渲染
-  /// 顶栏与上一篇 / 下一篇卡片。
-  ///
-  /// 顶栏是滚动视图里的 [SliverAppBar]、在截图边界之内：常驻时每一屏都截到
-  /// 它，逐屏拼接后长图中间会再出现一条顶栏并盖住下面的文字；随滚动隐藏时
-  /// 也会把按钮和状态栏留白带进图片顶部。它与上一篇 / 下一篇都是导航，不是
-  /// 日记内容，截图期间直接不建，正文从图片顶端排起（上方留
-  /// [_longImageTopGap]，头图通栏时贴顶）。
+  /// 上一篇 / 下一篇卡片，顶端不再给状态栏与浮岛留白（正文从图片顶端排起，
+  /// 上方留 [_longImageTopGap]，头图通栏时贴顶）。浮岛本就在截图边界之外。
   final bool capturingLongImage;
 
   /// 页尾额外留白（设置页预览底部被面板圆角压住的高度）。
@@ -154,6 +126,9 @@ class DiaryPreviewContent extends ConsumerWidget {
 
   /// 回应卡片上的“继续聊聊”；对话模块关闭时为 null。
   final ValueChanged<AiResultRow>? onAiContinueChat;
+
+  /// 页头末尾（正文之前）的锚点：浮岛的标题胶囊在它滚过之后浮出。
+  final GlobalKey? titleAnchor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -248,41 +223,18 @@ class DiaryPreviewContent extends ConsumerWidget {
         ? style.title.bodyGap
         : DiaryPreviewTitleStyle.defaultBodyGap;
 
-    final pageColors = diaryPreviewPageColors(context, resolved);
-
     return CustomScrollView(
       controller: scrollController,
       physics: paging == null ? null : const AlwaysScrollableScrollPhysics(),
       slivers: <Widget>[
-        if (capturingLongImage)
-          SliverToBoxAdapter(
-            child: SizedBox(height: bannerOnTop ? 0 : _longImageTopGap),
-          )
-        else
-          DiaryPreviewTopBar(
-            style: style.page,
-            title: switch (style.page.topBarTitle) {
-              DiaryPreviewTopBarTitle.label => l10n.autoT0120,
-              DiaryPreviewTopBarTitle.date => l10n.formatFullDate(
-                diary.createdAt.toLocal(),
-              ),
-              DiaryPreviewTopBarTitle.none => null,
-              DiaryPreviewTopBarTitle.position =>
-                paging?.position ?? l10n.autoT0120,
-            },
-            titleSemantics:
-                style.page.topBarTitle == DiaryPreviewTopBarTitle.position
-                ? paging?.positionSemantics
-                : null,
-            // 实色顶栏：纸张跟随主题且有页面背景时取实色栏底色（见
-            // diaryPreviewPageColors），否则仍是纸色。
-            background: pageColors.bar,
-            pageColor: pageColors.page,
-            onEdit: actions.onEdit,
-            onShare: actions.onShare,
-            moreItems: actions.moreItems,
-            onBack: actions.onBack,
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: capturingLongImage
+                ? (bannerOnTop ? 0 : _longImageTopGap)
+                : MediaQuery.viewPaddingOf(context).top +
+                      diaryPreviewIslandClearance(bannerOnTop: bannerOnTop),
           ),
+        ),
         if (coverSource != null)
           DiaryPreviewCover(
             heroTag: coverHeroTag,
@@ -309,6 +261,7 @@ class DiaryPreviewContent extends ConsumerWidget {
           ),
         if (hasTitleRegion && style.title.divider)
           DiaryPreviewTitleDivider(resolved: resolved, top: bodyTop),
+        SliverToBoxAdapter(child: SizedBox(key: titleAnchor)),
         DiaryPreviewSection(
           resolved: resolved,
           top: bodyTop,

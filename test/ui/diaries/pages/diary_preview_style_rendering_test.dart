@@ -20,6 +20,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_body.d
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_header.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_meta.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_overlays.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_island.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -188,20 +190,24 @@ void _expectReadableBody(WidgetTester tester, Iterable<String> lines) {
 }
 
 void main() {
-  testWidgets('the default look keeps the original top bar and details', (
+  testWidgets('the default look has the floating islands and the details', (
     tester,
   ) async {
     await _pump(tester);
-    expect(find.text('日记'), findsOneWidget);
+    // 浮岛顶栏：没有“日记”二字的整条栏，标题胶囊等页头滚过才出现。
+    expect(find.text('日记'), findsNothing);
+    expect(find.byType(FloatingBackIsland), findsOneWidget);
+    expect(
+      tester.widget<FloatingTitleChip>(find.byType(FloatingTitleChip)).visible,
+      isFalse,
+    );
     expect(find.textContaining('发表于'), findsOneWidget);
     expect(find.text('西湖'), findsOneWidget);
     expect(find.text('心情 😊'), findsOneWidget);
     expect(find.textContaining('最后编辑于'), findsOneWidget);
     expect(find.byType(DiaryPreviewProgressLine), findsNothing);
     expect(find.byType(DiaryPreviewBackToTop), findsNothing);
-    final bar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
-    expect(bar.floating, isTrue);
-    expect(bar.pinned, isFalse);
+    expect(find.byType(SliverAppBar), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -566,9 +572,8 @@ void main() {
         ),
       ),
     );
-    final bar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
-    expect(bar.pinned, isTrue);
-    expect(find.text('日记'), findsNothing);
+    // 不显示标题：没有标题胶囊。
+    expect(find.byType(FloatingTitleChip), findsNothing);
     // 按钮不随样式变化：分享、编辑与“更多”一直都在。
     expect(find.byTooltip('编辑'), findsOneWidget);
     expect(find.byTooltip('分享'), findsOneWidget);
@@ -776,8 +781,11 @@ void main() {
     // 新路由的第一帧先在幕后构建（为共享元素测量），查找时包含幕后部件。
     await tester.pump();
     expect(find.byType(DiaryPreviewPage, skipOffstage: false), findsOneWidget);
-    expect(find.byType(SliverAppBar, skipOffstage: false), findsOneWidget);
-    expect(find.text('日记', skipOffstage: false), findsNothing);
+    expect(
+      find.byType(FloatingBackIsland, skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.byType(FloatingTitleChip, skipOffstage: false), findsNothing);
     await tester.pumpAndSettle();
   });
 }

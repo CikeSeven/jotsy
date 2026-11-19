@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_top_bar.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -112,7 +113,8 @@ void main() {
     await _pump(tester, diary: wideDiary('standalone', 0));
     final l10n = tester.element(find.byType(DiaryPreviewView)).l10n;
     expect(find.byTooltip(l10n.commonBack), findsOneWidget);
-    expect(find.text(l10n.autoT0120), findsOneWidget);
+    // 独立页面才有状态栏底条（嵌在右栏时没有）。
+    expect(find.byType(FloatingTopBarStatusStrip), findsOneWidget);
     await _unmount(tester);
   });
 

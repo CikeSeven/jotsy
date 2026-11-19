@@ -6,6 +6,7 @@ import '../../models/diary_preview_style/diary_preview_style.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import 'diary_preview_host.dart';
 import 'diary_preview_overlays.dart';
+import 'diary_preview_top_bar.dart';
 
 /// 预览页底色与实色顶栏底色（“背景与材质”接入后的取值）。
 ///
@@ -86,15 +87,17 @@ AppPageBackdrop? _yieldingBackdrop(
 
 /// 一篇预览的页面外壳：纸色底（或让位给页面背景，见 [diaryPreviewPageColors]）
 /// 的 Scaffold、整页主题（配色基调或纸张深浅
-/// 不同时），以及叠在内容上的阅读进度线、回到顶部、可选的底部浮层（正文
-/// 查找栏，贴着页面底边、键盘弹起时随正文区上移）与可选的遮罩（导出时的
-/// 加载遮罩）。正式页面与设置页的实时预览共用，两处的外观因此一致。
+/// 不同时），以及叠在内容上的浮岛顶栏（[chrome]）、阅读进度线、回到顶部、
+/// 可选的底部浮层（正文查找栏，贴着页面底边、键盘弹起时随正文区上移）与
+/// 可选的遮罩（导出时的加载遮罩）。正式页面与设置页的实时预览共用，两处的
+/// 外观因此一致。
 class DiaryPreviewSurface extends StatelessWidget {
   const DiaryPreviewSurface({
     super.key,
     required this.resolved,
     required this.scrollController,
     required this.content,
+    this.chrome,
     this.bottomBar,
     this.overlay,
   });
@@ -102,6 +105,10 @@ class DiaryPreviewSurface extends StatelessWidget {
   final DiaryPreviewResolvedStyle resolved;
   final ScrollController scrollController;
   final Widget content;
+
+  /// 浮岛顶栏的内容；null 时不画浮岛（翻页器把浮岛提到所有页之上，见
+  /// `DiaryPreviewPager`）。
+  final DiaryPreviewChrome? chrome;
 
   /// 贴着页面底边的浮层（正文查找栏）；有它时“回到顶部”让位。
   final Widget? bottomBar;
@@ -114,13 +121,23 @@ class DiaryPreviewSurface extends StatelessWidget {
     final page = resolved.style.page;
     final overlay = this.overlay;
     final bottomBar = this.bottomBar;
+    final chrome = this.chrome;
     final scaffold = Scaffold(
       backgroundColor: diaryPreviewScaffoldColor(context, resolved),
       body: SafeArea(
         top: false,
         child: Stack(
           children: <Widget>[
-            content,
+            if (chrome == null)
+              content
+            else
+              DiaryPreviewTopBarHost(
+                chrome: chrome,
+                resolved: resolved,
+                barColor: diaryPreviewPageColors(context, resolved).bar,
+                scrollController: scrollController,
+                child: content,
+              ),
             // 叠层带 key：开关某一层时其余层的状态不会错位复用。
             if (page.progress == DiaryPreviewProgress.line)
               Positioned(

@@ -5,6 +5,7 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_editor_resume_scroll.dart';
 
@@ -219,12 +220,17 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     final screen = view.physicalSize.height / view.devicePixelRatio;
     final keyboardTop = screen - view.viewInsets.bottom / view.devicePixelRatio;
     final origin = box.localToGlobal(Offset.zero);
+    // 顶上叠着浮岛顶栏时（阅读式编辑页），岛那一行同样算遮挡。
+    final top = math.max(
+      origin.dy,
+      FloatingTopBarCover.coveredBottomOf(context) ?? origin.dy,
+    );
     final bottom =
         math.min(origin.dy + box.size.height, keyboardTop) -
         widget.coveredHeight;
     final delta = selection.isCollapsed
-        ? _revealDelta(rects.first, origin.dy, bottom)
-        : _revealSelectionDelta(rects, origin.dy, bottom, screen);
+        ? _revealDelta(rects.first, top, bottom)
+        : _revealSelectionDelta(rects, top, bottom, screen);
     if (delta.abs() < 0.5) return;
     final target = (position.pixels + delta).clamp(
       position.minScrollExtent,

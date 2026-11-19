@@ -291,7 +291,13 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
       _ when style.cover.useFirstImage => viewData.coverSource,
       _ => normalizeOptionalText(diary.cover),
     };
-    return DiaryReadingEditorHeader(
+    // 头图通栏贴顶时只让出状态栏，浮岛压在头图上；其余情况再让出浮岛那一
+    // 行，标题与卡片式头图不被岛盖住（与预览页相同）。
+    final bannerOnTop =
+        coverSource != null &&
+        style.cover.mode == DiaryPreviewCoverMode.banner &&
+        !resolved.coverInColumn;
+    final header = DiaryReadingEditorHeader(
       resolved: resolved,
       cover: coverSource == null
           ? null
@@ -314,6 +320,15 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
         appearance: appearance,
         contentLocked: contentLocked,
       ),
+    );
+    return Padding(
+      padding: EdgeInsets.only(
+        top:
+            MediaQuery.viewPaddingOf(context).top +
+            diaryPreviewIslandClearance(bannerOnTop: bannerOnTop),
+      ),
+      // 锚点包住整个页头：它的下缘滚进浮岛那一行后标题胶囊浮出。
+      child: KeyedSubtree(key: _readingTitleAnchor, child: header),
     );
   }
 
@@ -362,78 +377,90 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
     );
   }
 
-  /// 顶栏：外观同预览页顶栏（经典时为纸色栏，玻璃照旧），常驻不随滚动隐藏。
-  /// 右侧为分享、编辑位置与“更多”菜单（条目见 `_readingMoreItems`）。
-  /// 预览页“编辑”按钮的位置在编辑标题或正文时换成“完成”（收起键盘）；
-  /// 手动保存时那里一直是“保存”，不再放“完成”：对勾读起来就是“确认 /
-  /// 保存”，与“保存”并排显得重复、让人以为点勾也会保存（键盘用系统返回收起）。
-  PreferredSizeWidget _buildReadingTopBar(
+  /// 浮岛顶栏：叠在正文之上（正文与头图从岛下面滚过），常驻不随滚动隐藏。
+  /// 左侧返回岛，中间按预览页样式的“顶栏标题”浮出标题胶囊，右侧动作胶囊
+  /// （见 [_buildReadingIsland]）。只包住正文：信息面板、悬浮工具栏与加载
+  /// 遮罩仍叠在岛的上面。
+  Widget _wrapReadingIslands(
     BuildContext context, {
     required _ReadingFrame frame,
+    required Widget child,
   }) {
-    final snapshot = frame.snapshot;
     final resolved = frame.resolved;
-    final l10n = context.l10n;
-    final style = resolved.style;
-    final pageColors = diaryPreviewPageColors(context, resolved);
-    final editing = _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: DiaryPreviewTopBar(
-        sliver: false,
-        style: style.page,
-        title: switch (style.page.topBarTitle) {
-          DiaryPreviewTopBarTitle.date => l10n.formatFullDate(
-            snapshot.detail.diary.createdAt.toLocal(),
-          ),
-          DiaryPreviewTopBarTitle.none => null,
-          // 编辑页不翻页，“位置”按“日记”显示（与单篇打开的预览页一致）。
-          DiaryPreviewTopBarTitle.label ||
-          DiaryPreviewTopBarTitle.position => l10n.autoT0120,
-        },
-        background: pageColors.bar,
-        pageColor: pageColors.page,
-        onBack: () => unawaited(_controller.attemptExit()),
-        onEdit: () {},
-        onShare: () => unawaited(_shareFromReading(resolved)),
-        moreItems: _readingMoreItems(frame),
-        editSlot: _controller.manualEditSave
-            ? _buildReadingSaveButton()
-            : editing
-            ? IconButton(
-                tooltip: l10n.diaryReadingDone,
-                onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
-                icon: const FaIcon(FontAwesomeIcons.check, size: 16),
-              )
-            : const SizedBox.shrink(),
+    final chip = diaryPreviewTitleChip(
+      context.l10n,
+      diary: frame.snapshot.detail.diary,
+      mode: resolved.style.page.topBarTitle,
+    );
+    return FloatingTopBarHost(
+      contentMaxWidth: resolved.maxContentWidth,
+      statusBarColor: diaryPreviewPageColors(context, resolved).bar,
+      leading: FloatingBackIsland(
+        onPressed: () => unawaited(_controller.attemptExit()),
       ),
+      trailing: _buildReadingIsland(frame),
+      title: chip?.text,
+      titleSemantics: chip?.semantics,
+      titleAnchor: chip != null && chip.afterScroll
+          ? _readingTitleAnchor
+          : null,
+      titleTooltip: context.l10n.diaryPreviewBackToTop,
+      onTitleTap: () => unawaited(_readingScroll.revealTop()),
+      child: child,
     );
   }
 
-  /// 手动保存时编辑位置的“保存”：有未保存的修改时可点（只随
-  /// `unsaved` 局部重建，不牵动整页），写库期间停用；保存成功后对勾停留
-  /// 1 秒（[_EditDiaryPageState._flashEditSaved]）。
+  /// 右侧动作胶囊。平时是 [分享 · 更多]；编辑标题或正文时原地变形为
+  /// [更多 | 完成]（“完成”收起键盘，打字时用不到分享）。手动保存时末尾
+  /// 一直是“保存”而不放“完成”：两个确认并排会让人以为点“完成”也会保存
+  /// （键盘用系统返回收起）。
+  Widget _buildReadingIsland(_ReadingFrame frame) {
+    final l10n = context.l10n;
+    final editing = _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
+    return FloatingActionIsland(
+      children: <Widget>[
+        FloatingIslandSlot(
+          visible: !editing,
+          child: IconButton(
+            tooltip: l10n.previewShare,
+            onPressed: () => unawaited(_shareFromReading(frame.resolved)),
+            icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
+          ),
+        ),
+        DiaryMoreMenuIslandButton(items: _readingMoreItems(frame)),
+        if (_controller.manualEditSave)
+          _buildReadingSaveButton()
+        else
+          FloatingIslandSlot(
+            visible: editing,
+            child: FloatingIslandPill(
+              label: l10n.diaryReadingDone,
+              onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// 手动保存时的“保存”胶囊：有未保存的修改时可点（只随 `unsaved` 局部
+  /// 重建，不牵动整页），没有修改与写库期间停用；保存成功后换成“✓ 已保存”
+  /// 停留 1 秒（[_EditDiaryPageState._flashEditSaved]），这 1 秒里看起来可点、
+  /// 点了不做事，免得停用的灰色读成“没保存上”。
   Widget _buildReadingSaveButton() {
     final l10n = context.l10n;
     final saved = _editSavedFlash;
     return ValueListenableBuilder<bool>(
       valueListenable: _controller._editAutoSave.unsaved,
-      builder: (BuildContext context, bool unsaved, Widget? _) => IconButton(
-        tooltip: saved ? l10n.diaryEditSaved : l10n.commonSave,
-        onPressed: unsaved && !_saving
-            ? () => unawaited(_controller.saveEditManually())
-            : null,
-        icon: ExpressiveIconSwap(
-          switchKey: saved,
-          child: saved
-              ? FaIcon(
-                  FontAwesomeIcons.check,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.primary,
-                )
-              : const FaIcon(FontAwesomeIcons.floppyDisk, size: 16),
-        ),
-      ),
+      builder: (BuildContext context, bool unsaved, Widget? _) =>
+          FloatingIslandPill(
+            label: saved ? l10n.diaryEditSaved : l10n.commonSave,
+            icon: saved ? const FaIcon(FontAwesomeIcons.check, size: 14) : null,
+            onPressed: saved
+                ? () {}
+                : unsaved && !_saving
+                ? () => unawaited(_controller.saveEditManually())
+                : null,
+          ),
     );
   }
 }

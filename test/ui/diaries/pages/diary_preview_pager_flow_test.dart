@@ -1,3 +1,4 @@
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -197,8 +198,13 @@ void main() {
       style: _positionTitle,
     );
     expect(find.byType(DiaryPagerView), findsNothing);
-    // 单篇打开时“位置”标题退回“日记”。
-    expect(find.text(_l10n(tester).autoT0120), findsOneWidget);
+    // 单篇打开时没有位置：标题胶囊按“标题”处理，页头滚过之前不出现。
+    final chip = tester.widget<FloatingTitleChip>(
+      find.byType(FloatingTitleChip),
+    );
+    expect(chip.title, '甲');
+    expect(chip.visible, isFalse);
+    expect(find.textContaining(' / '), findsNothing);
     await _unmount(tester);
   });
 

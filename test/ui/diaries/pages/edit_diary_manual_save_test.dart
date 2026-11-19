@@ -94,15 +94,16 @@ void main() {
   AppLocalizations l10nOf(WidgetTester tester) =>
       tester.element(find.byType(EditDiaryPage)).l10n;
 
+  // 浮岛右端的“保存”胶囊（主色文字按钮），保存成功后换成“✓ 已保存”。
   Finder saveButton(WidgetTester tester, {bool saved = false}) => find.ancestor(
-    of: find.byTooltip(
+    of: find.text(
       saved ? l10nOf(tester).diaryEditSaved : l10nOf(tester).commonSave,
     ),
-    matching: find.byType(IconButton),
+    matching: find.byType(FilledButton),
   );
 
   bool saveEnabled(WidgetTester tester) =>
-      tester.widget<IconButton>(saveButton(tester)).onPressed != null;
+      tester.widget<FilledButton>(saveButton(tester)).onPressed != null;
 
   Finder titleField() => find.widgetWithText(TextField, 'Original title');
 
@@ -152,36 +153,24 @@ void main() {
         ),
       );
       expect(titleEditable.focusNode.hasFocus, isTrue);
-      expect(find.byTooltip(l10n.diaryReadingDone), findsNothing);
-      expect(
-        find.descendant(
-          of: find.byType(AppBar),
-          matching: find.byWidgetPredicate(
-            (widget) =>
-                widget is FaIcon && widget.icon == FontAwesomeIcons.check.data,
-          ),
-        ),
-        findsNothing,
-      );
+      expect(find.text(l10n.diaryReadingDone), findsNothing);
 
       await tester.tap(saveButton(tester));
       await tester.pump();
       await tester.pump();
       expect((await storedDiary(tester)).diary.title, 'Saved by hand');
       await tester.pump(const Duration(milliseconds: 300));
-      // 保存成功：对勾（主色）停留 1 秒再换回停用的保存按钮。
+      // 保存成功：“✓ 已保存”停留 1 秒再换回停用的保存按钮。
       expect(saveButton(tester, saved: true), findsOneWidget);
-      final check = tester.widget<FaIcon>(
+      expect(
         find.descendant(
           of: saveButton(tester, saved: true),
-          matching: find.byType(FaIcon),
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is FaIcon && widget.icon == FontAwesomeIcons.check.data,
+          ),
         ),
-      );
-      expect(
-        check.color,
-        Theme.of(
-          tester.element(saveButton(tester, saved: true)),
-        ).colorScheme.primary,
+        findsOneWidget,
       );
       await tester.pump(const Duration(seconds: 1));
       await settle(tester);
@@ -414,8 +403,8 @@ void main() {
     // 不经 runAsync：切换时排下的自动保存计时器要在测试的假时钟里。
     await settings.setDiaryEditPrefsRaw(null);
     await tester.pump();
-    expect(saveButton(tester), findsNothing);
     await tester.pump(const Duration(milliseconds: 700));
+    expect(saveButton(tester), findsNothing);
     expect((await storedDiary(tester)).diary.title, 'Now automatic');
     await unmount(tester);
   });

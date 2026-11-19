@@ -149,7 +149,9 @@ import 'package:node_diary/ui/notebooks/controllers/notebook_navigation.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
-import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_island.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_top_bar_host.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/primary_shortcut.dart';
 import 'package:node_diary/ui/widgets/unsaved_changes_dialog.dart';
@@ -380,6 +382,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   bool _metaPanelOpen = false;
   bool _metaPanelRaised = false;
   final GlobalKey _readingCommentsKey = GlobalKey();
+
+  /// 阅读式页头的末尾：浮岛的标题胶囊在它滚过之后浮出。
+  final GlobalKey _readingTitleAnchor = GlobalKey();
   // 按列表下标滚动编辑器：点信息栏的“N 条留言”时先把页尾滚出来。
   final DiaryEditorScrollHandle _readingScroll = DiaryEditorScrollHandle();
   // 分享与导出（没有长图：编辑页没有可整页截取的阅读视图）。
@@ -1402,8 +1407,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 backgroundColor: reading == null
                     ? pageColor
                     : diaryPreviewScaffoldColor(context, reading.resolved),
+                // 阅读式版式没有整条顶栏：浮岛叠在正文上（见
+                // _wrapReadingIslands）。
                 appBar: reading != null
-                    ? _buildReadingTopBar(context, frame: reading)
+                    ? null
                     : AppTopBar(
                         contentMaxWidth: AppContentWidth.editor,
                         leading: IconButton(
@@ -1552,22 +1559,26 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                     // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
                     // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
                     // 返回子树）；面板展开、录音或保存中不接收。
-                    DiaryEditorDropTarget(
-                      enabled:
-                          !_saving &&
-                          !_isEditPanelExpanded &&
-                          !_bottomPanelOpen,
-                      onDropFiles: (paths) =>
-                          unawaited(_controller.insertDroppedFiles(paths)),
-                      child: SoftKeyboardSelectionKeys(
-                        child: _buildEditor(
-                          context,
-                          resolveBottomSpacer: resolveEditorBottomSpacer,
-                          contentLocked:
-                              _isEditPanelExpanded || _bottomPanelOpen,
-                          appearance: appearance,
-                          templatesEnabled: templatesEnabled,
-                          reading: reading,
+                    _wrapIslandsIfReading(
+                      context,
+                      reading,
+                      DiaryEditorDropTarget(
+                        enabled:
+                            !_saving &&
+                            !_isEditPanelExpanded &&
+                            !_bottomPanelOpen,
+                        onDropFiles: (paths) =>
+                            unawaited(_controller.insertDroppedFiles(paths)),
+                        child: SoftKeyboardSelectionKeys(
+                          child: _buildEditor(
+                            context,
+                            resolveBottomSpacer: resolveEditorBottomSpacer,
+                            contentLocked:
+                                _isEditPanelExpanded || _bottomPanelOpen,
+                            appearance: appearance,
+                            templatesEnabled: templatesEnabled,
+                            reading: reading,
+                          ),
                         ),
                       ),
                     ),
@@ -1861,6 +1872,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     }
     return true;
   }
+
+  /// 阅读式版式时把正文放到浮岛顶栏下面；新建页原样返回（它有整条顶栏）。
+  /// 两种情况的树结构不同，但同一页面不会在两种版式之间切换。
+  Widget _wrapIslandsIfReading(
+    BuildContext context,
+    _ReadingFrame? reading,
+    Widget editor,
+  ) => reading == null
+      ? editor
+      : _wrapReadingIslands(context, frame: reading, child: editor);
 
   Widget _buildFloatingToolbar(List<DiaryToolbarItem> toolbarOrder) {
     return DiaryFloatingToolbar(

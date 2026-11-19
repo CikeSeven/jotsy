@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_effects.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
@@ -123,14 +124,26 @@ class FloatingIslandPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = this.icon;
-    final button = icon == null
-        ? FilledButton(onPressed: onPressed, style: _style, child: Text(label))
-        : FilledButton.icon(
-            onPressed: onPressed,
-            style: _style,
-            icon: icon,
-            label: Text(label),
-          );
+    // 文字变化（“保存” ⇄ “✓ 已保存”）时宽度补间，胶囊跟着平滑伸缩。
+    final content = AnimatedSize(
+      duration: ExpressiveMotion.durationNonZero(
+        context,
+        ExpressiveMotion.medium,
+      ),
+      curve: ExpressiveMotion.spatial,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          if (icon != null) ...<Widget>[icon, const SizedBox(width: 6)],
+          Text(label),
+        ],
+      ),
+    );
+    final button = FilledButton(
+      onPressed: onPressed,
+      style: _style,
+      child: content,
+    );
     final tooltip = this.tooltip;
     final padded = Padding(
       padding: const EdgeInsetsDirectional.only(start: 2, end: 4),

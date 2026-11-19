@@ -15,8 +15,10 @@ import '../../../notebooks/providers/notebook_providers.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/action_loading_overlay.dart';
-import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
+import '../../../widgets/floating_top_bar/floating_island.dart';
+import '../../../widgets/floating_top_bar/floating_top_bar.dart';
+import '../../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_comment_flows.dart';
 import '../../controllers/diary_preview_extras.dart';
@@ -116,6 +118,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
     with DiaryPreviewFindHost<DiaryPreviewView> {
   final GlobalKey _shareCaptureKey = GlobalKey();
   final GlobalKey _commentsKey = GlobalKey();
+
+  /// 页头末尾的锚点：浮岛的标题胶囊在它滚过之后浮出。
+  final GlobalKey _titleAnchor = GlobalKey();
   final ScrollController _scrollController = ScrollController();
   late final DiaryPreviewExportController _export =
       DiaryPreviewExportController(
@@ -288,18 +293,24 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
 
   Widget _messageScaffold(Widget body) {
     final embedded = widget.host != null;
+    final pageColor = AppPageBackdrop.pageColorOf(context);
     return Scaffold(
       // 读取中 / 出错：独立页面时透出预览区域背景，嵌在右栏时透出宿主日记页
       // 的背景；都没有背景时就是原来的 surface。
-      backgroundColor: AppPageBackdrop.pageColorOf(context),
-      appBar: AppTopBar(
-        centerTitle: true,
-        // 嵌入时与正文顶栏一致：不要返回按钮，也不要“日记”标题。
-        title: embedded ? null : Text(context.l10n.autoT0120),
-        automaticallyImplyLeading: !embedded,
-        leading: embedded ? null : const DiaryPreviewBackButton(),
+      backgroundColor: pageColor,
+      body: FloatingTopBarHost(
+        // 嵌入时与正文一致：不要返回岛，也不画状态栏底条。
+        leading: embedded ? null : const FloatingBackIsland(),
+        statusBarColor: embedded
+            ? null
+            : AppPageBackdrop.solidBarColorOf(context),
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: MediaQuery.viewPaddingOf(context).top + FloatingTopBar.extent,
+          ),
+          child: body,
+        ),
       ),
-      body: body,
     );
   }
 
@@ -411,10 +422,39 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
       onWrite: () => unawaited(_writeComment(detail.diary)),
       suppressed: capturing,
     );
+    final actions = DiaryPreviewActions(
+      onEdit: _openEditor,
+      onEditAt: (Position caret) => unawaited(_openEditor(caret: caret)),
+      onShare: () => openDiaryPreviewShare(
+        context,
+        ref,
+        export: _export,
+        detail: detail,
+        background: resolved.background,
+      ),
+      moreItems: diaryPreviewMoreItems(
+        context,
+        ref,
+        export: _export,
+        detail: detail,
+        viewData: viewData,
+        onDelete: _deleteDiary,
+        notebooks: notebooks,
+        onFind: _controller == null ? null : openFind,
+      ),
+    );
     return wrapFindPopScope(
       DiaryPreviewSurface(
         resolved: resolved,
         scrollController: _scrollController,
+        chrome: DiaryPreviewChrome.of(
+          context.l10n,
+          diary: detail.diary,
+          style: style.page,
+          actions: actions,
+          paging: widget.paging,
+          titleAnchor: _titleAnchor,
+        ),
         // 正文查找的悬浮卡片（见 DiaryPreviewFindHost）。
         bottomBar: buildFindBar(context),
         content: WidgetShotPlus(
@@ -456,28 +496,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
             onOpenTag: (int tagId) =>
                 unawaited(openDiaryTagSearch(context, tagId)),
             onOpenImage: _openImageViewer,
-            actions: DiaryPreviewActions(
-              onEdit: _openEditor,
-              onEditAt: (Position caret) =>
-                  unawaited(_openEditor(caret: caret)),
-              onShare: () => openDiaryPreviewShare(
-                context,
-                ref,
-                export: _export,
-                detail: detail,
-                background: resolved.background,
-              ),
-              moreItems: diaryPreviewMoreItems(
-                context,
-                ref,
-                export: _export,
-                detail: detail,
-                viewData: viewData,
-                onDelete: _deleteDiary,
-                notebooks: notebooks,
-                onFind: _controller == null ? null : openFind,
-              ),
-            ),
+            actions: actions,
+            titleAnchor: _titleAnchor,
           ),
         ),
         overlay: ActionLoadingOverlay(

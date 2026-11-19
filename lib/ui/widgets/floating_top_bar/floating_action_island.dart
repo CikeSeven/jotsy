@@ -7,55 +7,118 @@ import 'floating_island.dart';
 
 /// 右侧的动作胶囊：一排图标按钮（可带一颗 [FloatingIslandPill]）。
 ///
-/// 变形：[layoutKey] 表示“这是哪一套动作”（如阅读 / 编辑中 / 手动保存）。
-/// 它变化时新旧两套交叉淡入淡出，胶囊宽度同时以 spatial 曲线补间，看起来
-/// 是同一颗岛原地长成新的样子，而不是换了一颗。同一套动作里按钮的启用、
-/// 图标与文字变化不算换套，照常原地更新（宽度变化同样补间）。
+/// 变形：会随状态出现 / 消失的按钮包一层 [FloatingIslandSlot]，它沿横向展开
+/// 或收起并淡入淡出，胶囊宽度随之一起变化；其余按钮原地不动、不重建。看起来
+/// 是同一颗岛原地长成新的样子，而不是换了一颗（编辑页：[分享 · 更多] ⇄
+/// [更多 | 完成]）。
 class FloatingActionIsland extends StatelessWidget {
-  const FloatingActionIsland({
-    super.key,
-    required this.children,
-    this.layoutKey,
-  });
+  const FloatingActionIsland({super.key, required this.children});
 
   final List<Widget> children;
-  final Object? layoutKey;
 
   @override
   Widget build(BuildContext context) {
     return FloatingIsland(
-      child: AnimatedSize(
-        // AnimatedSize 不接受 0 时长（见 ExpressiveMotion.durationNonZero）。
-        duration: ExpressiveMotion.durationNonZero(
-          context,
-          ExpressiveMotion.medium,
-        ),
-        curve: ExpressiveMotion.spatial,
-        alignment: AlignmentDirectional.centerEnd,
-        child: AnimatedSwitcher(
-          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-          switchInCurve: ExpressiveMotion.effects,
-          switchOutCurve: ExpressiveMotion.exit,
-          // 新旧两套贴着胶囊的末端叠放：宽度补间时旧的一套从起始一侧被裁掉，
-          // 而不是挤在中间。
-          layoutBuilder: (Widget? current, List<Widget> previous) => Stack(
-            alignment: AlignmentDirectional.centerEnd,
-            children: <Widget>[...previous, ?current],
+      child: Row(mainAxisSize: MainAxisSize.min, children: children),
+    );
+  }
+}
+
+/// 动作胶囊里随状态出现 / 消失的一格：[visible] 变化时沿横向从 0 宽展开
+/// （或收起到 0 宽）并淡入淡出，时长取 `medium`、位移曲线 `spatial`；减少
+/// 动画时直接出现或消失。收起后不挂载，不在树上留一份按钮。
+class FloatingIslandSlot extends StatefulWidget {
+  const FloatingIslandSlot({
+    super.key,
+    required this.visible,
+    required this.child,
+  });
+
+  final bool visible;
+  final Widget child;
+
+  @override
+  State<FloatingIslandSlot> createState() => _FloatingIslandSlotState();
+}
+
+class _FloatingIslandSlotState extends State<FloatingIslandSlot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    value: widget.visible ? 1 : 0,
+  );
+  late final CurvedAnimation _size = CurvedAnimation(
+    parent: _controller,
+    curve: ExpressiveMotion.spatial,
+    reverseCurve: ExpressiveMotion.spatial.flipped,
+  );
+  late final CurvedAnimation _fade = CurvedAnimation(
+    parent: _controller,
+    curve: ExpressiveMotion.effects,
+    reverseCurve: ExpressiveMotion.exit,
+  );
+
+  /// 收起动画播完前仍保留上一次可见时的内容，收起途中看到的是它在缩小。
+  late Widget _shown = widget.child;
+
+  @override
+  void didUpdateWidget(FloatingIslandSlot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible) {
+      _shown = widget.child;
+    }
+    if (widget.visible == oldWidget.visible) {
+      return;
+    }
+    _controller.duration = ExpressiveMotion.duration(
+      context,
+      ExpressiveMotion.medium,
+    );
+    if (widget.visible) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _size.dispose();
+    _fade.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? _) {
+        if (_controller.isDismissed) {
+          return const SizedBox.shrink();
+        }
+        final settled = _controller.isCompleted;
+        return IgnorePointer(
+          ignoring: !widget.visible,
+          child: ClipRect(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              widthFactor: settled ? 1 : _size.value.clamp(0.0, 1.0),
+              child: settled
+                  ? _shown
+                  : Opacity(opacity: _fade.value, child: _shown),
+            ),
           ),
-          child: KeyedSubtree(
-            key: ValueKey<Object?>(layoutKey),
-            child: Row(mainAxisSize: MainAxisSize.min, children: children),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 /// 中间的标题胶囊：正文标题滚出视野后浮出（[visible]），点按回到顶部。
 ///
-/// 显隐是淡入 + 从 0.92 放大，玻璃时经 [GlassReveal]（不套 Opacity）；完全
-/// 隐藏时不接收点按、不进读屏。
+/// 显隐是淡入 + 从 0.92 放大，玻璃时经 [GlassReveal]（不套 Opacity）；淡出
+/// 途中不接收点按，完全隐藏时不挂载。
 class FloatingTitleChip extends StatelessWidget {
   const FloatingTitleChip({
     super.key,
@@ -63,9 +126,13 @@ class FloatingTitleChip extends StatelessWidget {
     required this.visible,
     this.onTap,
     this.tooltip,
+    this.semanticsLabel,
   });
 
   final String title;
+
+  /// 标题的读屏文字（如位置“3 / 57”读作“第 3 篇，共 57 篇”）；null 时读标题。
+  final String? semanticsLabel;
   final bool visible;
   final VoidCallback? onTap;
 
@@ -86,6 +153,7 @@ class FloatingTitleChip extends StatelessWidget {
             widthFactor: 1,
             child: Text(
               title,
+              semanticsLabel: semanticsLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleSmall?.copyWith(
@@ -104,15 +172,16 @@ class FloatingTitleChip extends StatelessWidget {
       curve: visible ? ExpressiveMotion.effects : ExpressiveMotion.exit,
       child: tooltip == null ? chip : Tooltip(message: tooltip, child: chip),
       builder: (BuildContext context, double value, Widget? child) {
+        // 完全隐藏时不挂载：省掉一块玻璃，也不在树上留一份标题文字。
+        if (value == 0) {
+          return const SizedBox.shrink();
+        }
         final faded = glass
             ? GlassReveal(progress: value, child: child!)
             : Opacity(opacity: value, child: child);
         return IgnorePointer(
-          ignoring: value == 0,
-          child: ExcludeSemantics(
-            excluding: value == 0,
-            child: Transform.scale(scale: 0.92 + 0.08 * value, child: faded),
-          ),
+          ignoring: !visible,
+          child: Transform.scale(scale: 0.92 + 0.08 * value, child: faded),
         );
       },
     );

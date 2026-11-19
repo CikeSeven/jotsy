@@ -475,12 +475,15 @@ void main() {
     final l10n = l10nOf(tester);
     editorOf(tester).focusNode!.requestFocus();
     await tester.pumpAndSettle();
-    expect(find.byTooltip(l10n.diaryReadingDone), findsOneWidget);
+    // 右岛原地变形为 [更多 | 完成]：分享收起，“完成”是主色文字胶囊。
+    expect(find.text(l10n.diaryReadingDone), findsOneWidget);
+    expect(find.byTooltip(l10n.previewShare), findsNothing);
 
-    await tester.tap(find.byTooltip(l10n.diaryReadingDone));
+    await tester.tap(find.text(l10n.diaryReadingDone));
     await tester.pumpAndSettle();
     expect(editorOf(tester).focusNode!.hasFocus, isFalse);
-    expect(find.byTooltip(l10n.diaryReadingDone), findsNothing);
+    expect(find.text(l10n.diaryReadingDone), findsNothing);
+    expect(find.byTooltip(l10n.previewShare), findsOneWidget);
     await unmount(tester);
   });
 

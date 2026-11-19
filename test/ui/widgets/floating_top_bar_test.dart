@@ -27,6 +27,7 @@ Widget _page({
   Size size = const Size(400, 800),
   VoidCallback? onTitleTap,
   Widget? trailing,
+  bool reduceMotion = false,
 }) {
   return MaterialApp(
     theme: expressiveTestTheme(Brightness.light),
@@ -38,6 +39,7 @@ Widget _page({
         size: size,
         padding: const EdgeInsets.only(top: _statusBar),
         viewPadding: const EdgeInsets.only(top: _statusBar),
+        disableAnimations: reduceMotion,
       ),
       child: AppGlassScope(
         style: style,
@@ -183,25 +185,67 @@ void main() {
     expect(tester.getRect(_back).left, 236);
   });
 
-  testWidgets('动作胶囊换一套动作时宽度补间到新的宽度', (WidgetTester tester) async {
-    Widget island(Object key, int count) => FloatingActionIsland(
-      layoutKey: key,
+  testWidgets('动作胶囊里的一格出现时横向展开，收起后不挂载', (WidgetTester tester) async {
+    Widget island({required bool editing}) => FloatingActionIsland(
       children: <Widget>[
-        for (var i = 0; i < count; i++)
-          IconButton(onPressed: () {}, icon: const Icon(Icons.share)),
+        FloatingIslandSlot(
+          visible: !editing,
+          child: IconButton(
+            tooltip: 'share',
+            onPressed: () {},
+            icon: const Icon(Icons.share),
+          ),
+        ),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+        FloatingIslandSlot(
+          visible: editing,
+          child: FloatingIslandPill(label: '完成', onPressed: () {}),
+        ),
       ],
     );
-    await tester.pumpWidget(_page(trailing: island('reading', 1)));
+    await tester.pumpWidget(_page(trailing: island(editing: false)));
     final finder = find.byType(FloatingActionIsland);
-    expect(tester.getSize(finder).width, 48);
+    expect(tester.getSize(finder).width, 96);
+    expect(find.text('完成'), findsNothing);
 
-    await tester.pumpWidget(_page(trailing: island('editing', 3)));
+    await tester.pumpWidget(_page(trailing: island(editing: true)));
     await tester.pump(const Duration(milliseconds: 60));
-    final midway = tester.getSize(finder).width;
-    // spatial 曲线带一点过冲，只要求已经在长、还没停下。
-    expect(midway, greaterThan(48));
-    expect(midway, isNot(144));
+    // 分享在收起、完成在展开：途中两格都在。
+    expect(find.byTooltip('share'), findsOneWidget);
+    expect(find.text('完成'), findsOneWidget);
     await tester.pumpAndSettle();
-    expect(tester.getSize(finder).width, 144);
+    expect(find.byTooltip('share'), findsNothing);
+    expect(find.text('完成'), findsOneWidget);
+    expect(tester.getSize(finder).width, greaterThan(48 + 56));
+  });
+
+  testWidgets('减少动画时一格直接出现', (WidgetTester tester) async {
+    Widget island({required bool visible}) => FloatingActionIsland(
+      children: <Widget>[
+        FloatingIslandSlot(
+          visible: visible,
+          child: FloatingIslandPill(label: '完成', onPressed: () {}),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      _page(trailing: island(visible: false), reduceMotion: true),
+    );
+    await tester.pumpWidget(
+      _page(trailing: island(visible: true), reduceMotion: true),
+    );
+    await tester.pump();
+    expect(find.text('完成'), findsOneWidget);
+    // 已停在完全展开：不再套淡入用的 Opacity。
+    expect(
+      find.ancestor(
+        of: find.text('完成'),
+        matching: find.descendant(
+          of: find.byType(FloatingIslandSlot),
+          matching: find.byType(Opacity),
+        ),
+      ),
+      findsNothing,
+    );
   });
 }

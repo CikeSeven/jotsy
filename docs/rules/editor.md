@@ -41,6 +41,7 @@
 ## 视口与键盘
 - 禁止：新增包住编辑正文的第二套页面滚动（标题与正文共用原生虚拟滚动）。
 - 必须：悬浮层避让只经 `DiaryEditorViewport`，新增底部浮层必须计入正文末尾留白；用户滚开的选区与单纯调色不拉回（#221）。
+- 必须：叠在正文顶部的浮岛顶栏只经 `FloatingTopBarCover` 计入看得见的范围（`diaryEditorVisibleRange` 与 `DiaryEditorViewport` 同源），禁止各处另算顶部遮挡。
 - 必须：拉起键盘时切到别的应用再回来，键盘回来后正文停回离开前的滚动位置（`DiaryEditorResumeScroll`，经 `DiaryEditorViewport`）；回来后改了光标、打字或拖动正文就不放回。
 - 必须：收起键盘后点回原处重弹键盘只经 `DiaryEditorKeyboardReopen`；禁止直接调用 `TextInput.show`。
 - 例外：`RawKeyboard` 只允许在 `SoftKeyboardSelectionKeys`（绕开 flutter/flutter#185849，上游修复后删除）。

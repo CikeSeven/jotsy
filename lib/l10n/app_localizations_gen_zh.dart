@@ -4029,6 +4029,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStyleTopBarTitle => '标题';
 
   @override
+  String get diaryPreviewStyleTopBarTitleScrolled => '标题';
+
+  @override
   String get diaryPreviewStyleTopBarTitleDate => '日期';
 
   @override

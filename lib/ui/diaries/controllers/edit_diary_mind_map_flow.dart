@@ -163,7 +163,7 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
           _buildReadingSaveButton(),
         ExpressiveMenuButton(
           tooltip: l10n.diaryEditorMoreActions,
-          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
           items: <Widget>[
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.palette),
@@ -188,10 +188,9 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
           ],
         ),
         if (_isCreateEntry)
-          IconButton(
+          FloatingIslandPill(
+            label: l10n.autoT0136,
             onPressed: busy ? null : _controller.openPublishPage,
-            icon: const FaIcon(FontAwesomeIcons.plus),
-            tooltip: l10n.autoT0136,
           ),
       ],
       body: (BuildContext context, double topInset) => MindMapReveal(

@@ -80,7 +80,6 @@ import 'package:node_diary/ui/diary_templates/widgets/diary_template_strip.dart'
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_common.dart';
-import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
@@ -149,7 +148,10 @@ import 'package:node_diary/ui/notebooks/controllers/notebook_navigation.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
-import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_island.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_top_bar.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_top_bar_host.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/primary_shortcut.dart';
 import 'package:node_diary/ui/widgets/unsaved_changes_dialog.dart';
@@ -380,6 +382,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   bool _metaPanelOpen = false;
   bool _metaPanelRaised = false;
   final GlobalKey _readingCommentsKey = GlobalKey();
+
+  /// 阅读式页头的末尾：浮岛的标题胶囊在它滚过之后浮出。
+  final GlobalKey _readingTitleAnchor = GlobalKey();
   // 按列表下标滚动编辑器：点信息栏的“N 条留言”时先把页尾滚出来。
   final DiaryEditorScrollHandle _readingScroll = DiaryEditorScrollHandle();
   // 分享与导出（没有长图：编辑页没有可整页截取的阅读视图）。
@@ -1025,12 +1030,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             contentLocked: contentLocked,
             meta: readingMeta,
           )
-        : _buildClassicHeader(
-            context,
-            gutter: gutter,
-            contentLocked: contentLocked,
-            appearance: appearance,
-            templatesEnabled: templatesEnabled,
+        // 新建页的表单页头从浮岛那一行以下开始（正文仍可从岛下面滚过）。
+        : Padding(
+            padding: EdgeInsets.only(
+              top:
+                  MediaQuery.viewPaddingOf(context).top + FloatingTopBar.extent,
+            ),
+            child: _buildClassicHeader(
+              context,
+              gutter: gutter,
+              contentLocked: contentLocked,
+              appearance: appearance,
+              templatesEnabled: templatesEnabled,
+            ),
           );
     final aiPrompts = ref.watch(aiModuleAvailableProvider(AiModule.prompts));
     final footer = Column(
@@ -1364,16 +1376,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             ),
             error: (Object error, StackTrace stackTrace) => Scaffold(
               backgroundColor: pageColor,
-              appBar: AppTopBar(
-                contentMaxWidth: AppContentWidth.editor,
-                leading: IconButton(
-                  tooltip: context.l10n.commonBack,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                ),
-              ),
-              body: Center(
-                child: Text(context.l10n.autoT0121(error.toString())),
+              body: _messageIslands(
+                context,
+                Center(child: Text(context.l10n.autoT0121(error.toString()))),
               ),
             ),
             data: (DiaryWithTags? detail) {
@@ -1382,15 +1387,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               if (widget.diaryId != null && detail == null) {
                 return Scaffold(
                   backgroundColor: pageColor,
-                  appBar: AppTopBar(
-                    contentMaxWidth: AppContentWidth.editor,
-                    leading: IconButton(
-                      tooltip: context.l10n.commonBack,
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                    ),
+                  body: _messageIslands(
+                    context,
+                    Center(child: Text(context.l10n.autoT0124)),
                   ),
-                  body: Center(child: Text(context.l10n.autoT0124)),
                 );
               }
 
@@ -1402,147 +1402,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 backgroundColor: reading == null
                     ? pageColor
                     : diaryPreviewScaffoldColor(context, reading.resolved),
-                appBar: reading != null
-                    ? _buildReadingTopBar(context, frame: reading)
-                    : AppTopBar(
-                        contentMaxWidth: AppContentWidth.editor,
-                        leading: IconButton(
-                          tooltip: context.l10n.commonBack,
-                          onPressed: _controller.attemptExit,
-                          icon: const FaIcon(
-                            FontAwesomeIcons.angleLeft,
-                            size: 18,
-                          ),
-                        ),
-                        title: Text(
-                          widget.entryMode == EditDiaryEntryMode.create
-                              ? context.l10n.autoT0134
-                              : context.l10n.autoT0135,
-                        ),
-                        actions: <Widget>[
-                          ExpressiveMenuButton(
-                            tooltip: context.l10n.diaryEditorMoreActions,
-                            icon: const FaIcon(
-                              FontAwesomeIcons.ellipsisVertical,
-                              size: 18,
-                            ),
-                            items: <Widget>[
-                              // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
-                              if (_templates.enabled && templatesEnabled)
-                                ExpressiveMenuItem(
-                                  leadingIcon: const FaIcon(
-                                    FontAwesomeIcons.wandMagicSparkles,
-                                  ),
-                                  onPressed:
-                                      _saving ||
-                                          _recordingPanelOpen ||
-                                          _mediaImportController.isBusy
-                                      ? null
-                                      : () => _onEditorMenuAction(
-                                          _EditorMenuAction.chooseTemplate,
-                                        ),
-                                  child: Text(context.l10n.diaryTemplateChoose),
-                                ),
-                              // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
-                              // 与不支持读取相册的平台没有。
-                              if (showDayPhotosMenu)
-                                ExpressiveMenuItem(
-                                  leadingIcon: const FaIcon(
-                                    FontAwesomeIcons.solidImages,
-                                  ),
-                                  onPressed:
-                                      _saving ||
-                                          _recordingPanelOpen ||
-                                          _mediaImportController.isBusy
-                                      ? null
-                                      : () => _onEditorMenuAction(
-                                          _EditorMenuAction.dayPhotos,
-                                        ),
-                                  child: Text(context.l10n.diaryDayPhotosMenu),
-                                ),
-                              if (ref.watch(
-                                aiModuleAvailableProvider(AiModule.prompts),
-                              ))
-                                ExpressiveMenuItem(
-                                  leadingIcon: const FaIcon(
-                                    FontAwesomeIcons.lightbulb,
-                                  ),
-                                  onPressed: _saving || _bottomPanelOpen
-                                      ? null
-                                      : () => unawaited(_openAiPrompts()),
-                                  child: Text(context.l10n.aiSlashPrompts),
-                                ),
-                              if (aiSuggest) ...<Widget>[
-                                ExpressiveMenuItem(
-                                  leadingIcon: const FaIcon(
-                                    FontAwesomeIcons.heading,
-                                  ),
-                                  onPressed:
-                                      _saving || _aiBusy || _bottomPanelOpen
-                                      ? null
-                                      : () => unawaited(
-                                          _controller.suggestWithAi(
-                                            titleOnly: true,
-                                          ),
-                                        ),
-                                  child: Text(context.l10n.aiSuggestTitle),
-                                ),
-                                ExpressiveMenuItem(
-                                  leadingIcon: const FaIcon(
-                                    FontAwesomeIcons.wandMagicSparkles,
-                                  ),
-                                  onPressed:
-                                      _saving || _aiBusy || _bottomPanelOpen
-                                      ? null
-                                      : () => unawaited(
-                                          _controller.suggestWithAi(
-                                            titleOnly: false,
-                                          ),
-                                        ),
-                                  child: Text(context.l10n.aiSuggestMeta),
-                                ),
-                              ],
-                              ExpressiveMenuItem(
-                                leadingIcon: const FaIcon(
-                                  FontAwesomeIcons.magnifyingGlass,
-                                ),
-                                onPressed: _saving ? null : _openFind,
-                                child: Text(context.l10n.diaryFindReplace),
-                              ),
-                              if (templatesEnabled)
-                                ExpressiveMenuItem(
-                                  leadingIcon: const FaIcon(
-                                    FontAwesomeIcons.layerGroup,
-                                  ),
-                                  onPressed: () => _onEditorMenuAction(
-                                    _EditorMenuAction.saveAsTemplate,
-                                  ),
-                                  child: Text(context.l10n.diaryTemplateSaveAs),
-                                ),
-                              ExpressiveMenuItem(
-                                leadingIcon: const FaIcon(
-                                  FontAwesomeIcons.penNib,
-                                ),
-                                onPressed: () => _onEditorMenuAction(
-                                  _EditorMenuAction.editorSettings,
-                                ),
-                                child: Text(context.l10n.settingsEditorTitle),
-                              ),
-                            ],
-                          ),
-                          if (widget.entryMode == EditDiaryEntryMode.create)
-                            IconButton(
-                              onPressed:
-                                  _saving ||
-                                      _recordingPanelOpen ||
-                                      _mediaImportController.isBusy
-                                  ? null
-                                  : _controller.openPublishPage,
-                              icon: const FaIcon(FontAwesomeIcons.plus),
-                              tooltip: context.l10n.autoT0136,
-                            ),
-                        ],
-                      ),
+                // 没有整条顶栏：浮岛叠在正文上（见 _wrapEditorIslands）。
                 // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
                 // 正文底部做避让。
                 body: Stack(
@@ -1552,22 +1412,29 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                     // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
                     // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
                     // 返回子树）；面板展开、录音或保存中不接收。
-                    DiaryEditorDropTarget(
-                      enabled:
-                          !_saving &&
-                          !_isEditPanelExpanded &&
-                          !_bottomPanelOpen,
-                      onDropFiles: (paths) =>
-                          unawaited(_controller.insertDroppedFiles(paths)),
-                      child: SoftKeyboardSelectionKeys(
-                        child: _buildEditor(
-                          context,
-                          resolveBottomSpacer: resolveEditorBottomSpacer,
-                          contentLocked:
-                              _isEditPanelExpanded || _bottomPanelOpen,
-                          appearance: appearance,
-                          templatesEnabled: templatesEnabled,
-                          reading: reading,
+                    _wrapEditorIslands(
+                      context,
+                      reading,
+                      templatesEnabled: templatesEnabled,
+                      showDayPhotosMenu: showDayPhotosMenu,
+                      aiSuggest: aiSuggest,
+                      DiaryEditorDropTarget(
+                        enabled:
+                            !_saving &&
+                            !_isEditPanelExpanded &&
+                            !_bottomPanelOpen,
+                        onDropFiles: (paths) =>
+                            unawaited(_controller.insertDroppedFiles(paths)),
+                        child: SoftKeyboardSelectionKeys(
+                          child: _buildEditor(
+                            context,
+                            resolveBottomSpacer: resolveEditorBottomSpacer,
+                            contentLocked:
+                                _isEditPanelExpanded || _bottomPanelOpen,
+                            appearance: appearance,
+                            templatesEnabled: templatesEnabled,
+                            reading: reading,
+                          ),
                         ),
                       ),
                     ),
@@ -1860,6 +1727,131 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       }
     }
     return true;
+  }
+
+  /// 新建页（表单式）“更多”菜单的条目。
+  List<Widget> _createMoreItems({
+    required bool templatesEnabled,
+    required bool showDayPhotosMenu,
+    required bool aiSuggest,
+  }) {
+    return <Widget>[
+      // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
+      if (_templates.enabled && templatesEnabled)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.wandMagicSparkles),
+          onPressed:
+              _saving || _recordingPanelOpen || _mediaImportController.isBusy
+              ? null
+              : () => _onEditorMenuAction(_EditorMenuAction.chooseTemplate),
+          child: Text(context.l10n.diaryTemplateChoose),
+        ),
+      // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
+      // 与不支持读取相册的平台没有。
+      if (showDayPhotosMenu)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.solidImages),
+          onPressed:
+              _saving || _recordingPanelOpen || _mediaImportController.isBusy
+              ? null
+              : () => _onEditorMenuAction(_EditorMenuAction.dayPhotos),
+          child: Text(context.l10n.diaryDayPhotosMenu),
+        ),
+      if (ref.watch(aiModuleAvailableProvider(AiModule.prompts)))
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.lightbulb),
+          onPressed: _saving || _bottomPanelOpen
+              ? null
+              : () => unawaited(_openAiPrompts()),
+          child: Text(context.l10n.aiSlashPrompts),
+        ),
+      if (aiSuggest) ...<Widget>[
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.heading),
+          onPressed: _saving || _aiBusy || _bottomPanelOpen
+              ? null
+              : () => unawaited(_controller.suggestWithAi(titleOnly: true)),
+          child: Text(context.l10n.aiSuggestTitle),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.wandMagicSparkles),
+          onPressed: _saving || _aiBusy || _bottomPanelOpen
+              ? null
+              : () => unawaited(_controller.suggestWithAi(titleOnly: false)),
+          child: Text(context.l10n.aiSuggestMeta),
+        ),
+      ],
+      ExpressiveMenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.magnifyingGlass),
+        onPressed: _saving ? null : _openFind,
+        child: Text(context.l10n.diaryFindReplace),
+      ),
+      if (templatesEnabled)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
+          onPressed: () =>
+              _onEditorMenuAction(_EditorMenuAction.saveAsTemplate),
+          child: Text(context.l10n.diaryTemplateSaveAs),
+        ),
+      ExpressiveMenuItem(
+        leadingIcon: const FaIcon(FontAwesomeIcons.penNib),
+        onPressed: () => _onEditorMenuAction(_EditorMenuAction.editorSettings),
+        child: Text(context.l10n.settingsEditorTitle),
+      ),
+    ];
+  }
+
+  /// 出错、日记不见了时的整页：只有返回岛，提示从岛那一行以下开始。
+  Widget _messageIslands(BuildContext context, Widget body) =>
+      FloatingTopBarHost(
+        insetChild: true,
+        contentMaxWidth: AppContentWidth.editor,
+        statusBarColor: AppPageBackdrop.solidBarColorOf(context),
+        leading: const FloatingBackIsland(),
+        child: body,
+      );
+
+  /// 把正文放到浮岛顶栏下面：阅读式版式见 [_wrapReadingIslands]；新建页
+  /// （表单式）为返回岛 + [更多 | 发布]，常驻、不随滚动隐藏，没有标题胶囊
+  /// （页头就是标题输入框）。
+  Widget _wrapEditorIslands(
+    BuildContext context,
+    _ReadingFrame? reading,
+    Widget editor, {
+    required bool templatesEnabled,
+    required bool showDayPhotosMenu,
+    required bool aiSuggest,
+  }) {
+    if (reading != null) {
+      return _wrapReadingIslands(context, frame: reading, child: editor);
+    }
+    final l10n = context.l10n;
+    final busy =
+        _saving || _recordingPanelOpen || _mediaImportController.isBusy;
+    return FloatingTopBarHost(
+      contentMaxWidth: AppContentWidth.editor,
+      statusBarColor: AppPageBackdrop.solidBarColorOf(context),
+      leading: FloatingBackIsland(onPressed: _controller.attemptExit),
+      trailing: FloatingActionIsland(
+        children: <Widget>[
+          ExpressiveMenuButton(
+            tooltip: l10n.diaryEditorMoreActions,
+            icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
+            items: _createMoreItems(
+              templatesEnabled: templatesEnabled,
+              showDayPhotosMenu: showDayPhotosMenu,
+              aiSuggest: aiSuggest,
+            ),
+          ),
+          if (widget.entryMode == EditDiaryEntryMode.create)
+            FloatingIslandPill(
+              label: l10n.autoT0136,
+              onPressed: busy ? null : _controller.openPublishPage,
+            ),
+        ],
+      ),
+      child: editor,
+    );
   }
 
   Widget _buildFloatingToolbar(List<DiaryToolbarItem> toolbarOrder) {

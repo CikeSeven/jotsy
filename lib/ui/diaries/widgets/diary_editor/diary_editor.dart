@@ -56,12 +56,17 @@ import '../diary_link_dialog.dart';
 /// 为什么需要：编辑页的页头、正文与页尾都在 AppFlowy 的虚拟列表里，滚出视口
 /// 的项不会构建，`Scrollable.ensureVisible` 找不到它们；只能按列表下标滚。
 class DiaryEditorScrollHandle {
-  Future<void> Function()? _revealFooter;
+  _DiaryEditorState? _editor;
 
   /// 把页尾（footer）的顶边滚到视口顶部，动画时长与曲线取 [ExpressiveMotion]
   /// （减少动画时直接跳过去）。阅读式编辑页点信息栏里的“N 条留言”时先经它
   /// 让页尾构建出来，再对齐到留言区。
-  Future<void> revealFooter() => _revealFooter?.call() ?? Future<void>.value();
+  Future<void> revealFooter() =>
+      _editor?._revealFooter() ?? Future<void>.value();
+
+  /// 回到最顶端（页头），动画同 [revealFooter]。阅读式编辑页点浮岛的标题
+  /// 胶囊时用。
+  Future<void> revealTop() => _editor?._scrollToItem(0) ?? Future<void>.value();
 }
 
 /// 所有正文位置共用 AppFlowy 渲染与主题。编辑页使用原生虚拟滚动，标题等
@@ -167,7 +172,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   @override
   void initState() {
     super.initState();
-    widget.scrollHandle?._revealFooter = _revealFooter;
+    widget.scrollHandle?._editor = this;
     // 上游的行内属性登记是全局的，必须先于任何编辑器构建（见该函数）。
     ensureDiaryEditorGlobals();
     _bind();
@@ -304,7 +309,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     super.didUpdateWidget(old);
     if (old.scrollHandle != widget.scrollHandle) {
       _detachScrollHandle(old.scrollHandle);
-      widget.scrollHandle?._revealFooter = _revealFooter;
+      widget.scrollHandle?._editor = this;
     }
     if (old.controller != widget.controller ||
         old.shrinkWrap != widget.shrinkWrap ||
@@ -729,18 +734,21 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   }
 
   void _detachScrollHandle(DiaryEditorScrollHandle? handle) {
-    if (handle != null && handle._revealFooter == _revealFooter) {
-      handle._revealFooter = null;
+    if (handle != null && handle._editor == this) {
+      handle._editor = null;
     }
   }
 
   /// 页尾在虚拟列表里是最后一项：下标 = 页头（有时）+ 顶层块数。
-  Future<void> _revealFooter() async {
+  Future<void> _revealFooter() => _scrollToItem(
+    widget.controller.document.root.children.length +
+        (widget.header == null ? 0 : 1),
+  );
+
+  /// 把页面列表的第 [index] 项滚到视口顶部。
+  Future<void> _scrollToItem(int index) async {
     final items = _scroll.itemScrollController;
     if (widget.shrinkWrap || !items.isAttached) return;
-    final index =
-        widget.controller.document.root.children.length +
-        (widget.header == null ? 0 : 1);
     final duration = ExpressiveMotion.duration(context);
     if (duration == Duration.zero) {
       items.jumpTo(index: index);

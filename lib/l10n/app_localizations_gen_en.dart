@@ -4501,6 +4501,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPreviewStyleTopBarTitle => 'Title';
 
   @override
+  String get diaryPreviewStyleTopBarTitleScrolled => 'Title';
+
+  @override
   String get diaryPreviewStyleTopBarTitleDate => 'Date';
 
   @override

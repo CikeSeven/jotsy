@@ -106,25 +106,7 @@ class _DiaryPreviewBackToTopState extends State<DiaryPreviewBackToTop> {
         position.viewportDimension * DiaryPreviewBackToTop.revealScreens;
   }
 
-  void _scrollToTop() {
-    final controller = widget.controller;
-    if (controller.positions.length != 1) {
-      return;
-    }
-    final duration = ExpressiveMotion.duration(
-      context,
-      ExpressiveMotion.standard,
-    );
-    if (duration == Duration.zero) {
-      controller.jumpTo(0);
-      return;
-    }
-    controller.animateTo(
-      0,
-      duration: duration,
-      curve: ExpressiveMotion.spatial,
-    );
-  }
+  void _scrollToTop() => scrollDiaryPreviewToTop(context, widget.controller);
 
   @override
   Widget build(BuildContext context) {
@@ -191,4 +173,24 @@ class _DiaryPreviewBackToTopState extends State<DiaryPreviewBackToTop> {
       ),
     );
   }
+}
+
+/// 预览回到顶部（“回到顶部”按钮与浮岛的标题胶囊共用）：减少动画时直接
+/// 跳到顶端。控制器没挂在唯一一个滚动视图上时不动。
+void scrollDiaryPreviewToTop(
+  BuildContext context,
+  ScrollController controller,
+) {
+  if (controller.positions.length != 1) {
+    return;
+  }
+  final duration = ExpressiveMotion.duration(
+    context,
+    ExpressiveMotion.standard,
+  );
+  if (duration == Duration.zero) {
+    controller.jumpTo(0);
+    return;
+  }
+  controller.animateTo(0, duration: duration, curve: ExpressiveMotion.spatial);
 }

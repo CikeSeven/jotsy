@@ -15,8 +15,9 @@ import '../../../notebooks/providers/notebook_providers.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/action_loading_overlay.dart';
-import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
+import '../../../widgets/floating_top_bar/floating_island.dart';
+import '../../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_comment_flows.dart';
 import '../../controllers/diary_preview_extras.dart';
@@ -33,6 +34,7 @@ import '../../providers/diary_mood_palette_provider.dart';
 import '../../providers/diary_preview_style_provider.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
+import 'diary_preview_chrome_board.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
 import 'diary_preview_find.dart';
@@ -116,6 +118,12 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
     with DiaryPreviewFindHost<DiaryPreviewView> {
   final GlobalKey _shareCaptureKey = GlobalKey();
   final GlobalKey _commentsKey = GlobalKey();
+
+  /// 页头末尾的锚点：浮岛的标题胶囊在它滚过之后浮出。
+  final GlobalKey _titleAnchor = GlobalKey();
+
+  /// 翻页器收浮岛内容的看板（不在翻页器里时为 null），销毁时从上面撤下。
+  DiaryPreviewChromeBoard? _chromeBoard;
   final ScrollController _scrollController = ScrollController();
   late final DiaryPreviewExportController _export =
       DiaryPreviewExportController(
@@ -152,6 +160,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
 
   @override
   void dispose() {
+    _chromeBoard?.retract(widget.diaryId);
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
     if (widget.ownsCoverHero) {
       widget.coverHero?.dispose();
@@ -288,18 +297,20 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
 
   Widget _messageScaffold(Widget body) {
     final embedded = widget.host != null;
+    final pageColor = AppPageBackdrop.pageColorOf(context);
     return Scaffold(
       // 读取中 / 出错：独立页面时透出预览区域背景，嵌在右栏时透出宿主日记页
       // 的背景；都没有背景时就是原来的 surface。
-      backgroundColor: AppPageBackdrop.pageColorOf(context),
-      appBar: AppTopBar(
-        centerTitle: true,
-        // 嵌入时与正文顶栏一致：不要返回按钮，也不要“日记”标题。
-        title: embedded ? null : Text(context.l10n.autoT0120),
-        automaticallyImplyLeading: !embedded,
-        leading: embedded ? null : const DiaryPreviewBackButton(),
+      backgroundColor: pageColor,
+      body: FloatingTopBarHost(
+        insetChild: true,
+        // 嵌入时与正文一致：不要返回岛，也不画状态栏底条。
+        leading: embedded ? null : const FloatingBackIsland(),
+        statusBarColor: embedded
+            ? null
+            : AppPageBackdrop.solidBarColorOf(context),
+        child: body,
       ),
-      body: body,
     );
   }
 
@@ -367,6 +378,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
       now: DateTime.now(),
     );
     if (capsuleState.isLocked) {
+      // 封存页自己画返回岛，翻页器不再替这一篇画浮岛。
+      DiaryPreviewChromeScope.maybeOf(context)?.retract(widget.diaryId);
       return LockedDiaryPage(
         diaryId: widget.diaryId,
         initialDetail: detail,
@@ -411,10 +424,51 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
       onWrite: () => unawaited(_writeComment(detail.diary)),
       suppressed: capturing,
     );
+    final actions = DiaryPreviewActions(
+      onEdit: _openEditor,
+      onEditAt: (Position caret) => unawaited(_openEditor(caret: caret)),
+      onShare: () => openDiaryPreviewShare(
+        context,
+        ref,
+        export: _export,
+        detail: detail,
+        background: resolved.background,
+      ),
+      moreItems: diaryPreviewMoreItems(
+        context,
+        ref,
+        export: _export,
+        detail: detail,
+        viewData: viewData,
+        onDelete: _deleteDiary,
+        notebooks: notebooks,
+        onFind: _controller == null ? null : openFind,
+      ),
+    );
+    final chrome = DiaryPreviewChrome.of(
+      context.l10n,
+      diary: detail.diary,
+      style: style.page,
+      actions: actions,
+      paging: widget.paging,
+      titleAnchor: _titleAnchor,
+    );
+    // 在翻页器里时浮岛由翻页器画在所有页之上（不随页面滑走），这里只登记。
+    final board = _chromeBoard = DiaryPreviewChromeScope.maybeOf(context);
+    board?.publish(
+      widget.diaryId,
+      DiaryPreviewChromeEntry(
+        chrome: chrome,
+        resolved: resolved,
+        barColor: diaryPreviewPageColors(context, resolved).bar,
+        scrollController: _scrollController,
+      ),
+    );
     return wrapFindPopScope(
       DiaryPreviewSurface(
         resolved: resolved,
         scrollController: _scrollController,
+        chrome: board == null ? chrome : null,
         // 正文查找的悬浮卡片（见 DiaryPreviewFindHost）。
         bottomBar: buildFindBar(context),
         content: WidgetShotPlus(
@@ -456,28 +510,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
             onOpenTag: (int tagId) =>
                 unawaited(openDiaryTagSearch(context, tagId)),
             onOpenImage: _openImageViewer,
-            actions: DiaryPreviewActions(
-              onEdit: _openEditor,
-              onEditAt: (Position caret) =>
-                  unawaited(_openEditor(caret: caret)),
-              onShare: () => openDiaryPreviewShare(
-                context,
-                ref,
-                export: _export,
-                detail: detail,
-                background: resolved.background,
-              ),
-              moreItems: diaryPreviewMoreItems(
-                context,
-                ref,
-                export: _export,
-                detail: detail,
-                viewData: viewData,
-                onDelete: _deleteDiary,
-                notebooks: notebooks,
-                onFind: _controller == null ? null : openFind,
-              ),
-            ),
+            actions: actions,
+            titleAnchor: _titleAnchor,
           ),
         ),
         overlay: ActionLoadingOverlay(

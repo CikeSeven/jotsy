@@ -1,216 +1,263 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 
+import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../app_surface/widgets/app_glass_scope.dart';
-import '../../../app_surface/widgets/app_glass_surface.dart';
-import '../../../app_surface/widgets/app_page_backdrop.dart';
 import '../../../widgets/expressive_menu/expressive_menu.dart';
+import '../../../widgets/floating_top_bar/floating_action_island.dart';
+import '../../../widgets/floating_top_bar/floating_island.dart';
+import '../../../widgets/floating_top_bar/floating_top_bar.dart';
+import '../../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
+import '../../viewmodels/diary_preview_resolved_style.dart';
 import 'diary_preview_host.dart';
+import 'diary_preview_neighbors.dart';
+import 'diary_preview_overlays.dart';
 
-/// 预览页返回按钮（`<` 风格，18）；[onPressed] 为 null 时返回上一页。
-class DiaryPreviewBackButton extends StatelessWidget {
-  const DiaryPreviewBackButton({super.key, this.onPressed});
-
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: context.l10n.commonBack,
-      onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
-      icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-    );
-  }
-}
-
-/// 预览页顶栏 [SliverAppBar]：随滚动隐藏或常驻（[DiaryPreviewPageStyle.topBar]），
-/// 右侧固定为分享、编辑与“更多”（不随样式开关）：最常点的编辑紧挨“更多”。
-/// “更多”是弹出菜单（[ExpressiveMenuButton]，条目由页面给出，见
-/// `diary_preview_more_menu.dart`）。预览嵌在页面里（宽窗口日记页的右栏，见
-/// [DiaryPreviewHostScope]）时没有返回按钮，也不显示标题（右栏本就是阅读区，
-/// “日记”之类的标题多余），只留右侧的动作。
-///
-/// 材质：经典时底色为 [background]（与页面相同），滚动到正文上方时不加阴影与
-/// 染色。组件材质里顶栏（`AppGlassComponent.topBars`）为玻璃时，栏本身透明，
-/// 整条栏（含状态栏区域）是 `flexibleSpace` 里的一片 [AppGlassSurface]，底缘
-/// 一条细线（描边开时），与二级页 `AppTopBar` 同一画法。不同的是这里的栏
-/// 浮在正文上（固定或随滚动出现时，文字与图片都从栏下滑过），模糊按
-/// [AppGlassBlur.always]，而不是只在背景是图片时才开。
-class DiaryPreviewTopBar extends StatelessWidget {
-  const DiaryPreviewTopBar({
-    super.key,
-    required this.style,
-    required this.title,
-    required this.background,
-    required this.pageColor,
+/// 预览页顶栏的动作。
+class DiaryPreviewActions {
+  const DiaryPreviewActions({
     required this.onEdit,
     required this.onShare,
-    required this.moreItems,
-    this.titleSemantics,
+    this.moreItems = const <Widget>[],
     this.onBack,
-    this.sliver = true,
-    this.editSlot,
+    this.onEditAt,
   });
 
-  final DiaryPreviewPageStyle style;
-
-  /// 顶栏标题；null 表示不显示。
-  final String? title;
-
-  /// 标题的读屏文字（如位置“3 / 57”读作“第 3 篇，共 57 篇”）；null 时读标题。
-  final String? titleSemantics;
-
-  /// 经典材质时的底色。
-  final Color background;
-
-  /// 栏下面的页面底色（纸色；让位给页面背景时透明），玻璃底色是自定义色时
-  /// 据此检查前景是否看得清（见 [AppGlassResolved.foregroundFor]）。
-  final Color pageColor;
   final VoidCallback onEdit;
+
+  /// 双击正文进入编辑，光标放在 [Position] 处；null 时双击不进入编辑（设置页
+  /// 预览）。是否识别双击还看阅读行为 `doubleTapToEdit` 与平台，见
+  /// `DiaryPreviewContent`。
+  final ValueChanged<Position>? onEditAt;
   final VoidCallback onShare;
 
-  /// “更多”弹出菜单的条目（[ExpressiveMenuItem] 与分隔线）。为空时（设置页的
-  /// 样式预览）按钮照常画出、点了没反应，与真实页面长得一样。
+  /// “更多”弹出菜单的条目；为空时（设置页预览）按钮照常画出、点了没反应，
+  /// 与真实页面长得一样。
   final List<Widget> moreItems;
 
-  /// 返回按钮；null 时返回上一页（设置页的预览里换成空操作）。
+  /// 返回按钮；null 时返回上一页。
   final VoidCallback? onBack;
+}
 
-  /// true（默认）时是滚动视图里的 [SliverAppBar]；false 时是普通 [AppBar]，
-  /// 供阅读式编辑页放进 Scaffold 的顶栏位置（正文在编辑器自己的虚拟滚动
-  /// 里，没有 sliver 可放；顶栏常驻，不随滚动隐藏）。
-  final bool sliver;
+/// 预览页浮岛顶栏这一篇要显示的东西：标题胶囊、动作与显隐方式。
+@immutable
+class DiaryPreviewChrome {
+  const DiaryPreviewChrome({
+    required this.actions,
+    this.title,
+    this.titleSemantics,
+    this.titleAnchor,
+    this.hideOnScroll = false,
+  });
 
-  /// 不为 null 时代替“编辑”按钮的位置：阅读式编辑页在编辑中放“完成”，
-  /// 其余时候放空占位；手动保存时一直放“保存”。
-  final Widget? editSlot;
+  /// 按预览页样式得出这一篇的浮岛内容（标题胶囊见 [diaryPreviewTitleChip]）。
+  factory DiaryPreviewChrome.of(
+    AppLocalizations l10n, {
+    required Diary diary,
+    required DiaryPreviewPageStyle style,
+    required DiaryPreviewActions actions,
+    DiaryPreviewPaging? paging,
+    GlobalKey? titleAnchor,
+  }) {
+    final chip = diaryPreviewTitleChip(
+      l10n,
+      diary: diary,
+      mode: style.topBarTitle,
+      paging: paging,
+    );
+    return DiaryPreviewChrome(
+      actions: actions,
+      title: chip?.text,
+      titleSemantics: chip?.semantics,
+      titleAnchor: chip != null && chip.afterScroll ? titleAnchor : null,
+      hideOnScroll: style.topBar == DiaryPreviewTopBarMode.floating,
+    );
+  }
+
+  final DiaryPreviewActions actions;
+
+  /// 标题胶囊的文字；null 时没有标题胶囊。
+  final String? title;
+  final String? titleSemantics;
+
+  /// 给出时标题胶囊在它滚过浮岛之后才出现（见 `FloatingTopBarHost`）。
+  final GlobalKey? titleAnchor;
+  final bool hideOnScroll;
+}
+
+/// 浮岛标题胶囊的内容：文字、读屏文字，以及是否等页头滚过才浮出。
+typedef DiaryPreviewTitleChip = ({
+  String text,
+  String? semantics,
+  bool afterScroll,
+});
+
+/// 按预览页样式的“顶栏标题”（[mode]）得出这一篇的标题胶囊；预览页与阅读式
+/// 编辑页共用：
+/// - 标题（[DiaryPreviewTopBarTitle.label]）：页头滚过后浮出这篇的标题（没写
+///   标题时为日期）；
+/// - 日期 / 位置：一直显示；没有位置（单篇打开、编辑页）时按“标题”处理；
+/// - 不显示：null。
+DiaryPreviewTitleChip? diaryPreviewTitleChip(
+  AppLocalizations l10n, {
+  required Diary diary,
+  required DiaryPreviewTopBarTitle mode,
+  DiaryPreviewPaging? paging,
+}) {
+  final date = l10n.formatFullDate(diary.createdAt.toLocal());
+  DiaryPreviewTitleChip scrolledTitle() {
+    final title = diary.title.trim();
+    return (
+      text: title.isEmpty ? date : title,
+      semantics: null,
+      afterScroll: true,
+    );
+  }
+
+  return switch (mode) {
+    DiaryPreviewTopBarTitle.label => scrolledTitle(),
+    DiaryPreviewTopBarTitle.date => (
+      text: date,
+      semantics: null,
+      afterScroll: false,
+    ),
+    DiaryPreviewTopBarTitle.position when paging != null => (
+      text: paging.position,
+      semantics: paging.positionSemantics,
+      afterScroll: false,
+    ),
+    DiaryPreviewTopBarTitle.position => scrolledTitle(),
+    DiaryPreviewTopBarTitle.none => null,
+  };
+}
+
+/// 右侧动作胶囊：分享、编辑与“更多”。阅读式编辑页的胶囊另有一份（编辑
+/// 中变形为 [更多 | 完成]）。
+class DiaryPreviewActionsIsland extends StatelessWidget {
+  const DiaryPreviewActionsIsland({super.key, required this.actions});
+
+  final DiaryPreviewActions actions;
 
   @override
   Widget build(BuildContext context) {
-    final glass = AppGlass.of(context);
-    if (!glass.isGlass(AppGlassComponent.topBars)) {
-      return _buildBar(context, background: background);
-    }
-    final glassBar = Builder(
-      builder: (BuildContext context) => _buildBar(
-        context,
-        background: Colors.transparent,
-        flexibleSpace: AppGlassSurface(
-          component: AppGlassComponent.topBars,
-          blur: AppGlassBlur.always,
-          showBorder: false,
-          bottomHairline: glass.hairline,
-          child: const SizedBox.expand(),
-        ),
-      ),
-    );
-    if (!glass.customTint) {
-      return glassBar;
-    }
-    // 自定义底色可能让主题前景看不清。标题与按钮不在玻璃表面的子树里（它们
-    // 由 SliverAppBar 画在 flexibleSpace 之上），所以前景兜底包在整条栏外面；
-    // 栏下面是纸色，让位给背景时是背景本身。
-    final under = Color.alphaBlend(
-      pageColor,
-      AppPageBackdrop.of(context).estimatedColor,
-    );
-    return AppGlassForegroundTheme(
-      foreground: glass.foregroundFor(under),
-      child: glassBar,
-    );
-  }
-
-  Widget _buildBar(
-    BuildContext context, {
-    required Color background,
-    Widget? flexibleSpace,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
-    final embedded = DiaryPreviewHostScope.isEmbedded(context);
-    final title = embedded ? null : this.title;
-    final pinned = style.topBar == DiaryPreviewTopBarMode.pinned;
-    final leading = embedded ? null : DiaryPreviewBackButton(onPressed: onBack);
-    final titleWidget = title == null
-        ? null
-        : Text(title, semanticsLabel: titleSemantics);
-    final overlayStyle =
-        theme.appBarTheme.systemOverlayStyle ??
-        SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
-          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor: Colors.transparent,
-          systemNavigationBarIconBrightness: isLight
-              ? Brightness.dark
-              : Brightness.light,
-        );
-    final editSlot = this.editSlot;
-    const moreIcon = FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16);
-    final actions = <Widget>[
-      IconButton(
-        tooltip: context.l10n.previewShare,
-        onPressed: onShare,
-        icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
-      ),
-      editSlot ??
-          IconButton(
-            tooltip: context.l10n.commonEdit,
-            onPressed: onEdit,
-            icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
-          ),
-      if (moreItems.isEmpty)
+    return FloatingActionIsland(
+      children: <Widget>[
         IconButton(
-          tooltip: context.l10n.autoT0125,
-          onPressed: () {},
-          icon: moreIcon,
-        )
-      else
-        ExpressiveMenuButton(
-          tooltip: context.l10n.autoT0125,
-          icon: moreIcon,
-          items: moreItems,
+          tooltip: context.l10n.previewShare,
+          onPressed: actions.onShare,
+          icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
         ),
-    ];
-    if (!sliver) {
-      return AppBar(
-        // 与 SliverAppBar 的默认高度一致，不跟随主题里的顶栏高度。
-        toolbarHeight: kToolbarHeight,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        leading: leading,
-        title: titleWidget,
-        systemOverlayStyle: overlayStyle,
-        actions: actions,
-        flexibleSpace: flexibleSpace,
-        foregroundColor: colorScheme.onSurface,
-        backgroundColor: background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        shadowColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-      );
-    }
-    return SliverAppBar(
-      floating: !pinned,
-      pinned: pinned,
-      centerTitle: true,
-      automaticallyImplyLeading: false,
-      leading: leading,
-      title: titleWidget,
-      systemOverlayStyle: overlayStyle,
-      actions: actions,
-      flexibleSpace: flexibleSpace,
-      foregroundColor: colorScheme.onSurface,
-      backgroundColor: background,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      shadowColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
+        IconButton(
+          tooltip: context.l10n.commonEdit,
+          onPressed: actions.onEdit,
+          icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
+        ),
+        DiaryMoreMenuIslandButton(items: actions.moreItems),
+      ],
     );
   }
 }
+
+/// 动作胶囊里的“更多”：弹出菜单从这颗按钮的圆长出。条目为空时（设置页
+/// 预览）照常画出、点了没反应。
+class DiaryMoreMenuIslandButton extends StatelessWidget {
+  const DiaryMoreMenuIslandButton({super.key, required this.items});
+
+  final List<Widget> items;
+
+  @override
+  Widget build(BuildContext context) {
+    const icon = FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16);
+    final tooltip = context.l10n.autoT0125;
+    if (items.isEmpty) {
+      return IconButton(tooltip: tooltip, onPressed: () {}, icon: icon);
+    }
+    return ExpressiveMenuButton(tooltip: tooltip, icon: icon, items: items);
+  }
+}
+
+/// 一篇预览画浮岛要用的全部东西：要显示的标题与动作，以及整页样式、
+/// 状态栏底色与这一篇的滚动控制器（点标题胶囊回到顶部）。翻页时由各篇
+/// 登记给翻页器（见 `DiaryPreviewChromeBoard`）。
+@immutable
+class DiaryPreviewChromeEntry {
+  const DiaryPreviewChromeEntry({
+    required this.chrome,
+    required this.resolved,
+    required this.barColor,
+    required this.scrollController,
+  });
+
+  final DiaryPreviewChrome chrome;
+  final DiaryPreviewResolvedStyle resolved;
+
+  /// 状态栏底条在经典材质下的颜色（纸色，或让位给背景时的实色栏底色）。
+  final Color barColor;
+  final ScrollController scrollController;
+}
+
+/// 预览的浮岛顶栏：把 [child]（一篇的整页内容，或翻页器）放在浮岛下面。
+///
+/// - 独立页面：左侧返回岛，状态栏那一条垫 [DiaryPreviewChromeEntry.barColor]
+///   （玻璃时为玻璃），状态栏图标按这一篇的整页主题；
+/// - 嵌在宽窗口右栏（[DiaryPreviewHostScope]）：只有右侧动作岛，不画状态栏
+///   底条（右栏上方没有状态栏），也没有标题胶囊（右栏本就是阅读区）；
+/// - [entry] 为 null（翻页器里当前这篇还没登记）：暂不画浮岛，结构不变，
+///   [child] 不会因为浮岛出现而重新挂载。
+///
+/// 岛与正文列对齐（[DiaryPreviewResolvedStyle.maxContentWidth]）。翻页器在
+/// 所有页之上画浮岛时传 [themed]：浮岛按当前这篇的整页主题着色，换篇时
+/// 过渡（各篇自己画时已在这篇的主题之下）。
+class DiaryPreviewTopBarHost extends StatelessWidget {
+  const DiaryPreviewTopBarHost({
+    super.key,
+    required this.entry,
+    required this.child,
+    this.resetKey,
+    this.themed = false,
+  });
+
+  final DiaryPreviewChromeEntry? entry;
+  final Widget child;
+
+  /// 见 `FloatingTopBarHost.resetKey`。
+  final Object? resetKey;
+  final bool themed;
+
+  @override
+  Widget build(BuildContext context) {
+    final embedded = DiaryPreviewHostScope.isEmbedded(context);
+    final entry = this.entry;
+    final chrome = entry?.chrome;
+    final actions = chrome?.actions;
+    return FloatingTopBarHost(
+      resetKey: resetKey,
+      theme: themed ? entry?.resolved.theme : null,
+      hideOnScroll: chrome?.hideOnScroll ?? false,
+      contentMaxWidth: entry?.resolved.maxContentWidth,
+      statusBarColor: embedded ? null : entry?.barColor,
+      leading: embedded || actions == null
+          ? null
+          : FloatingBackIsland(onPressed: actions.onBack),
+      trailing: actions == null
+          ? null
+          : DiaryPreviewActionsIsland(actions: actions),
+      title: embedded ? null : chrome?.title,
+      titleSemantics: chrome?.titleSemantics,
+      titleAnchor: chrome?.titleAnchor,
+      titleTooltip: context.l10n.diaryPreviewBackToTop,
+      onTitleTap: entry == null
+          ? null
+          : () => scrollDiaryPreviewToTop(context, entry.scrollController),
+      child: child,
+    );
+  }
+}
+
+/// 页面顶端在静止时给浮岛让出的高度（状态栏之下）：头图通栏贴顶时为 0，
+/// 让岛直接压在头图上；其余情况（没有头图、内嵌头图、宽窗口的列内头图）
+/// 让出整行，标题与卡片式头图不被岛盖住。
+double diaryPreviewIslandClearance({required bool bannerOnTop}) =>
+    bannerOnTop ? 0 : FloatingTopBar.extent;

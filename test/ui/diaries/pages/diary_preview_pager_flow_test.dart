@@ -1,3 +1,5 @@
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_island.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -187,6 +189,48 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('the islands stay put while paging and follow the diary on '
+      'screen', (tester) async {
+    final diaries = await _seed(tester, database, <String>['甲', '乙', '丙']);
+    await _open(
+      tester,
+      database,
+      diaryId: diaries[0].diary.diaryId,
+      initialDetail: diaries[0],
+      sequence: DiaryPreviewSequence.fromItems(diaries),
+      style: _positionTitle,
+    );
+    // 浮岛画在所有页之上：只有一份，不在任何一页里面。
+    expect(find.byType(FloatingBackIsland), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(DiaryPreviewView),
+        matching: find.byType(FloatingBackIsland),
+      ),
+      findsNothing,
+    );
+    final rest = tester.getRect(find.byType(FloatingBackIsland));
+
+    // 拖到一半：页面在动，浮岛不动。
+    final gesture = await tester.startGesture(const Offset(300, 500));
+    for (var i = 0; i < 12; i++) {
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    expect(tester.getRect(find.byType(FloatingBackIsland)), rest);
+    for (var i = 0; i < 18; i++) {
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 / 3'), findsOneWidget);
+    expect(find.text('1 / 3'), findsNothing);
+    expect(tester.getRect(find.byType(FloatingBackIsland)), rest);
+    await _unmount(tester);
+  });
+
   testWidgets('single entries and one-item lists do not page', (tester) async {
     final diaries = await _seed(tester, database, <String>['甲']);
     await _open(
@@ -197,8 +241,13 @@ void main() {
       style: _positionTitle,
     );
     expect(find.byType(DiaryPagerView), findsNothing);
-    // 单篇打开时“位置”标题退回“日记”。
-    expect(find.text(_l10n(tester).autoT0120), findsOneWidget);
+    // 单篇打开时没有位置：标题胶囊按“标题”处理，页头滚过之前不出现。
+    final chip = tester.widget<FloatingTitleChip>(
+      find.byType(FloatingTitleChip),
+    );
+    expect(chip.title, '甲');
+    expect(chip.visible, isFalse);
+    expect(find.textContaining(' / '), findsNothing);
     await _unmount(tester);
   });
 
@@ -421,6 +470,8 @@ void main() {
         ),
       ),
     );
+    // 浮岛由翻页器画在所有页之上，各篇构建时才登记内容：下一帧出现。
+    await tester.pump();
     expect(find.text('1 / 2+'), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.text('1 / 2'), findsOneWidget);

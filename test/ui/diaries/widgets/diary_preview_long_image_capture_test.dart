@@ -18,6 +18,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_header
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_neighbors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_top_bar.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_island.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Color _appSeed = Color(SettingsService.defaultThemeSeedColorValue);
@@ -88,6 +89,11 @@ Future<void> _pump(
     moodPalette: DiaryMoodPalette.defaults,
   );
   void ignore() {}
+  final actions = DiaryPreviewActions(
+    onEdit: ignore,
+    onShare: ignore,
+    onBack: ignore,
+  );
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -104,6 +110,10 @@ Future<void> _pump(
         home: DiaryPreviewSurface(
           resolved: resolved,
           scrollController: scroll,
+          chrome: DiaryPreviewChrome(
+            actions: actions,
+            hideOnScroll: topBar == DiaryPreviewTopBarMode.floating,
+          ),
           content: DiaryPreviewContent(
             detail: detail,
             viewData: DiaryPreviewViewData.resolve(detail.diary),
@@ -114,11 +124,7 @@ Future<void> _pump(
             capturingLongImage: capturing,
             paging: _paging(),
             onOpenImage: (_, _, hero) => hero?.dispose(),
-            actions: DiaryPreviewActions(
-              onEdit: ignore,
-              onShare: ignore,
-              onBack: ignore,
-            ),
+            actions: actions,
           ),
         ),
       ),
@@ -128,13 +134,19 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('the reading page keeps its top bar and neighbor cards', (
-    tester,
-  ) async {
+  // 浮岛叠在内容外面（截图边界是内容本身），不会被截进长图。
+  Finder islandsInContent() => find.descendant(
+    of: find.byType(DiaryPreviewContent),
+    matching: find.byType(FloatingBackIsland),
+  );
+
+  testWidgets('the reading page shows the islands over the content and keeps '
+      'the neighbor cards', (tester) async {
     await _pump(tester, capturing: false);
 
-    expect(find.byType(DiaryPreviewTopBar), findsOneWidget);
-    expect(find.byType(SliverAppBar), findsOneWidget);
+    expect(find.byType(FloatingBackIsland), findsOneWidget);
+    expect(islandsInContent(), findsNothing);
+    expect(find.byType(SliverAppBar), findsNothing);
     expect(
       find.byType(DiaryPreviewNeighborCards, skipOffstage: false),
       findsOneWidget,
@@ -142,21 +154,17 @@ void main() {
   });
 
   for (final mode in DiaryPreviewTopBarMode.values) {
-    testWidgets('capturing the long image leaves out the ${mode.name} top bar '
-        'and the neighbor cards', (tester) async {
+    testWidgets('capturing the long image (${mode.name} top bar) leaves out '
+        'the top inset and the neighbor cards', (tester) async {
       await _pump(tester, capturing: true, topBar: mode);
 
-      // 顶栏一旦在截图边界里，常驻时每屏都截到、拼接后会在长图中间
-      // 再出现一次；截图期间根本不建。
-      expect(find.byType(DiaryPreviewTopBar), findsNothing);
-      expect(find.byType(SliverAppBar), findsNothing);
-      expect(find.byTooltip('返回'), findsNothing);
+      expect(islandsInContent(), findsNothing);
       expect(
         find.byType(DiaryPreviewNeighborCards, skipOffstage: false),
         findsNothing,
       );
       // 日记本身照常在：标题从图片顶端排起，上方只留一小段边距（没有
-      // 状态栏与顶栏的高度）。
+      // 状态栏与浮岛的高度）。
       expect(find.byType(DiaryPreviewTitle), findsOneWidget);
       expect(tester.getTopLeft(find.text('仪仗方队')).dy, lessThan(40));
       expect(find.text('陆军方队', findRichText: true), findsOneWidget);

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/rendering.dart' show RenderSliver;
 import 'package:flutter/widgets.dart';
 
+import '../../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../controllers/diary_editor_controller.dart';
 
 /// 正文此刻看得见的纵向范围（全局纵坐标）。
@@ -42,7 +43,8 @@ ScrollableState? diaryEditorScrollable(
 ///   的浮层 [coveredHeight]（悬浮工具栏连同展开的面板、录音面板等，与
 ///   `DiaryEditorViewport` 的光标避让同源）；
 /// - 收缩嵌入阅读页（[pageScroll]）：顶部再去掉盖在正文所在 sliver 上的固定 /
-///   浮出顶栏与状态栏，底部再去掉导航条。
+///   浮出顶栏与状态栏，底部再去掉导航条；
+/// - 两种情况顶部都再去掉叠在上面的浮岛顶栏（`FloatingTopBarCover`）。
 ///
 /// 只在指针事件与帧回调里调用（读取上一次布局的结果，不参与布局）。滚动
 /// 视图还没布局或被盖满时为 null。
@@ -74,6 +76,9 @@ DiaryEditorVisibleRange? diaryEditorVisibleRange(
     );
     bottom = math.min(bottom, screen - view.viewPadding.bottom / ratio);
   }
+  // 叠在正文上方的浮岛顶栏（连同状态栏底条）盖住的部分也看不见。
+  final islands = FloatingTopBarCover.coveredBottomOf(context);
+  if (islands != null) top = math.max(top, islands);
   if (bottom <= top) return null;
   return (
     top: top,

@@ -209,7 +209,7 @@ void main() {
     await tester.runAsync(
       () => database.customStatement('DROP TRIGGER reject_diary_insert'),
     );
-    await tester.tap(find.byTooltip(l10n.autoT0136));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.autoT0136));
     await tester.pump();
     await PublishPanelDriver(tester).waitUntilPublished();
     expect(
@@ -402,7 +402,7 @@ Future<void> _publishFromEditor(
   await tester.enterText(find.byType(TextField).first, title);
   await tester.pump();
   final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-  await tester.tap(find.byTooltip(l10n.autoT0136));
+  await tester.tap(find.widgetWithText(FilledButton, l10n.autoT0136));
   await tester.pump();
   await PublishPanelDriver(tester).waitUntilPublished();
   await tester.pumpAndSettle();
@@ -469,7 +469,7 @@ Future<void> _openPublisherFromEditor(
   await tester.enterText(find.byType(TextField).first, title);
   await tester.pump();
   final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-  await tester.tap(find.byTooltip(l10n.autoT0136));
+  await tester.tap(find.widgetWithText(FilledButton, l10n.autoT0136));
   // 第一帧新路由还在 offstage（Hero 测量），再推一帧才可见。
   await tester.pump();
   await tester.pump();

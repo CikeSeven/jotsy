@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_top_bar.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -102,9 +103,14 @@ void main() {
           .map((box) => box.color),
       <Color>[_editorColor],
     );
-    // 顶栏是实色栏：与纯色背景同色。
+    // 没有整条顶栏，只有浮岛；状态栏底条与纯色背景同色。
+    expect(find.byType(AppBar), findsNothing);
     expect(
-      tester.widget<AppBar>(find.byType(AppBar)).backgroundColor,
+      tester
+          .widget<FloatingTopBarStatusStrip>(
+            find.byType(FloatingTopBarStatusStrip),
+          )
+          .color,
       _editorColor,
     );
     expect(tester.getRect(layers), Offset.zero & _view);

@@ -7410,6 +7410,12 @@ abstract class AppLocalizations {
   /// **'Title'**
   String get diaryPreviewStyleTopBarTitle;
 
+  /// Diary preview style settings: top bar title option: the diary title floats in at the top once the header scrolls past.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diaryPreviewStyleTopBarTitleScrolled;
+
   /// Diary preview style settings: top bar title option: the entry date.
   ///
   /// In en, this message translates to:

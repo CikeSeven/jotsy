@@ -4096,6 +4096,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryPreviewStyleTopBarTitle => 'タイトル';
 
   @override
+  String get diaryPreviewStyleTopBarTitleScrolled => 'タイトル';
+
+  @override
   String get diaryPreviewStyleTopBarTitleDate => '日付';
 
   @override

@@ -95,7 +95,7 @@ class DiaryPreviewStylePageTab extends StatelessWidget {
                 segments: <ButtonSegment<DiaryPreviewTopBarTitle>>[
                   ButtonSegment<DiaryPreviewTopBarTitle>(
                     value: DiaryPreviewTopBarTitle.label,
-                    label: Text(l10n.autoT0120),
+                    label: Text(l10n.diaryPreviewStyleTopBarTitleScrolled),
                   ),
                   ButtonSegment<DiaryPreviewTopBarTitle>(
                     value: DiaryPreviewTopBarTitle.date,

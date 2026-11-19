@@ -1022,6 +1022,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     ),
                                     pendingHideDiaryIds: _pendingHideDiaryIds,
                                     appearingDiaryIds: _appearingDiaryIds,
+                                    hiddenDiaryIds: _optimisticHiddenDiaryIds,
+                                    animateChanges: true,
                                     makeRoom: _makeRoom,
                                     onOpenEditor: _controller.openDiary,
                                     onToggleSelection: (noteId, forceSelect) =>

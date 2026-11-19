@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:node_diary/ui/widgets/list_make_room.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -281,7 +281,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 
-    expect(find.byType(SliverMasonryGrid), findsOneWidget);
+    expect(find.byType(MakeRoomSliverMasonryGrid), findsOneWidget);
     expect(_inPane(find.text('layout title 2')), findsOneWidget);
     expect(_ringActive(tester, 'layout title 2'), isTrue);
 

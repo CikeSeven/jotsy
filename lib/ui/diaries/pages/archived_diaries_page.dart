@@ -293,6 +293,8 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                         pendingHideDiaryIds:
                                             _pendingHideDiaryIds,
                                         appearingDiaryIds: _appearingDiaryIds,
+                                        hiddenDiaryIds: _sweptAwayDiaryIds,
+                                        animateChanges: true,
                                         layoutMode: DiaryLayoutMode.list,
                                         selectedDiaryIds: _selectedDiaryIds,
                                         isSelectionMode: _isSelectionMode,

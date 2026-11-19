@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:node_diary/ui/widgets/list_make_room.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -389,7 +389,7 @@ void main() {
     var gridAppeared = false;
     for (var frame = 0; frame < 40 && !gridAppeared; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
-      final grid = find.byType(SliverMasonryGrid).evaluate().isNotEmpty;
+      final grid = find.byType(MakeRoomSliverMasonryGrid).evaluate().isNotEmpty;
       final opacity = _listOpacity(tester);
       if (!grid && opacity < 1) {
         sawListExiting = true;

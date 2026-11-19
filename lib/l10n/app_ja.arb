@@ -5761,6 +5761,10 @@
   "@diaryPreviewStyleTopBarTitle": {
     "description": "Diary preview style settings: setting title: what the top bar shows."
   },
+  "diaryPreviewStyleTopBarTitleScrolled": "タイトル",
+  "@diaryPreviewStyleTopBarTitleScrolled": {
+    "description": "Diary preview style settings: top bar title option: the diary title floats in at the top once the header scrolls past."
+  },
   "diaryPreviewStyleTopBarTitleDate": "日付",
   "@diaryPreviewStyleTopBarTitleDate": {
     "description": "Diary preview style settings: top bar title option: the entry date."

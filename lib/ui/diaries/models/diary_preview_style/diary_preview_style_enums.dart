@@ -24,11 +24,14 @@ enum DiaryPreviewSeedFallback { app, neutral }
 /// 自定义色。纸色与主题深浅相反时整页换成同一配色的另一种明暗，保证文字可读。
 enum DiaryPreviewPaper { theme, warm, sepia, mint, gray, ink, custom }
 
-/// 顶栏：[floating] 随滚动隐藏、往回滚即出现（改版前的样子）；[pinned] 常驻。
+/// 浮岛顶栏：[floating] 随滚动收起、往回滚或滚到顶 / 底即浮出（默认）；
+/// [pinned] 常驻。
 enum DiaryPreviewTopBarMode { floating, pinned }
 
-/// 顶栏标题：[label] 为“日记”（改版前的样子），[date] 为这篇日记的日期，
-/// [position] 为在翻页顺序中的位置（如“3 / 57”，单篇打开时退回“日记”）。
+/// 浮岛中间的标题胶囊：[label] 为页头滚过后浮出这篇的标题（默认；值名沿用
+/// 改版前的“日记”二字，存档里的旧值因此不必迁移），[date] 一直显示这篇的
+/// 日期，[position] 一直显示在翻页顺序中的位置（如“3 / 57”，单篇打开时按
+/// [label] 处理），[none] 不显示。
 enum DiaryPreviewTopBarTitle { label, date, none, position }
 
 /// 阅读进度：[line] 在页面顶端画一条随滚动增长的细线。

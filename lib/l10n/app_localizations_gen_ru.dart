@@ -4614,6 +4614,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryPreviewStyleTopBarTitle => 'Заголовок';
 
   @override
+  String get diaryPreviewStyleTopBarTitleScrolled => 'Заголовок';
+
+  @override
   String get diaryPreviewStyleTopBarTitleDate => 'Дата';
 
   @override

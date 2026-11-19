@@ -5708,6 +5708,10 @@
   "@diaryPreviewStyleTopBarTitle": {
     "description": "预览页样式设置：设置项：顶栏显示的标题。"
   },
+  "diaryPreviewStyleTopBarTitleScrolled": "标题",
+  "@diaryPreviewStyleTopBarTitleScrolled": {
+    "description": "预览页样式设置：顶栏标题选项：页头滚过后，这篇日记的标题在顶部浮出。"
+  },
   "diaryPreviewStyleTopBarTitleDate": "日期",
   "@diaryPreviewStyleTopBarTitleDate": {
     "description": "预览页样式设置：顶栏标题选项：日记日期。"

@@ -1,6 +1,6 @@
 # 外观样式：日记卡片、心情色、预览页、导航栏
 
-> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.1 / §2.3 / §5.8 / §5.19。
+> 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.1 / §2.3 / §5.8 / §5.19 / §5.38。
 
 ## 样式设置
 - 必须：卡片、预览页、导航栏样式各只存一个 JSON 键（当前样式 + 最多 12 份“我的样式”），随备份导出、失败回滚。
@@ -14,6 +14,7 @@
 - 必须：卡片“显示所属日记本”只取列表查询带出的日记本，禁止卡片自查；日记本功能关闭时视为关、值保留。
 - 必须：预览页只经 `DiaryPreviewContent` + `DiaryPreviewResolvedStyle` 渲染，默认值等于 DESIGN.md §5.8。
 - 禁止：预览页样式重复设置正文字体排版（只在 `DiaryTypography`），或再加顶栏按钮开关。
+- 必须：“顶栏标题”的 `label` 值表示页头滚过后浮出这篇的标题，沿用旧值名、不做存档迁移。
 
 ## 心情色
 - 必须：心情颜色只经 `DiaryMoodPalette`，禁止自行按心情符号换算；十档相邻色相至少约 20°（测试兜底）。
@@ -30,6 +31,13 @@
 - 必须：顶栏下缘渐变 / 分隔线 / 实边只由 `topBarFades` 决定；渐变时栏内自带底色的控件改用 `topBarControlFill`。
 - 禁止：用 `ShaderMask` / `Opacity` 或叠多层模糊做顶栏渐变（只经 `GlassSurface.fadeToBottom`），或借它做颜色过渡。
 - 必须：新增首页 Tab 经 `HomeChromeScope` 取样式、`HomeTopBarSurface` 画顶栏，末尾补底部安全区。
+
+## 日记页浮岛顶栏
+- 必须：预览、阅读式编辑、新建、导图、封存与出错页的顶栏只经 `FloatingTopBarHost`（`lib/ui/widgets/floating_top_bar/`）画浮岛；禁止给这些页的 Scaffold 设 `appBar` 或另拼浮岛。
+- 必须：浮岛随滚动显隐只经 `ScrollChromeHider`（与首页底栏共用），禁止另写判定。
+- 必须：翻页时浮岛只经 `DiaryPreviewChromeBoard` 画在所有页之上；禁止放回各页里（会随页面滑走）。
+- 必须：动作胶囊里随状态出现 / 消失的按钮包 `FloatingIslandSlot`；禁止整套按钮交叉淡化替换（同一按钮会同时出现两份）。
+- 禁止：浮岛顶栏的页面恢复整条顶栏底色或“日记”二字标题。
 
 ## 切换 Tab
 - 必须：页面位移只由真弹簧 `springPage` 推动，跨页临时顺序只经 `HomeTabPageOrder`，景深只经 `HomeTabDepth`。

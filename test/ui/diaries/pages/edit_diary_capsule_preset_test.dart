@@ -89,7 +89,7 @@ Future<void> _publishPresetCapsule(
   await tester.enterText(find.byType(TextField).first, 'Dear future me');
   await tester.pump();
   final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-  await tester.tap(find.byTooltip(l10n.autoT0136));
+  await tester.tap(find.widgetWithText(FilledButton, l10n.autoT0136));
   await tester.pump();
   // 进入发布页即发表：日记一写进库就是胶囊。
   await PublishPanelDriver(tester).waitUntilPublished();

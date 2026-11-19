@@ -108,7 +108,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'Sunset by the sea');
     await tester.pump();
     final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-    await tester.tap(find.byTooltip(l10n.autoT0136));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.autoT0136));
     await tester.pump();
     await PublishPanelDriver(tester).waitUntilPublished();
     await tester.pumpAndSettle();

@@ -115,6 +115,34 @@ class _FloatingIslandSlotState extends State<FloatingIslandSlot>
   }
 }
 
+/// 中间一颗静态的文字岛（导图页的导图名、封存页的标题）：一直显示、不可
+/// 点按，文字一行省略。[child] 通常是一个 Text（可自己随内容刷新）。
+class FloatingIslandLabel extends StatelessWidget {
+  const FloatingIslandLabel({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FloatingIsland(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Center(
+        widthFactor: 1,
+        child: DefaultTextStyle.merge(
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 /// 中间的标题胶囊：正文标题滚出视野后浮出（[visible]），点按回到顶部。
 ///
 /// 显隐是淡入 + 从 0.92 放大，玻璃时经 [GlassReveal]（不套 Opacity）；淡出

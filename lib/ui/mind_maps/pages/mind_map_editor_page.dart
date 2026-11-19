@@ -77,7 +77,7 @@ class _MindMapEditorPageState extends State<MindMapEditorPage> {
         actions: <Widget>[
           ExpressiveMenuButton(
             tooltip: l10n.mindMapMore,
-            icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+            icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
             items: <Widget>[
               ExpressiveMenuItem(
                 leadingIcon: const FaIcon(FontAwesomeIcons.palette),

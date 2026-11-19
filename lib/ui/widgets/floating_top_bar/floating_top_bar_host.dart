@@ -36,6 +36,8 @@ class FloatingTopBarHost extends StatefulWidget {
     this.contentMaxWidth,
     this.resetKey,
     this.theme,
+    this.middle,
+    this.insetChild = false,
   });
 
   final Widget child;
@@ -60,6 +62,14 @@ class FloatingTopBarHost extends StatefulWidget {
   /// null 时沿用所在位置的主题。翻页器在所有页之上画浮岛时传当前这篇的
   /// 整页主题，换篇时浮岛颜色随之过渡。
   final ThemeData? theme;
+
+  /// 自定义的中间岛（如导图页的标题，由调用方自己随内容刷新）；给出时代替
+  /// 标题胶囊（[title] 不再使用）。
+  final Widget? middle;
+
+  /// 为 true 时 [child] 整体从浮岛那一行以下开始（不滚动的页面：读取中、
+  /// 出错、封存页），否则 [child] 铺满、自己在顶端留白。
+  final bool insetChild;
 
   @override
   State<FloatingTopBarHost> createState() => _FloatingTopBarHostState();
@@ -213,7 +223,14 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
           onNotification: _handleScroll,
           child: FloatingTopBarCover(
             coveredBottom: _coveredBottom,
-            child: widget.child,
+            child: widget.insetChild
+                ? Padding(
+                    padding: EdgeInsets.only(
+                      top: _statusBar + FloatingTopBar.extent,
+                    ),
+                    child: widget.child,
+                  )
+                : widget.child,
           ),
         ),
         // 浮岛隐藏时上移，从状态栏底条下面退出屏幕。
@@ -228,15 +245,17 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
               contentMaxWidth: widget.contentMaxWidth,
               leading: widget.leading,
               trailing: widget.trailing,
-              middle: title == null
-                  ? null
-                  : FloatingTitleChip(
-                      title: title,
-                      visible: widget.titleAnchor == null || _titlePast,
-                      onTap: widget.onTitleTap,
-                      tooltip: widget.titleTooltip,
-                      semanticsLabel: widget.titleSemantics,
-                    ),
+              middle:
+                  widget.middle ??
+                  (title == null
+                      ? null
+                      : FloatingTitleChip(
+                          title: title,
+                          visible: widget.titleAnchor == null || _titlePast,
+                          onTap: widget.onTitleTap,
+                          tooltip: widget.titleTooltip,
+                          semanticsLabel: widget.titleSemantics,
+                        )),
             ),
           ),
         ),

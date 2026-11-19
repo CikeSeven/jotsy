@@ -17,7 +17,6 @@ import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../../widgets/floating_top_bar/floating_island.dart';
-import '../../../widgets/floating_top_bar/floating_top_bar.dart';
 import '../../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_comment_flows.dart';
@@ -304,17 +303,13 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView>
       // 的背景；都没有背景时就是原来的 surface。
       backgroundColor: pageColor,
       body: FloatingTopBarHost(
+        insetChild: true,
         // 嵌入时与正文一致：不要返回岛，也不画状态栏底条。
         leading: embedded ? null : const FloatingBackIsland(),
         statusBarColor: embedded
             ? null
             : AppPageBackdrop.solidBarColorOf(context),
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.viewPaddingOf(context).top + FloatingTopBar.extent,
-          ),
-          child: body,
-        ),
+        child: body,
       ),
     );
   }

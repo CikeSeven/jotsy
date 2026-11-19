@@ -13,7 +13,9 @@ import '../../app_surface/widgets/app_page_background.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/delayed_loading_indicator.dart';
-import '../../widgets/app_top_bar.dart';
+import '../../widgets/floating_top_bar/floating_action_island.dart';
+import '../../widgets/floating_top_bar/floating_island.dart';
+import '../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../widgets/qweather_icon.dart';
 import '../models/time_capsule.dart';
 import '../providers/diary_detail_provider.dart';
@@ -73,44 +75,53 @@ class LockedDiaryPage extends ConsumerWidget {
     return detailAsync.when(
       loading: () => Scaffold(
         backgroundColor: pageColor,
-        appBar: _buildAppBar(context),
-        body: const DelayedLoadingIndicator(),
+        body: _lockedIslands(
+          context,
+          embedded: host != null,
+          child: const DelayedLoadingIndicator(),
+        ),
       ),
       error: (error, stackTrace) => Scaffold(
         backgroundColor: pageColor,
-        appBar: _buildAppBar(context),
-        body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
+        body: _lockedIslands(
+          context,
+          embedded: host != null,
+          child: Center(child: Text(context.l10n.autoT0121(error.toString()))),
+        ),
       ),
       data: (detail) {
         if (detail == null) {
           return Scaffold(
             backgroundColor: pageColor,
-            appBar: _buildAppBar(context),
-            body: Center(child: Text(context.l10n.autoT0124)),
+            body: _lockedIslands(
+              context,
+              embedded: host != null,
+              child: Center(child: Text(context.l10n.autoT0124)),
+            ),
           );
         }
         return _LockedDiaryContent(detail: detail, host: host);
       },
     );
   }
-
-  AppTopBar _buildAppBar(BuildContext context) =>
-      _lockedAppBar(context, embedded: host != null);
 }
 
-/// 封存页顶栏；嵌在页面里时没有返回按钮（右栏没有可返回的上一页）。
-AppTopBar _lockedAppBar(BuildContext context, {required bool embedded}) {
-  return AppTopBar(
+/// 封存页的浮岛顶栏：返回岛与“已封存”标题岛，内容从岛那一行以下开始。
+/// 嵌在页面里时没有返回岛（右栏没有可返回的上一页），也不画状态栏底条。
+Widget _lockedIslands(
+  BuildContext context, {
+  required bool embedded,
+  required Widget child,
+}) {
+  return FloatingTopBarHost(
+    insetChild: true,
     contentMaxWidth: FormWidth.maxWidth,
-    automaticallyImplyLeading: !embedded,
-    leading: embedded
-        ? null
-        : IconButton(
-            tooltip: context.l10n.commonBack,
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-          ),
-    title: Text(context.l10n.timeCapsuleLockedTitle),
+    statusBarColor: embedded ? null : AppPageBackdrop.solidBarColorOf(context),
+    leading: embedded ? null : const FloatingBackIsland(),
+    middle: FloatingIslandLabel(
+      child: Text(context.l10n.timeCapsuleLockedTitle),
+    ),
+    child: child,
   );
 }
 
@@ -141,102 +152,107 @@ class _LockedDiaryContent extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppPageBackdrop.pageColorOf(context),
-      appBar: _lockedAppBar(context, embedded: host != null),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final side = FormWidth.gutter(constraints.maxWidth, minGutter: 20);
-          return ListView(
-            padding: EdgeInsets.fromLTRB(side, 28, side, 28),
-            children: <Widget>[
-              Center(
-                child: Container(
-                  width: 86,
-                  height: 86,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: colorScheme.primaryContainer,
+      body: _lockedIslands(
+        context,
+        embedded: host != null,
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final side = FormWidth.gutter(constraints.maxWidth, minGutter: 20);
+            return ListView(
+              padding: EdgeInsets.fromLTRB(side, 28, side, 28),
+              children: <Widget>[
+                Center(
+                  child: Container(
+                    width: 86,
+                    height: 86,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primaryContainer,
+                    ),
+                    alignment: Alignment.center,
+                    child: FaIcon(
+                      FontAwesomeIcons.lock,
+                      size: 34,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
                   ),
-                  alignment: Alignment.center,
-                  child: FaIcon(
-                    FontAwesomeIcons.lock,
-                    size: 34,
-                    color: colorScheme.onPrimaryContainer,
-                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                _countdownLabel(context, state),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 14),
-              if (unlockAt != null)
+                const SizedBox(height: 24),
                 Text(
-                  context.l10n.timeCapsuleLockedHint(
-                    _formatDateTime(context, unlockAt),
-                  ),
+                  title,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-              const SizedBox(height: 24),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 10,
-                runSpacing: 10,
-                children: <Widget>[
-                  if (mood != null && mood.isNotEmpty) _MetaPill(label: mood),
-                  if (weather != null && weather.isNotEmpty)
-                    _MetaPill(
-                      label: weather,
-                      leading: QWeatherIcon(
-                        iconCode: weatherIconCode,
-                        weatherText: weather,
-                        size: 14,
-                      ),
+                const SizedBox(height: 10),
+                Text(
+                  _countdownLabel(context, state),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                if (unlockAt != null)
+                  Text(
+                    context.l10n.timeCapsuleLockedHint(
+                      _formatDateTime(context, unlockAt),
                     ),
-                  if (energy != null)
-                    _MetaPill(
-                      label: EnergyBatteryIndicator.descriptionForValue(
-                        energy,
-                        context.l10n,
-                      ),
-                      leading: EnergyBatteryIndicator(
-                        value: energy,
-                        iconSize: 18,
-                      ),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: () => _pickUnlockAt(context, ref, diary),
-                icon: const FaIcon(FontAwesomeIcons.clock, size: 14),
-                label: Text(context.l10n.timeCapsuleUpdateUnlock),
-              ),
-              const SizedBox(height: 10),
-              TextButton.icon(
-                style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-                onPressed: () => _deleteDiary(context, ref, diary.diaryId),
-                icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
-                label: Text(context.l10n.commonDelete),
-              ),
-            ],
-          );
-        },
+                  ),
+                const SizedBox(height: 24),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: <Widget>[
+                    if (mood != null && mood.isNotEmpty) _MetaPill(label: mood),
+                    if (weather != null && weather.isNotEmpty)
+                      _MetaPill(
+                        label: weather,
+                        leading: QWeatherIcon(
+                          iconCode: weatherIconCode,
+                          weatherText: weather,
+                          size: 14,
+                        ),
+                      ),
+                    if (energy != null)
+                      _MetaPill(
+                        label: EnergyBatteryIndicator.descriptionForValue(
+                          energy,
+                          context.l10n,
+                        ),
+                        leading: EnergyBatteryIndicator(
+                          value: energy,
+                          iconSize: 18,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                FilledButton.icon(
+                  onPressed: () => _pickUnlockAt(context, ref, diary),
+                  icon: const FaIcon(FontAwesomeIcons.clock, size: 14),
+                  label: Text(context.l10n.timeCapsuleUpdateUnlock),
+                ),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.error,
+                  ),
+                  onPressed: () => _deleteDiary(context, ref, diary.diaryId),
+                  icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
+                  label: Text(context.l10n.commonDelete),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_document.dart';
@@ -117,6 +118,67 @@ void main() {
     expect(controller.editingId, editing);
     expect(find.byType(TextField, skipOffstage: false), findsOneWidget);
     expect(tester.testTextInput.hasAnyClients, isTrue);
+  });
+
+  testWidgets('tapping a row that is already in view keeps it where it is, '
+      'with or without the keyboard', (tester) async {
+    final controller = await pumpOutline(tester);
+    Finder row(String text) {
+      final document = controller.document;
+      final id = document.index.preorder.firstWhere(
+        (id) => document.index[id]!.text == text,
+      );
+      return find.byKey(ValueKey<String>('outline-$id'));
+    }
+
+    final before = tester.getTopLeft(row('T4')).dy;
+    await tester.tap(find.text('T4'));
+    await tester.pumpAndSettle();
+    expect(controller.editingId, isNotNull);
+    expect(tester.getTopLeft(row('T4')).dy, closeTo(before, 1));
+
+    await raiseKeyboard(tester);
+    final t6 = tester.getRect(row('T6'));
+    expect(t6.bottom, lessThan(accessoryTop(tester)));
+    await tester.tap(find.text('T6'));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(row('T6')).dy, closeTo(t6.top, 1));
+  });
+
+  testWidgets('Enter near the accessory bar reveals the new topic just above '
+      'it instead of jumping it to the top', (tester) async {
+    final controller = await pumpOutline(tester);
+    await tester.tap(find.text('T5'));
+    await tester.pump();
+    await tester.pump();
+    await raiseKeyboard(tester);
+    for (var i = 0; i < 6; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      final field = tester.getRect(find.byType(TextField));
+      final top = accessoryTop(tester);
+      expect(field.bottom, lessThanOrEqualTo(top), reason: 'enter #$i');
+      expect(field.top, greaterThan(top - 120), reason: 'enter #$i');
+    }
+    expect(controller.document.root.children.length, topicCount + 6);
+  });
+
+  testWidgets('a topic under the view switch is revealed below it', (
+    tester,
+  ) async {
+    final controller = await pumpOutline(tester);
+    await tester.drag(outlineScrollable(), const Offset(0, -110));
+    await tester.pumpAndSettle();
+    // 顶上被“画布 | 大纲”切换盖住一半的那一行。
+    final hidden = controller.document.root.children.firstWhere((node) {
+      final finder = find.text(node.text);
+      if (finder.evaluate().isEmpty) return false;
+      final rect = tester.getRect(finder);
+      return rect.top < 48 && rect.bottom > 0;
+    });
+    controller.startEditing(hidden.id);
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.byType(TextField)).dy, greaterThan(48));
   });
 
   testWidgets('without the keyboard the outline keeps the full height', (

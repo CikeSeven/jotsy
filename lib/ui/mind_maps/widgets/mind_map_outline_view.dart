@@ -29,6 +29,7 @@ class MindMapOutlineView extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.onNodePart,
     this.onNodeMenu,
+    this.revealPadding = const EdgeInsets.all(20),
   });
 
   final MindMapEditingController controller;
@@ -43,6 +44,10 @@ class MindMapOutlineView extends StatefulWidget {
 
   /// 长按或右键一行时弹主题菜单（只读时不弹）。
   final void Function(String id, Offset globalPosition)? onNodeMenu;
+
+  /// 编辑中的光标要露在视口里哪一块之内（四周让开的距离，盖在列表上的
+  /// 顶栏、视图切换与桌面的格式条），见 [MindMapOutlineRow.revealPadding]。
+  final EdgeInsets revealPadding;
 
   @override
   State<MindMapOutlineView> createState() => _MindMapOutlineViewState();
@@ -121,6 +126,7 @@ class _MindMapOutlineViewState extends State<MindMapOutlineView> {
               onToggle: () => _toggle(node),
               onNodePart: widget.onNodePart,
               onNodeMenu: widget.onNodeMenu,
+              revealPadding: widget.revealPadding,
               previousVisible: i == 0 ? null : rows[i - 1].$1.id,
             );
           },

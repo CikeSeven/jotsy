@@ -89,6 +89,9 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
   /// 底部工具坞占的高度（含与屏幕底边的间距）。
   static const double _dockReserve = 92;
 
+  /// 左上角“画布 | 大纲”切换占的高度（大纲从它下面排起）。
+  static const double _viewSwitchReserve = 48;
+
   MindMapEditingController get _controller => widget.controller;
 
   @override
@@ -468,7 +471,18 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
               child: MindMapOutlineView(
                 controller: controller,
                 appearance: appearance,
-                padding: padding + const EdgeInsets.only(top: 48),
+                padding:
+                    padding + const EdgeInsets.only(top: _viewSwitchReserve),
+                // 光标让开顶栏与视图切换；桌面编辑时底部浮着格式条（手机上
+                // 的附件条已经从视口里让掉了）。
+                revealPadding: EdgeInsets.fromLTRB(
+                  20,
+                  widget.topInset + _viewSwitchReserve + 12,
+                  20,
+                  AppPlatform.isDesktop
+                      ? 20 + MindMapFormatBar.height + 12
+                      : 20,
+                ),
                 onNodePart: (id, part) => _onNodePart(
                   id,
                   part == 'note' ? MindMapNodePart.note : MindMapNodePart.link,

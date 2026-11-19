@@ -30,6 +30,11 @@ import '../viewmodels/mind_map_visuals.dart';
 /// - 点一行编辑文字（只读时展开收起）；长按（手机）或右键（桌面）弹出与
 ///   画布相同的主题菜单（[onNodeMenu]），正在编辑的这一行不弹，长按留给
 ///   输入框选字；
+/// - 开始编辑时不主动滚动：输入框获得焦点、键盘升起、打字换行时自己把光标
+///   露出来（只在被挡住时最小幅度地滚），[revealPadding] 是光标四周要让开
+///   的距离（顶上盖着顶栏与视图切换）。为什么不用 `Scrollable.ensureVisible`
+///   按比例对齐：那会把本来就看得见的行也挪走，键盘升着时视口只剩上面一
+///   小截，40% 处紧贴顶栏，点哪行哪行就跳到最上面；
 /// - 编辑中的按键：Enter 在后面加同级（行首回车加在前面），空行退格删除这
 ///   一行并编辑上一行；桌面另有 Tab / Shift + Tab 缩进与取消缩进、Alt + ↑ /
 ///   ↓ 上移下移、Esc 结束编辑。
@@ -47,6 +52,7 @@ class MindMapOutlineRow extends StatefulWidget {
     required this.onNodePart,
     required this.onNodeMenu,
     required this.previousVisible,
+    this.revealPadding = const EdgeInsets.all(20),
   });
 
   final MindMapEditingController controller;
@@ -62,6 +68,9 @@ class MindMapOutlineRow extends StatefulWidget {
 
   /// 列表里上一行的节点（空行退格后编辑它）。
   final String? previousVisible;
+
+  /// 编辑框露出光标时四周让开的距离（`TextField.scrollPadding`）。
+  final EdgeInsets revealPadding;
 
   /// 文字上下的留白（编辑框与只读文字相同，开始编辑时行高不跳）。
   static const double textPadding = 6;
@@ -107,14 +116,7 @@ class _MindMapOutlineRowState extends State<MindMapOutlineRow> {
       _focus!.addListener(_onFocus);
       _controller.textSession.toolbarFocus.addListener(_onFocus);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _focus?.requestFocus();
-        Scrollable.ensureVisible(
-          context,
-          alignment: 0.4,
-          duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-          curve: ExpressiveMotion.effects,
-        );
+        if (mounted) _focus?.requestFocus();
       });
     } else if (!_editing && _text != null) {
       _disposeEditor();
@@ -311,6 +313,7 @@ class _MindMapOutlineRowState extends State<MindMapOutlineRow> {
             maxLength: kMindMapMaxTextLength,
             maxLengthEnforcement: MaxLengthEnforcement.enforced,
             contextMenuBuilder: appTextContextMenuBuilder,
+            scrollPadding: widget.revealPadding,
             keyboardType: TextInputType.multiline,
             textInputAction: AppPlatform.isDesktop
                 ? TextInputAction.newline

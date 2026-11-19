@@ -14,7 +14,9 @@
 ## 文字与样式
 - 必须：`text` 是唯一权威文字，局部样式只存节点 `delta`；两者不一致时按无样式读，改字只经 `MindMapOps.setText` / `setRichText`。
 - 必须：局部样式只经共用的 `InlineRichTextController` 与 `MindMapFormatBar` 设置；颜色面板在按钮行之上展开，禁止为此弹对话框或面板（会收起键盘）。
-- 必须：分享文字、卡片摘要、Markdown / OPML / FreeMind / XMind 与 AI 只有文字；画布、PNG / PDF、大纲视图与日记导出显示局部样式。
+- 必须：分享文字、卡片摘要、Markdown / OPML / FreeMind / XMind、纯文本与 AI 只有文字；画布、PNG / PDF、大纲视图、大纲 PDF / Word / 网页与日记导出显示局部样式与主题字号。
+- 必须：主题字号只有整条的（`style.size`），格式条与主题样式面板改的是同一项；局部文字没有字号。
+- 必须：大纲视图按正文排版（编辑器设置的字体、字号、行距、字间距）排字，层级与主题字号只在其上缩放；画布只随日记字体，字号由导图主题按层级定。
 - 必须：主题配色只经 `MindMapPalette`（种子色按明暗换算），节点外观只经 `MindMapStyleResolver`；节点文字色与高亮为内容配色，按原色存与显示。
 - 例外：导图主题种子色属内容配色，不算硬编码颜色；但禁止直接涂种子色、禁止渐变与写死黑白。
 
@@ -24,13 +26,15 @@
 - 禁止：导图日记的“更多”加回编辑信息、导出日记、写留言、设为纪念日、存为模板、这天的照片与 AI 二级菜单。
 - 必须：嵌入导图只经 `diary_mind_map_editing.dart` 插入、全屏编辑与删除；`/` 插入只在日记正文里有，模板正文没有。
 - 必须：导图编辑页、嵌入编辑页与查看页共用 `MindMapWorkspace` 与 `MindMapPageScaffold`，禁止另写画布或工具栏；布局只经 `layoutMindMap`，结果确定、节点不重叠。
+- 必须：画布与大纲的主题菜单（长按 / 右键）是同一份，大纲正在编辑的一行不弹菜单。
 - 必须：导图有自己的撤销栈（最多 100 步），不进正文撤销栈；全屏编辑关闭时写成正文的一步撤销。
 - 必须：手机上编辑主题文字时，画布与大纲都让到键盘与附件条之上，靠下的主题与最后几行不被盖住（`mind_map_outline_keyboard_test.dart` 兜底）。
 - 必须：桌面快捷键与滚轮缩放只在桌面生效，编辑文字时按键交给输入框；右键菜单经 `ExpressiveMenuAnchor.openAt`。
 
 ## 导入导出与生成
 - 必须：文件格式只在 `lib/core/services/mind_map_io/`（纯 Dart），导入只经 `importMindMapFile` 按扩展名分派；坏文件返回 null，禁止抛出。
-- 必须：导出面板只经 `showMindMapExportSheet`，流程只经 `mind_map_io_flow.dart`；日记链接导出时不写；导入替换已有导图前先确认，写成一步撤销。
+- 必须：导出面板只经 `showMindMapExportSheet`，分画布与大纲两类、默认当前视图；流程只经 `mind_map_io_flow.dart`；日记链接导出时不写；导入替换已有导图前先确认，写成一步撤销。
+- 必须：大纲的 PDF / Word / 网页只经日记导出的写出器生成（`mind_map_outline_export.dart`），中心主题为标题、不写日期；禁止为导图另写文档写出器。
 - 必须：由日记生成的导图（转为思维导图、AI 存为导图日记）只经 `saveMindMapAsDiary` 直接写库后进编辑页，原文不动，禁止经新建页与发布页。
 - 必须：导图 AI 只经 `showMindMapAiSheet`，属 AI 写作模块；回复只按 Markdown 大纲解析，用户点“使用 / 添加”才写入，一步撤销。
 - 必须：导图 AI 的私密判断由宿主经 `MindMapAiScope` 提供，没有作用域时不出现 AI 入口。

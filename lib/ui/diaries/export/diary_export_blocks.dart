@@ -19,6 +19,7 @@ import '../models/diary_image_embed_data.dart';
 import '../models/diary_text_colors.dart';
 import '../models/diary_text_style_options.dart';
 import '../models/diary_thumbnail_rows.dart';
+import '../../mind_maps/models/mind_map_options.dart';
 import '../../mind_maps/viewmodels/mind_map_visuals.dart';
 
 part 'diary_export_native_blocks.dart';
@@ -429,6 +430,11 @@ class ExportBlockParser {
   /// 当前正文（块文档）直接读树，所有导出格式与分享都走这里。
   static List<ExportBlock> parseDocument(Map<String, Object?> document) =>
       _parseNativeBlocks(document);
+
+  /// 单独导出一张导图的大纲（中心主题是文档标题，不再写进正文）：其余
+  /// 主题为逐级缩进的无序列表，带文字样式，与正文里的导图同一写法。
+  static List<ExportBlock> parseMindMapOutline(MindMapDocument map) =>
+      _mindMapOutline(map, depth: 0, withRoot: false);
 
   /// 历史 Delta 的 op 列表（没有块文档的旧调用与以平铺正文写的测试）；
   /// 没有标注、折叠列表与表格，也没有列表样式。

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../core/database/mind_map/mind_map_rich_text.dart';
+import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../diaries/models/diary_material_colors.dart';
 import '../../diaries/models/diary_text_colors.dart';
@@ -11,14 +13,18 @@ import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/widgets/diary_color_panel/diary_color_host.dart';
 import '../../diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import '../controllers/mind_map_editing_controller.dart';
+import '../../widgets/expressive_button_group.dart';
 import '../../widgets/rich_text/inline_format_button.dart';
 import '../../widgets/rich_text/inline_rich_text_controller.dart';
 import '../controllers/mind_map_text_session.dart';
+import '../models/mind_map_options.dart';
+import '../viewmodels/mind_map_labels.dart';
+import '../viewmodels/mind_map_visuals.dart';
 import '../viewmodels/mind_map_text_colors.dart';
 
 /// 编辑主题文字时的格式条（一行 [height] 高）：粗体、斜体、下划线、删除线
-/// | 文字颜色、高亮。手机上是键盘附件条的上一行，桌面上编辑时替换底部的
-/// 工具坞。
+/// | 文字颜色、高亮 | 字号。手机上是键盘附件条的上一行，桌面上编辑时替换
+/// 底部的工具坞。
 ///
 /// - 作用对象是 [MindMapEditingController.textSession] 里正在编辑的输入框：
 ///   有选区时改选中的字，没有时设“接下来打的字”的样式（见
@@ -28,6 +34,9 @@ import '../viewmodels/mind_map_text_colors.dart';
 ///   切换，再点一次收起。面板不走路由或对话框，键盘与输入框的焦点都不动；
 ///   自定义页的颜色代码输入框拿走焦点时，输入框不结束编辑（焦点在
 ///   [MindMapTextSession.toolbarFocus] 之内），应用后焦点还给输入框；
+/// - 字号按钮同样在按钮行之上展开一排档位（小 / 中 / 大 / 特大，与主题样式
+///   面板同一份 `style.size`），改的是正在编辑的整个主题（局部文字没有
+///   字号），画布与大纲都按它放大；与颜色面板同一时间只开一个；
 /// - 面板高度经 [MindMapTextSession.setPanelExtent] 报给画布，正在编辑的
 ///   节点一并让开；
 /// - 整条包在 [TextFieldTapRegion] 里：桌面上用鼠标点它不会让输入框失焦
@@ -54,6 +63,9 @@ class MindMapFormatBar extends ConsumerStatefulWidget {
 class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
   /// 颜色面板正在编辑的目标；null 为收起。
   DiaryColorTarget? _target;
+
+  /// 字号面板展开着（与颜色面板互斥）。
+  bool _sizeOpen = false;
   DiaryColorPanelMode _mode = DiaryColorPanelMode.swatches;
   DiaryMaterialFamily _family = DiaryMaterialFamily.red;
   List<Color> _documentColors = const <Color>[];
@@ -69,6 +81,7 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
 
   void _toggle(DiaryColorTarget target) {
     setState(() {
+      _sizeOpen = false;
       if (_target == target) {
         _target = null;
       } else {
@@ -76,6 +89,30 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
         _scanDocumentColors();
       }
     });
+  }
+
+  void _toggleSize() => setState(() {
+    _target = null;
+    _sizeOpen = !_sizeOpen;
+  });
+
+  /// 给正在编辑的整个主题设字号（中号为默认，不写）。不带转场：输入框跟着
+  /// 节点一起变大，不追着动画晃。点的就是当前档位时不提交（不留空的撤销）。
+  void _setSize(MindMapTextSize size) {
+    final controller = widget.controller;
+    final id = controller.editingId;
+    final node = id == null ? null : controller.document.index[id];
+    if (id == null || node == null) return;
+    if (MindMapNodeStyle(node.style).size == size) return;
+    controller.commit(
+      MindMapOps.setStyle(
+        controller.document,
+        id,
+        kMindMapStyleSizeKey,
+        size == MindMapTextSize.medium ? null : size.id,
+      ),
+      animate: false,
+    );
   }
 
   void _scanDocumentColors() {
@@ -137,6 +174,7 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
   }
 
   Widget _panel(InlineRichTextController text) {
+    if (_sizeOpen) return _sizePanel();
     final target = _target;
     if (target == null) {
       _report(0);
@@ -183,6 +221,73 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
       },
     );
   }
+
+  /// 字号面板：左边标题，右边一组紧凑的档位按钮，固定 [_sizeRowHeight] 高
+  /// （紧凑按钮组不改为纵向，报给画布与大纲的高度才准）。
+  Widget _sizePanel() {
+    _report(
+      _sizeRowHeight +
+          MindMapFormatBar._panelTopGap +
+          MindMapFormatBar._panelBottomGap,
+    );
+    final l10n = context.l10n;
+    final controller = widget.controller;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        MindMapFormatBar._panelInset + 4,
+        MindMapFormatBar._panelTopGap,
+        MindMapFormatBar._panelInset,
+        MindMapFormatBar._panelBottomGap,
+      ),
+      child: SizedBox(
+        height: _sizeRowHeight,
+        child: ListenableBuilder(
+          listenable: controller,
+          builder: (BuildContext context, Widget? _) {
+            final node = switch (controller.editingId) {
+              final id? => controller.document.index[id],
+              null => null,
+            };
+            final size = node == null
+                ? MindMapTextSize.medium
+                : MindMapNodeStyle(node.style).size;
+            return Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    l10n.mindMapFontSize,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ExpressiveButtonGroup<MindMapTextSize>(
+                    dense: true,
+                    segments: <ButtonSegment<MindMapTextSize>>[
+                      for (final value in MindMapTextSize.values)
+                        ButtonSegment<MindMapTextSize>(
+                          value: value,
+                          label: Text(mindMapTextSizeLabel(l10n, value)),
+                        ),
+                    ],
+                    selected: <MindMapTextSize>{size},
+                    onSelectionChanged: node == null
+                        ? null
+                        : (value) => _setSize(value.first),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// 字号面板一排的高度（紧凑按钮组的高度）。
+  static const double _sizeRowHeight = 36;
 
   Widget _buttons(InlineRichTextController? text) {
     final l10n = context.l10n;
@@ -244,6 +349,14 @@ class _MindMapFormatBarState extends ConsumerState<MindMapFormatBar> {
             FontAwesomeIcons.highlighter,
             l10n.mindMapHighlight,
             DiaryColorTarget.background,
+          ),
+          Expanded(
+            child: InlineFormatButton(
+              icon: FontAwesomeIcons.textHeight,
+              label: l10n.mindMapFontSize,
+              selected: _sizeOpen,
+              onTap: text == null ? null : _toggleSize,
+            ),
           ),
         ],
       ),

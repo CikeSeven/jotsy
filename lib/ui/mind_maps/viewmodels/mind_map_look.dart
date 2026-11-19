@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_fonts.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../l10n/app_localizations.dart';
 import '../layout/mind_map_layout.dart';
@@ -10,7 +11,7 @@ import 'mind_map_palette.dart';
 import 'mind_map_visuals.dart';
 
 /// 一张导图在当前界面下的“外观输入”：文档里的结构 / 主题 / 连线 / 间距 /
-/// 彩虹 / 点阵设置，加上应用配色、字体与占位文字。
+/// 彩虹 / 点阵设置，加上应用配色、日记字体与占位文字。
 ///
 /// 值相等即布局结果相同：画布据此判断要不要重新布局（文档没变、外观没变时
 /// 直接复用上一次的布局）。
@@ -44,8 +45,11 @@ final class MindMapLook {
       rainbow: document.rainbow ?? spec.rainbow,
       grid: document.grid ?? false,
       scheme: theme.colorScheme,
+      // 字体随日记字体（“正文字体与排版”，与日记卡片相同；没选时为主题
+      // 字体），字号由导图主题按层级定。
       baseText: (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(
         color: theme.colorScheme.onSurface,
+        fontFamily: AppFonts.of(theme).diary,
       ),
       rootPlaceholder: context.l10n.mindMapRootPlaceholder,
       nodePlaceholder: context.l10n.mindMapNodePlaceholder,

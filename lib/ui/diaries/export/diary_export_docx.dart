@@ -299,10 +299,12 @@ class DiaryDocxWriter {
       bookmark: bookmark,
       runs: <String>[b.run(labels.titleOf(entry))],
     );
-    b.paragraph(
-      style: 'DiaryMeta',
-      runs: <String>[b.run(labels.formatDateTime(entry.createdAt.toLocal()))],
-    );
+    if (entry.dated) {
+      b.paragraph(
+        style: 'DiaryMeta',
+        runs: <String>[b.run(labels.formatDateTime(entry.createdAt.toLocal()))],
+      );
+    }
     if (options.includeMeta) {
       final meta = labels.metaLine(entry);
       if (meta.isNotEmpty) {

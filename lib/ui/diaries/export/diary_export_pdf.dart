@@ -597,8 +597,10 @@ class DiaryPdfWriter {
     );
     final widgets = <pw.Widget>[
       wrapTitle == null ? title : wrapTitle(title),
-      pw.SizedBox(height: 4),
-      pw.Text(labels.formatDateTime(entry.createdAt.toLocal()), style: muted),
+      if (entry.dated) ...<pw.Widget>[
+        pw.SizedBox(height: 4),
+        pw.Text(labels.formatDateTime(entry.createdAt.toLocal()), style: muted),
+      ],
     ];
     if (options.includeMeta) {
       final meta = labels.metaLine(entry);

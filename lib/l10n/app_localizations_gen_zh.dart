@@ -16279,6 +16279,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mindMapSizeHuge => '特大';
 
   @override
+  String get mindMapFontSize => '字号';
+
+  @override
   String get mindMapResetStyle => '恢复默认样式';
 
   @override
@@ -16397,6 +16400,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mindMapExportFreeMindHint => '可在 FreeMind、Freeplane 中打开';
+
+  @override
+  String get mindMapExportHtmlHint => '浏览器直接打开，保留文字样式';
 
   @override
   String get mindMapCopyOutline => '复制为大纲文字';

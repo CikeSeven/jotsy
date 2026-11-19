@@ -18621,6 +18621,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mindMapSizeHuge => 'XL';
 
   @override
+  String get mindMapFontSize => 'Size';
+
+  @override
   String get mindMapResetStyle => 'Reset style';
 
   @override
@@ -18741,6 +18744,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mindMapExportFreeMindHint => 'Opens in FreeMind and Freeplane';
+
+  @override
+  String get mindMapExportHtmlHint => 'Opens in any browser, keeps text styles';
 
   @override
   String get mindMapCopyOutline => 'Copy as outline';

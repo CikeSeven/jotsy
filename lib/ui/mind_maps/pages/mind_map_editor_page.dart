@@ -86,8 +86,11 @@ class _MindMapEditorPageState extends State<MindMapEditorPage> {
               ),
               ExpressiveMenuItem(
                 leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
-                onPressed: () =>
-                    showMindMapExportSheet(context, _controller.document),
+                onPressed: () => showMindMapExportSheet(
+                  context,
+                  _controller.document,
+                  outline: _controller.outlineView,
+                ),
                 child: Text(l10n.mindMapExport),
               ),
               ExpressiveMenuItem(

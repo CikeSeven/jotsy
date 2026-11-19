@@ -25,6 +25,7 @@ class DiaryExportEntry {
     this.cover,
     this.context = const DiaryContextInfo(),
     this.comments = const <DiaryCommentRow>[],
+    this.dated = true,
   });
 
   /// [comments] 为这篇日记要写出的留言（旧 → 新）；不导出留言时不给。
@@ -111,6 +112,11 @@ class DiaryExportEntry {
   /// 写在正文之后的留言，按写下时间旧 → 新。为空时各写出器不写留言区，
   /// 产物与没有留言功能时逐字节相同（功能关闭、开关关闭或这篇没有留言）。
   final List<DiaryCommentRow> comments;
+
+  /// 标题下是否写日期时间。日记总是写；不属于某一天的文档（导图大纲，见
+  /// `mind_map_outline_export.dart`）为 false，PDF、Word、网页（含 EPUB 正文）
+  /// 与纯文本省掉这一行。Markdown 的 front matter 与表格把日期当数据照写。
+  final bool dated;
 
   /// 封面、正文图片与要写出的留言图片，按出现顺序去重；封面在最前。
   /// 网页与 Markdown 据此收集要内嵌 / 打包的图片。

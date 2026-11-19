@@ -19320,6 +19320,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get mindMapSizeHuge => 'XL';
 
   @override
+  String get mindMapFontSize => 'Размер';
+
+  @override
   String get mindMapResetStyle => 'Сбросить стиль';
 
   @override
@@ -19439,6 +19442,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get mindMapExportFreeMindHint => 'Открывается в FreeMind и Freeplane';
+
+  @override
+  String get mindMapExportHtmlHint =>
+      'Открывается в браузере, стили текста сохраняются';
 
   @override
   String get mindMapCopyOutline => 'Копировать как структуру';

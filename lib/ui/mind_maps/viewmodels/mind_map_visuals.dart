@@ -70,7 +70,7 @@ final class MindMapNodeVisual {
 /// 按主题、配色与节点自己的样式覆盖解析每个节点的外观。
 ///
 /// 输入：主题 [spec]、配色 [palette]、是否分支彩虹 [rainbow]、基础文字样式
-/// [baseText]（字体随应用）。输出 [MindMapNodeVisual]。纯计算，无副作用；
+/// [baseText]（字体随日记字体）。输出 [MindMapNodeVisual]。纯计算，无副作用；
 /// 布局与缩略图共用，同一份导图在画布、卡片与导出里外观一致。
 final class MindMapStyleResolver {
   MindMapStyleResolver({

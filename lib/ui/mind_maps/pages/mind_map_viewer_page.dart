@@ -49,7 +49,11 @@ class _MindMapViewerPageState extends State<MindMapViewerPage> {
       actions: <Widget>[
         IconButton(
           tooltip: l10n.mindMapExport,
-          onPressed: () => showMindMapExportSheet(context, widget.document),
+          onPressed: () => showMindMapExportSheet(
+            context,
+            _controller.document,
+            outline: _controller.outlineView,
+          ),
           icon: const FaIcon(FontAwesomeIcons.fileExport, size: 16),
         ),
         IconButton(

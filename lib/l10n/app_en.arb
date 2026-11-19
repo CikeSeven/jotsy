@@ -21213,6 +21213,10 @@
   "@mindMapSizeHuge": {
     "description": "Topic text size option (very short)."
   },
+  "mindMapFontSize": "Size",
+  "@mindMapFontSize": {
+    "description": "Mind map format bar: button and panel title for the topic text size."
+  },
   "mindMapResetStyle": "Reset style",
   "@mindMapResetStyle": {
     "description": "Topic style panel: remove all custom styles from the topic."
@@ -21372,6 +21376,10 @@
   "mindMapExportFreeMindHint": "Opens in FreeMind and Freeplane",
   "@mindMapExportFreeMindHint": {
     "description": "Mind map export panel: hint under the FreeMind format."
+  },
+  "mindMapExportHtmlHint": "Opens in any browser, keeps text styles",
+  "@mindMapExportHtmlHint": {
+    "description": "Mind map export panel: hint under the web page (HTML) outline format."
   },
   "mindMapCopyOutline": "Copy as outline",
   "@mindMapCopyOutline": {

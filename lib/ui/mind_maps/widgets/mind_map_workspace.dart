@@ -12,6 +12,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../diaries/controllers/diary_link_open_flow.dart';
+import '../../diaries/providers/diary_typography_provider.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../../settings/widgets/external_link.dart';
 import '../../widgets/expressive_button_group.dart';
@@ -84,9 +85,6 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
   final ValueNotifier<double> _keyboardInset = ValueNotifier<double>(0);
   final FocusNode _focus = FocusNode(debugLabel: 'mind-map-workspace');
   String? _menuNodeId;
-
-  /// 显示大纲而不是画布（页面临时状态）。
-  bool _outline = false;
 
   /// 底部工具坞占的高度（含与屏幕底边的间距）。
   static const double _dockReserve = 92;
@@ -436,6 +434,9 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final outline = controller.outlineView;
+    // 大纲按正文排版排字（编辑器设置里改了即时生效）。
+    final appearance = ref.watch(diaryTextAppearanceProvider);
     final editing = controller.editingId != null;
     final keyboardUp = KeyboardVisibility.of(context);
     // 还只有中心主题时浮出模板起步卡（中心主题写了字也一样：套用模板保留它）。
@@ -460,17 +461,19 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
         fit: StackFit.expand,
         children: <Widget>[
           _KeyboardInsetProbe(notifier: _keyboardInset),
-          if (_outline)
+          if (outline)
             MindMapAccessoryBarInset(
               controller: controller,
               showsBar: showAccessoryBar,
               child: MindMapOutlineView(
                 controller: controller,
+                appearance: appearance,
                 padding: padding + const EdgeInsets.only(top: 48),
                 onNodePart: (id, part) => _onNodePart(
                   id,
                   part == 'note' ? MindMapNodePart.note : MindMapNodePart.link,
                 ),
+                onNodeMenu: widget.readOnly ? null : _openNodeMenu,
               ),
             )
           else
@@ -491,14 +494,14 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
             top: widget.topInset + 10,
             left: 12,
             child: _ViewSwitch(
-              outline: _outline,
-              onChanged: (outline) {
+              outline: outline,
+              onChanged: (value) {
                 controller.stopEditing();
-                setState(() => _outline = outline);
+                controller.outlineView = value;
               },
             ),
           ),
-          if (!_outline)
+          if (!outline)
             Positioned(
               top: widget.topInset + 10,
               right: 12,
@@ -552,7 +555,7 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                           MindMapDock(
                             controller: controller,
                             onOpenStyle: _openStyle,
-                            onFit: _outline
+                            onFit: outline
                                 ? null
                                 : () => _canvas.currentState?.fitToScreen(),
                             onInsert: _openInsert,
@@ -583,7 +586,7 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
               right: 0,
               bottom: 0,
               child: KeyboardInsetPadding(
-                child: _outline
+                child: outline
                     ? MindMapOutlineAccessoryBar(controller: controller)
                     : MindMapEditingAccessoryBar(controller: controller),
               ),

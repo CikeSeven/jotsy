@@ -21213,6 +21213,10 @@
   "@mindMapSizeHuge": {
     "description": "主题字号选项（很短）。"
   },
+  "mindMapFontSize": "字号",
+  "@mindMapFontSize": {
+    "description": "导图格式条：主题字号的按钮与面板标题。"
+  },
   "mindMapResetStyle": "恢复默认样式",
   "@mindMapResetStyle": {
     "description": "主题样式面板：去掉这个主题的全部自定义样式。"
@@ -21372,6 +21376,10 @@
   "mindMapExportFreeMindHint": "可在 FreeMind、Freeplane 中打开",
   "@mindMapExportFreeMindHint": {
     "description": "导出导图面板：FreeMind 格式下的说明。"
+  },
+  "mindMapExportHtmlHint": "浏览器直接打开，保留文字样式",
+  "@mindMapExportHtmlHint": {
+    "description": "导出导图面板：大纲的网页（HTML）格式下的说明。"
   },
   "mindMapCopyOutline": "复制为大纲文字",
   "@mindMapCopyOutline": {

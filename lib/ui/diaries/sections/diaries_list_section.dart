@@ -13,6 +13,7 @@ import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
 import '../widgets/diary_card/diary_card_context_menu.dart';
 import '../widgets/diary_card/diary_card_reading_ring.dart';
+import '../widgets/diary_list_change_host.dart';
 import '../widgets/diary_list_switch_reveal.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import '../widgets/diary_waterfall_sliver.dart';
@@ -58,6 +59,8 @@ class DiariesListSection extends StatelessWidget {
     required this.maxVisibleTags,
     this.pendingHideDiaryIds = const <String>{},
     this.appearingDiaryIds = const <String>{},
+    this.hiddenDiaryIds = const <String>{},
+    this.animateChanges = false,
     this.makeRoom,
     required this.onOpenEditor,
     required this.onToggleSelection,
@@ -119,8 +122,19 @@ class DiariesListSection extends StatelessWidget {
   /// 标记“正在出现动画”的日记项集合。
   final Set<String> appearingDiaryIds;
 
-  /// 新卡片插入时其余卡片的让位动画（见 [MakeRoomController]）；null 时不包。
-  /// 结构随它是否为 null 固定，同一页面里不会切换。
+  /// 宿主刻意直接拿掉的日记（如左滑后已自己收起、回滚时要立刻消失、新建
+  /// 日记等上层页面退场时先压住）：从列表里消失时不留退场项。只在
+  /// [animateChanges] 时有用。
+  final Set<String> hiddenDiaryIds;
+
+  /// 列表就在眼前换数据时（增删、换位、改高）是否演变化动效（见
+  /// [DiaryListChangeHost]）：日记页与归档页开启；搜索结果、日历、设置预览
+  /// 这类整块替换或静态的列表关闭。同一列表里不应切换。
+  final bool animateChanges;
+
+  /// 列表的让位控制器（见 [MakeRoomController]）：日记页传入，新建日记落进
+  /// 列表时也用它。null 且 [animateChanges] 时由区块自己建一个；都没有时
+  /// 不包。结构随它是否为 null 固定，同一页面里不会切换。
   final MakeRoomController? makeRoom;
 
   /// 普通模式点击卡片：传入整条数据（预览页可直接用它渲染首帧）与从封面抓取
@@ -233,9 +247,31 @@ class DiariesListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!animateChanges) {
+      return _buildList(
+        context,
+        DiaryListChangeFrame(items: diaries, makeRoom: makeRoom),
+      );
+    }
+    return DiaryListChangeHost(
+      diaries: diaries,
+      duration: itemTransitionDuration,
+      pendingHideDiaryIds: pendingHideDiaryIds,
+      appearingDiaryIds: appearingDiaryIds,
+      hiddenDiaryIds: hiddenDiaryIds,
+      makeRoom: makeRoom,
+      switchMotion: switchMotion,
+      builder: _buildList,
+    );
+  }
+
+  /// 按 [frame]（实际要排版的列表与本区块加的进出场标记，见
+  /// [DiaryListChangeHost]）构建列表。
+  Widget _buildList(BuildContext context, DiaryListChangeFrame frame) {
+    final items = frame.items;
     // 空态：根据是否搜索场景展示不同文案。不垫底色：直接画在页面背景上，
     // 玻璃 / 背景图时不出现一块实色（经典无背景时页面底色本就是 surface）。
-    if (diaries.isEmpty) {
+    if (items.isEmpty) {
       return SliverToBoxAdapter(
         child: _revealPlain(
           0,
@@ -271,25 +307,53 @@ class DiariesListSection extends StatelessWidget {
       pageBackground: AppPageBackdrop.estimatedColorOf(context),
     );
     final modeStyle = resolved.modeStyle;
+    final transitionDuration = ExpressiveMotion.duration(
+      context,
+      itemTransitionDuration,
+    );
+    _ItemPresence presenceOf(String diaryId) {
+      final exiting =
+          pendingHideDiaryIds.contains(diaryId) ||
+          frame.exiting.contains(diaryId);
+      return _ItemPresence(
+        exiting: exiting,
+        appearing:
+            !exiting &&
+            (appearingDiaryIds.contains(diaryId) ||
+                frame.entering.contains(diaryId)),
+        ghost: frame.exiting.contains(diaryId),
+        duration: transitionDuration,
+        // 瀑布流原尺寸淡入淡出，其余卡片的让位交给 FLIP（见 ListItemPresence）。
+        resize: !isWaterfall,
+      );
+    }
 
     // 瀑布流模式：多列卡片，卡片包含封面（如有）和摘要。
     if (isWaterfall) {
       return DiaryWaterfallSliver(
-        diaries: diaries,
+        diaries: items,
         columns: resolved.columns,
         sideMargin: modeStyle.sideMargin,
         cardGap: modeStyle.cardGap,
+        makeRoom: frame.makeRoom,
         itemBuilder: (BuildContext context, int index) {
-          final diary = diaries[index];
+          final diary = items[index];
+          final diaryId = diary.diary.diaryId;
           return KeyedSubtree(
-            key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
+            key: ValueKey<String>('waterfall_$diaryId'),
             child: _makeRoom(
-              diary.diary.diaryId,
+              frame.makeRoom,
+              diaryId,
               _revealItem(
                 index,
                 _launchReveal(
                   index,
-                  _buildDiaryItem(context, diary: diary, resolved: resolved),
+                  _buildDiaryItem(
+                    context,
+                    diary: diary,
+                    resolved: resolved,
+                    presence: presenceOf(diaryId),
+                  ),
                 ),
               ),
             ),
@@ -301,15 +365,23 @@ class DiariesListSection extends StatelessWidget {
     // 普通列表同样使用独立圆角表面；间距代替粗分割线，和瀑布流共享视觉层级。
     // 每项都挂启动编排槽位（结构恒定）；首屏之后的项落在同一槽位，编排结束
     // 后它们本就是落定态。
-    return SliverList(
+    return MakeRoomSliverList(
+      makeRoom: frame.makeRoom,
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        final diary = diaries[index];
-        final isLast = index == diaries.length - 1;
-        final sectionHeader = sectionHeaderBuilder?.call(context, index);
+        final diary = items[index];
+        final diaryId = diary.diary.diaryId;
+        final isLast = index == items.length - 1;
+        // 分组标题按宿主列表的下标取；退场项没有。
+        final sourceIndex = frame.sourceIndexOf(index);
+        final sectionHeader = sourceIndex == null
+            ? null
+            : sectionHeaderBuilder?.call(context, sourceIndex);
+        final presence = presenceOf(diaryId);
         return KeyedSubtree(
-          key: ValueKey<String>('list_${diary.diary.diaryId}'),
+          key: ValueKey<String>('list_$diaryId'),
           child: _makeRoom(
-            diary.diary.diaryId,
+            frame.makeRoom,
+            diaryId,
             _launchReveal(
               index,
               Padding(
@@ -325,22 +397,38 @@ class DiariesListSection extends StatelessWidget {
                         context,
                         diary: diary,
                         resolved: resolved,
+                        presence: presence,
                       ),
                     ),
-                    if (!isLast) SizedBox(height: modeStyle.cardGap),
+                    // 卡片间距随卡片一起收起 / 展开：收起结束时下方的卡片
+                    // 已经贴上来，不再跳一下。
+                    if (!isLast)
+                      ListItemPresence(
+                        key: const ValueKey<String>('card_gap'),
+                        visible: !presence.exiting,
+                        appearing: presence.appearing,
+                        duration: presence.duration,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: modeStyle.cardGap,
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
           ),
         );
-      }, childCount: diaries.length),
+      }, childCount: items.length),
     );
   }
 
-  /// 包一层让位动画（[makeRoom] 为 null 时原样返回）。
-  Widget _makeRoom(String diaryId, Widget child) {
-    final controller = makeRoom;
+  /// 包一层让位动画（[controller] 为 null 时原样返回）。
+  Widget _makeRoom(
+    MakeRoomController? controller,
+    String diaryId,
+    Widget child,
+  ) {
     return controller == null
         ? child
         : MakeRoomItem(tag: diaryId, controller: controller, child: child);
@@ -350,6 +438,7 @@ class DiariesListSection extends StatelessWidget {
     BuildContext context, {
     required DiaryWithTags diary,
     required DiaryCardResolvedStyle resolved,
+    required _ItemPresence presence,
   }) {
     final diaryId = diary.diary.diaryId;
     final anchor = AppPlatform.isDesktop ? selectionAnchor : null;
@@ -415,8 +504,8 @@ class DiariesListSection extends StatelessWidget {
       );
     }
     final animatedBaseItem = _buildAnimatedDiaryItem(
-      context,
       diaryId: diaryId,
+      presence: presence,
       child: card,
     );
 
@@ -424,9 +513,10 @@ class DiariesListSection extends StatelessWidget {
     // 长按也能完整播放选中反馈；选择模式仅关闭滑动。未传 [onArchiveDiary]
     // （功能管理里关闭了侧滑归档）时不包。
     // 桌面上不提供左滑：鼠标拖动卡片会误触发归档，右键菜单已提供同样的操作。
+    final Widget item;
     if (!resolved.compact && onArchiveDiary != null && !AppPlatform.isDesktop) {
       final colorScheme = Theme.of(context).colorScheme;
-      return DiarySwipeActionItem(
+      item = DiarySwipeActionItem(
         diaryId: diaryId,
         enabled: !isSelectionMode,
         icon: swipeActionIcon,
@@ -438,30 +528,48 @@ class DiariesListSection extends StatelessWidget {
         releaseStartDrags: true,
         child: animatedBaseItem,
       );
+    } else {
+      item = animatedBaseItem;
     }
-
-    return animatedBaseItem;
+    // 数据里已经没有、只在原位置退场的项不可点按（点开的会是一篇已不存在
+    // 的日记）；结构恒定，退场开始时子树不重挂。
+    return IgnorePointer(ignoring: presence.ghost, child: item);
   }
 
-  Widget _buildAnimatedDiaryItem(
-    BuildContext context, {
+  Widget _buildAnimatedDiaryItem({
     required String diaryId,
+    required _ItemPresence presence,
     required Widget child,
   }) {
-    final transitionDuration = ExpressiveMotion.duration(
-      context,
-      itemTransitionDuration,
-    );
-    final isExiting = pendingHideDiaryIds.contains(diaryId);
-    final isAppearing = appearingDiaryIds.contains(diaryId);
     return ListItemPresence(
       key: ValueKey<String>('presence_$diaryId'),
-      visible: !isExiting,
-      appearing: isAppearing && !isExiting,
-      duration: transitionDuration,
+      visible: !presence.exiting,
+      appearing: presence.appearing,
+      duration: presence.duration,
+      resize: presence.resize,
       // 玻璃卡片的进出场走 GlassReveal，不进透明度层。
       glass: _glass,
       child: child,
     );
   }
+}
+
+/// 一项此刻的进出场状态：宿主的收起 / 出现与 [DiaryListChangeHost] 的
+/// 退场 / 入场合并后的结果。
+class _ItemPresence {
+  const _ItemPresence({
+    required this.exiting,
+    required this.appearing,
+    required this.ghost,
+    required this.duration,
+    required this.resize,
+  });
+
+  final bool exiting;
+  final bool appearing;
+
+  /// 数据里已经没有、只在原位置退场（不可点按）。
+  final bool ghost;
+  final Duration duration;
+  final bool resize;
 }

@@ -1,33 +1,40 @@
+import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../app/theme/expressive_motion.dart';
 
-/// 列表“让位”动画（FLIP）：插进一张新卡片后，其余卡片从原来的位置滑到新
-/// 位置，而不是瞬间跳过去。
+part 'list_make_room_slivers.dart';
+
+/// 列表“让位”动画（FLIP）：列表换了数据（插进新卡片、删掉、换位、改了高度）
+/// 后，其余卡片从原来的位置滑到新位置，而不是瞬间跳过去。
 ///
-/// 为什么不靠新卡片“从 0 长高”把别的卡片挤开：瀑布流（Masonry）按“放进
-/// 最短的一列”排布，新卡片每长高一帧，后面的卡片都可能换列，一路来回跳；
-/// 普通列表虽然不跳，也要逐帧重新排版整张列表。这里新卡片一次排到最终尺寸，
+/// 为什么不靠卡片“从 0 长高 / 收成 0”把别的卡片挤开：瀑布流（Masonry）按
+/// “放进最短的一列”排布，卡片每变一帧高度，后面的卡片都可能换列，一路来回
+/// 跳；普通列表虽然不跳，也要逐帧重新排版整张列表。这里一次排到最终布局，
 /// 别的卡片只在绘制时加一个从“原位置 − 新位置”回到 0 的位移：一次排版，
 /// 之后每帧只是平移各自的图层，两种布局都一样顺滑。
 ///
-/// 用法：
-/// 1. 列表的每一项包一层 [MakeRoomItem]（按稳定的标签，如日记 id）；
-/// 2. 列表还在屏上、即将被盖住时 [MakeRoomController.captureBaseline]，
-///    记下每一项在屏上的位置（全局坐标）；
-/// 3. 新卡片排进列表之后（盖住列表的页面开始收回时）
-///    [MakeRoomController.play]：当场量出每一项的新位置，与起点之差作为
-///    位移，按弹簧（[ExpressiveMotion.springSpatial]，过冲约 2%）回到 0，
-///    结束后一切复原。
+/// 两种用法：
+/// - 被整页盖着时换数据（新建日记发表后落进列表）：列表还在屏上时
+///   [captureBaseline] 记下每一项在屏上的位置（全局坐标），新卡片排进列表
+///   之后（盖住列表的页面开始收回时）[play]：当场量出新位置，与起点之差
+///   作为位移。中间列表被整页盖着，画在哪里都看不见；
+/// - 列表就在眼前换数据：换数据的那一次 build 里 [animateLayoutChange]，
+///   记下各项在所属 sliver 内容坐标里的位置；新布局排好后的第一次绘制时
+///   量出新位置，同一帧就从原位置画起，不会先闪一下新布局。
 ///
-/// 为什么在 [play] 时一次量完、而不是各项绘制时自己量：每一项都在自己的
-/// 重绘边界里，只是被挪了位置时列表复用它的图层、不会调用它的绘制，等不到
-/// 它来量。排进新卡片到 [play] 之间列表被整页盖着，画在哪里都看不见。
+/// 位移按弹簧（[ExpressiveMotion.springSpatial]，过冲约 2%）回到 0，结束后
+/// 一切复原。没有起点的项（新插入的、此前不在树上的）原地出现，不参与位移，
+/// 由调用方自己淡入。中途列表重挂（瀑布流换布局代）也不丢：位移按标签记在
+/// 控制器里，新的渲染对象接着用。减少动态效果时调用方不调用（[play] 自己
+/// 检查）。
 ///
-/// 没有起点的项（新插入的、此前不在屏上的）原地出现，不参与位移。中途列表
-/// 重挂（瀑布流换布局代）也不丢：位移按标签记在控制器里，新的渲染对象
-/// 接着用。减少动态效果时 [play] 什么都不做（直接是新位置）。
+/// 让位途中列表 sliver 若用 [MakeRoomSliverList] / [MakeRoomSliverMasonryGrid]，
+/// 预构建区里的项也会画出来（滑进、滑出屏幕的卡片不会凭空出现或消失），
+/// 并按位移从小到大绘制（换位最远的那张压在上面）。
 class MakeRoomController extends ChangeNotifier {
   MakeRoomController({required TickerProvider vsync})
     : _progress = AnimationController.unbounded(vsync: vsync, value: 1) {
@@ -36,21 +43,37 @@ class MakeRoomController extends ChangeNotifier {
       ..addStatusListener(_handleStatus);
   }
 
+  /// 弹簧停稳的判定：进度是 0–1 的比例，按像素量级的默认容差太粗。
+  static const Tolerance _tolerance = Tolerance(distance: 1e-3, velocity: 1e-2);
+
   /// 0 = 停在原位置，1 = 到新位置。无界：弹簧会越过 1 一点。
   final AnimationController _progress;
 
   final Set<_RenderMakeRoomItem> _items = <_RenderMakeRoomItem>{};
 
-  /// 起点：标签 → 全局坐标里的左上角。
+  /// [captureBaseline] 的起点：标签 → 全局坐标里的左上角。
   Map<Object, Offset> _baseline = const <Object, Offset>{};
+
+  /// [animateLayoutChange] 的起点：标签 → 所在 sliver 内容坐标里的左上角
+  /// （含当时的位移）。非 null 表示等着下一次绘制时量出新位置。
+  Map<Object, Offset>? _pending;
+
+  /// 这一轮 [_pending] 是否已经量过（同一帧里第一个绘制的项一次量完）。
+  bool _measured = false;
+  bool _finishScheduled = false;
+  bool _disposed = false;
 
   /// 这一次的位移：标签 → 原位置 − 新位置。
   final Map<Object, Offset> _deltas = <Object, Offset>{};
 
+  /// 列表 sliver 是否要画出全部已排版的项、并按位移排绘制顺序：等着量新
+  /// 位置的那一帧与整段让位途中。
+  final ValueNotifier<bool> _paintsAll = ValueNotifier<bool>(false);
+
   /// 是否在让位途中。
   bool get isActive => _deltas.isNotEmpty;
 
-  /// 记下此刻每一项在屏上的位置，作为下一次让位的起点。
+  /// 记下此刻每一项在屏上的位置，作为下一次 [play] 的起点。
   void captureBaseline() {
     final baseline = <Object, Offset>{};
     for (final item in _items) {
@@ -60,12 +83,14 @@ class MakeRoomController extends ChangeNotifier {
     _baseline = baseline;
   }
 
-  /// 各项从起点滑向此刻的位置（须在列表排好新布局之后调用，如帧后回调或
-  /// 事件里）。没有起点、或减少动态效果时什么都不做。
+  /// 各项从 [captureBaseline] 记下的起点滑向此刻的位置（须在列表排好新
+  /// 布局之后调用，如帧后回调或事件里）。没有起点、或减少动态效果时什么
+  /// 都不做。
   void play(BuildContext context) {
     final baseline = _baseline;
     _baseline = const <Object, Offset>{};
     if (baseline.isEmpty || ExpressiveMotion.reduceMotion(context)) return;
+    _pending = null;
     _deltas.clear();
     for (final item in _items) {
       final from = baseline[item.tag];
@@ -74,6 +99,7 @@ class MakeRoomController extends ChangeNotifier {
       final delta = from - to;
       if (delta.distanceSquared > 0.25) _deltas[item.tag] = delta;
     }
+    _syncPaintMode();
     if (_deltas.isEmpty) return;
     _progress.value = 0;
     ExpressiveMotion.springTo(
@@ -81,26 +107,106 @@ class MakeRoomController extends ChangeNotifier {
       _progress,
       1,
       spring: ExpressiveMotion.springSpatial,
-      tolerance: const Tolerance(distance: 1e-3, velocity: 1e-2),
+      tolerance: _tolerance,
     );
+  }
+
+  /// 列表就在眼前换数据：在换数据的那一次 build 里（新布局排版之前）调用。
+  ///
+  /// 记下各项此刻在所属 sliver 内容坐标里的位置（不含滚动偏移：变化恰逢
+  /// 滚动时不会把滚动量当成位移；让位途中再变时加上此刻的位移，从眼前的
+  /// 画面出发），让各项重画一次；新布局排好后第一个绘制的项一次量出全部
+  /// 新位置，同一帧就画在原位置，帧后起弹簧。那一帧一项都没画（列表被盖
+  /// 住、不在屏上）时什么都不做。
+  ///
+  /// 返回记下了起点的标签（此刻挂在树上、排过版的项，含预构建区）。调用方
+  /// 负责减少动态效果时不调用。
+  Set<Object> animateLayoutChange() {
+    final from = <Object, Offset>{};
+    for (final item in _items) {
+      final origin = item.contentOrigin();
+      if (origin != null) from[item.tag] = origin + item._current;
+    }
+    if (from.isEmpty) return const <Object>{};
+    _pending = from;
+    _measured = false;
+    _deltas.clear();
+    _progress.stop();
+    // 归零即通知各项重画：它们在自己的重绘边界之外，只被挪动位置时列表
+    // 复用图层、不会调用它们的绘制，等不到它们来量。
+    _progress.value = 0;
+    notifyListeners();
+    _syncPaintMode();
+    if (!_finishScheduled) {
+      _finishScheduled = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) => _finishPending());
+    }
+    return from.keys.toSet();
+  }
+
+  /// 量出 [_pending] 里各项的新位置（绘制阶段调用，此时布局都已排好）。
+  void _measurePending() {
+    final from = _pending;
+    if (from == null || _measured) return;
+    _measured = true;
+    for (final item in _items) {
+      final start = from[item.tag];
+      if (start == null) continue;
+      final to = item.contentOrigin();
+      if (to == null) continue;
+      final delta = start - to;
+      if (delta.distanceSquared > 0.25) _deltas[item.tag] = delta;
+    }
+  }
+
+  /// 换数据那一帧画完：量出了位移就起弹簧，否则复原。
+  void _finishPending() {
+    _finishScheduled = false;
+    if (_disposed || _pending == null) return;
+    _pending = null;
+    _measured = false;
+    if (_deltas.isEmpty) {
+      _progress.value = 1;
+    } else {
+      _progress.animateWith(
+        SpringSimulation(
+          ExpressiveMotion.springSpatial,
+          _progress.value,
+          1,
+          0,
+          tolerance: _tolerance,
+          snapToEnd: true,
+        ),
+      );
+    }
+    _syncPaintMode();
   }
 
   void _handleStatus(AnimationStatus status) {
     if (!_progress.isAnimating && _progress.value == 1 && _deltas.isNotEmpty) {
       _deltas.clear();
       notifyListeners();
+      _syncPaintMode();
     }
+  }
+
+  void _syncPaintMode() {
+    if (_disposed) return;
+    _paintsAll.value = _pending != null || _deltas.isNotEmpty;
   }
 
   /// [item] 此刻的位移（绘制时调用）。
   Offset _displacementOf(_RenderMakeRoomItem item) {
+    _measurePending();
     final delta = _deltas[item.tag];
     return delta == null ? Offset.zero : delta * (1 - _progress.value);
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _progress.dispose();
+    _paintsAll.dispose();
     _items.clear();
     super.dispose();
   }
@@ -192,6 +298,31 @@ class _RenderMakeRoomItem extends RenderProxyBox {
   Offset? globalOrigin() {
     if (!attached || !hasSize) return null;
     return localToGlobal(Offset.zero);
+  }
+
+  /// 本项左上角在所属 sliver 内容坐标里的位置（不含自己的位移，也不含
+  /// 滚动偏移）；还没排版时为 null。不在 sliver 里、或 sliver 不是自上而下
+  /// / 自左而右排时退回全局坐标。
+  Offset? contentOrigin() {
+    if (!attached || !hasSize) return null;
+    RenderObject? node = parent;
+    while (node != null && node is! RenderSliver) {
+      node = node.parent;
+    }
+    if (node is! RenderSliver) return localToGlobal(Offset.zero);
+    final origin = MatrixUtils.transformPoint(
+      getTransformTo(node),
+      Offset.zero,
+    );
+    final constraints = node.constraints;
+    return switch (applyGrowthDirectionToAxisDirection(
+      constraints.axisDirection,
+      constraints.growthDirection,
+    )) {
+      AxisDirection.down => origin.translate(0, constraints.scrollOffset),
+      AxisDirection.right => origin.translate(constraints.scrollOffset, 0),
+      _ => localToGlobal(Offset.zero),
+    };
   }
 
   Offset _current = Offset.zero;

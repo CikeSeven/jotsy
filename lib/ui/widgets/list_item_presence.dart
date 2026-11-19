@@ -19,6 +19,10 @@ import 'glass/glass_reveal.dart';
 ///
 /// [glass] 为 true（条目主体是玻璃表面）时以 [GlassRevealTransition] 代替
 /// FadeTransition：玻璃放进透明度层后背景模糊采不到页面（见 [GlassReveal]）。
+///
+/// [resize] 为 false 时不改高度，改为原尺寸淡入淡出 + 轻微缩放
+/// （[hiddenScale] ↔ 1）：用于瀑布流——卡片逐帧长高 / 收起会让后面的卡片
+/// 一路换列来回跳，其余卡片的让位交给列表的 FLIP（`MakeRoomController`）。
 class ListItemPresence extends StatefulWidget {
   const ListItemPresence({
     super.key,
@@ -26,8 +30,12 @@ class ListItemPresence extends StatefulWidget {
     required this.appearing,
     required this.duration,
     this.glass = false,
+    this.resize = true,
     required this.child,
   });
+
+  /// [resize] 为 false 时隐藏态的缩放比例。
+  static const double hiddenScale = 0.92;
 
   final bool visible;
   final bool appearing;
@@ -36,6 +44,10 @@ class ListItemPresence extends StatefulWidget {
   /// 条目主体是否为玻璃表面（由调用方按 `AppGlass.of(context).isGlass` 决定）。
   /// 为 true 时淡入淡出交给条目里的 `GlassSurface`，不在玻璃之内的内容会硬切。
   final bool glass;
+
+  /// 进出场是否改变高度（收起 / 展开）；false 时原尺寸淡入淡出并轻微缩放。
+  /// 同一条目里不应切换。
+  final bool resize;
   final Widget child;
 
   @override
@@ -87,7 +99,27 @@ class _ListItemPresenceState extends State<ListItemPresence>
 
   @override
   Widget build(BuildContext context) {
-    final sized = AnimatedBuilder(
+    final sized = widget.resize ? _buildResizing() : _buildScaling();
+    if (widget.glass) {
+      return GlassRevealTransition(progress: _progress, child: sized);
+    }
+    return FadeTransition(opacity: _progress, child: sized);
+  }
+
+  /// 原尺寸缩放：静止时缩放为 1，Transform 不建图层。
+  Widget _buildScaling() => AnimatedBuilder(
+    animation: _progress,
+    child: widget.child,
+    builder: (BuildContext context, Widget? child) => Transform.scale(
+      scale:
+          ListItemPresence.hiddenScale +
+          (1 - ListItemPresence.hiddenScale) * _progress.value.clamp(0.0, 1.0),
+      child: child,
+    ),
+  );
+
+  Widget _buildResizing() {
+    return AnimatedBuilder(
       animation: _progress,
       child: widget.child,
       builder: (BuildContext context, Widget? child) {
@@ -102,9 +134,5 @@ class _ListItemPresenceState extends State<ListItemPresence>
         );
       },
     );
-    if (widget.glass) {
-      return GlassRevealTransition(progress: _progress, child: sized);
-    }
-    return FadeTransition(opacity: _progress, child: sized);
   }
 }

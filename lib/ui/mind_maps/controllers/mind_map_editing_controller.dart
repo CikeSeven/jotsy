@@ -6,7 +6,7 @@ import '../../../core/database/mind_map/mind_map_rich_text.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
 import 'mind_map_text_session.dart';
 
-/// 导图编辑会话：当前文档、选中与正在编辑的节点、撤销 / 重做。
+/// 导图编辑会话：当前文档、选中与正在编辑的节点、撤销 / 重做、画布或大纲。
 ///
 /// 职责边界：只持有内存里的文档并经 [MindMapOps] 改它，不写库、不碰路由。
 /// 改动后先通知 [onChanged]（宿主据此写回日记正文，自动保存照常经日记的
@@ -57,6 +57,17 @@ class MindMapEditingController extends ChangeNotifier {
 
   /// 正在编辑的主题文字输入框（画布或大纲的），格式条经它设样式。
   final MindMapTextSession textSession = MindMapTextSession();
+
+  bool _outlineView = false;
+
+  /// 工作区显示大纲而不是画布（会话里的临时状态，不写进文档）。放在会话
+  /// 里而不是工作区：宿主顶栏的“导出导图”据此默认选中大纲的格式。
+  bool get outlineView => _outlineView;
+  set outlineView(bool value) {
+    if (value == _outlineView) return;
+    _outlineView = value;
+    notifyListeners();
+  }
 
   @override
   void dispose() {

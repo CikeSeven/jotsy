@@ -16545,6 +16545,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get mindMapSizeHuge => '特大';
 
   @override
+  String get mindMapFontSize => 'サイズ';
+
+  @override
   String get mindMapResetStyle => 'スタイルをリセット';
 
   @override
@@ -16663,6 +16666,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mindMapExportFreeMindHint => 'FreeMind・Freeplane で開けます';
+
+  @override
+  String get mindMapExportHtmlHint => 'ブラウザで開けます。文字のスタイルを保持';
 
   @override
   String get mindMapCopyOutline => 'アウトラインとしてコピー';

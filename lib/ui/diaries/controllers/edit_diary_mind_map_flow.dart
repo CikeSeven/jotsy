@@ -172,8 +172,11 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
             ),
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
-              onPressed: () =>
-                  showMindMapExportSheet(context, controller.document),
+              onPressed: () => showMindMapExportSheet(
+                context,
+                controller.document,
+                outline: controller.outlineView,
+              ),
               child: Text(l10n.mindMapExport),
             ),
             ExpressiveMenuItem(

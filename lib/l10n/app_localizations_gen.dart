@@ -29134,6 +29134,12 @@ abstract class AppLocalizations {
   /// **'XL'**
   String get mindMapSizeHuge;
 
+  /// Mind map format bar: button and panel title for the topic text size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get mindMapFontSize;
+
   /// Topic style panel: remove all custom styles from the topic.
   ///
   /// In en, this message translates to:
@@ -29373,6 +29379,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opens in FreeMind and Freeplane'**
   String get mindMapExportFreeMindHint;
+
+  /// Mind map export panel: hint under the web page (HTML) outline format.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in any browser, keeps text styles'**
+  String get mindMapExportHtmlHint;
 
   /// Mind map export panel: copy the map as indented text.
   ///

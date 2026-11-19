@@ -57,7 +57,7 @@ class DiaryTextWriter {
   }) {
     final header = <String>[
       labels.titleOf(entry),
-      labels.formatDateTime(entry.createdAt.toLocal()),
+      if (entry.dated) labels.formatDateTime(entry.createdAt.toLocal()),
       if (options.includeMeta) ...<String>[
         labels.metaLine(entry),
         entry.tagNames.map((String tag) => '#$tag').join(' '),

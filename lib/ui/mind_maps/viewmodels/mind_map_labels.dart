@@ -46,6 +46,14 @@ String mindMapSpacingLabel(AppLocalizations l10n, MindMapSpacing spacing) =>
       MindMapSpacing.loose => l10n.mindMapSpacingLoose,
     };
 
+String mindMapTextSizeLabel(AppLocalizations l10n, MindMapTextSize size) =>
+    switch (size) {
+      MindMapTextSize.small => l10n.mindMapSizeSmall,
+      MindMapTextSize.medium => l10n.mindMapSizeMedium,
+      MindMapTextSize.large => l10n.mindMapSizeLarge,
+      MindMapTextSize.huge => l10n.mindMapSizeHuge,
+    };
+
 /// 导图在标题处的名字：中心主题的文字（压成一行），没写时为“未命名导图”。
 String mindMapTitle(AppLocalizations l10n, String rootText) {
   final title = rootText.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();

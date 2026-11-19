@@ -206,107 +206,181 @@ class DiaryExportController {
         ? labels.titleOf(entries.single)
         : stem;
 
-    final directory = await _prepareStaging();
-    final format = options.format;
-    File file;
-    var mimeType = format.mimeType;
-    if (format == DiaryExportFormat.diaryFile) {
+    if (options.format == DiaryExportFormat.diaryFile) {
+      final directory = await _prepareStaging();
       final zip = await DataArchiveService.exportDiariesToZip(
         database: _database,
         diaryIds: exportable.map((DiaryWithTags d) => d.diary.diaryId),
         zipPassword: password,
       );
-      file = await _move(zip, p.join(directory.path, '$stem.zip'));
+      return DiaryExportArtifact(
+        file: await _move(zip, p.join(directory.path, '$stem.zip')),
+        mimeType: options.format.mimeType,
+        exportedCount: entries.length,
+        skippedCapsules: skipped,
+      );
+    }
+    return _write(
+      entries,
+      options: options,
+      labels: labels,
+      languageTag: languageTag,
+      textDirection: textDirection,
+      stem: stem,
+      documentTitle: documentTitle,
+      layout: layout,
+      code: code,
+      typography: typography,
+      now: now,
+      withComments: withComments,
+      skippedCapsules: skipped,
+    );
+  }
+
+  /// 把已经解析好的篇目（不是库里的日记，如导图的大纲，见
+  /// `mind_map_outline_export.dart`）写成 [options] 的格式；文件名与文档
+  /// 标题为 [title]（去掉不能做文件名的字符）。不读库、不读留言，不支持
+  /// Jotsy 日记文件。
+  Future<DiaryExportArtifact> buildEntries(
+    List<DiaryExportEntry> entries, {
+    required String title,
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required String languageTag,
+    TextDirection textDirection = TextDirection.ltr,
+    DiaryExportCodeTheme? code,
+    DiaryTypography typography = const DiaryTypography(),
+  }) {
+    if (options.format == DiaryExportFormat.diaryFile) {
+      throw ArgumentError.value(options.format, 'options', '日记文件只能从库里导出');
+    }
+    final stem = DiaryExportNaming.sanitize(title);
+    return _write(
+      entries,
+      options: options,
+      labels: labels,
+      languageTag: languageTag,
+      textDirection: textDirection,
+      stem: stem.isEmpty ? DiaryExportNaming.exportStem(entries) : stem,
+      documentTitle: title,
+      code: code,
+      typography: typography,
+      now: _now(),
+      withComments: false,
+      skippedCapsules: 0,
+    );
+  }
+
+  /// 按格式写出（日记文件除外），落在新的暂存目录里，以 [stem] 命名。
+  Future<DiaryExportArtifact> _write(
+    List<DiaryExportEntry> entries, {
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required String languageTag,
+    required TextDirection textDirection,
+    required String stem,
+    required String documentTitle,
+    DiaryExportBookLayout? layout,
+    DiaryExportCodeTheme? code,
+    required DiaryTypography typography,
+    required DateTime now,
+    required bool withComments,
+    required int skippedCapsules,
+  }) async {
+    final directory = await _prepareStaging();
+    final format = options.format;
+    File file;
+    var mimeType = format.mimeType;
+    final media = _createMediaLibrary();
+    final output = switch (format) {
+      DiaryExportFormat.pdf => await DiaryPdfWriter.write(
+        entries,
+        options: options,
+        labels: labels,
+        media: media,
+        fonts: await (_fonts ??= _resolveBodyFont().then(_loadFonts)),
+        documentTitle: documentTitle,
+        textDirection: textDirection,
+        book: layout,
+        code: code,
+        typography: typography,
+      ),
+      DiaryExportFormat.epub => await DiaryEpubWriter.write(
+        entries,
+        options: options,
+        labels: labels,
+        media: media,
+        documentTitle: documentTitle,
+        languageTag: languageTag,
+        fontFamilies: await _bodyFontFamilies(),
+        book: layout,
+        code: code,
+        typography: typography,
+        now: now,
+      ),
+      DiaryExportFormat.word => await DiaryDocxWriter.write(
+        entries,
+        options: options,
+        labels: labels,
+        media: media,
+        documentTitle: documentTitle,
+        languageTag: languageTag,
+        fontFamilies: await _bodyFontFamilies(),
+        typography: typography,
+        now: now,
+        book: layout,
+        code: code,
+      ),
+      DiaryExportFormat.markdown => await DiaryMarkdownWriter.write(
+        entries,
+        options: options,
+        labels: labels,
+        media: media,
+        book: layout,
+        documentStem: stem,
+      ),
+      DiaryExportFormat.html => await DiaryHtmlWriter.write(
+        entries,
+        options: options,
+        labels: labels,
+        media: media,
+        documentTitle: documentTitle,
+        languageTag: languageTag,
+        fontFamilies: await _bodyFontFamilies(),
+        book: layout,
+        code: code,
+        typography: typography,
+      ),
+      DiaryExportFormat.text => DiaryTextWriter.write(
+        entries,
+        options: options,
+        labels: labels,
+        book: layout,
+      ),
+      DiaryExportFormat.csv => DiaryCsvWriter.write(
+        entries,
+        labels: labels,
+        includeComments: withComments,
+      ),
+      DiaryExportFormat.diaryFile => throw StateError(
+        'diary files go through build',
+      ),
+    };
+    if (output.isBundle) {
+      mimeType = output.containerMimeType!;
+      file = await _zip(
+        output.files!,
+        p.join(directory.path, '$stem.${output.containerExtension}'),
+      );
     } else {
-      final media = _createMediaLibrary();
-      final output = switch (format) {
-        DiaryExportFormat.pdf => await DiaryPdfWriter.write(
-          entries,
-          options: options,
-          labels: labels,
-          media: media,
-          fonts: await (_fonts ??= _resolveBodyFont().then(_loadFonts)),
-          documentTitle: documentTitle,
-          textDirection: textDirection,
-          book: layout,
-          code: code,
-          typography: typography,
-        ),
-        DiaryExportFormat.epub => await DiaryEpubWriter.write(
-          entries,
-          options: options,
-          labels: labels,
-          media: media,
-          documentTitle: documentTitle,
-          languageTag: languageTag,
-          fontFamilies: await _bodyFontFamilies(),
-          book: layout,
-          code: code,
-          typography: typography,
-          now: now,
-        ),
-        DiaryExportFormat.word => await DiaryDocxWriter.write(
-          entries,
-          options: options,
-          labels: labels,
-          media: media,
-          documentTitle: documentTitle,
-          languageTag: languageTag,
-          fontFamilies: await _bodyFontFamilies(),
-          typography: typography,
-          now: now,
-          book: layout,
-          code: code,
-        ),
-        DiaryExportFormat.markdown => await DiaryMarkdownWriter.write(
-          entries,
-          options: options,
-          labels: labels,
-          media: media,
-          book: layout,
-          documentStem: stem,
-        ),
-        DiaryExportFormat.html => await DiaryHtmlWriter.write(
-          entries,
-          options: options,
-          labels: labels,
-          media: media,
-          documentTitle: documentTitle,
-          languageTag: languageTag,
-          fontFamilies: await _bodyFontFamilies(),
-          book: layout,
-          code: code,
-          typography: typography,
-        ),
-        DiaryExportFormat.text => DiaryTextWriter.write(
-          entries,
-          options: options,
-          labels: labels,
-          book: layout,
-        ),
-        DiaryExportFormat.csv => DiaryCsvWriter.write(
-          entries,
-          labels: labels,
-          includeComments: withComments,
-        ),
-        DiaryExportFormat.diaryFile => throw StateError('handled above'),
-      };
-      if (output.isBundle) {
-        mimeType = output.containerMimeType!;
-        file = await _zip(
-          output.files!,
-          p.join(directory.path, '$stem.${output.containerExtension}'),
-        );
-      } else {
-        file = File(p.join(directory.path, '$stem.${format.extension}'));
-        await file.writeAsBytes(output.bytes!, flush: true);
-      }
+      file = File(p.join(directory.path, '$stem.${format.extension}'));
+      await file.writeAsBytes(output.bytes!, flush: true);
     }
     return DiaryExportArtifact(
       file: file,
       mimeType: mimeType,
       exportedCount: entries.length,
-      skippedCapsules: skipped,
+      skippedCapsules: skippedCapsules,
     );
   }
 

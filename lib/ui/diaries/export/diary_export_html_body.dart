@@ -70,11 +70,13 @@ class DiaryHtmlBody {
     out
       ..write(anchor == null ? '<article>\n' : '<article id="$anchor">\n')
       ..write('<header>\n')
-      ..write('<h$titleLevel>${_text(labels.titleOf(entry))}</h$titleLevel>\n')
-      ..write(
+      ..write('<h$titleLevel>${_text(labels.titleOf(entry))}</h$titleLevel>\n');
+    if (entry.dated) {
+      out.write(
         '<p class="meta"><time datetime="${_attr(entry.createdAt.toLocal().toIso8601String())}">'
         '${_text(labels.formatDateTime(entry.createdAt.toLocal()))}</time></p>\n',
       );
+    }
     if (includeMeta) {
       final meta = labels.metaLine(entry);
       if (meta.isNotEmpty) {

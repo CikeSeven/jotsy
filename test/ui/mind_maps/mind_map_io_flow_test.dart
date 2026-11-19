@@ -128,22 +128,45 @@ void main() {
     expect(find.text('Import from file'), findsOneWidget);
     await tester.tap(find.text('Export map'));
     await tester.pumpAndSettle();
+    // 工作区显示的是画布：面板先列导图一类的格式。
+    final sheet = find.byType(BottomSheet);
+    Finder inSheet(String text) =>
+        find.descendant(of: sheet, matching: find.text(text));
+    for (final label in <String>['Image', 'PDF', 'XMind', 'FreeMind']) {
+      expect(inSheet(label), findsOneWidget, reason: label);
+    }
+    expect(inSheet('Markdown'), findsNothing);
+    expect(inSheet('Copy as outline'), findsNothing);
+
+    await tester.tap(inSheet('Outline'));
+    await tester.pumpAndSettle();
     for (final label in <String>[
-      'Image',
       'PDF',
-      'XMind',
+      'Word document',
+      'Web page',
       'Markdown',
       'OPML',
-      'FreeMind',
+      'Plain text',
       'Copy as outline',
     ]) {
-      expect(find.text(label), findsOneWidget, reason: label);
+      expect(inSheet(label), findsOneWidget, reason: label);
     }
+    expect(inSheet('XMind'), findsNothing);
 
-    await tester.tap(find.text('Copy as outline'));
+    await tester.tap(inSheet('Copy as outline'));
     await tester.pumpAndSettle();
     expect(copied, 'Plan\n- Work\n  - Ship\n- Rest');
     expect(find.text('Copied'), findsOneWidget);
+
+    // 切到大纲后再打开，面板直接停在大纲一类。
+    await tester.tap(find.text('Outline'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('More').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Export map'));
+    await tester.pumpAndSettle();
+    expect(inSheet('Word document'), findsOneWidget);
+    expect(inSheet('Image'), findsNothing);
     await unmount(tester);
   });
 

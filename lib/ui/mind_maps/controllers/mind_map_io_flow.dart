@@ -22,6 +22,7 @@ import '../../../core/services/mind_map_io/mind_map_markdown_io.dart';
 import '../../../core/services/mind_map_io/mind_map_xml_formats.dart';
 import '../../../core/services/mind_map_io/mind_map_xmind_io.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../diaries/export/diary_export_format.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_modal/app_dialog.dart';
@@ -33,12 +34,18 @@ import '../viewmodels/mind_map_labels.dart';
 import '../viewmodels/mind_map_look.dart';
 import '../widgets/mind_map_painter.dart';
 import 'mind_map_editing_controller.dart';
+import 'mind_map_outline_export.dart';
 
 /// 导图的导出与导入流程。
 ///
-/// 导出：图片（PNG，按当前明暗与配色、带页面底色，最长边不超过
-/// [_maxImageSide] 像素）、PDF（一页，页面按导图大小）、XMind、Markdown、
-/// OPML、FreeMind，或复制为大纲文字。文件先写到缓存目录
+/// 导出分两类（见 [MindMapExportKind.outline]）：
+/// - 导图：图片（PNG，按当前明暗与配色、带页面底色，最长边不超过
+///   [_maxImageSide] 像素）、PDF（一页，页面按导图大小）、XMind、FreeMind；
+/// - 大纲：PDF、Word、网页（经日记导出的写出器，带文字样式与主题字号，按
+///   正文排版，见 `mind_map_outline_export.dart`）、Markdown、OPML、纯文本，
+///   或复制为大纲文字。
+///
+/// 文件先写到缓存目录
 /// `mind_map_export/`（每次导出前清掉上次的暂存），再交给系统分享、保存
 /// 对话框（`BackupFileSaveService.saveFile`）或相册（手机，只对图片）。
 /// 导入：选一个 XMind / OPML / FreeMind / Markdown / 纯文本文件，按扩展名
@@ -48,19 +55,34 @@ import 'mind_map_editing_controller.dart';
 /// 导出的去处。
 enum MindMapDelivery { share, save, gallery }
 
-/// 导出的种类（文件格式之外还有图片与 PDF）。
+/// 导出的种类。顺序即导出面板里各自那一类的排列顺序。
 enum MindMapExportKind {
   image('png', 'image/png'),
   pdf('pdf', 'application/pdf'),
   xmind('xmind', 'application/vnd.xmind.workbook'),
-  markdown('md', 'text/markdown'),
-  opml('opml', 'text/x-opml'),
-  freeMind('mm', 'application/x-freemind');
+  freeMind('mm', 'application/x-freemind'),
+  outlinePdf('pdf', 'application/pdf', outline: true),
+  word(
+    'docx',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    outline: true,
+  ),
+  html('html', 'text/html', outline: true),
+  markdown('md', 'text/markdown', outline: true),
+  opml('opml', 'text/x-opml', outline: true),
+  text('txt', 'text/plain', outline: true);
 
-  const MindMapExportKind(this.extension, this.mimeType);
+  const MindMapExportKind(
+    this.extension,
+    this.mimeType, {
+    this.outline = false,
+  });
 
   final String extension;
   final String mimeType;
+
+  /// 导出的是大纲（缩进列表），不是导图的画面或导图软件的文件。
+  final bool outline;
 }
 
 const double _maxImageSide = 8192;
@@ -139,14 +161,32 @@ Future<Uint8List> buildMindMapExport(
     MindMapExportKind.image => renderMindMapPng(context, document),
     MindMapExportKind.pdf => renderMindMapPdf(context, document),
     MindMapExportKind.xmind => mindMapToXmind(document, untitled: untitled),
+    MindMapExportKind.freeMind => _utf8(
+      mindMapToFreeMind(document, untitled: untitled),
+    ),
+    MindMapExportKind.outlinePdf => buildMindMapOutlineDocument(
+      context,
+      document,
+      DiaryExportFormat.pdf,
+    ),
+    MindMapExportKind.word => buildMindMapOutlineDocument(
+      context,
+      document,
+      DiaryExportFormat.word,
+    ),
+    MindMapExportKind.html => buildMindMapOutlineDocument(
+      context,
+      document,
+      DiaryExportFormat.html,
+    ),
     MindMapExportKind.markdown => _utf8(
       mindMapToMarkdown(document, untitled: untitled),
     ),
     MindMapExportKind.opml => _utf8(
       mindMapToOpml(document, untitled: untitled),
     ),
-    MindMapExportKind.freeMind => _utf8(
-      mindMapToFreeMind(document, untitled: untitled),
+    MindMapExportKind.text => _utf8(
+      mindMapOutlineText(document, untitled: untitled),
     ),
   };
 }

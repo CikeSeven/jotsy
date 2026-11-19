@@ -18,6 +18,7 @@ import '../controllers/mind_map_editing_controller.dart';
 import '../models/mind_map_markers.dart';
 import '../models/mind_map_options.dart';
 import '../models/mind_map_themes.dart';
+import '../viewmodels/mind_map_labels.dart';
 import '../viewmodels/mind_map_palette.dart';
 import '../viewmodels/mind_map_visuals.dart';
 import '../widgets/mind_map_color_swatches.dart';
@@ -382,7 +383,7 @@ Future<void> showMindMapNodeStyleSheet(
               for (final size in MindMapTextSize.values)
                 ButtonSegment<MindMapTextSize>(
                   value: size,
-                  label: Text(_sizeLabel(l10n, size)),
+                  label: Text(mindMapTextSizeLabel(l10n, size)),
                 ),
             ],
             selected: <MindMapTextSize>{style.size},
@@ -422,14 +423,6 @@ String _shapeLabel(AppLocalizations l10n, MindMapNodeShape shape) =>
       MindMapNodeShape.ellipse => l10n.mindMapShapeEllipse,
       MindMapNodeShape.underline => l10n.mindMapShapeUnderline,
       MindMapNodeShape.plain => l10n.mindMapShapePlain,
-    };
-
-String _sizeLabel(AppLocalizations l10n, MindMapTextSize size) =>
-    switch (size) {
-      MindMapTextSize.small => l10n.mindMapSizeSmall,
-      MindMapTextSize.medium => l10n.mindMapSizeMedium,
-      MindMapTextSize.large => l10n.mindMapSizeLarge,
-      MindMapTextSize.huge => l10n.mindMapSizeHuge,
     };
 
 class _ToggleIcon extends StatelessWidget {

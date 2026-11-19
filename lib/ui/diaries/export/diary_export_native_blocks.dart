@@ -238,15 +238,27 @@ List<List<List<ExportInline>>> _tableRows(DiaryTableGrid table) {
 }
 
 /// 导图块的大纲：中心主题（整篇导图日记时省略，它就是标题）+ 逐级缩进的
-/// 无序列表，空主题跳过；节点里的换行压成空格。主题的文字样式（整条的与
-/// 局部的，见 [_mindMapInlines]）一并写出。
-List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
-  final page = isMindMapPageData(data);
+/// 无序列表，见 [_mindMapOutline]。
+List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) =>
+    _mindMapOutline(
+      mindMapOfBlockData(data),
+      depth: depth,
+      withRoot: !isMindMapPageData(data),
+    );
+
+/// 一张导图的大纲：[withRoot] 时先写加粗的中心主题，其余主题从 [depth] 起
+/// 写成逐级缩进的无序列表，空主题跳过；节点里的换行压成空格。主题的文字
+/// 样式（整条的与局部的，含主题字号，见 [_mindMapInlines]）一并写出。
+List<ExportBlock> _mindMapOutline(
+  MindMapDocument map, {
+  required int depth,
+  required bool withRoot,
+}) {
   final out = <ExportBlock>[];
-  for (final line in mindMapOutlineLines(mindMapOfBlockData(data))) {
+  for (final line in mindMapOutlineLines(map)) {
     if (line.text.isEmpty) continue;
     if (line.depth == 0) {
-      if (page) continue;
+      if (!withRoot) continue;
       out.add(
         ExportBlock._(
           kind: ExportBlockKind.paragraph,
@@ -270,9 +282,16 @@ List<ExportBlock> _mindMapBlocks(Map<String, Object?> data, int depth) {
 
 /// 一个主题压成一行后的各段：局部样式优先，没设的随整条样式（`style`）；
 /// [bold] 为这一行默认加粗（嵌入导图的中心主题）。文字颜色与高亮与正文
-/// 同一套、按原色写出（半透明的高亮由各写出器叠在纸面上，同正文）。
+/// 同一套、按原色写出（半透明的高亮由各写出器叠在纸面上，同正文）；主题
+/// 字号（小 / 大 / 特大）写成正文同名的行内字号，支持字号的写出器照写。
 List<ExportInline> _mindMapInlines(MindMapNode node, {bool bold = false}) {
   final style = MindMapNodeStyle(node.style);
+  final size = switch (style.size) {
+    MindMapTextSize.small => DiaryFontSize.small,
+    MindMapTextSize.medium => DiaryFontSize.normal,
+    MindMapTextSize.large => DiaryFontSize.large,
+    MindMapTextSize.huge => DiaryFontSize.huge,
+  }.attributeValue;
   ExportInline inline(InlineTextRun run) {
     final marks = run.marks;
     return ExportInline(
@@ -284,6 +303,7 @@ List<ExportInline> _mindMapInlines(MindMapNode node, {bool bold = false}) {
       color: MindMapNodeStyle.parseColor(marks.color) ?? style.color,
       background:
           MindMapNodeStyle.parseColor(marks.highlight) ?? style.highlight,
+      size: size,
     );
   }
 

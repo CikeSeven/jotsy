@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:node_diary/ui/widgets/list_make_room.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_features.dart';
@@ -188,7 +188,7 @@ void main() {
       size: const Size(400, 800),
       diaries: _diaries('default', 2),
     );
-    expect(find.byType(SliverMasonryGrid), findsOneWidget);
+    expect(find.byType(MakeRoomSliverMasonryGrid), findsOneWidget);
     expect(wideListCards, findsNWidgets(2));
     expect(find.byType(DiarySwipeActionItem), findsNothing);
     await unmountWideDiariesPage(tester);

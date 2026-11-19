@@ -19,6 +19,7 @@ Widget _host({
   required bool visible,
   required bool appearing,
   Duration duration = const Duration(milliseconds: 250),
+  bool resize = true,
 }) {
   return MaterialApp(
     home: Scaffold(
@@ -28,6 +29,7 @@ Widget _host({
             visible: visible,
             appearing: appearing,
             duration: duration,
+            resize: resize,
             child: const _Probe(),
           ),
         ],
@@ -74,5 +76,38 @@ void main() {
     );
     await tester.pump();
     expect(tester.getSize(find.byType(ListItemPresence)).height, 100);
+  });
+
+  testWidgets('without resizing the item keeps its height and scales', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(visible: true, appearing: false, resize: false),
+    );
+    final probe = tester.state<_ProbeState>(find.byType(_Probe));
+    Transform transform() => tester.widget<Transform>(
+      find.descendant(
+        of: find.byType(ListItemPresence),
+        matching: find.byType(Transform),
+      ),
+    );
+    expect(transform().transform.entry(0, 0), 1);
+
+    await tester.pumpWidget(
+      _host(visible: false, appearing: false, resize: false),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+    // 原尺寸退场：高度不变（瀑布流里别的卡片不会逐帧换列），只缩小、淡出。
+    expect(tester.getSize(find.byType(ListItemPresence)).height, 100);
+    expect(transform().transform.entry(0, 0), lessThan(1));
+    expect(tester.state(find.byType(_Probe)), same(probe));
+
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(ListItemPresence)).height, 100);
+    expect(
+      transform().transform.entry(0, 0),
+      moreOrLessEquals(ListItemPresence.hiddenScale),
+    );
   });
 }

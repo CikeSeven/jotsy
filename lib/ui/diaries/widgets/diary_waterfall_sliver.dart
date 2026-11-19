@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../widgets/list_make_room.dart';
 
 /// 日记瀑布流的布局生命周期；输入有序日记与卡片构造器，输出带侧边距的
 /// sliver。只在已有条目或列数变化时清除布局，不管理分页查询或滚动控制器。
+/// 给了 [makeRoom] 时让位途中按 [MakeRoomSliverMasonryGrid] 绘制。
 class DiaryWaterfallSliver extends StatefulWidget {
   const DiaryWaterfallSliver({
     super.key,
@@ -13,6 +14,7 @@ class DiaryWaterfallSliver extends StatefulWidget {
     required this.sideMargin,
     required this.cardGap,
     required this.itemBuilder,
+    this.makeRoom,
   });
 
   final List<DiaryWithTags> diaries;
@@ -20,6 +22,9 @@ class DiaryWaterfallSliver extends StatefulWidget {
   final double sideMargin;
   final double cardGap;
   final IndexedWidgetBuilder itemBuilder;
+
+  /// 列表让位（FLIP）的控制器；各项须由调用方包 [MakeRoomItem]。
+  final MakeRoomController? makeRoom;
 
   @override
   State<DiaryWaterfallSliver> createState() => _DiaryWaterfallSliverState();
@@ -66,12 +71,13 @@ class _DiaryWaterfallSliverState extends State<DiaryWaterfallSliver> {
   Widget build(BuildContext context) => SliverPadding(
     key: ValueKey<int>(_layoutGeneration),
     padding: EdgeInsets.symmetric(horizontal: widget.sideMargin),
-    sliver: SliverMasonryGrid.count(
+    sliver: MakeRoomSliverMasonryGrid.count(
       crossAxisCount: widget.columns,
       mainAxisSpacing: widget.cardGap,
       crossAxisSpacing: widget.cardGap,
       childCount: widget.diaries.length,
       itemBuilder: widget.itemBuilder,
+      makeRoom: widget.makeRoom,
     ),
   );
 }

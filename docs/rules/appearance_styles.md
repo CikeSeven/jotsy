@@ -35,6 +35,8 @@
 ## 日记页浮岛顶栏
 - 必须：预览、阅读式编辑、新建、导图、封存与出错页的顶栏只经 `FloatingTopBarHost`（`lib/ui/widgets/floating_top_bar/`）画浮岛；禁止给这些页的 Scaffold 设 `appBar` 或另拼浮岛。
 - 必须：浮岛随滚动显隐只经 `ScrollChromeHider`（与首页底栏共用），禁止另写判定。
+- 必须：状态栏渐隐带只经 `FloatingTopBarStatusStrip`（`GlassSurface.fadeToBottom`）画、浮岛叠在它之上；禁止恢复只垫状态栏的硬边（高对比度除外）。
+- 必须：渐隐带只做不透明底色（玻璃时为 `solidFill`）的透明度过渡、不模糊；压在上面的玻璃浮岛照常模糊，同一区域只有这一层模糊。
 - 必须：翻页时浮岛只经 `DiaryPreviewChromeBoard` 画在所有页之上；禁止放回各页里（会随页面滑走）。
 - 必须：动作胶囊里随状态出现 / 消失的按钮包 `FloatingIslandSlot`；禁止整套按钮交叉淡化替换（同一按钮会同时出现两份）。
 - 禁止：浮岛顶栏的页面恢复整条顶栏底色或“日记”二字标题。

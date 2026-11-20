@@ -61,7 +61,7 @@
 - `settings/`：设置 Tab `pages/settings_page.dart` 与各二级页；样式编辑页的区块在 `sections/<样式名>/`；功能管理 `providers/app_features_provider.dart`（`appFeaturesProvider` / `saveAppFeatures`）；导入恢复 `controllers/backup_import_flow.dart`（`chooseBackupImportMode`）；另有网盘备份、回收站、标签管理、更新日志。
 - `widgets/`：跨 feature 公共 UI：
   - 平铺文件：`app_top_bar.dart`、`form_width.dart`、`keyboard_visibility.dart`（`KeyboardVisibility` / `KeyboardInsetPadding`）、`width_layout_builder.dart`、`expressive_*.dart`（按钮组、加载、入场、图片淡入 `expressiveImageFrameBuilder`）、`delayed_loading_indicator.dart` / `action_loading_overlay.dart`、`launch_reveal.dart`、看图 `image_viewer_page.dart`（`openImageViewer`）、`reorder_handle.dart`、`desktop_horizontal_scroll.dart`、`editing_session_blocker.dart`、滚动显隐判定 `scroll_chrome_hider.dart`、颜色选择。
-  - `floating_top_bar/`：日记页浮岛顶栏（`FloatingTopBarHost`、岛与动作胶囊、标题岛、状态栏底条、`FloatingTopBarCover`）。
+  - `floating_top_bar/`：日记页浮岛顶栏（`FloatingTopBarHost`、岛与动作胶囊、标题岛、状态栏渐隐带、`FloatingTopBarCover`）。
   - `app_modal/`：`showAppModalBottomSheet` / `showAppDialog` 唯一入口。
   - `expressive_menu/`：锚定弹出菜单 `ExpressiveMenuAnchor` / `ExpressiveMenuButton` 与二级菜单。
   - `text_selection_menu/`：文字选区菜单（`appTextContextMenuBuilder`、`AppTextSelectionMenu.adaptive`）。

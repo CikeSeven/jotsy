@@ -5,8 +5,9 @@ import '../scroll_chrome_hider.dart';
 import 'floating_action_island.dart';
 import 'floating_top_bar.dart';
 
-/// 把浮岛顶栏叠在一页内容上：内容在下、状态栏底条与浮岛在上，并按内容
-/// 冒泡上来的纵向滚动决定浮岛显隐与标题胶囊。
+/// 把浮岛顶栏叠在一页内容上：内容在最下，其上是状态栏底条连同往下渐隐的
+/// 那一截（[FloatingTopBarStatusStrip]），浮岛在最上、浮在渐隐带之上；并按
+/// 内容冒泡上来的纵向滚动决定浮岛显隐与标题胶囊。
 ///
 /// 输入：内容 [child]（自己负责在顶端留出状态栏的高度，静止时不想被岛盖住
 /// 的部分再多留 [FloatingTopBar.extent]）、左右两颗岛、标题。输出：一个
@@ -52,8 +53,8 @@ class FloatingTopBarHost extends StatefulWidget {
   final String? titleSemantics;
   final bool hideOnScroll;
 
-  /// 状态栏底条的颜色（经典材质时；玻璃时为玻璃）；null 时不画底条（嵌在
-  /// 页面里、上方没有状态栏时）。
+  /// 状态栏底条（连同往下渐隐的那一截）的颜色（经典材质时；玻璃时为
+  /// 玻璃）；null 时不画底条（嵌在页面里、上方没有状态栏时）。
   final Color? statusBarColor;
   final double? contentMaxWidth;
   final Object? resetKey;
@@ -196,27 +197,31 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
   }
 
   /// 此刻被状态栏与浮岛盖住的部分的下缘（全局纵坐标）：浮岛显示时到岛那
-  /// 一行的下缘，收起途中按显隐进度缩短，完全收起时只剩状态栏。
+  /// 一行的下缘。画了渐隐带时岛收起后那一行仍被渐隐带罩着，照样算遮挡；
+  /// 没有渐隐带时收起途中按显隐进度缩短，完全收起时只剩状态栏。
   double _coveredBottom() {
     final box = context.findRenderObject();
     if (box is! RenderBox || !box.attached) {
       return 0;
     }
-    final reveal = _reveal.value.clamp(0.0, 1.0);
+    final reveal = _bandFades ? 1.0 : _reveal.value.clamp(0.0, 1.0);
     return box.localToGlobal(Offset.zero).dy +
         _statusBar +
         FloatingTopBar.extent * reveal;
   }
 
-  /// 最近一次构建时的状态栏高度（[_coveredBottom] 在构建之外调用，不在那里
-  /// 读 MediaQuery）。
+  /// 最近一次构建时的状态栏高度与是否画了渐隐带（[_coveredBottom] 在构建
+  /// 之外调用，不在那里读 MediaQuery）。
   double _statusBar = 0;
+  bool _bandFades = false;
 
   @override
   Widget build(BuildContext context) {
     final title = widget.title;
     final statusBarColor = widget.statusBarColor;
     _statusBar = MediaQuery.viewPaddingOf(context).top;
+    _bandFades =
+        statusBarColor != null && FloatingTopBarStatusStrip.fadesOf(context);
     return Stack(
       children: <Widget>[
         NotificationListener<ScrollNotification>(
@@ -233,7 +238,17 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
                 : widget.child,
           ),
         ),
-        // 浮岛隐藏时上移，从状态栏底条下面退出屏幕。
+        if (statusBarColor != null)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _themed(
+              context,
+              FloatingTopBarStatusStrip(color: statusBarColor),
+            ),
+          ),
+        // 浮岛在渐隐带之上；隐藏时整行上移出屏并淡出。
         Positioned(
           top: 0,
           left: 0,
@@ -259,16 +274,6 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
             ),
           ),
         ),
-        if (statusBarColor != null)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _themed(
-              context,
-              FloatingTopBarStatusStrip(color: statusBarColor),
-            ),
-          ),
       ],
     );
   }

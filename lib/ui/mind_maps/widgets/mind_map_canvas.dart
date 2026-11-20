@@ -46,6 +46,8 @@ class MindMapCanvas extends StatefulWidget {
     this.onNodeMenu,
     this.onCanvasMenu,
     this.onNodePart,
+    this.onViewportGesture,
+    this.onEmptyTap,
     this.interactive = true,
   });
 
@@ -68,6 +70,13 @@ class MindMapCanvas extends StatefulWidget {
   /// 点了节点里的备注或链接标记（待办框在画布里直接勾选）。只读时也会
   /// 调用（查看备注、打开链接）。
   final void Function(String id, MindMapNodePart part)? onNodePart;
+
+  /// 用户亲手移动了画面：拖动 / 捏合开始（拖的是空白而不是节点）、触控板
+  /// 平移缩放、桌面滚轮。镜头自己动（跟随选中、适应屏幕）时不调用。
+  final VoidCallback? onViewportGesture;
+
+  /// 点了空白处（在取消选中、结束编辑或双击适应屏幕之前调用）。
+  final VoidCallback? onEmptyTap;
 
   /// 为假时只能平移缩放（只读查看）。
   final bool interactive;
@@ -373,6 +382,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
         }
         controller.select(id);
       case MindMapEmptyHit():
+        widget.onEmptyTap?.call();
         if (controller.editingId != null) {
           controller.stopEditing();
           return;
@@ -413,15 +423,19 @@ class MindMapCanvasState extends State<MindMapCanvas>
 
   void _onScaleStart(ScaleStartDetails details) {
     _lastGestureScale = 1;
-    if (!widget.interactive || details.pointerCount != 1) return;
     // 桌面上鼠标按在节点上拖：直接拖动节点（不必长按）。
-    if (details.kind == PointerDeviceKind.mouse ||
-        details.kind == PointerDeviceKind.stylus && AppPlatform.isDesktop) {
+    if (widget.interactive &&
+        details.pointerCount == 1 &&
+        (details.kind == PointerDeviceKind.mouse ||
+            details.kind == PointerDeviceKind.stylus &&
+                AppPlatform.isDesktop)) {
       final hit = _hitAt(details.localFocalPoint);
       if (hit case MindMapNodeHit(:final id) || MindMapPartHit(:final id)) {
         _beginDrag(id, details.localFocalPoint, haptic: false);
       }
     }
+    // 识别器越过拖动阈值才开始，轻点不会走到这里。
+    if (_drag == null) widget.onViewportGesture?.call();
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
@@ -578,6 +592,7 @@ class MindMapCanvasState extends State<MindMapCanvas>
       PointerSignalEvent event,
     ) {
       final scroll = event as PointerScrollEvent;
+      widget.onViewportGesture?.call();
       final keys = HardwareKeyboard.instance;
       if (keys.isControlPressed || keys.isMetaPressed) {
         final factor = math.exp(-scroll.scrollDelta.dy / 300);

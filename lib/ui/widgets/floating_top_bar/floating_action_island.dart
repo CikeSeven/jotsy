@@ -115,7 +115,7 @@ class _FloatingIslandSlotState extends State<FloatingIslandSlot>
   }
 }
 
-/// 中间一颗静态的文字岛（导图页的导图名、封存页的标题）：一直显示、不可
+/// 中间一颗静态的文字岛（封存页的标题）：一直显示、不可
 /// 点按，文字一行省略。[child] 通常是一个 Text（可自己随内容刷新）。
 class FloatingIslandLabel extends StatelessWidget {
   const FloatingIslandLabel({super.key, required this.child});

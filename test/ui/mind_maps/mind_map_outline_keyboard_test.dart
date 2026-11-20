@@ -26,11 +26,15 @@ void main() {
     )!,
   );
 
-  Future<MindMapEditingController> pumpOutline(WidgetTester tester) async {
+  Future<MindMapEditingController> pumpOutline(
+    WidgetTester tester, {
+    double topInset = 0,
+  }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final controller = MindMapEditingController(tree());
+    // 视图切换在宿主顶栏里，这里直接从大纲开始。
+    final controller = MindMapEditingController(tree())..outlineView = true;
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       ProviderScope(
@@ -41,12 +45,11 @@ void main() {
           // 与 MindMapPageScaffold 一样不随键盘缩。
           home: Scaffold(
             resizeToAvoidBottomInset: false,
-            body: MindMapWorkspace(controller: controller),
+            body: MindMapWorkspace(controller: controller, topInset: topInset),
           ),
         ),
       ),
     );
-    await tester.tap(find.text('Outline'));
     await tester.pumpAndSettle();
     expect(find.byType(MindMapOutlineView), findsOneWidget);
     return controller;
@@ -163,22 +166,22 @@ void main() {
     expect(controller.document.root.children.length, topicCount + 6);
   });
 
-  testWidgets('a topic under the view switch is revealed below it', (
-    tester,
-  ) async {
-    final controller = await pumpOutline(tester);
+  testWidgets('a topic under the top bar is revealed below it', (tester) async {
+    // 宿主的浮岛顶栏盖住顶上这一截（状态栏 + 浮岛那一行）。
+    const topBar = 56.0;
+    final controller = await pumpOutline(tester, topInset: topBar);
     await tester.drag(outlineScrollable(), const Offset(0, -110));
     await tester.pumpAndSettle();
-    // 顶上被“画布 | 大纲”切换盖住一半的那一行。
+    // 顶上被浮岛顶栏盖住一半的那一行。
     final hidden = controller.document.root.children.firstWhere((node) {
       final finder = find.text(node.text);
       if (finder.evaluate().isEmpty) return false;
       final rect = tester.getRect(finder);
-      return rect.top < 48 && rect.bottom > 0;
+      return rect.top < topBar && rect.bottom > topBar;
     });
     controller.startEditing(hidden.id);
     await tester.pumpAndSettle();
-    expect(tester.getTopLeft(find.byType(TextField)).dy, greaterThan(48));
+    expect(tester.getTopLeft(find.byType(TextField)).dy, greaterThan(topBar));
   });
 
   testWidgets('without the keyboard the outline keeps the full height', (

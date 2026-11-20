@@ -15,8 +15,8 @@ import '../../diaries/controllers/diary_link_open_flow.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../../settings/widgets/external_link.dart';
-import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../widgets/keyboard_visibility.dart';
 import '../../ai/models/ai_preference_parts.dart';
 import '../../ai/providers/ai_providers.dart';
@@ -40,9 +40,14 @@ import 'mind_map_format_bar.dart';
 import 'mind_map_outline_view.dart';
 import 'mind_map_starter_card.dart';
 
-/// 导图编辑工作区：画布或大纲（左上角切换）+ 底部工具坞 + 起步卡 + 键盘
-/// 附件条 + 缩放胶囊，以及桌面快捷键与节点的右键 / 长按菜单。导图日记的编辑页与正文里嵌入
+/// 导图编辑工作区：画布或大纲（切换在宿主顶栏的中间岛，见
+/// `MindMapPageScaffold`）+ 底部工具坞 + 起步卡 + 键盘附件条 + 缩放胶囊，
+/// 以及桌面快捷键与节点的右键 / 长按菜单。导图日记的编辑页与正文里嵌入
 /// 导图的全屏编辑页共用它，宿主只负责外框（顶栏）与保存。
+///
+/// 顶栏显隐：画布被手指 / 触控板拖动、捏合或滚轮移动时冒泡
+/// [FloatingTopBarRevealNotification] 请求浮岛收起，点画布或大纲的空白处
+/// 请求浮出（大纲滚动由宿主按滚动通知处理）；不在浮岛顶栏下时没有效果。
 ///
 /// 输入：编辑会话 [controller]（宿主持有，改动经它的 `onChanged` 写回）、
 /// 被顶栏盖住的高度 [topInset]。[onConvertBack] 给出时空图起步卡里有
@@ -89,9 +94,6 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
   /// 底部工具坞占的高度（含与屏幕底边的间距）。
   static const double _dockReserve = 92;
 
-  /// 左上角“画布 | 大纲”切换占的高度（大纲从它下面排起）。
-  static const double _viewSwitchReserve = 48;
-
   MindMapEditingController get _controller => widget.controller;
 
   @override
@@ -129,6 +131,11 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
       _focus.requestFocus();
     }
     setState(() {});
+  }
+
+  /// 请求宿主的浮岛顶栏收起或浮出（见类注释）。
+  void _requestTopBar({required bool revealed}) {
+    FloatingTopBarRevealNotification(revealed: revealed).dispatch(context);
   }
 
   /// 适应屏幕（顶栏按钮等外部入口用）。
@@ -468,26 +475,33 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
             MindMapAccessoryBarInset(
               controller: controller,
               showsBar: showAccessoryBar,
-              child: MindMapOutlineView(
-                controller: controller,
-                appearance: appearance,
-                padding:
-                    padding + const EdgeInsets.only(top: _viewSwitchReserve),
-                // 光标让开顶栏与视图切换；桌面编辑时底部浮着格式条（手机上
-                // 的附件条已经从视口里让掉了）。
-                revealPadding: EdgeInsets.fromLTRB(
-                  20,
-                  widget.topInset + _viewSwitchReserve + 12,
-                  20,
-                  AppPlatform.isDesktop
-                      ? 20 + MindMapFormatBar.height + 12
-                      : 20,
+              // 行与标记自己的点按先赢下竞技场，这里只收到空白处（末行
+              // 之下、行间留白）的点按。
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => _requestTopBar(revealed: true),
+                child: MindMapOutlineView(
+                  controller: controller,
+                  appearance: appearance,
+                  padding: padding,
+                  // 光标让开顶栏；桌面编辑时底部浮着格式条（手机上的附件条
+                  // 已经从视口里让掉了）。
+                  revealPadding: EdgeInsets.fromLTRB(
+                    20,
+                    widget.topInset + 12,
+                    20,
+                    AppPlatform.isDesktop
+                        ? 20 + MindMapFormatBar.height + 12
+                        : 20,
+                  ),
+                  onNodePart: (id, part) => _onNodePart(
+                    id,
+                    part == 'note'
+                        ? MindMapNodePart.note
+                        : MindMapNodePart.link,
+                  ),
+                  onNodeMenu: widget.readOnly ? null : _openNodeMenu,
                 ),
-                onNodePart: (id, part) => _onNodePart(
-                  id,
-                  part == 'note' ? MindMapNodePart.note : MindMapNodePart.link,
-                ),
-                onNodeMenu: widget.readOnly ? null : _openNodeMenu,
               ),
             )
           else
@@ -502,19 +516,10 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                 interactive: !widget.readOnly,
                 onNodeMenu: _openNodeMenu,
                 onNodePart: _onNodePart,
+                onViewportGesture: () => _requestTopBar(revealed: false),
+                onEmptyTap: () => _requestTopBar(revealed: true),
               ),
             ),
-          Positioned(
-            top: widget.topInset + 10,
-            left: 12,
-            child: _ViewSwitch(
-              outline: outline,
-              onChanged: (value) {
-                controller.stopEditing();
-                controller.outlineView = value;
-              },
-            ),
-          ),
           if (!outline)
             Positioned(
               top: widget.topInset + 10,
@@ -738,41 +743,6 @@ class _ChipSurface extends StatelessWidget {
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: child,
-    );
-  }
-}
-
-/// 左上角的“画布 | 大纲”切换（与缩放胶囊同一材质）。
-class _ViewSwitch extends StatelessWidget {
-  const _ViewSwitch({required this.outline, required this.onChanged});
-
-  final bool outline;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return _ChipSurface(
-      child: Padding(
-        padding: const EdgeInsets.all(3),
-        child: ExpressiveButtonGroup<bool>(
-          dense: true,
-          segments: <ButtonSegment<bool>>[
-            ButtonSegment<bool>(
-              value: false,
-              icon: const FaIcon(FontAwesomeIcons.sitemap, size: 12),
-              label: Text(l10n.mindMapCanvasView),
-            ),
-            ButtonSegment<bool>(
-              value: true,
-              icon: const FaIcon(FontAwesomeIcons.listUl, size: 12),
-              label: Text(l10n.mindMapOutline),
-            ),
-          ],
-          selected: <bool>{outline},
-          onSelectionChanged: (value) => onChanged(value.first),
-        ),
-      ),
     );
   }
 }

@@ -24,6 +24,7 @@ import '../../../home/widgets/home_bar/home_floating_bar.dart';
 import '../../../home/widgets/home_bar/home_nav_bar.dart';
 import '../../../home/widgets/home_bar/home_top_bar_surface.dart';
 import '../../controllers/home_bar_style_editor_controller.dart';
+import '../../providers/app_features_provider.dart';
 import '../../widgets/style_editor/style_preview_background.dart';
 import 'home_bar_style_preview_toolbar.dart';
 
@@ -72,18 +73,21 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
   static const double _fabEnd = 20;
   static const double _topBarHeight = 56;
 
-  /// 预览栏里的项目：全部 Tab，按首页底栏的固定顺序（日记在最左）。
-  static final List<HomeTab> _tabs = allHomeTabsInBarOrder;
+  /// 预览栏里的项目：与首页底栏相同，按功能开关与“设置入口”取可见的 Tab
+  /// （固定顺序，日记在最左、设置在最右），build 时更新。看到的就是自己底栏的项数与
+  /// 宽度；画框比屏幕窄 32，画全部五项时 320dp 的屏上连同并排按钮放不下。
+  List<HomeTab> _tabs = const <HomeTab>[HomeTab.diaries];
 
-  /// 初始选中日记：画框里画的就是日记页。
-  int _selected = _tabs.indexOf(HomeTab.diaries);
+  /// 初始选中日记（始终可见、排在最左）：画框里画的就是日记页。项数变化时
+  /// 越界的选中项由导航行夹到范围内。
+  int _selected = 0;
 
   /// 指示器跟随滑动时的“页面位置”，从旧选中项补间到新选中项；从日记的
-  /// 位置开始。
+  /// 位置开始。上限按全部 Tab 取，项数少时导航行把位置夹到范围内。
   late final AnimationController _position = AnimationController(
     vsync: this,
-    upperBound: (_tabs.length - 1).toDouble(),
-    value: _selected.toDouble(),
+    upperBound: (allHomeTabsInBarOrder.length - 1).toDouble(),
+    value: 0,
   );
 
   @override
@@ -121,6 +125,10 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
 
   @override
   Widget build(BuildContext context) {
+    _tabs = visibleHomeTabs(
+      ref.watch(appFeaturesProvider),
+      settings: widget.controller.behavior.settingsPlacement,
+    );
     final controller = widget.controller;
     final appTheme = Theme.of(context);
     final brightness = controller.previewBrightness ?? appTheme.brightness;

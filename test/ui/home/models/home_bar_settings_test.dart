@@ -121,6 +121,30 @@ void main() {
       expect(settings.addSaved('more', _custom), same(settings));
     });
 
+    test('the settings placement defaults to the bar and round-trips', () {
+      // 默认在导航栏：稀疏编码不写这个字段。
+      expect(
+        HomeBarBehavior.defaults.settingsPlacement,
+        HomeBarSettingsPlacement.bar,
+      );
+      expect(HomeBarBehavior.defaults.toJson(), isEmpty);
+
+      const menu = HomeBarBehavior(
+        settingsPlacement: HomeBarSettingsPlacement.moreMenu,
+      );
+      expect(menu.toJson(), <String, Object>{'settingsPlacement': 'moreMenu'});
+      expect(HomeBarBehavior.fromJson(menu.toJson()), menu);
+      expect(menu.settingsInBar, isFalse);
+
+      // 认不出的值（更新的版本写的）回退默认，其余字段照常。
+      final unknown = HomeBarBehavior.fromJson(<String, Object?>{
+        'settingsPlacement': 'drawer',
+        'hideOnScroll': true,
+      });
+      expect(unknown.settingsPlacement, HomeBarSettingsPlacement.bar);
+      expect(unknown.hideOnScroll, isTrue);
+    });
+
     test('every library operation keeps the behavior', () {
       final base = HomeBarSettings.defaults.withBehavior(_behavior);
       final added = base.addSaved('A', _custom, now: DateTime(2026));

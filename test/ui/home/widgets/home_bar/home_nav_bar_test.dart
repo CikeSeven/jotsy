@@ -23,9 +23,14 @@ const _items = <BottomNavItem>[
 
 ColorScheme get _scheme => expressiveTestTheme(Brightness.light).colorScheme;
 
+/// 这里测的是格子、指示器与收窄的机制，样式固定为一套几何（项宽 72、
+/// 图标 22，格子 72×48），不随 [HomeBarStyle.defaults] 的调整变动；默认值
+/// 本身在 home_bar_resolved_style_test.dart 里核对。
+const HomeBarStyle _geometry = HomeBarStyle(itemWidth: 72, itemIconSize: 22);
+
 HomeBarResolvedStyle _style({
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
-  HomeBarStyle base = HomeBarStyle.defaults,
+  HomeBarStyle base = _geometry,
 }) =>
     HomeBarResolvedStyle.resolve(base.copyWith(labelMode: labelMode), _scheme);
 
@@ -295,7 +300,7 @@ void main() {
   testWidgets('a lower roundness gives the indicator concentric corners', (
     tester,
   ) async {
-    final style = _style(base: const HomeBarStyle(roundness: 0.45));
+    final style = _style(base: _geometry.copyWith(roundness: 0.45));
     await _pump(tester, style: style, selected: 1);
     final indicator = _indicator(tester);
     expect(indicator.outerRect, const Rect.fromLTWH(72, 0, 72, 48));

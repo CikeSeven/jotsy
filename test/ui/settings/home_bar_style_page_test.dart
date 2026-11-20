@@ -191,7 +191,7 @@ void main() {
     expect(settings.homeBarStyleRaw, isNull);
     expect(
       tester.widget<GlassSurface>(_pill).borderRadius,
-      BorderRadius.circular(0.45 * 30),
+      BorderRadius.circular(0.45 * 29),
     );
     tile.onChangeEnd!(0.4499999);
     await tester.pumpAndSettle();
@@ -208,8 +208,8 @@ void main() {
     tester.widget<SettingsSliderTile>(inset).onChangeEnd!(3.6);
     await tester.pumpAndSettle();
     expect(storedHomeBarSettings(settings).current.itemInset, 4);
-    // 栏高 = 格高 48 + 两道 4 的缝。
-    expect(tester.getSize(_pill).height, 56);
+    // 栏高 = 格高 46 + 两道 4 的缝。
+    expect(tester.getSize(_pill).height, 54);
     expect(tester.takeException(), isNull);
   });
 
@@ -252,12 +252,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the preview bar shows the tabs the home bar shows', (
+    tester,
+  ) async {
+    List<String> previewLabels() => <String>[
+      for (final text in tester.widgetList<Text>(
+        find.descendant(
+          of: find.byType(HomeFloatingBar),
+          matching: find.byType(Text),
+        ),
+      ))
+        text.data ?? '',
+    ];
+
+    // 默认关着待办：四项，设置在最右。
+    var (_, l10n) = await pumpHomeBarStylePage(tester);
+    expect(previewLabels(), <String>[
+      l10n.navDiaries,
+      l10n.navCalendar,
+      l10n.navExplore,
+      l10n.navSettings,
+    ]);
+
+    // 打开待办后五项，与首页底栏同一顺序。
+    await tester.pumpWidget(const SizedBox.shrink());
+    (_, l10n) = await pumpHomeBarStylePage(
+      tester,
+      appFeaturesRaw: '{"todos":true}',
+    );
+    expect(previewLabels(), <String>[
+      l10n.navDiaries,
+      l10n.navTodos,
+      l10n.navCalendar,
+      l10n.navExplore,
+      l10n.navSettings,
+    ]);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('labels and the create button reshape the preview pill', (
     tester,
   ) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabAppearance);
-    expect(tester.getSize(_pill).height, 60);
+    expect(tester.getSize(_pill).height, 58);
 
     await tapHomeBarOption(
       tester,
@@ -270,7 +308,7 @@ void main() {
       storedHomeBarSettings(settings).current,
       HomeBarStyle.defaults.copyWith(labelMode: HomeBarLabelMode.never),
     );
-    expect(tester.getSize(_pill).height, 54);
+    expect(tester.getSize(_pill).height, 52);
 
     expect(find.byType(HomeInlineCreateButton).hitTestable(), findsNothing);
     await tapHomeBarOption(
@@ -284,7 +322,41 @@ void main() {
       storedHomeBarSettings(settings).current.fabPlacement,
       HomeBarFabPlacement.inline,
     );
-    expect(tester.getSize(find.byType(HomeInlineCreateButton)).width, 54);
+    expect(tester.getSize(find.byType(HomeInlineCreateButton)).width, 52);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the settings entry moves between the bar and the more menu', (
+    tester,
+  ) async {
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    bool previewHasSettings() => find
+        .descendant(
+          of: find.byType(HomeFloatingBar),
+          matching: find.text(l10n.navSettings),
+        )
+        .evaluate()
+        .isNotEmpty;
+    expect(previewHasSettings(), isTrue);
+
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabBehavior);
+    Finder segment(String label) => find.descendant(
+      of: find.byType(ExpressiveButtonGroup<HomeBarSettingsPlacement>),
+      matching: find.text(label),
+    );
+    await tapHomeBarOption(tester, segment(l10n.homeBarStyleSettingsInMenu));
+    // 行为单独写入，外观不变；预览栏里随之少了设置。
+    expect(
+      storedHomeBarSettings(settings).behavior.settingsPlacement,
+      HomeBarSettingsPlacement.moreMenu,
+    );
+    expect(storedHomeBarSettings(settings).current, HomeBarStyle.defaults);
+    expect(previewHasSettings(), isFalse);
+
+    // 改回导航栏即回到默认：整个键移除。
+    await tapHomeBarOption(tester, segment(l10n.homeBarStyleSettingsInBar));
+    expect(settings.homeBarStyleRaw, isNull);
+    expect(previewHasSettings(), isTrue);
     expect(tester.takeException(), isNull);
   });
 

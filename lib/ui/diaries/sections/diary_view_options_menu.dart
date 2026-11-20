@@ -42,7 +42,7 @@ class DiaryViewMenuOptions {
   final bool allowBookOrder;
   final ValueChanged<NotebookSort>? onNotebookSortChanged;
 
-  /// 打开设置页；null 时不显示“设置”。
+  /// 切到设置 Tab；null 时不显示“设置”。
   final VoidCallback? onOpenSettings;
 }
 
@@ -50,7 +50,7 @@ class DiaryViewMenuOptions {
 /// - 归档日记：跳转页面（原先是顶栏上的图标按钮，收进来让搜索条更宽；草稿箱
 ///   常用、要看份数角标，留在顶栏，见 DiaryHeadSection）；
 /// - 排序方式 ›、显示布局 ›：从所在那一行展开二级菜单（miuix 的级联变形）；
-/// - 设置：推入设置页（设置不在底栏，这里是它的入口）。
+/// - 设置：切到首页的设置 Tab（与点底栏的设置相同）。
 ///
 /// 二级菜单里的单选项点了不关菜单：排序依据与方向常常要连着调，列表在菜单
 /// 后方淡出、换序、淡入，效果看得见；点外部或返回关闭。选中态由二级菜单页

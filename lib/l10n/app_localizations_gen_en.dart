@@ -8531,7 +8531,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsFeaturesPagesFooter =>
-      'Diaries always stays, and Settings is in the More menu at the top of Diaries. Pages you turn off leave the bottom bar; your data isn\'t affected.';
+      'Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn\'t affected.';
 
   @override
   String get settingsFeaturesCalendarSubtitle =>
@@ -8841,6 +8841,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeBarStyleBehaviorFooter =>
       'Behavior doesn\'t change with presets or style codes.';
+
+  @override
+  String get homeBarStyleSettingsEntry => 'Settings entry';
+
+  @override
+  String get homeBarStyleSettingsInBar => 'Navigation bar';
+
+  @override
+  String get homeBarStyleSettingsInMenu => 'More menu';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      'In the More menu, the bar has one tab fewer and Settings opens from More at the top right of Diaries.';
 
   @override
   String get homeBarStyleHideOnScroll => 'Hide the bar when scrolling down';

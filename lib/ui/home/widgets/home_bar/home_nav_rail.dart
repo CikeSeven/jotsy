@@ -1,8 +1,8 @@
 // 宽窗口（≥ 600dp）首页左侧的导航栏，取代底栏。
 //
-// 输入：导航项（从上往下排）、选中项、点按回调、已解析的首页栏样式与顶部
-// 的新建按钮；输出：96dp 宽、铺满高度的竖栏，无副作用。设置不是 Tab，不在
-// 这里（从日记页顶栏“更多”进入）。
+// 输入：导航项（从上往下排；[HomeNavRail.pinLastItem] 时最后一项——设置
+// ——固定在栏底）、选中项、点按回调、已解析的首页栏样式与顶部的新建按钮；
+// 输出：96dp 宽、铺满高度的竖栏，无副作用。
 //
 // - 底色默认与页面连成一片，给玻璃染了色时改用它的不透明等效色（见
 //   [HomeNavRail.backgroundOf]）；从不画玻璃：侧边栏下面没有会滚过去的
@@ -40,10 +40,12 @@ class HomeNavRail extends StatelessWidget {
     required this.selectedIndex,
     required this.onTap,
     required this.style,
+    this.pinLastItem = false,
     this.leading,
   });
 
-  /// 栏顶与新建按钮之间的留白；列放不下而滚动时也是最后一项下方的留白。
+  /// 栏顶与新建按钮之间、栏底与最后一项之间的留白（最后一项不固定在栏底
+  /// 时，列放不下而滚动才看得到）。
   static const double edgePadding = 16;
 
   /// 新建按钮与第一个导航项之间的距离。
@@ -54,8 +56,8 @@ class HomeNavRail extends StatelessWidget {
   static const double itemSpacing = 4;
 
   /// 每个导航项上下各自的内边距，算进点按区域。栏顶 / 栏底的留白与新建按钮
-  /// 下方的间距扣掉它，第一格到新建按钮仍是 [leadingGap]、滚到底时最后一格
-  /// 到栏底仍是 [edgePadding]。
+  /// 下方的间距扣掉它，第一格到新建按钮仍是 [leadingGap]、最后一格到栏底
+  /// 仍是 [edgePadding]。
   static const double itemPadding = HomeNavRailDestination.verticalPadding;
 
   /// 侧边栏底色。侧边栏不模糊，是一整条不透明的表面：
@@ -83,6 +85,10 @@ class HomeNavRail extends StatelessWidget {
   /// 导航项（至少一项），从新建按钮下方往下排。
   final List<BottomNavItem> items;
 
+  /// 最后一项固定在栏底（与上面各项之间空出）：设置在导航栏时它排在最后
+  /// （见 `visibleHomeTabs`）。设置放到日记页“更多”菜单时为 false。
+  final bool pinLastItem;
+
   /// 选中项；越界时夹到有效范围（Tab 集合变化的那一帧可能短暂越界）。
   final int selectedIndex;
   final ValueChanged<int> onTap;
@@ -94,6 +100,7 @@ class HomeNavRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final count = items.length;
+    final pinned = pinLastItem && count > 0;
     final selected = count == 0 ? 0 : selectedIndex.clamp(0, count - 1);
     final colors = HomeNavColors.resolve(Theme.of(context), style);
     final duration = ExpressiveMotion.duration(context);
@@ -120,9 +127,14 @@ class HomeNavRail extends StatelessWidget {
           leading!,
           const SizedBox(height: leadingGap - itemPadding),
         ],
-        for (var i = 0; i < count; i++) ...<Widget>[
+        for (var i = 0; i < (pinned ? count - 1 : count); i++) ...<Widget>[
           if (i > 0) const SizedBox(height: itemSpacing),
           item(i),
+        ],
+        if (pinned) ...<Widget>[
+          const Spacer(),
+          const SizedBox(height: itemSpacing),
+          item(count - 1),
         ],
         const SizedBox(height: edgePadding - itemPadding),
       ],
@@ -145,7 +157,7 @@ class HomeNavRail extends StatelessWidget {
             left: Directionality.of(context) == TextDirection.ltr,
             right: Directionality.of(context) == TextDirection.rtl,
             // 矮窗口或超大字体放不下时整列滚动；放得下时铺满高度（底色
-            // 到底），导航项靠上。
+            // 到底），导航项靠上，[pinLastItem] 时最后一项贴底。
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(
                 context,

@@ -15,12 +15,18 @@ const _items = <BottomNavItem>[
   BottomNavItem(label: 'To-dos', icon: FontAwesomeIcons.squareCheck),
   BottomNavItem(label: 'Calendar', icon: FontAwesomeIcons.calendarDays),
   BottomNavItem(label: 'Explore', icon: FontAwesomeIcons.compass),
+  BottomNavItem(label: 'Settings', icon: FontAwesomeIcons.gear),
 ];
+
+/// 这里测的是格子、指示器与收窄的机制，样式固定为一套几何（项宽 72、
+/// 图标 22，格子 72×48），不随 [HomeBarStyle.defaults] 的调整变动；默认值
+/// 本身在 home_bar_resolved_style_test.dart 里核对。
+const HomeBarStyle _geometry = HomeBarStyle(itemWidth: 72, itemIconSize: 22);
 
 HomeBarResolvedStyle _style({
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
 }) => HomeBarResolvedStyle.resolve(
-  HomeBarStyle(labelMode: labelMode),
+  _geometry.copyWith(labelMode: labelMode),
   expressiveTestTheme(Brightness.light).colorScheme,
 );
 
@@ -45,6 +51,7 @@ Future<void> _pump(
   Size size = const Size(800, 600),
   double textScale = 1,
   Brightness brightness = Brightness.light,
+  bool pinLastItem = true,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -63,6 +70,7 @@ Future<void> _pump(
                 selectedIndex: selected,
                 onTap: onTap ?? (_) {},
                 style: style ?? _style(),
+                pinLastItem: pinLastItem,
                 leading: HomeNavRailCreateButton(
                   label: 'New',
                   onPressed: onCreate ?? () {},
@@ -135,15 +143,14 @@ void main() {
     expect(find.byTooltip('New'), findsOneWidget);
   });
 
-  testWidgets('destinations stack below the button from the top', (
-    tester,
-  ) async {
+  testWidgets('destinations stack below the button and settings is pinned '
+      'to the bottom', (tester) async {
     await _pump(tester);
     final fabBottom = tester.getBottomLeft(find.byType(FloatingActionButton));
-    expect(_cells, findsNWidgets(4));
+    expect(_cells, findsNWidgets(5));
     // 第一格在 FAB 下方 28 处。
     expect(tester.getRect(_cells.at(0)).top, closeTo(fabBottom.dy + 28, 0.01));
-    // 相邻两格之间 8；最后一项同样紧接上一项，不固定在栏底（设置不是 Tab）。
+    // 前四项从上往下排，相邻两格之间 8。
     for (var i = 1; i < 4; i++) {
       expect(
         tester.getRect(_cells.at(i)).top -
@@ -151,14 +158,34 @@ void main() {
         closeTo(8, 0.01),
       );
     }
-    expect(tester.getRect(_cells.at(3)).bottom, lessThan(600 - 16 - 100));
+    // 最后一项（设置）固定在栏底，离底 16，与上面各项之间空出一段。
+    expect(tester.getRect(_cells.at(4)).bottom, closeTo(600 - 16, 0.01));
+    expect(
+      tester.getRect(_cells.at(4)).top - tester.getRect(_cells.at(3)).bottom,
+      greaterThan(100),
+    );
+  });
+
+  testWidgets('without a pinned item every destination stacks from the top', (
+    tester,
+  ) async {
+    // 设置放到日记页“更多”菜单时：最后一项（探索）不固定在栏底。
+    await _pump(tester, pinLastItem: false);
+    for (var i = 1; i < 5; i++) {
+      expect(
+        tester.getRect(_cells.at(i)).top -
+            tester.getRect(_cells.at(i - 1)).bottom,
+        closeTo(8, 0.01),
+      );
+    }
+    expect(tester.getRect(_cells.at(4)).bottom, lessThan(600 - 16 - 100));
   });
 
   testWidgets('a destination is the same cell as on the bottom bar', (
     tester,
   ) async {
     await _pump(tester, selected: 1);
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 5; i++) {
       final cell = tester.getRect(_cells.at(i));
       // 72×56 的格子在 96 宽的栏里居中，图标与文字在格子里居中。
       expect(cell.size, const Size(72, 48));
@@ -182,7 +209,7 @@ void main() {
   ) async {
     final style = _style();
     await _pump(tester, style: style, selected: 2);
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 5; i++) {
       final ink = tester.widget<Ink>(_indicators.at(i));
       final decoration = ink.decoration! as ShapeDecoration;
       // 圆角与底栏指示器同心：默认是完整胶囊（格高 48 的一半）。

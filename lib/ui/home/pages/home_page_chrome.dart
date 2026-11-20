@@ -49,6 +49,9 @@ extension _HomePageChrome on _HomePageState {
           selectedIndex: _effectiveIndex,
           onTap: _handleNavTap,
           style: barStyle,
+          // 设置在导航栏时排在最后、固定在栏底；放到“更多”菜单时没有它，
+          // 各项都从上往下排。
+          pinLastItem: _tabs.last == HomeTab.settings,
           leading: _buildRailCreateButton(),
         ),
         Expanded(
@@ -171,7 +174,7 @@ extension _HomePageChrome on _HomePageState {
     final shouldShow = switch (_effectiveTab) {
       HomeTab.diaries => _diariesFabVisibleByScroll,
       HomeTab.todos => !_todosSelecting,
-      HomeTab.calendar || HomeTab.explore => false,
+      HomeTab.calendar || HomeTab.explore || HomeTab.settings => false,
     };
     final fabBaseBottomOffset = _HomePageState._fabBottomGapAboveNav;
     // 没有底栏（只剩日记一个 Tab）时 body 同样止于屏幕底部，按收起的底栏

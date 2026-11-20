@@ -18,11 +18,16 @@ const _items = <BottomNavItem>[
 
 const double _width = 360;
 
+/// 这里测的是格子、指示器与收窄的机制，样式固定为一套几何（项宽 72、
+/// 图标 22，格子 72×48），不随 [HomeBarStyle.defaults] 的调整变动；默认值
+/// 本身在 home_bar_resolved_style_test.dart 里核对。
+const HomeBarStyle _geometry = HomeBarStyle(itemWidth: 72, itemIconSize: 22);
+
 HomeBarResolvedStyle _style({
   HomeBarLabelMode labelMode = HomeBarLabelMode.always,
   bool highContrast = false,
 }) => HomeBarResolvedStyle.resolve(
-  HomeBarStyle(labelMode: labelMode),
+  _geometry.copyWith(labelMode: labelMode),
   expressiveTestTheme(Brightness.light).colorScheme,
   highContrast: highContrast,
 );

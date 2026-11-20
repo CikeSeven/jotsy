@@ -60,12 +60,12 @@ enum HomeBarPreset {
 // - 浓雾 0.65：σ 约 19，后面只剩柔和的色块，仍透得出颜色，不是实色；
 // - 主题色 0.45：与默认同样通透，底色带主题色。
 // 后四个改形状与导航项（栏高由内容推导，见 `HomeBarMetrics.itemHeight`）：
-// - 方圆：圆角 45%，栏高 60 时胶囊圆角约 13.5、指示器约 7.5，像一块
+// - 方圆：圆角 45%，栏高 58 时胶囊圆角约 13、指示器约 7，像一块
 //   圆角卡片而不是药丸；
-// - 舒展：图标 24、文字 12、间距 4、项宽 78、缝 7——格高 52、栏高 66，
-//   四项共 326 宽，360 宽的屏上两侧各留 16 仍放得下不收窄；
-// - 聚焦：只显示选中项文字、缝 4——栏高 56，指示器 48 高几乎撑满胶囊；
-// - 紧凑：只有图标、项宽 60、缝 5——格子 60×42、栏高 52。
+// - 舒展：图标 22、文字 12、间距 4、项宽 62、缝 7——格高 50、栏高 64，
+//   五项共 324 宽，360 宽的屏上两侧各留 16 仍放得下不收窄；
+// - 聚焦：只显示选中项文字、缝 4——栏高 54，指示器 46 高几乎撑满胶囊；
+// - 紧凑：只有图标、项宽 56、缝 5——格子 56×40、栏高 50。
 const _clear = HomeBarStyle(tintOpacity: 0.2);
 
 const _frosted = HomeBarStyle(tintOpacity: 0.65);
@@ -75,9 +75,9 @@ const _tinted = HomeBarStyle(tint: HomeBarTint.theme, tintOpacity: 0.45);
 const _rounded = HomeBarStyle(roundness: 0.45);
 
 const _roomy = HomeBarStyle(
-  itemWidth: 78,
+  itemWidth: 62,
   itemInset: 7,
-  itemIconSize: 24,
+  itemIconSize: 22,
   itemLabelSize: 12,
   itemLabelGap: 4,
 );
@@ -86,6 +86,6 @@ const _focus = HomeBarStyle(labelMode: HomeBarLabelMode.selected, itemInset: 4);
 
 const _compact = HomeBarStyle(
   labelMode: HomeBarLabelMode.never,
-  itemWidth: 60,
+  itemWidth: 56,
   itemInset: 5,
 );

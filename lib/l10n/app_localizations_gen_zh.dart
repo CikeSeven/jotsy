@@ -7608,8 +7608,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsFeaturesPagesGroup => '页面';
 
   @override
-  String get settingsFeaturesPagesFooter =>
-      '日记始终保留，设置在日记页顶栏的“更多”菜单里。关闭的页面不再出现在底部导航，数据不受影响。';
+  String get settingsFeaturesPagesFooter => '日记和设置始终保留。关闭的页面不再出现在底部导航，数据不受影响。';
 
   @override
   String get settingsFeaturesCalendarSubtitle => '按月查看日记，含农历、节假日与纪念日';
@@ -7887,6 +7886,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleBehaviorFooter => '行为不随预设和样式码改变。';
+
+  @override
+  String get homeBarStyleSettingsEntry => '设置入口';
+
+  @override
+  String get homeBarStyleSettingsInBar => '导航栏';
+
+  @override
+  String get homeBarStyleSettingsInMenu => '“更多”菜单';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      '放进“更多”菜单时导航栏少一项，从日记页右上角的“更多”打开设置。';
 
   @override
   String get homeBarStyleHideOnScroll => '下滑时收起底栏';

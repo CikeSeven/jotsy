@@ -33,6 +33,7 @@ import '../../diary_templates/pages/diary_templates_page.dart';
 import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../home/models/home_tab.dart';
 import '../../home/providers/home_tab_request_provider.dart';
+import '../../home/providers/home_bar_settings_provider.dart';
 import '../../lan_sync/pages/lan_sync_page.dart';
 import '../../notebooks/controllers/notebook_navigation.dart';
 import '../../notebooks/pages/notebooks_page.dart';
@@ -241,6 +242,22 @@ final List<AiDestination> aiDestinations = <AiDestination>[
     open: _tab(HomeTab.explore),
     available: (env) => env.features.explore,
   ),
+  // 设置首页：入口在导航栏时是 Tab（回到首页切过去）；放到日记页“更多”
+  // 菜单时没有这个 Tab，直接推入设置页、不离开对话（对话页仍在时
+  // `openAiNavigation` 会撤销“回到对话”的登记）。
+  AiDestination(
+    'tab_settings',
+    kind: AiDestinationKind.tab,
+    section: AiDestinationSection.home,
+    icon: FontAwesomeIcons.gear,
+    tint: AiTint.neutral,
+    leavesChat: true,
+    title: (l10n) => l10n.navSettings,
+    open: (context, ref, params) =>
+        ref.read(homeBarBehaviorProvider).settingsInBar
+        ? _tab(HomeTab.settings)(context, ref, params)
+        : openSettingsPage(context),
+  ),
   // ---- 具体的一篇 / 一本 / 一项 ----
   AiDestination(
     'diary',
@@ -350,16 +367,6 @@ final List<AiDestination> aiDestinations = <AiDestination>[
     open: _page(() => const AiRecapPage()),
   ),
   // ---- 设置 ----
-  // 设置首页。它曾是首页的 Tab，现在是推入的二级页，不再离开对话；id 仍是
-  // `tab_settings`：已保存的对话卡片与使用指南按 id 引用它。
-  AiDestination(
-    'tab_settings',
-    kind: AiDestinationKind.page,
-    icon: FontAwesomeIcons.gear,
-    tint: AiTint.neutral,
-    title: (l10n) => l10n.navSettings,
-    open: _page(() => const SettingsPage()),
-  ),
   AiDestination(
     'settings_appearance',
     kind: AiDestinationKind.page,

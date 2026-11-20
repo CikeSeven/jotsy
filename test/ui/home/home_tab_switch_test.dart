@@ -13,9 +13,13 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style_enums.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_depth.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_item.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,12 +29,14 @@ Future<SettingsService> _pumpHome(
   WidgetTester tester, {
   int diaryCount = 0,
   String? appFeaturesRaw,
+  HomeBarSettingsPlacement settingsPlacement = HomeBarSettingsPlacement.bar,
 }) async {
   tester.view.physicalSize = const Size(400, 860);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.app_features': ?appFeaturesRaw,
+    'app.settings.home_bar_style': ?_placementRaw(settingsPlacement),
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -58,6 +64,20 @@ Future<SettingsService> _pumpHome(
   await tester.pumpAndSettle();
   return settings;
 }
+
+/// 只改设置入口位置的导航栏设置；默认（导航栏）不写键。
+String? _placementRaw(HomeBarSettingsPlacement placement) =>
+    placement == HomeBarSettingsPlacement.bar
+    ? null
+    : HomeBarSettings(
+        behavior: HomeBarBehavior(settingsPlacement: placement),
+      ).encode();
+
+/// 日记页“更多”菜单里的“设置”一项。
+Finder _menuSettings(AppLocalizations l10n) => find.descendant(
+  of: find.byType(ExpressiveMenuItem),
+  matching: find.text(l10n.navSettings),
+);
 
 /// 底栏当前的各项文案（按顺序）。
 List<String> _navLabels(WidgetTester tester) => tester
@@ -272,9 +292,8 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('settings is not a tab but opens from the diaries more menu', (
-    tester,
-  ) async {
+  testWidgets('settings defaults to the last tab and leaves the diaries more '
+      'menu', (tester) async {
     await _pumpHome(tester);
     final l10n = tester.element(find.byType(HomePage)).l10n;
 
@@ -282,33 +301,113 @@ void main() {
       l10n.navDiaries,
       l10n.navCalendar,
       l10n.navExplore,
+      l10n.navSettings,
     ]);
-    expect(find.byType(SettingsPage, skipOffstage: false), findsNothing);
-
+    // 设置在导航栏时，日记页“更多”菜单里不再列它。
     await tester.tap(find.byTooltip(l10n.autoT0125));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.navSettings));
-    // 菜单项的 onPressed 在点按后的下一帧才执行，推入页面再晚一帧。
-    await tester.pump();
+    expect(find.byType(ExpressiveMenuItem), findsWidgets);
+    expect(_menuSettings(l10n), findsNothing);
+    await tester.tapAt(const Offset(200, 500));
     await tester.pumpAndSettle();
 
-    // 设置是推入的二级页：标准顶栏带返回按钮，盖住首页与底栏。
+    await tester.tap(_navItem(l10n.navSettings));
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 3);
+    expect(_selectedNavLabel(tester), l10n.navSettings);
     expect(find.byType(SettingsPage), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(SettingsPage),
-        matching: find.byTooltip(l10n.commonBack),
-      ),
-      findsOneWidget,
-    );
-    expect(_navItem(l10n.navDiaries), findsNothing);
 
-    // 返回键回到首页的日记页，而不是退出应用。
+    // 返回键先回到日记页，而不是退出应用。
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.byType(SettingsPage), findsNothing);
     expect(_homePage(tester), 0);
     expect(_selectedNavLabel(tester), l10n.navDiaries);
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets(
+    'settings in the more menu opens a pushed page instead of a tab',
+    (tester) async {
+      await _pumpHome(
+        tester,
+        settingsPlacement: HomeBarSettingsPlacement.moreMenu,
+      );
+      final l10n = tester.element(find.byType(HomePage)).l10n;
+
+      expect(_navLabels(tester), <String>[
+        l10n.navDiaries,
+        l10n.navCalendar,
+        l10n.navExplore,
+      ]);
+      expect(find.byType(SettingsPage, skipOffstage: false), findsNothing);
+
+      await tester.tap(find.byTooltip(l10n.autoT0125));
+      await tester.pumpAndSettle();
+      await tester.tap(_menuSettings(l10n));
+      // 菜单项的 onPressed 在点按后的下一帧才执行，推入页面再晚一帧。
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 推入的二级页：标准顶栏带返回按钮，盖住首页与底栏。
+      expect(find.byType(SettingsRoutePage), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SettingsRoutePage),
+          matching: find.byTooltip(l10n.commonBack),
+        ),
+        findsOneWidget,
+      );
+      expect(_navItem(l10n.navDiaries), findsNothing);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsRoutePage), findsNothing);
+      expect(_homePage(tester), 0);
+      expect(_selectedNavLabel(tester), l10n.navDiaries);
+      expect(tester.takeException(), isNull);
+      await _unmount(tester);
+    },
+  );
+
+  testWidgets('moving settings to the menu while on its tab lands on diaries', (
+    tester,
+  ) async {
+    final settings = await _pumpHome(tester);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    await tester.tap(_navItem(l10n.navSettings));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsPage), findsOneWidget);
+
+    unawaited(
+      settings.setHomeBarStyleRaw(
+        _placementRaw(HomeBarSettingsPlacement.moreMenu),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // 设置 Tab 没了：按“当前 Tab 被关闭”回到日记，菜单里多出“设置”。
+    expect(_navLabels(tester), <String>[
+      l10n.navDiaries,
+      l10n.navCalendar,
+      l10n.navExplore,
+    ]);
+    expect(_selectedNavLabel(tester), l10n.navDiaries);
+    expect(find.byType(SettingsPage, skipOffstage: false), findsNothing);
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    expect(_menuSettings(l10n), findsOneWidget);
+    await tester.tapAt(const Offset(200, 500));
+    await tester.pumpAndSettle();
+
+    // 改回导航栏：设置回到末尾，菜单里又没有了。
+    unawaited(settings.setHomeBarStyleRaw(null));
+    await tester.pumpAndSettle();
+    expect(_navLabels(tester).last, l10n.navSettings);
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    expect(_menuSettings(l10n), findsNothing);
+    await tester.tapAt(const Offset(200, 500));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
@@ -450,12 +549,34 @@ void main() {
   });
 
   group('feature toggles hide home tabs', () {
-    testWidgets('only diaries left hides the bottom bar but keeps the FAB', (
+    testWidgets('with every switchable tab off diaries and settings remain', (
       tester,
     ) async {
       await _pumpHome(
         tester,
         appFeaturesRaw: '{"calendar":false,"explore":false}',
+      );
+      final l10n = tester.element(find.byType(HomePage)).l10n;
+
+      // 设置在导航栏时不能关：导航行至少两项，底栏与新建 FAB 照常。
+      expect(find.byType(HomeFloatingBar), findsOneWidget);
+      expect(_navLabels(tester), <String>[l10n.navDiaries, l10n.navSettings]);
+      expect(_createFabShown(tester), isTrue);
+
+      await tester.tap(_navItem(l10n.navSettings));
+      await tester.pumpAndSettle();
+      expect(_selectedNavLabel(tester), l10n.navSettings);
+      expect(find.byType(SettingsPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await _unmount(tester);
+    });
+
+    testWidgets('only diaries left with settings in the menu hides the bottom '
+        'bar but keeps the FAB', (tester) async {
+      await _pumpHome(
+        tester,
+        appFeaturesRaw: '{"calendar":false,"explore":false}',
+        settingsPlacement: HomeBarSettingsPlacement.moreMenu,
       );
       final l10n = tester.element(find.byType(HomePage)).l10n;
 
@@ -472,10 +593,10 @@ void main() {
       // 设置照样从日记页顶栏“更多”进入。
       await tester.tap(find.byTooltip(l10n.autoT0125));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(l10n.navSettings));
+      await tester.tap(_menuSettings(l10n));
       await tester.pump();
       await tester.pumpAndSettle();
-      expect(find.byType(SettingsPage), findsOneWidget);
+      expect(find.byType(SettingsRoutePage), findsOneWidget);
       expect(tester.takeException(), isNull);
       await _unmount(tester);
     });
@@ -486,12 +607,13 @@ void main() {
       await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
       final l10n = tester.element(find.byType(HomePage)).l10n;
 
-      // 四个 Tab 时固定为日记、待办、日历、探索，启动落在日记。
+      // 五个 Tab 时固定为日记、待办、日历、探索、设置，启动落在日记。
       expect(_navLabels(tester), <String>[
         l10n.navDiaries,
         l10n.navTodos,
         l10n.navCalendar,
         l10n.navExplore,
+        l10n.navSettings,
       ]);
       expect(_selectedNavLabel(tester), l10n.navDiaries);
       expect(_homePage(tester), 0);
@@ -507,13 +629,15 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('only explore off keeps the other two in order', (
-      tester,
-    ) async {
+    testWidgets('only explore off keeps the others in order', (tester) async {
       await _pumpHome(tester, appFeaturesRaw: '{"explore":false}');
       final l10n = tester.element(find.byType(HomePage)).l10n;
 
-      expect(_navLabels(tester), <String>[l10n.navDiaries, l10n.navCalendar]);
+      expect(_navLabels(tester), <String>[
+        l10n.navDiaries,
+        l10n.navCalendar,
+        l10n.navSettings,
+      ]);
       await _unmount(tester);
     });
 
@@ -535,7 +659,11 @@ void main() {
       expect(find.byType(ExplorePage), findsOneWidget);
       await tester.pumpAndSettle();
 
-      expect(_navLabels(tester), <String>[l10n.navDiaries, l10n.navExplore]);
+      expect(_navLabels(tester), <String>[
+        l10n.navDiaries,
+        l10n.navExplore,
+        l10n.navSettings,
+      ]);
       expect(_selectedNavLabel(tester), l10n.navExplore);
       expect(_homePage(tester), 1);
       expect(find.byType(ExplorePage), findsOneWidget);
@@ -571,6 +699,7 @@ void main() {
         l10n.navDiaries,
         l10n.navCalendar,
         l10n.navExplore,
+        l10n.navSettings,
       ]);
       expect(_selectedNavLabel(tester), l10n.navExplore);
       expect(_homePage(tester), 2);
@@ -610,6 +739,7 @@ void main() {
         l10n.navDiaries,
         l10n.navCalendar,
         l10n.navExplore,
+        l10n.navSettings,
       ]);
       expect(_selectedNavLabel(tester), l10n.navExplore);
       expect(tester.element(find.byType(ExplorePage)), same(exploreElement));

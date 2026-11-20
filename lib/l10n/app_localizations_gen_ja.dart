@@ -7739,7 +7739,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsFeaturesPagesFooter =>
-      '「日記」は常に表示され、「設定」は日記ページ上部の「その他」メニューにあります。オフにしたページは下部のナビゲーションバーから消えますが、データには影響しません。';
+      '「日記」と「設定」は常に表示されます。オフにしたページは下部のナビゲーションバーから消えますが、データには影響しません。';
 
   @override
   String get settingsFeaturesCalendarSubtitle => '月ごとに日記を表示。旧暦・祝日・記念日も確認できます';
@@ -8025,6 +8025,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeBarStyleBehaviorFooter => '動作はプリセットやスタイルコードでは変わりません。';
+
+  @override
+  String get homeBarStyleSettingsEntry => '設定の入口';
+
+  @override
+  String get homeBarStyleSettingsInBar => 'ナビゲーションバー';
+
+  @override
+  String get homeBarStyleSettingsInMenu => '「その他」メニュー';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      '「その他」メニューに置くとバーの項目が一つ減り、日記ページ右上の「その他」から設定を開きます。';
 
   @override
   String get homeBarStyleHideOnScroll => '下にスクロールするとバーを隠す';

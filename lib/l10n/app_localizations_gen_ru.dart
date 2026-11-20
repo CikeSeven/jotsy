@@ -8797,7 +8797,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsFeaturesPagesFooter =>
-      '«Записи» есть всегда, а «Настройки» находятся в меню «Ещё» вверху раздела «Записи». Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.';
+      '«Записи» и «Настройки» есть всегда. Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.';
 
   @override
   String get settingsFeaturesCalendarSubtitle =>
@@ -9110,6 +9110,19 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get homeBarStyleBehaviorFooter =>
       'Поведение не меняется при выборе пресетов и кодов стиля.';
+
+  @override
+  String get homeBarStyleSettingsEntry => 'Где «Настройки»';
+
+  @override
+  String get homeBarStyleSettingsInBar => 'Панель навигации';
+
+  @override
+  String get homeBarStyleSettingsInMenu => 'Меню «Ещё»';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      'В меню «Ещё» на панели станет на один раздел меньше, а «Настройки» откроются через «Ещё» в правом верхнем углу «Записей».';
 
   @override
   String get homeBarStyleHideOnScroll => 'Скрывать панель при прокрутке вниз';

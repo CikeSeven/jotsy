@@ -10979,7 +10979,7 @@
   "@settingsFeaturesPagesGroup": {
     "description": "Features page: group title for pages (bottom bar tabs) that can be turned off."
   },
-  "settingsFeaturesPagesFooter": "«Записи» есть всегда, а «Настройки» находятся в меню «Ещё» вверху раздела «Записи». Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.",
+  "settingsFeaturesPagesFooter": "«Записи» и «Настройки» есть всегда. Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.",
   "@settingsFeaturesPagesFooter": {
     "description": "Features page: footer of the pages group."
   },
@@ -11360,6 +11360,22 @@
   "homeBarStyleBehaviorFooter": "Поведение не меняется при выборе пресетов и кодов стиля.",
   "@homeBarStyleBehaviorFooter": {
     "description": "Navigation bar style settings: behavior group footer."
+  },
+  "homeBarStyleSettingsEntry": "Где «Настройки»",
+  "@homeBarStyleSettingsEntry": {
+    "description": "Navigation bar style settings: title of the choice where the Settings entry lives."
+  },
+  "homeBarStyleSettingsInBar": "Панель навигации",
+  "@homeBarStyleSettingsInBar": {
+    "description": "Navigation bar style settings: Settings is the last tab of the navigation bar."
+  },
+  "homeBarStyleSettingsInMenu": "Меню «Ещё»",
+  "@homeBarStyleSettingsInMenu": {
+    "description": "Navigation bar style settings: Settings is the last item of the More menu on the Diaries page."
+  },
+  "homeBarStyleSettingsEntryFooter": "В меню «Ещё» на панели станет на один раздел меньше, а «Настройки» откроются через «Ещё» в правом верхнем углу «Записей».",
+  "@homeBarStyleSettingsEntryFooter": {
+    "description": "Navigation bar style settings: footer explaining the More menu option for the Settings entry."
   },
   "homeBarStyleHideOnScroll": "Скрывать панель при прокрутке вниз",
   "@homeBarStyleHideOnScroll": {
@@ -11958,7 +11974,7 @@
   },
   "appSurfaceAreaSettings": "Настройки",
   "@appSurfaceAreaSettings": {
-    "description": "背景与材质设置：区域胶囊，设置首页与设置子页。"
+    "description": "背景与材质设置：区域胶囊，设置 Tab 与设置子页。"
   },
   "appSurfaceAreaEditor": "Редактор",
   "@appSurfaceAreaEditor": {

@@ -80,8 +80,12 @@ void main() {
                         label: 'Explore',
                         icon: FontAwesomeIcons.compass,
                       ),
+                      BottomNavItem(
+                        label: 'Settings',
+                        icon: FontAwesomeIcons.gear,
+                      ),
                     ],
-                    selectedIndex: 3,
+                    selectedIndex: 4,
                     onTap: (_) {},
                   ),
                 ),

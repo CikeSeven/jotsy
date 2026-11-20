@@ -66,11 +66,11 @@ part 'home_page_chrome.dart';
 part 'home_page_pager.dart';
 part 'home_page_shortcuts.dart';
 
-/// 主框架页：承载 Tab 导航（日记 / 待办 / 日历 / 探索）。设置不是 Tab，从
-/// 日记页顶栏“更多 → 设置”推入（[openSettingsPage]）。
+/// 主框架页：承载 Tab 导航（日记 / 待办 / 日历 / 探索 / 设置）。
 ///
-/// 待办、日历与探索可在设置 → 功能管理中关闭，底栏随之变为 2–4 项（见
-/// [visibleHomeTabs]）；三者都关闭时只剩日记，没有可切换的页面，窄窗口不显示
+/// 待办、日历与探索可在设置 → 功能管理中关闭，设置可在导航栏样式里改放到
+/// 日记页的“更多”菜单（[HomeBarBehavior.settingsPlacement]），底栏随之变为
+/// 1–5 项（见 [visibleHomeTabs]）；只剩日记时没有可切换的页面，窄窗口不显示
 /// 底栏（新建入口回到全局 FAB，见 [_hasBottomBar]）。当前页、目标页、FAB 与
 /// 返回键一律按 [HomeTab] 身份判断，可见集合变化时由
 /// `_HomePageController.syncVisibleTabs` 重新对齐下标。
@@ -94,7 +94,7 @@ part 'home_page_shortcuts.dart';
 /// 搬家而不重建，各 Tab 的状态（滚动位置、筛选、日记本范围）都保留。
 ///
 /// 键盘快捷键（所有宽度，焦点在首页内时生效，见 home_page_shortcuts.dart）：
-/// Ctrl/⌘+N 新建、Ctrl/⌘+F 搜索日记、Ctrl/⌘+1…4 切到第 n 个可见 Tab。
+/// Ctrl/⌘+N 新建、Ctrl/⌘+F 搜索日记、Ctrl/⌘+1…5 切到第 n 个可见 Tab。
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({
     super.key,
@@ -258,9 +258,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     return _controller.onTap(index);
   }
 
-  /// 日记页顶栏“更多 → 设置”：与点底栏换 Tab 一样是用户自己去做别的事，
-  /// 返回键不再回到 AI 对话。
-  void _openSettings() {
+  /// 设置入口是否在日记页“更多”菜单里（而不是导航栏的 Tab）；build 时
+  /// 更新。变化时让各 Tab 页面重建，日记页菜单随之增减“设置”一项。
+  bool _settingsInMenu = false;
+
+  /// 日记页顶栏“更多 → 设置”（设置入口在菜单里时）：推入设置页。与点底栏
+  /// 换 Tab 一样是用户自己去做别的事，返回键不再回到 AI 对话。
+  void _openSettingsPage() {
     ref.read(aiChatReturnProvider.notifier).disarm();
     unawaited(openSettingsPage(context));
   }
@@ -277,9 +281,16 @@ class _HomePageState extends ConsumerState<HomePage> {
       if (_todosSelecting == selecting || !mounted) return;
       setState(() => _todosSelecting = selecting);
     };
-    // settings 在首页构建前已就绪（启动门槛），首帧即是真实的开关，不会先
-    // 出现四个 Tab 再收起。
-    _tabs = visibleHomeTabs(ref.read(appFeaturesProvider));
+    // settings 在首页构建前已就绪（启动门槛），首帧即是真实的开关与设置
+    // 入口，不会先出现五个 Tab 再收起。
+    final settingsPlacement = ref
+        .read(homeBarBehaviorProvider)
+        .settingsPlacement;
+    _settingsInMenu = settingsPlacement == HomeBarSettingsPlacement.moreMenu;
+    _tabs = visibleHomeTabs(
+      ref.read(appFeaturesProvider),
+      settings: settingsPlacement,
+    );
     // 启动落在日记页（它始终可见）；PageController 的初始页取自这里。
     _currentIndex = _targetIndex = _tabs.indexOf(HomeTab.diaries);
     _pageOrder = HomeTabPageOrder.canonical(_tabs);
@@ -404,8 +415,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   int get _effectiveIndex => _targetIndex;
 
-  /// 窄窗口且至少有两个可见 Tab 时才有底栏：只剩日记时没有可切换的页面，
-  /// 一项的导航行没有意义。宽窗口没有底栏（侧边栏照常，新建按钮在栏顶）。
+  /// 窄窗口且至少有两个可见 Tab 时才有底栏：设置放在“更多”菜单、待办日历
+  /// 探索又都关闭时只剩日记，没有可切换的页面，一项的导航行没有意义。宽
+  /// 窗口没有底栏（侧边栏照常，新建按钮在栏顶）。
   bool get _hasBottomBar => !_wide && _tabs.length > 1;
 
   /// 目标 Tab（点击时立即更新，不等切页动画结束）。
@@ -436,7 +448,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             onCreateActionChanged: _diariesCreateActionChanged,
             onSearchActionChanged: _diariesSearchActionChanged,
             onFabVisibilityChanged: _diariesFabVisibilityChanged,
-            onOpenSettings: _openSettings,
+            // 设置在导航栏时菜单里不再列它，两处不同时出现。
+            onOpenSettings: _settingsInMenu ? _openSettingsPage : null,
           ),
           HomeTab.todos => TodosPage(
             key: const PageStorageKey<String>('tab_todos'),
@@ -448,6 +461,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           HomeTab.explore => const ExplorePage(
             key: PageStorageKey<String>('tab_explore'),
+          ),
+          HomeTab.settings => const SettingsPage(
+            key: PageStorageKey<String>('tab_settings'),
           ),
         },
       ),
@@ -503,10 +519,22 @@ class _HomePageState extends ConsumerState<HomePage> {
               AppSpacing.l,
             ),
     );
-    // 功能管理开关变化（设置页写入、备份恢复）时在这里对齐可见 Tab，
-    // 必须早于下面按 [_tabs] 组装底栏与页面。
+    final barBehavior = ref.watch(homeBarBehaviorProvider);
+    // 设置入口换了位置：日记页的菜单要增减“设置”，让各 Tab 页面重建（正在
+    // build，监听者都在首页子树内，可以标脏）。
+    final settingsInMenu = !barBehavior.settingsInBar;
+    if (settingsInMenu != _settingsInMenu) {
+      _settingsInMenu = settingsInMenu;
+      _tabPageConfigRevision.value++;
+    }
+    // 功能管理开关或设置入口变化（设置页写入、备份恢复）时在这里对齐可见
+    // Tab，必须早于下面按 [_tabs] 组装底栏与页面。停在设置 Tab 时把它改到
+    // 菜单里，按“当前 Tab 被关闭”回到日记页。
     _controller.syncVisibleTabs(
-      visibleHomeTabs(ref.watch(appFeaturesProvider)),
+      visibleHomeTabs(
+        ref.watch(appFeaturesProvider),
+        settings: barBehavior.settingsPlacement,
+      ),
     );
     final l10n = context.l10n;
     final navItems = <BottomNavItem>[
@@ -521,7 +549,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       baseTheme.colorScheme,
       highContrast: MediaQuery.highContrastOf(context),
     );
-    final barBehavior = ref.watch(homeBarBehaviorProvider);
     // 关闭“滚动时隐藏”时直接复位隐藏态（正在 build，随后的组装读的就是
     // 新值，不需要 setState）；重新开启后从显示状态开始。
     // 没有底栏（宽窗口、只剩日记一个 Tab）时“滚动时隐藏”不生效。
@@ -769,7 +796,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         await _openCreate();
       case HomeTab.todos:
         await _todosCreateAction?.call();
-      case HomeTab.calendar || HomeTab.explore:
+      case HomeTab.calendar || HomeTab.explore || HomeTab.settings:
         return;
     }
   }

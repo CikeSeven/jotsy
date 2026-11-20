@@ -25,11 +25,13 @@ import 'package:node_diary/ui/explore/sections/explore_period_bar.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
+import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 import 'package:node_diary/ui/widgets/page_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 首页四个 Tab 的顶部：有背景时实色顶栏连同状态栏那一条一起是栏色（不
-/// 露出背景），顶栏下缘看得见（有背景或玻璃顶栏）时四个 Tab 第一块内容
+/// 首页各 Tab 的顶部：有背景时实色顶栏连同状态栏那一条一起是栏色（不
+/// 露出背景），顶栏下缘看得见（有背景或玻璃顶栏）时各 Tab 第一块内容
 /// 离顶栏下缘同为 [kHomeTopContentGap]。经典无背景的“贴住”与像素基线另见
 /// home_bar_shell_test.dart 与 home_nav_bar_pixel_test.dart。
 
@@ -188,6 +190,19 @@ Future<Map<String, double>> _measureGaps(WidgetTester tester) async {
       tester
           .getRect(
             find.descendant(of: explore, matching: find.byType(PageHeader)),
+          )
+          .bottom;
+
+  await _openTab(tester, l10n.navSettings);
+  final settings = find.byType(SettingsPage);
+  final firstCard = find
+      .descendant(of: settings, matching: find.byType(SettingsCardGroup))
+      .first;
+  gaps['settings'] =
+      tester.getRect(firstCard).top -
+      tester
+          .getRect(
+            find.descendant(of: settings, matching: find.byType(PageHeader)),
           )
           .bottom;
   return gaps;

@@ -75,14 +75,14 @@ void main() {
   group('geometry', () {
     test('the defaults keep the reviewed proportions', () {
       final labeled = _resolve(glass, _light);
-      // 图标框 24 + 间距 3 + 文字 13.2 + 上下各 4，取整为 48；栏高再加两道
+      // 图标框 22 + 间距 3 + 文字 13.2 + 上下各 4，取整为 46；栏高再加两道
       // 6 的缝。
-      expect(labeled.itemWidth, 72);
-      expect(labeled.itemHeight, 48);
+      expect(labeled.itemWidth, 60);
+      expect(labeled.itemHeight, 46);
       expect(labeled.itemInset, 6);
-      expect(labeled.barHeight, 60);
-      expect(labeled.iconSize, 22);
-      expect(labeled.iconBox, 24);
+      expect(labeled.barHeight, 58);
+      expect(labeled.iconSize, 20);
+      expect(labeled.iconBox, 22);
       expect(labeled.labelSize, 11);
       expect(labeled.labelGap, 3);
 
@@ -102,8 +102,8 @@ void main() {
         ),
         _light,
       );
-      expect(iconsOnly.itemHeight, 42);
-      expect(iconsOnly.barHeight, 54);
+      expect(iconsOnly.itemHeight, 40);
+      expect(iconsOnly.barHeight, 52);
     });
 
     test('the bar grows with its content and its inset', () {
@@ -123,17 +123,38 @@ void main() {
 
     test('presets resolve to their documented sizes', () {
       final compact = _resolve(HomeBarPreset.compact.style, _dark);
-      expect(compact.itemWidth, 60);
-      expect(compact.itemHeight, 42);
-      expect(compact.barHeight, 52);
+      expect(compact.itemWidth, 56);
+      expect(compact.itemHeight, 40);
+      expect(compact.barHeight, 50);
 
       final roomy = _resolve(HomeBarPreset.roomy.style, _light);
-      expect(roomy.itemHeight, 52);
-      expect(roomy.barHeight, 66);
+      expect(roomy.itemWidth, 62);
+      expect(roomy.itemHeight, 50);
+      expect(roomy.barHeight, 64);
 
       final focus = _resolve(HomeBarPreset.focus.style, _light);
-      expect(focus.itemHeight, 48);
-      expect(focus.barHeight, 56);
+      expect(focus.itemHeight, 46);
+      expect(focus.barHeight, 54);
+    });
+
+    test('every preset fits five tabs on a 360-wide phone without '
+        'narrowing', () {
+      // 设置回到底栏后最多五项（#310）：360 宽的屏两侧各留 16，胶囊要放得下
+      // 五个首选宽的导航项，不触发等比收窄。
+      const available = 360 - HomeBarMetrics.minSideMargin * 2;
+      for (final preset in HomeBarPreset.values) {
+        final resolved = _resolve(preset.style, _light);
+        expect(
+          HomeBarMetrics.fitItemWidth(
+            resolved.itemWidth,
+            5,
+            available,
+            inset: resolved.itemInset,
+          ),
+          resolved.itemWidth,
+          reason: '$preset',
+        );
+      }
     });
 
     test('a full roundness is a capsule with a concentric indicator', () {
@@ -149,12 +170,13 @@ void main() {
 
     test('a lower roundness keeps the indicator concentric', () {
       final rounded = _resolve(HomeBarPreset.rounded.style, _light);
-      expect(rounded.cornerRadius, closeTo(13.5, 1e-9));
-      expect(rounded.indicatorRadius, closeTo(7.5, 1e-9));
+      // 栏高 58：胶囊圆角 0.45 × 29，指示器再减去 6 的缝。
+      expect(rounded.cornerRadius, closeTo(13.05, 1e-9));
+      expect(rounded.indicatorRadius, closeTo(7.05, 1e-9));
 
       // 圆角比缝还小时指示器为直角，不出现负数。
       final square = _resolve(glass.copyWith(roundness: 0.1), _light);
-      expect(square.cornerRadius, closeTo(3, 1e-9));
+      expect(square.cornerRadius, closeTo(2.9, 1e-9));
       expect(square.indicatorRadius, 0);
     });
 

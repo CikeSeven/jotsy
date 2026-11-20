@@ -93,7 +93,12 @@ class GlassBottomFadePainter extends CustomPainter {
   static final Map<(double, double, Color), ui.Shader> _shaders =
       <(double, double, Color), ui.Shader>{};
 
-  /// 自 [top] 到 [bottom] 按 [strengthAt] 把 [color] 淡到全透明的着色器。
+  /// 自 [top] 到 [bottom] 的着色器：上面 1 − [fadeFraction] 是完整的
+  /// [color]，其下按 [strengthAt] 淡到全透明。
+  ///
+  /// 完整的那截也画在同一个渐变里，整块只画一个矩形：分成“实色矩形 +
+  /// 渐变矩形”两块时，分界落在非整像素上，两块各按覆盖率抗锯齿，叠起来
+  /// 那一行不满，透出底下的头图，看得见一条细线。
   static ui.Shader _fadeShader(double top, double bottom, Color color) {
     final key = (top, bottom, color);
     final cached = _shaders.remove(key);
@@ -101,11 +106,12 @@ class GlassBottomFadePainter extends CustomPainter {
       _shaders[key] = cached;
       return cached;
     }
-    final colors = <Color>[];
-    final stops = <double>[];
+    const solid = 1 - fadeFraction;
+    final colors = <Color>[color];
+    final stops = <double>[0];
     for (var i = 0; i < _sampleCount; i++) {
       final fraction = i / (_sampleCount - 1);
-      stops.add(fraction);
+      stops.add(solid + fadeFraction * fraction);
       colors.add(color.withValues(alpha: color.a * strengthAt(fraction)));
     }
     final shader = ui.Gradient.linear(
@@ -147,25 +153,20 @@ class GlassBottomFadePainter extends CustomPainter {
       );
       return;
     }
-    // 上半截完整的底色，下半截渐变。
-    final fadeTop = size.height - (size.height - top) * fadeFraction;
-    canvas.drawRect(
-      Rect.fromLTRB(0, top, size.width, fadeTop),
-      Paint()..color = fill,
-    );
-    final rect = Rect.fromLTRB(0, fadeTop, size.width, size.height);
+    // 上半截完整的底色，下半截渐变；一个矩形画完（见 [_fadeShader]）。
+    final rect = Rect.fromLTRB(0, top, size.width, size.height);
     if (eraseBackdrop) {
       canvas.drawRect(
         rect,
         Paint()
           ..blendMode = BlendMode.dstIn
-          // dstIn 只看源的透明度，颜色取什么都一样。
-          ..shader = _fadeShader(fadeTop, size.height, const Color(0xFF000000)),
+          // dstIn 只看源的透明度，颜色取什么都一样；上半截不透明，不擦。
+          ..shader = _fadeShader(top, size.height, const Color(0xFF000000)),
       );
     }
     canvas.drawRect(
       rect,
-      Paint()..shader = _fadeShader(fadeTop, size.height, fill),
+      Paint()..shader = _fadeShader(top, size.height, fill),
     );
   }
 

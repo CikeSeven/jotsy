@@ -145,14 +145,17 @@ void main() {
     expect(tester.widget<GlassSurface>(_stripGlass).fadeToBottom, isFalse);
   });
 
-  testWidgets('顶栏为玻璃时渐隐带是模糊的玻璃，压在上面的岛不再叠一层模糊', (WidgetTester tester) async {
+  testWidgets('顶栏为玻璃时渐隐带与岛都是不透明的玻璃色、不模糊', (WidgetTester tester) async {
     await tester.pumpWidget(
       _page(style: const AppGlassStyle(mode: AppGlassMode.glass)),
     );
     // 返回岛、动作岛、标题胶囊、状态栏底条。
     expect(find.byType(GlassSurface), findsNWidgets(4));
     final strip = tester.widget<GlassSurface>(_stripGlass);
-    expect(strip.blur, isTrue);
+    // 只是一次透明度过渡：上半截不透明，不模糊（重模糊会把底下的彩色
+    // 标签糊成色块透上来）。
+    expect(strip.blur, isFalse);
+    expect(strip.fill.a, 1);
     expect(strip.fadeToBottom, isTrue);
     expect(
       tester.getRect(_stripGlass).height,

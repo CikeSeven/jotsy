@@ -136,7 +136,7 @@ void main() {
     expect(strip.fadeToBottom, isTrue);
   });
 
-  testWidgets('顶栏为玻璃时渐隐带模糊、岛不再叠一层，且不在 Opacity / FadeTransition 之下', (
+  testWidgets('顶栏为玻璃时渐隐带与岛都不模糊，且不在 Opacity / FadeTransition 之下', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -144,15 +144,15 @@ void main() {
     );
     final glass = find.byType(GlassSurface);
     expect(glass, findsWidgets);
-    // 没有背景图也模糊：渐隐带下面是正文与头图。
+    // 渐隐带只是不透明底色的透明度过渡。
     final strip = tester.widget<BackdropFilter>(
       find.descendant(
         of: find.byType(FloatingTopBarStatusStrip),
         matching: find.byType(BackdropFilter),
       ),
     );
-    expect(strip.enabled, isTrue);
-    // 岛压在渐隐带上：同一区域不叠两层模糊。
+    expect(strip.enabled, isFalse);
+    // 岛压在渐隐带上：与它一样不模糊。
     for (final island in <Type>[FloatingBackIsland, FloatingActionIsland]) {
       final filter = tester.widget<BackdropFilter>(
         find.descendant(

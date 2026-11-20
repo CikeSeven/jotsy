@@ -61,7 +61,6 @@ class AppGlassSurface extends StatelessWidget {
     this.bottomHairline,
     this.backdropKey,
     this.opaqueFill = false,
-    this.fadeToBottom,
     required this.child,
   });
 
@@ -88,13 +87,10 @@ class AppGlassSurface extends StatelessWidget {
   final BackdropKey? backdropKey;
 
   /// 用不透明的等效色（[AppGlassResolved.solidFill]：玻璃底色按设定的不
-  /// 透明度叠在 surface 上）作底：叠在另一块会淡到透明的玻璃上、自己又不
-  /// 模糊（[AppGlassBlur.none]）的表面用，底下清晰的文字不会透上来叠在
-  /// 内容上。高对比度时本就不透明。
+  /// 透明度叠在 surface 上）作底：叠在会淡到透明的底上、自己又不模糊
+  /// （[AppGlassBlur.none]）的表面用，底下清晰的文字不会透上来叠在内容上。
+  /// 高对比度时本就不透明。
   final bool opaqueFill;
-
-  /// 自上而下逐渐变透明，见 [GlassSurface.fadeToBottom]。
-  final bool? fadeToBottom;
   final Widget child;
 
   @override
@@ -135,7 +131,6 @@ class AppGlassSurface extends StatelessWidget {
           backdropKey == null && component == AppGlassComponent.cards
           ? backdrop.contentGlass
           : null,
-      fadeToBottom: fadeToBottom,
       child: content,
     );
   }

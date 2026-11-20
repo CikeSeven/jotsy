@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
-import '../../app_surface/widgets/app_glass_surface.dart';
 import '../glass/glass_reveal.dart';
 import '../glass/glass_surface.dart';
 import '../width_layout_builder.dart';
@@ -109,13 +108,15 @@ class FloatingTopBar extends StatelessWidget {
 }
 
 /// 状态栏那一条的底，并往下铺过浮岛那一行逐渐变透明（与首页顶栏同一种
-/// 渐隐，经 [GlassSurface.fadeToBottom]）：上半截是完整的底，状态栏图标在
-/// 任何头图上都看得清；下半截淡到没有，滚上去的内容在浮岛之下逐渐隐去，
-/// 不再在状态栏下沿切出一道硬边。浮岛画在它之上，像浮在这片渐隐之上。
+/// 渐隐曲线，经 [GlassSurface.fadeToBottom]）：上半截是不透明的底，状态栏
+/// 图标在任何头图与背景上都看得清；下半截淡到没有，滚上去的内容在浮岛之下
+/// 逐渐隐去，不再在状态栏下沿切出一道硬边。浮岛画在它之上。
 ///
-/// 经典时为 [color]（纸色 / 页面色，不模糊），玻璃时为一块顶栏玻璃（模糊
-/// 随底色一起淡出，不画描边）。高对比度时不渐隐，回到只垫状态栏、下沿是
-/// 实边（与首页顶栏一致）。渐隐的尽头正好是内容静止时的上沿
+/// 只是一次透明度过渡，不模糊：经典时为 [color]（纸色 / 页面色），玻璃时为
+/// 玻璃的不透明等效色（`AppGlassResolved.solidFill`，与压在上面的浮岛同
+/// 色）。半透明加重模糊时，底下正文里的彩色标签、图片会被糊成色块从状态栏
+/// 那里透上来，显得脏。高对比度时不渐隐，回到只垫状态栏、下沿是实边（与
+/// 首页顶栏一致）。渐隐的尽头正好是内容静止时的上沿
 /// （[FloatingTopBar.extent]），没有通栏头图时内容静止时不被遮住。
 ///
 /// 同时决定状态栏图标的明暗：按所在的主题（预览页是这一篇的整页主题）给出
@@ -152,31 +153,22 @@ class FloatingTopBarStatusStrip extends StatelessWidget {
     final fades = fadesOf(context);
     final height =
         MediaQuery.viewPaddingOf(context).top + (fades ? fadeExtent : 0);
-    final glass = AppGlass.of(context).isGlass(AppGlassComponent.topBars);
-    final Widget fill = glass
-        ? AppGlassSurface(
-            component: AppGlassComponent.topBars,
-            blur: AppGlassBlur.always,
-            showBorder: false,
-            fadeToBottom: fades,
-            child: const SizedBox.expand(),
-          )
-        // 翻页换篇时纸色随之过渡，不在半途硬切。
-        : TweenAnimationBuilder<Color?>(
-            tween: ColorTween(end: color),
-            duration: ExpressiveMotion.duration(
-              context,
-              ExpressiveMotion.medium,
-            ),
-            curve: ExpressiveMotion.effects,
-            builder: (BuildContext context, Color? value, Widget? _) =>
-                GlassSurface(
-                  fill: value ?? color,
-                  blur: false,
-                  fadeToBottom: fades,
-                  child: const SizedBox.expand(),
-                ),
-          );
+    final glass = AppGlass.of(context);
+    final target = glass.isGlass(AppGlassComponent.topBars)
+        ? glass.solidFill
+        : color;
+    // 翻页换篇时底色随之过渡，不在半途硬切。
+    final Widget fill = TweenAnimationBuilder<Color?>(
+      tween: ColorTween(end: target),
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      curve: ExpressiveMotion.effects,
+      builder: (BuildContext context, Color? value, Widget? _) => GlassSurface(
+        fill: value ?? target,
+        blur: false,
+        fadeToBottom: fades,
+        child: const SizedBox.expand(),
+      ),
+    );
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyleOf(Theme.of(context)),
       child: IgnorePointer(

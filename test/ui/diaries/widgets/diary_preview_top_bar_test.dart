@@ -136,7 +136,7 @@ void main() {
     expect(strip.fadeToBottom, isTrue);
   });
 
-  testWidgets('顶栏为玻璃时渐隐带与岛都不模糊，且不在 Opacity / FadeTransition 之下', (
+  testWidgets('顶栏为玻璃时渐隐带不模糊、岛总在模糊，且不在 Opacity / FadeTransition 之下', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -152,7 +152,7 @@ void main() {
       ),
     );
     expect(strip.enabled, isFalse);
-    // 岛压在渐隐带上：与它一样不模糊。
+    // 岛下面是正文与头图：没有背景图也要模糊（标题胶囊此刻隐藏，不算）。
     for (final island in <Type>[FloatingBackIsland, FloatingActionIsland]) {
       final filter = tester.widget<BackdropFilter>(
         find.descendant(
@@ -160,7 +160,7 @@ void main() {
           matching: find.byType(BackdropFilter),
         ),
       );
-      expect(filter.enabled, isFalse, reason: '$island');
+      expect(filter.enabled, isTrue, reason: '$island');
     }
     for (final type in <Type>[Opacity, FadeTransition]) {
       expect(

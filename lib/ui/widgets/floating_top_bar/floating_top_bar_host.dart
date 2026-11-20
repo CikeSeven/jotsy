@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../scroll_chrome_hider.dart';
 import 'floating_action_island.dart';
-import 'floating_island.dart';
 import 'floating_top_bar.dart';
 
 /// 把浮岛顶栏叠在一页内容上：内容在最下，其上是状态栏底条连同往下渐隐的
@@ -256,25 +255,22 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
           right: 0,
           child: _themed(
             context,
-            FloatingIslandBand(
-              onBand: _bandFades,
-              child: FloatingTopBar(
-                reveal: _reveal,
-                contentMaxWidth: widget.contentMaxWidth,
-                leading: widget.leading,
-                trailing: widget.trailing,
-                middle:
-                    widget.middle ??
-                    (title == null
-                        ? null
-                        : FloatingTitleChip(
-                            title: title,
-                            visible: widget.titleAnchor == null || _titlePast,
-                            onTap: widget.onTitleTap,
-                            tooltip: widget.titleTooltip,
-                            semanticsLabel: widget.titleSemantics,
-                          )),
-              ),
+            FloatingTopBar(
+              reveal: _reveal,
+              contentMaxWidth: widget.contentMaxWidth,
+              leading: widget.leading,
+              trailing: widget.trailing,
+              middle:
+                  widget.middle ??
+                  (title == null
+                      ? null
+                      : FloatingTitleChip(
+                          title: title,
+                          visible: widget.titleAnchor == null || _titlePast,
+                          onTap: widget.onTitleTap,
+                          tooltip: widget.titleTooltip,
+                          semanticsLabel: widget.titleSemantics,
+                        )),
             ),
           ),
         ),

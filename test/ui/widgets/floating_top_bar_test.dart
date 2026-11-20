@@ -136,7 +136,7 @@ void main() {
         .whereType<Positioned>()
         .map((Positioned layer) => layer.child.runtimeType)
         .toList();
-    expect(layers, <Type>[FloatingTopBarStatusStrip, FloatingIslandBand]);
+    expect(layers, <Type>[FloatingTopBarStatusStrip, FloatingTopBar]);
   });
 
   testWidgets('高对比度时底条只垫状态栏、不渐隐', (WidgetTester tester) async {
@@ -145,7 +145,7 @@ void main() {
     expect(tester.widget<GlassSurface>(_stripGlass).fadeToBottom, isFalse);
   });
 
-  testWidgets('顶栏为玻璃时渐隐带与岛都是不透明的玻璃色、不模糊', (WidgetTester tester) async {
+  testWidgets('顶栏为玻璃时渐隐带是不透明的玻璃色、不模糊，岛是模糊的玻璃', (WidgetTester tester) async {
     await tester.pumpWidget(
       _page(style: const AppGlassStyle(mode: AppGlassMode.glass)),
     );
@@ -161,38 +161,12 @@ void main() {
       tester.getRect(_stripGlass).height,
       _statusBar + FloatingTopBar.extent,
     );
+    // 渐隐带不模糊，岛照常是半透明、模糊的玻璃（同一区域只有这一层）。
     for (final island in tester.widgetList<GlassSurface>(_islandGlass)) {
-      expect(island.blur, isFalse);
-      // 渐隐带下半截淡到透明，岛用不透明的等效色，免得底下的文字透上来。
-      expect(island.fill.a, 1);
+      expect(island.blur, isTrue);
+      expect(island.fill.a, lessThan(1));
       expect(island.shadowColor, isNotNull);
     }
-  });
-
-  testWidgets('不画状态栏底条时玻璃岛自己模糊', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: expressiveTestTheme(Brightness.light),
-        locale: const Locale('zh'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: AppGlassScope(
-          style: const AppGlassStyle(mode: AppGlassMode.glass),
-          child: Scaffold(
-            body: FloatingTopBarHost(
-              trailing: FloatingActionIsland(
-                children: <Widget>[
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.share)),
-                ],
-              ),
-              child: const SizedBox.expand(),
-            ),
-          ),
-        ),
-      ),
-    );
-    expect(find.byType(FloatingTopBarStatusStrip), findsNothing);
-    expect(tester.widget<GlassSurface>(_islandGlass).blur, isTrue);
   });
 
   testWidgets('状态栏样式按页面主题给出', (WidgetTester tester) async {

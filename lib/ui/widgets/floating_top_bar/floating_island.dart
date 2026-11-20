@@ -12,10 +12,8 @@ import '../../app_surface/widgets/app_glass_surface.dart';
 /// 动作胶囊、标题胶囊都是它）。
 ///
 /// 材质跟随组件材质里的顶栏（[AppGlassComponent.topBars]）：
-/// - 玻璃：[AppGlassSurface]，投影只画在外侧。不在渐隐带上（宽窗口右栏）时
-///   总是模糊（岛浮在头图与正文上，下面是文字与图片）；压在状态栏渐隐带
-///   （[FloatingIslandBand]）上时与渐隐带一样不模糊、同为不透明的等效色，
-///   带子淡到透明的下半截也不让底下清晰的文字透上来；
+/// - 玻璃：[AppGlassSurface]，总是模糊（岛浮在头图与正文上，下面是文字与
+///   图片），投影只画在外侧；
 /// - 经典：浮起表面色（亮 `surfaceContainerLowest` / 暗 `surfaceContainerHigh`，
 ///   与对话框、面板同一层级）+ 0.8dp 微边框 + 单层 softShadow。
 ///
@@ -53,12 +51,10 @@ class FloatingIsland extends StatelessWidget {
       child: Padding(padding: padding, child: child),
     );
     if (AppGlass.of(context).isGlass(AppGlassComponent.topBars)) {
-      final onBand = FloatingIslandBand.of(context);
       return AppGlassSurface(
         component: AppGlassComponent.topBars,
         borderRadius: radius,
-        blur: onBand ? AppGlassBlur.none : AppGlassBlur.always,
-        opaqueFill: onBand,
+        blur: AppGlassBlur.always,
         shadow: true,
         child: content,
       );
@@ -77,31 +73,6 @@ class FloatingIsland extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 标记子树里的岛压在状态栏渐隐带（`FloatingTopBarStatusStrip`）之上：由
-/// `FloatingTopBarHost` 在画了渐隐带时包在浮岛那一行外面，[FloatingIsland]
-/// 据此决定玻璃岛要不要自己模糊、底色是否不透明。岛由调用方构建、层层传进来，所以经
-/// InheritedWidget 而不是参数。
-class FloatingIslandBand extends InheritedWidget {
-  const FloatingIslandBand({
-    super.key,
-    required this.onBand,
-    required super.child,
-  });
-
-  final bool onBand;
-
-  /// [context] 上方的岛是否压在渐隐带上；没有标记时为 false。
-  static bool of(BuildContext context) =>
-      context
-          .dependOnInheritedWidgetOfExactType<FloatingIslandBand>()
-          ?.onBand ??
-      false;
-
-  @override
-  bool updateShouldNotify(FloatingIslandBand oldWidget) =>
-      oldWidget.onBand != onBand;
 }
 
 /// 左侧的返回圆岛（`angleLeft`，18）；[onPressed] 为 null 时返回上一页。

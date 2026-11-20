@@ -60,7 +60,6 @@ class AppGlassSurface extends StatelessWidget {
     this.showBorder = true,
     this.bottomHairline,
     this.backdropKey,
-    this.opaqueFill = false,
     required this.child,
   });
 
@@ -85,12 +84,6 @@ class AppGlassSurface extends StatelessWidget {
 
   /// 共享背景读取的键；缺省规则见类注释。
   final BackdropKey? backdropKey;
-
-  /// 用不透明的等效色（[AppGlassResolved.solidFill]：玻璃底色按设定的不
-  /// 透明度叠在 surface 上）作底：叠在会淡到透明的底上、自己又不模糊
-  /// （[AppGlassBlur.none]）的表面用，底下清晰的文字不会透上来叠在内容上。
-  /// 高对比度时本就不透明。
-  final bool opaqueFill;
   final Widget child;
 
   @override
@@ -118,7 +111,7 @@ class AppGlassSurface extends StatelessWidget {
     }
     return GlassSurface(
       borderRadius: borderRadius,
-      fill: opaqueFill ? glass.solidFill : glass.fill,
+      fill: glass.fill,
       blurSigma: glass.blurSigma,
       blur: wantsBlur && glass.canBlur,
       border: showBorder ? glass.border : null,

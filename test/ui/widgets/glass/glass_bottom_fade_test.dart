@@ -379,6 +379,20 @@ void main() {
       expect(_redness(data, 130), 0);
     });
 
+    testWidgets('no seam where the full tint meets the fade', (tester) async {
+      // 上缘错开半个像素，完整段与渐变段的分界（50.5）也不在整像素上：
+      // 两块分开画时那一行两边都只盖一半，透出底下的条纹。
+      final data = await _render(
+        tester,
+        fill: const Color(0xFFFF0000),
+        top: 0.5,
+      );
+      final full = _redness(data, 45);
+      expect(full, greaterThan(240));
+      expect(_redness(data, 50), closeTo(full, 2));
+      expect(_redness(data, 51), closeTo(full, 2));
+    });
+
     testWidgets('the blur holds on the upper half and dissolves below', (
       tester,
     ) async {

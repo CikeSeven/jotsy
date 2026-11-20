@@ -107,6 +107,12 @@ Widget _page({
 FloatingTitleChip _chip(WidgetTester tester) =>
     tester.widget<FloatingTitleChip>(find.byType(FloatingTitleChip));
 
+/// 岛里的玻璃（不含状态栏渐隐带）。
+Finder get _islandGlass => find.descendant(
+  of: find.byType(FloatingTopBar),
+  matching: find.byType(GlassSurface),
+);
+
 Future<void> _scroll(WidgetTester tester, double dy) async {
   await tester.drag(find.byType(CustomScrollView), Offset(0, -dy));
   await tester.pumpAndSettle();
@@ -115,21 +121,22 @@ Future<void> _scroll(WidgetTester tester, double dy) async {
 void main() {
   testWidgets('经典材质：左返回岛、右侧分享 / 编辑 / 更多，状态栏底条为纸色', (WidgetTester tester) async {
     await tester.pumpWidget(_page());
-    expect(find.byType(GlassSurface), findsNothing);
+    expect(_islandGlass, findsNothing);
     expect(find.byType(FloatingBackIsland), findsOneWidget);
     expect(find.byTooltip('分享'), findsOneWidget);
     expect(find.byTooltip('编辑'), findsOneWidget);
     expect(find.byTooltip('更多'), findsOneWidget);
-    final strip = tester.widget<ColoredBox>(
+    final strip = tester.widget<GlassSurface>(
       find.descendant(
         of: find.byType(FloatingTopBarStatusStrip),
-        matching: find.byType(ColoredBox),
+        matching: find.byType(GlassSurface),
       ),
     );
-    expect(strip.color, _paper);
+    expect(strip.fill, _paper);
+    expect(strip.fadeToBottom, isTrue);
   });
 
-  testWidgets('顶栏为玻璃时岛总在模糊，且不在 Opacity / FadeTransition 之下', (
+  testWidgets('顶栏为玻璃时渐隐带不模糊、岛总在模糊，且不在 Opacity / FadeTransition 之下', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -137,6 +144,14 @@ void main() {
     );
     final glass = find.byType(GlassSurface);
     expect(glass, findsWidgets);
+    // 渐隐带只是不透明底色的透明度过渡。
+    final strip = tester.widget<BackdropFilter>(
+      find.descendant(
+        of: find.byType(FloatingTopBarStatusStrip),
+        matching: find.byType(BackdropFilter),
+      ),
+    );
+    expect(strip.enabled, isFalse);
     // 岛下面是正文与头图：没有背景图也要模糊（标题胶囊此刻隐藏，不算）。
     for (final island in <Type>[FloatingBackIsland, FloatingActionIsland]) {
       final filter = tester.widget<BackdropFilter>(
@@ -173,7 +188,7 @@ void main() {
         ),
       ),
     );
-    expect(find.byType(GlassSurface), findsNothing);
+    expect(_islandGlass, findsNothing);
   });
 
   testWidgets('自定义深色玻璃底色上按钮换成看得清的前景', (WidgetTester tester) async {

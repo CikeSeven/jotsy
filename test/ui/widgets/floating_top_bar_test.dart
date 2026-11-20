@@ -28,6 +28,7 @@ Widget _page({
   VoidCallback? onTitleTap,
   Widget? trailing,
   bool reduceMotion = false,
+  bool highContrast = false,
 }) {
   return MaterialApp(
     theme: expressiveTestTheme(Brightness.light),
@@ -40,6 +41,7 @@ Widget _page({
         padding: const EdgeInsets.only(top: _statusBar),
         viewPadding: const EdgeInsets.only(top: _statusBar),
         disableAnimations: reduceMotion,
+        highContrast: highContrast,
       ),
       child: AppGlassScope(
         style: style,
@@ -76,6 +78,17 @@ Widget _page({
 
 Finder get _back => find.byType(FloatingBackIsland);
 
+Finder get _stripGlass => find.descendant(
+  of: find.byType(FloatingTopBarStatusStrip),
+  matching: find.byType(GlassSurface),
+);
+
+/// 岛里的玻璃（不含状态栏底条）。
+Finder get _islandGlass => find.descendant(
+  of: find.byType(FloatingTopBar),
+  matching: find.byType(GlassSurface),
+);
+
 void main() {
   testWidgets('岛在状态栏下方 4，高 48，状态栏下方一共占 56', (WidgetTester tester) async {
     await tester.pumpWidget(_page());
@@ -88,24 +101,72 @@ void main() {
 
   testWidgets('经典材质的岛是实色胶囊，没有玻璃', (WidgetTester tester) async {
     await tester.pumpWidget(_page());
-    expect(find.byType(GlassSurface), findsNothing);
+    expect(_islandGlass, findsNothing);
     final material = tester.widget<Material>(
       find.descendant(of: _back, matching: find.byType(Material)).first,
     );
     expect(material.shape, isA<StadiumBorder>());
   });
 
-  testWidgets('顶栏为玻璃时每颗岛与状态栏底条都是玻璃', (WidgetTester tester) async {
+  testWidgets('状态栏底条往下铺过浮岛那一行后渐隐，浮岛画在它之上', (WidgetTester tester) async {
+    await tester.pumpWidget(_page());
+    final strip = tester.widget<GlassSurface>(_stripGlass);
+    // 经典：纸色、不模糊，自上而下渐隐（与首页顶栏同一种渐隐）。
+    expect(strip.fill, _paper);
+    expect(strip.blur, isFalse);
+    expect(strip.fadeToBottom, isTrue);
+    final band = tester.getRect(_stripGlass);
+    expect(band.top, 0);
+    expect(band.height, _statusBar + FloatingTopBar.extent);
+    // 岛那一行整个落在渐隐带里。
+    expect(
+      tester.getRect(_back).bottom,
+      lessThan(tester.getRect(_stripGlass).bottom),
+    );
+    // 叠放次序：内容 → 渐隐带 → 浮岛。
+    final stack = tester.widget<Stack>(
+      find
+          .descendant(
+            of: find.byType(FloatingTopBarHost),
+            matching: find.byType(Stack),
+          )
+          .first,
+    );
+    final layers = stack.children
+        .whereType<Positioned>()
+        .map((Positioned layer) => layer.child.runtimeType)
+        .toList();
+    expect(layers, <Type>[FloatingTopBarStatusStrip, FloatingTopBar]);
+  });
+
+  testWidgets('高对比度时底条只垫状态栏、不渐隐', (WidgetTester tester) async {
+    await tester.pumpWidget(_page(highContrast: true));
+    expect(tester.getRect(_stripGlass).height, _statusBar);
+    expect(tester.widget<GlassSurface>(_stripGlass).fadeToBottom, isFalse);
+  });
+
+  testWidgets('顶栏为玻璃时渐隐带是不透明的玻璃色、不模糊，岛是模糊的玻璃', (WidgetTester tester) async {
     await tester.pumpWidget(
       _page(style: const AppGlassStyle(mode: AppGlassMode.glass)),
     );
     // 返回岛、动作岛、标题胶囊、状态栏底条。
     expect(find.byType(GlassSurface), findsNWidgets(4));
-    final strip = find.descendant(
-      of: find.byType(FloatingTopBarStatusStrip),
-      matching: find.byType(GlassSurface),
+    final strip = tester.widget<GlassSurface>(_stripGlass);
+    // 只是一次透明度过渡：上半截不透明，不模糊（重模糊会把底下的彩色
+    // 标签糊成色块透上来）。
+    expect(strip.blur, isFalse);
+    expect(strip.fill.a, 1);
+    expect(strip.fadeToBottom, isTrue);
+    expect(
+      tester.getRect(_stripGlass).height,
+      _statusBar + FloatingTopBar.extent,
     );
-    expect(tester.getRect(strip).height, _statusBar);
+    // 渐隐带不模糊，岛照常是半透明、模糊的玻璃（同一区域只有这一层）。
+    for (final island in tester.widgetList<GlassSurface>(_islandGlass)) {
+      expect(island.blur, isTrue);
+      expect(island.fill.a, lessThan(1));
+      expect(island.shadowColor, isNotNull);
+    }
   });
 
   testWidgets('状态栏样式按页面主题给出', (WidgetTester tester) async {
@@ -129,6 +190,13 @@ void main() {
     expect(
       tester.hitTestOnBinding(tester.getCenter(find.byType(ListView))),
       isNotNull,
+    );
+    // 岛收起后那一行仍被渐隐带罩着，光标避让与查找跳转照样让开它。
+    expect(
+      FloatingTopBarCover.coveredBottomOf(
+        tester.element(find.byType(ListView)),
+      ),
+      _statusBar + FloatingTopBar.extent,
     );
 
     await tester.drag(find.byType(ListView), const Offset(0, 100));

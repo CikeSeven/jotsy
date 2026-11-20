@@ -5,7 +5,6 @@ import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/mind_map_editing_controller.dart';
 import '../sections/mind_map_export_sheet.dart';
-import '../viewmodels/mind_map_labels.dart';
 import '../widgets/mind_map_page_scaffold.dart';
 import '../widgets/mind_map_workspace.dart';
 
@@ -40,11 +39,7 @@ class _MindMapViewerPageState extends State<MindMapViewerPage> {
     final l10n = context.l10n;
     final onEdit = widget.onEdit;
     return MindMapPageScaffold(
-      title: Text(
-        mindMapTitle(l10n, widget.document.root.text),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      controller: _controller,
       onBack: () => Navigator.of(context).maybePop(),
       actions: <Widget>[
         IconButton(

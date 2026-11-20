@@ -15,8 +15,9 @@ import 'floating_top_bar.dart';
 ///
 /// 状态与时机：
 /// - 显隐：[hideOnScroll] 时经 [ScrollChromeHider]（滚到顶端与底端都显示），
-///   以 `springSpatial` 弹簧推动，滚动中途反向时带着速度改道；关掉时始终
-///   显示。
+///   以 `springSpatial` 弹簧推动，滚动中途反向时带着速度改道；不经滚动的
+///   内容（导图画布的平移缩放、点空白）冒泡 [FloatingTopBarRevealNotification]
+///   请求收起或浮出。关掉时始终显示（收起请求也不理）。
 /// - 标题胶囊：给了 [titleAnchor] 时，锚点（通常是页头的末尾）的下缘滚进
 ///   浮岛那一行之后才浮出；锚点不在树上（编辑器的虚拟滚动已把页头回收）时
 ///   视为已滚过。没给锚点时只要有 [title] 就一直显示（日期、翻页位置）。
@@ -64,8 +65,8 @@ class FloatingTopBarHost extends StatefulWidget {
   /// 整页主题，换篇时浮岛颜色随之过渡。
   final ThemeData? theme;
 
-  /// 自定义的中间岛（如导图页的标题，由调用方自己随内容刷新）；给出时代替
-  /// 标题胶囊（[title] 不再使用）。
+  /// 自定义的中间岛（如导图页的视图切换、封存页的标题，由调用方自己随
+  /// 内容刷新）；给出时代替标题胶囊（[title] 不再使用）。
   final Widget? middle;
 
   /// 为 true 时 [child] 整体从浮岛那一行以下开始（不滚动的页面：读取中、
@@ -133,6 +134,17 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
     }
     _scheduleTitleSync(notification.metrics);
     return false;
+  }
+
+  bool _handleRevealRequest(FloatingTopBarRevealNotification notification) {
+    if (notification.revealed) {
+      // 外部原因浮出后，下一次滚动收起要重新累计满阈值。
+      _hider.reset();
+      _setRevealed(true);
+    } else if (widget.hideOnScroll) {
+      _setRevealed(false);
+    }
+    return true;
   }
 
   /// 滚动通知在滚动位置改变时、视口重新布局之前发出，这时读到的锚点位置
@@ -224,18 +236,21 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
         statusBarColor != null && FloatingTopBarStatusStrip.fadesOf(context);
     return Stack(
       children: <Widget>[
-        NotificationListener<ScrollNotification>(
-          onNotification: _handleScroll,
-          child: FloatingTopBarCover(
-            coveredBottom: _coveredBottom,
-            child: widget.insetChild
-                ? Padding(
-                    padding: EdgeInsets.only(
-                      top: _statusBar + FloatingTopBar.extent,
-                    ),
-                    child: widget.child,
-                  )
-                : widget.child,
+        NotificationListener<FloatingTopBarRevealNotification>(
+          onNotification: _handleRevealRequest,
+          child: NotificationListener<ScrollNotification>(
+            onNotification: _handleScroll,
+            child: FloatingTopBarCover(
+              coveredBottom: _coveredBottom,
+              child: widget.insetChild
+                  ? Padding(
+                      padding: EdgeInsets.only(
+                        top: _statusBar + FloatingTopBar.extent,
+                      ),
+                      child: widget.child,
+                    )
+                  : widget.child,
+            ),
           ),
         ),
         if (statusBarColor != null)
@@ -277,6 +292,15 @@ class _FloatingTopBarHostState extends State<FloatingTopBarHost>
       ],
     );
   }
+}
+
+/// 内容请求浮岛收起（[revealed] 为 false）或浮出，冒泡给最近的
+/// [FloatingTopBarHost]。给不经滚动视图移动的内容用：导图画布平移缩放时
+/// 收起、点空白时浮出。宿主没开“随滚动隐藏”时只理会浮出。
+class FloatingTopBarRevealNotification extends Notification {
+  const FloatingTopBarRevealNotification({required this.revealed});
+
+  final bool revealed;
 }
 
 /// 浮岛顶栏盖住内容顶部的范围，给下面的内容查询：正文的光标避让、选区菜单

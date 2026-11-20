@@ -93,7 +93,6 @@ import 'package:node_diary/ui/mind_maps/controllers/mind_map_ai_scope.dart';
 import 'package:node_diary/ui/mind_maps/controllers/mind_map_io_flow.dart';
 import 'package:node_diary/ui/mind_maps/sections/mind_map_export_sheet.dart';
 import 'package:node_diary/ui/mind_maps/sections/mind_map_style_sheet.dart';
-import 'package:node_diary/ui/mind_maps/viewmodels/mind_map_labels.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_page_scaffold.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_reveal.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_workspace.dart';

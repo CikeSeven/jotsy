@@ -235,7 +235,8 @@ Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎扫码打�
       ParadiseGrass&emsp;氢妹Ti&emsp;MR.CHEN<br/>
       白禹和Kamiko Kristo&emsp;Hongda&emsp;AXID<br/>
       **民&emsp;泽墨&emsp;霖&emsp;望¹CHun_F<br/>
-      天晴岚风&emsp;喵了个咪&emsp;*京<br/>
+      天晴岚风&emsp;喵了个咪&emsp;*京&emsp;Somniomancer<br/>
+      希望你开心&emsp;木大木大木大木大&emsp;匿名朋友<br/>
       <br/>
     </td>
   </tr>

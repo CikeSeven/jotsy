@@ -39,12 +39,12 @@ const double _screenHeight = 860;
 /// 模拟的系统手势条高度。
 const double _gestureInset = 24;
 
-/// 默认三个 Tab（日记 / 日历 / 探索；待办默认关闭，设置不在底栏）的胶囊
-/// 宽度：3 × 72 + 两侧各 6 的缝。
-const double _pillWidth = 3 * 72 + 12;
+/// 默认四个 Tab（日记 / 日历 / 探索 / 设置；待办默认关闭）的胶囊宽度：
+/// 4 × 60 + 两侧各 6 的缝。
+const double _pillWidth = 4 * 60 + 12;
 
-/// 默认样式只关掉文字时的胶囊：项宽不变（72），格高 42，栏高 54。
-const Size _compactPill = Size(3 * 72 + 12, 54);
+/// 默认样式只关掉文字时的胶囊：项宽不变（60），格高 40，栏高 52。
+const Size _compactPill = Size(4 * 60 + 12, 52);
 
 /// 默认样式：悬浮玻璃栏 + 玻璃顶栏。
 const HomeBarStyle _glass = HomeBarStyle.defaults;
@@ -262,7 +262,7 @@ void main() {
     expect(find.byType(HomeFloatingBar), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
     expect(find.byType(FloatingActionButton), findsOneWidget);
-    // 胶囊按内容定宽（四项 × 72 + 两侧的缝）、水平居中，不再左右撑满。
+    // 胶囊按内容定宽（四项 × 60 + 两侧的缝）、水平居中，不再左右撑满。
     final rect = tester.getRect(_pill);
     expect(rect.width, _pillWidth);
     expect(rect.center.dx, _screenWidth / 2);
@@ -270,8 +270,8 @@ void main() {
       rect.bottom,
       _screenHeight - _gestureInset - HomeBarMetrics.bottomGap,
     );
-    // 默认样式：格高 48 + 上下两道 6 的缝。
-    expect(rect.height, 60);
+    // 默认样式：格高 46 + 上下两道 6 的缝。
+    expect(rect.height, 58);
     expect(tester.widget<BackdropFilter>(_pillBackdrop).enabled, isTrue);
     expect(_glassUnderOpacity(tester), isFalse);
     await _unmount(tester);
@@ -330,7 +330,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(tester.getSize(_inlineButton), const Size.square(60));
+    expect(tester.getSize(_inlineButton), const Size.square(58));
     // 胶囊与按钮作为一组居中。
     expect(
       (tester.getRect(_pill).left + tester.getRect(_inlineButton).right) / 2,
@@ -358,8 +358,32 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('with only diaries left the glass bar and inline button give '
-      'way to the global FAB', (tester) async {
+  testWidgets('five tabs and the inline button fit a 320dp phone', (
+    tester,
+  ) async {
+    await _pumpHome(
+      tester,
+      homeBarRaw: _raw(
+        _glass.copyWith(fabPlacement: HomeBarFabPlacement.inline),
+      ),
+      appFeaturesRaw: '{"todos":true}',
+      width: 320,
+    );
+    // 槽位 288（两侧各 16）减去并排按钮 58 + 8：五项收到 42，不溢出。
+    final pill = tester.getRect(_pill);
+    final button = tester.getRect(_inlineButton);
+    expect(pill.width, closeTo(5 * 42 + 12, 0.01));
+    expect(pill.left, greaterThanOrEqualTo(HomeBarMetrics.minSideMargin));
+    expect(
+      button.right,
+      lessThanOrEqualTo(320 - HomeBarMetrics.minSideMargin + 0.01),
+    );
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('with every switchable tab off the bar keeps diaries and '
+      'settings', (tester) async {
     await _pumpHome(
       tester,
       homeBarRaw: _raw(
@@ -367,14 +391,21 @@ void main() {
       ),
       appFeaturesRaw: '{"calendar":false,"explore":false}',
     );
-    // 只有一个 Tab：不画底栏，内容也不再延伸到胶囊下方。
-    expect(find.byType(HomeBottomBar), findsNothing);
-    expect(find.byType(HomeFloatingBar), findsNothing);
-    expect(_inlineButton, findsNothing);
-    expect(_homeScaffold(tester).extendBody, isFalse);
-    // 新建入口回到全局 FAB，落在手势条上方 10dp。
-    final fab = tester.getRect(find.byType(FloatingActionButton));
-    expect(fab.bottom, closeTo(_screenHeight - _gestureInset - 10, 0.01));
+    final l10n = _l10n(tester);
+    // 设置始终可见：导航行至少两项，底栏与并排的新建按钮照常。
+    expect(find.byType(HomeFloatingBar), findsOneWidget);
+    expect(_homeScaffold(tester).extendBody, isTrue);
+    expect(tester.getSize(_pill).width, 2 * 60 + 12);
+    for (final label in <String>[l10n.navDiaries, l10n.navSettings]) {
+      expect(
+        find.descendant(
+          of: find.byType(HomeFloatingBar),
+          matching: find.text(label),
+        ),
+        findsOneWidget,
+      );
+    }
+    expect(_inlineButton, findsOneWidget);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
@@ -526,7 +557,7 @@ void main() {
 
   testWidgets('changing the style reshapes the pill live', (tester) async {
     final settings = await _pumpHome(tester, diaryCount: 3);
-    expect(tester.getSize(_pill), const Size(_pillWidth, 60));
+    expect(tester.getSize(_pill), const Size(_pillWidth, 58));
 
     const compact = HomeBarStyle(labelMode: HomeBarLabelMode.never);
     unawaited(settings.setHomeBarStyleRaw(_raw(compact)));
@@ -537,7 +568,7 @@ void main() {
 
     unawaited(settings.setHomeBarStyleRaw(null));
     await tester.pumpAndSettle();
-    expect(tester.getSize(_pill), const Size(_pillWidth, 60));
+    expect(tester.getSize(_pill), const Size(_pillWidth, 58));
     expect(_homeScaffold(tester).extendBody, isTrue);
     expect(tester.takeException(), isNull);
     await _unmount(tester);

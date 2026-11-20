@@ -41,6 +41,7 @@ Future<(SettingsService, AppLocalizations)> pumpHomeBarStylePage(
   Locale locale = const Locale('zh'),
   Size size = const Size(400, 860),
   HomeBarSettings? initial,
+  String? appFeaturesRaw,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -48,6 +49,7 @@ Future<(SettingsService, AppLocalizations)> pumpHomeBarStylePage(
   SharedPreferences.setMockInitialValues(<String, Object>{
     // 默认设置编码为 null（不写键）。
     'app.settings.home_bar_style': ?initial?.encode(),
+    'app.settings.app_features': ?appFeaturesRaw,
   });
   final settings = (await tester.runAsync(SettingsService.create))!;
   await tester.pumpWidget(

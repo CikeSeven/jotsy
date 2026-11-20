@@ -13,9 +13,9 @@ void main() {
       expect(style.tintOpacity, 0.5);
       expect(style.topBarHairline, isFalse);
       expect(style.roundness, 1);
-      expect(style.itemWidth, 72);
+      expect(style.itemWidth, 60);
       expect(style.itemInset, 6);
-      expect(style.itemIconSize, 22);
+      expect(style.itemIconSize, 20);
       expect(style.itemLabelSize, 11);
       expect(style.itemLabelGap, 3);
       expect(style.labelMode, HomeBarLabelMode.always);

@@ -7,7 +7,7 @@ import 'home_bar_style_limits.dart';
 export 'home_bar_style_enums.dart';
 export 'home_bar_style_limits.dart';
 
-/// 首页栏（底部导航栏 + 日记 / 待办 / 日历 / 探索各 Tab 的顶栏）的外观。
+/// 首页栏（底部导航栏 + 日记 / 待办 / 日历 / 探索 / 设置各 Tab 的顶栏）的外观。
 ///
 /// 输入：持久化的 JSON（单键 `homeBarStyleRaw` 中的 `current`，或样式码）；
 /// 输出：不可变的样式对象。无副作用，也不依赖 Flutter 的 `Color`——解析为
@@ -41,7 +41,11 @@ export 'home_bar_style_limits.dart';
 ///   回退中性；
 /// - [tintOpacity] 的默认值从 0.72 调到 0.50（玻璃配方重做时）：没改过它的
 ///   用户（稀疏 JSON 里没有这个字段）有意跟着新默认走；明确存过的值照常
-///   保留，超出新范围的（旧“浓雾”的 0.88）夹到上限。
+///   保留，超出新范围的（旧“浓雾”的 0.88）夹到上限；
+/// - [itemWidth] 的默认值从 72 调到 60、[itemIconSize] 从 22 调到 20（设置
+///   回到底栏、导航项最多五个时，#310）：五项共 312 宽，360 宽的屏上两侧
+///   各留 24 不收窄。没改过的用户有意跟着新默认走，明确存过的值照常保留
+///   （放不下时照旧等比收窄）。
 @immutable
 class HomeBarStyle {
   const HomeBarStyle({
@@ -49,9 +53,9 @@ class HomeBarStyle {
     this.tint = HomeBarTint.neutral,
     this.topBarHairline = false,
     this.roundness = 1,
-    this.itemWidth = 72,
+    this.itemWidth = 60,
     this.itemInset = 6,
-    this.itemIconSize = 22,
+    this.itemIconSize = 20,
     this.itemLabelSize = 11,
     this.itemLabelGap = 3,
     this.fabPlacement = HomeBarFabPlacement.above,

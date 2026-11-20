@@ -21,6 +21,7 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_nav_rail.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_tab_entrance.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Size _desktop = Size(1280, 800);
@@ -133,11 +134,10 @@ void main() {
         l10n.navDiaries,
         l10n.navCalendar,
         l10n.navExplore,
+        l10n.navSettings,
       ]) {
         expect(_railItem(label), findsOneWidget);
       }
-      // 设置不是 Tab，不在侧边栏里（从日记页顶栏“更多”进入）。
-      expect(_railItem(l10n.navSettings), findsNothing);
       await _unmount(tester);
     });
   }
@@ -159,7 +159,8 @@ void main() {
     await _pumpHome(tester);
     final l10n = _l10n(tester);
 
-    // 侧边栏与底栏同序：日记(0) · 日历(1) · 探索(2)，启动落在日记。
+    // 侧边栏与底栏同序：日记(0) · 日历(1) · 探索(2) · 设置(3)，启动落在
+    // 日记。
     expect(_homePage(tester), 0);
     await tester.tap(_railItem(l10n.navCalendar));
     await tester.pump();
@@ -183,6 +184,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(_homePage(tester), 2);
     expect(find.byType(ExplorePage), findsOneWidget);
+
+    await tester.tap(_railItem(l10n.navSettings));
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 3);
+    expect(find.byType(SettingsPage), findsOneWidget);
 
     await tester.tap(_railItem(l10n.navDiaries));
     await tester.pumpAndSettle();
@@ -322,15 +328,19 @@ void main() {
     await _unmount(tester);
   });
 
-  testWidgets('Ctrl+1 to Ctrl+4 switch to the nth visible tab', (tester) async {
+  testWidgets('Ctrl+1 to Ctrl+5 switch to the nth visible tab', (tester) async {
     await _pumpHome(tester);
     await _pressShortcut(tester, LogicalKeyboardKey.digit3);
     await tester.pumpAndSettle();
     expect(_homePage(tester), 2);
-    // 默认只有三个可见 Tab：超出可见数量的数字键忽略。
     await _pressShortcut(tester, LogicalKeyboardKey.digit4);
     await tester.pumpAndSettle();
-    expect(_homePage(tester), 2);
+    expect(_homePage(tester), 3);
+    expect(find.byType(SettingsPage), findsOneWidget);
+    // 默认只有四个可见 Tab（待办默认关闭）：超出可见数量的数字键忽略。
+    await _pressShortcut(tester, LogicalKeyboardKey.digit5);
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 3);
     await _pressShortcut(tester, LogicalKeyboardKey.digit1);
     await tester.pumpAndSettle();
     expect(_homePage(tester), 0);

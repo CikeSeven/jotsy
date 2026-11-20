@@ -8797,7 +8797,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsFeaturesPagesFooter =>
-      '«Записи» есть всегда, а «Настройки» находятся в меню «Ещё» вверху раздела «Записи». Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.';
+      '«Записи» и «Настройки» есть всегда. Отключённые разделы пропадут с нижней панели, а данные останутся без изменений.';
 
   @override
   String get settingsFeaturesCalendarSubtitle =>

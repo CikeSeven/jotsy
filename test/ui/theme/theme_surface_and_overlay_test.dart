@@ -81,21 +81,22 @@ void main() {
               theme: pinkTheme,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              home: const SettingsPage(),
+              home: const Scaffold(body: SettingsPage()),
             ),
           ),
         );
 
-        // 设置页的页面底色取当前主题的 surface（没有设背景时）。
-        final scaffold = tester.widget<Scaffold>(
-          find
-              .descendant(
-                of: find.byType(SettingsPage),
-                matching: find.byType(Scaffold),
-              )
-              .first,
+        // 设置 Tab 的页面底色取当前主题的 surface（没有设背景时）。
+        final coloredBoxes = tester.widgetList<ColoredBox>(
+          find.descendant(
+            of: find.byType(SettingsPage),
+            matching: find.byType(ColoredBox),
+          ),
         );
-        expect(scaffold.backgroundColor, pinkTheme.colorScheme.surface);
+        expect(
+          coloredBoxes.any((box) => box.color == pinkTheme.colorScheme.surface),
+          isTrue,
+        );
       },
     );
   });

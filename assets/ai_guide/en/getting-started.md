@@ -5,20 +5,19 @@ summary: What each home tab is for, how to write your first entry, and which fea
 features: [calendar, todos, explore, notebooks, anniversaries, templates, timeCapsules, swipeArchive, comments, ai]
 platforms: []
 destinations: [tab_diaries, tab_calendar, tab_explore, tab_settings, search, archive, settings_features, settings_notebooks, data_management]
-keywords: [getting started, first time, beginner, home, bottom bar, tabs, where is settings, new entry, write, preview, edit, shelf, switch notebook, tag filter, multi-select, archive, features, turned off by default]
+keywords: [getting started, first time, beginner, home, bottom bar, tabs, new entry, write, preview, edit, shelf, switch notebook, tag filter, multi-select, archive, features, turned off by default]
 ---
 Jotsy is a diary that lives on your own device. There's no account to create; open it and start writing. This article walks through the home screen, your first entry, and the features that start out turned off.
 
 ## The pages in the bottom bar
 
-The bottom bar (a side rail on wide windows) has three pages by default:
+The bottom bar (a side rail on wide windows) has four pages by default:
 - **Diaries**: the list of all your entries, and where you start writing.
 - **Calendar**: entries by month or week, with lunar dates and holidays. Long-press a day to write for it.
 - **Explore**: cards for stats, On this day, mood trends, the media gallery and more.
+- **Settings**: appearance, editor, data management and so on, at the right end of the bottom bar.
 
-Diaries always stays; Calendar and Explore can be turned off. The To-dos page is off by default; turn it on and a To-dos tab appears in the bottom bar. With Calendar, Explore and To-dos all off, only Diaries is left and the bottom bar goes away.
-
-**Settings** (appearance, editor, data management and so on) isn't in the bottom bar: tap More (⋮) at the top right of the Diaries page, and Settings is the last item in the menu.
+Diaries and Settings always stay; Calendar and Explore can be turned off. The To-dos page is off by default; turn it on and a To-dos tab appears in the bottom bar. Settings is also the last item in the More (⋮) menu at the top right of the Diaries page.
 
 ## What's on the Diaries page
 

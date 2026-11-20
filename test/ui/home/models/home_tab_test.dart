@@ -4,50 +4,65 @@ import 'package:node_diary/ui/home/models/home_tab.dart';
 
 void main() {
   group('visibleHomeTabs keeps a fixed order', () {
-    test('all four tabs read diaries, to-dos, calendar, explore', () {
+    test('all five tabs read diaries, to-dos, calendar, explore, settings', () {
       expect(visibleHomeTabs(const AppFeatures(todos: true)), <HomeTab>[
         HomeTab.diaries,
         HomeTab.todos,
         HomeTab.calendar,
         HomeTab.explore,
+        HomeTab.settings,
       ]);
     });
 
-    test('the default three tabs drop to-dos without moving the rest', () {
+    test('the default four tabs drop to-dos without moving the rest', () {
       expect(visibleHomeTabs(const AppFeatures()), <HomeTab>[
         HomeTab.diaries,
         HomeTab.calendar,
         HomeTab.explore,
+        HomeTab.settings,
       ]);
     });
 
-    test('turning a tab off removes it and keeps diaries first', () {
+    test('turning a tab off removes it and keeps diaries first and settings '
+        'last', () {
       expect(
         visibleHomeTabs(const AppFeatures(todos: true, explore: false)),
-        <HomeTab>[HomeTab.diaries, HomeTab.todos, HomeTab.calendar],
+        <HomeTab>[
+          HomeTab.diaries,
+          HomeTab.todos,
+          HomeTab.calendar,
+          HomeTab.settings,
+        ],
       );
       expect(
         visibleHomeTabs(const AppFeatures(todos: true, calendar: false)),
-        <HomeTab>[HomeTab.diaries, HomeTab.todos, HomeTab.explore],
+        <HomeTab>[
+          HomeTab.diaries,
+          HomeTab.todos,
+          HomeTab.explore,
+          HomeTab.settings,
+        ],
       );
       expect(visibleHomeTabs(const AppFeatures(explore: false)), <HomeTab>[
         HomeTab.diaries,
         HomeTab.calendar,
+        HomeTab.settings,
       ]);
       expect(visibleHomeTabs(const AppFeatures(calendar: false)), <HomeTab>[
         HomeTab.diaries,
         HomeTab.explore,
+        HomeTab.settings,
       ]);
     });
 
-    test('with every other tab off only diaries is left', () {
+    test('with every switchable tab off diaries and settings remain', () {
       expect(
         visibleHomeTabs(const AppFeatures(calendar: false, explore: false)),
-        <HomeTab>[HomeTab.diaries],
+        <HomeTab>[HomeTab.diaries, HomeTab.settings],
       );
     });
 
-    test('the settings preview uses the four-tab order', () {
+    test('the settings preview uses the five-tab order', () {
       expect(
         allHomeTabsInBarOrder,
         visibleHomeTabs(const AppFeatures(todos: true)),

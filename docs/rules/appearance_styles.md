@@ -26,7 +26,7 @@
 - 必须：颜色与几何只经 `HomeBarResolvedStyle` 解析，栏高、格高、指示器圆角只由形状参数推导。
 - 禁止：开放栏高、指示器圆角、描边、模糊等单项；范围只在 `HomeBarStyleLimits`（`home_bar_style_test.dart` 兜底）。
 - 必须：JSON 相对默认值稀疏编码，旧字段忽略不迁移；改默认值须有意为之并在 `HomeBarStyle` 注释写明。
-- 必须：内置预设保持偶数；改玻璃配方后截图核对每个预设明暗下都像玻璃，改形状后核对 360 宽不收窄。
+- 必须：内置预设保持偶数；改玻璃配方后截图核对每个预设明暗下都像玻璃，改形状后核对 360 宽放下五项不收窄（`home_bar_resolved_style_test.dart` 兜底）。
 - 必须：多片拼成的顶栏只用一块玻璃（最下面一片画并往上铺），禁止各片各画一块（接缝出线）。
 - 必须：顶栏下缘渐变 / 分隔线 / 实边只由 `topBarFades` 决定；渐变时栏内自带底色的控件改用 `topBarControlFill`。
 - 禁止：用 `ShaderMask` / `Opacity` 或叠多层模糊做顶栏渐变（只经 `GlassSurface.fadeToBottom`），或借它做颜色过渡。

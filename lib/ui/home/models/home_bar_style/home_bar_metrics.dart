@@ -13,7 +13,9 @@ import 'dart:math' as math;
 /// 短，不再左右撑满。
 abstract final class HomeBarMetrics {
   /// 屏幕太窄放不下时项宽等比收窄，但不小于它（再窄点按区域就不够了）。
-  static const double minItemWidth = 44;
+  /// 320dp 的屏上五项连同并排的新建按钮收到约 42 才放得下（#310），所以
+  /// 取 40；格子仍有 40 以上的高，点按区域不比按钮小多少。
+  static const double minItemWidth = 40;
 
   /// 胶囊与屏幕左右边缘至少留出的距离；与系统手势条之间的距离（手势条
   /// 本身已经让出约 20，再留 4 就够，栏贴近底边、不悬得太高）。
@@ -33,12 +35,12 @@ abstract final class HomeBarMetrics {
   /// 文字的行高倍数。
   static const double labelLineHeight = 1.2;
 
-  /// 格子里内容（图标 + 间距 + 文字）上下各留的白：默认参数下格高 48，
-  /// 图标框 24 + 间距 3 + 文字 13.2 约 40，上下各约 4。文字放大到 1.3 倍时
+  /// 格子里内容（图标 + 间距 + 文字）上下各留的白：默认参数下格高 46，
+  /// 图标框 22 + 间距 3 + 文字 13.2 约 38，上下各约 4。文字放大到 1.3 倍时
   /// 多出的高度也从这里让出，不会溢出指示器。
   static const double labeledContentPadding = 4;
 
-  /// 只有图标时上下各留的白：格子仍是一颗横向的扁胶囊（默认 72×42），
+  /// 只有图标时上下各留的白：格子仍是一颗横向的扁胶囊（默认 60×40），
   /// 不是只裹着图标的小圆点。
   static const double iconOnlyContentPadding = 9;
 

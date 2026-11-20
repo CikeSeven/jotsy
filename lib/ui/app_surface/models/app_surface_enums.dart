@@ -12,7 +12,7 @@ enum AppBackgroundKind { none, color, image }
 /// 可以单独设置背景的区域。
 ///
 /// - [diaries] / [calendar] / [explore]：首页对应的 Tab；
-/// - [settings]：设置首页（从日记页顶栏“更多”推入）与全部设置子页；
+/// - [settings]：首页的设置 Tab 与全部设置子页；
 /// - [editor]：编辑页、发表页、模板编辑页；
 /// - [preview]：预览页（仅当预览样式的纸张为“跟随主题”时，用户自定义的
 ///   纸张颜色优先）；
@@ -31,7 +31,7 @@ enum AppBackgroundArea {
 }
 
 /// 区域在“背景与材质”里的展示顺序：首页 Tab 在前（与底栏同一顺序：日记、
-/// 待办、日历、探索，见 `allHomeTabsInBarOrder`），二级页在后。
+/// 待办、日历、探索、设置，见 `allHomeTabsInBarOrder`），二级页在后。
 /// 枚举只能在末尾追加（见文件头），展示顺序另列。
 const List<AppBackgroundArea> appBackgroundAreaDisplayOrder =
     <AppBackgroundArea>[

@@ -8531,7 +8531,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsFeaturesPagesFooter =>
-      'Diaries always stays, and Settings is in the More menu at the top of Diaries. Pages you turn off leave the bottom bar; your data isn\'t affected.';
+      'Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn\'t affected.';
 
   @override
   String get settingsFeaturesCalendarSubtitle =>

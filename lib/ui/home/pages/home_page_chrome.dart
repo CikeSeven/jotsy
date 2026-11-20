@@ -171,12 +171,10 @@ extension _HomePageChrome on _HomePageState {
     final shouldShow = switch (_effectiveTab) {
       HomeTab.diaries => _diariesFabVisibleByScroll,
       HomeTab.todos => !_todosSelecting,
-      HomeTab.calendar || HomeTab.explore => false,
+      HomeTab.calendar || HomeTab.explore || HomeTab.settings => false,
     };
     final fabBaseBottomOffset = _HomePageState._fabBottomGapAboveNav;
-    // 没有底栏（只剩日记一个 Tab）时 body 同样止于屏幕底部，按收起的底栏
-    // 处理：落到手势条上方 10dp。
-    final navOffset = !_hasBottomBar || _barHiddenByScroll
+    final navOffset = _barHiddenByScroll
         ? MediaQuery.viewPaddingOf(context).bottom
         : HomeBottomBar.floatingSlotExtent(context, barStyle);
 

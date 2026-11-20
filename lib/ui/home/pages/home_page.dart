@@ -66,13 +66,11 @@ part 'home_page_chrome.dart';
 part 'home_page_pager.dart';
 part 'home_page_shortcuts.dart';
 
-/// 主框架页：承载 Tab 导航（日记 / 待办 / 日历 / 探索）。设置不是 Tab，从
-/// 日记页顶栏“更多 → 设置”推入（[openSettingsPage]）。
+/// 主框架页：承载 Tab 导航（日记 / 待办 / 日历 / 探索 / 设置）。
 ///
-/// 待办、日历与探索可在设置 → 功能管理中关闭，底栏随之变为 2–4 项（见
-/// [visibleHomeTabs]）；三者都关闭时只剩日记，没有可切换的页面，窄窗口不显示
-/// 底栏（新建入口回到全局 FAB，见 [_hasBottomBar]）。当前页、目标页、FAB 与
-/// 返回键一律按 [HomeTab] 身份判断，可见集合变化时由
+/// 待办、日历与探索可在设置 → 功能管理中关闭，底栏随之变为 2–5 项（见
+/// [visibleHomeTabs]，日记与设置始终保留）；当前页、目标页、FAB 与返回键
+/// 一律按 [HomeTab] 身份判断，可见集合变化时由
 /// `_HomePageController.syncVisibleTabs` 重新对齐下标。
 ///
 /// 按窗口宽度两种外壳（[AppBreakpoints]，不按平台）：
@@ -94,7 +92,7 @@ part 'home_page_shortcuts.dart';
 /// 搬家而不重建，各 Tab 的状态（滚动位置、筛选、日记本范围）都保留。
 ///
 /// 键盘快捷键（所有宽度，焦点在首页内时生效，见 home_page_shortcuts.dart）：
-/// Ctrl/⌘+N 新建、Ctrl/⌘+F 搜索日记、Ctrl/⌘+1…4 切到第 n 个可见 Tab。
+/// Ctrl/⌘+N 新建、Ctrl/⌘+F 搜索日记、Ctrl/⌘+1…5 切到第 n 个可见 Tab。
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({
     super.key,
@@ -215,8 +213,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// true；以下时机一律放回 false（并清空 [_barScrollHider] 的累计量）：
   /// - 切 Tab 开始或页码变化：新页面的滚动位置与收起时无关，导航必须可见；
   /// - 首页出现提示（SnackBar）：提示叠在底栏上方，底栏收起会让提示悬空；
-  /// - 关闭该行为或底栏消失（变成宽窗口、只剩一个 Tab）：在 build 中直接
-  ///   复位。
+  /// - 关闭该行为或底栏消失（变成宽窗口）：在 build 中直接复位。
   bool _barHiddenByScroll = false;
 
   /// 最近一次 build 时“滚动时隐藏底栏”是否生效（有底栏且开启该行为）；
@@ -258,11 +255,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     return _controller.onTap(index);
   }
 
-  /// 日记页顶栏“更多 → 设置”：与点底栏换 Tab 一样是用户自己去做别的事，
+  /// 日记页顶栏“更多 → 设置”：与点底栏的设置 Tab 一样是用户自己换页，
   /// 返回键不再回到 AI 对话。
-  void _openSettings() {
+  void _openSettingsTab() {
     ref.read(aiChatReturnProvider.notifier).disarm();
-    unawaited(openSettingsPage(context));
+    unawaited(_controller.switchToHomeTab(HomeTab.settings));
   }
 
   @override
@@ -404,10 +401,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   int get _effectiveIndex => _targetIndex;
 
-  /// 窄窗口且至少有两个可见 Tab 时才有底栏：只剩日记时没有可切换的页面，
-  /// 一项的导航行没有意义。宽窗口没有底栏（侧边栏照常，新建按钮在栏顶）。
-  bool get _hasBottomBar => !_wide && _tabs.length > 1;
-
   /// 目标 Tab（点击时立即更新，不等切页动画结束）。
   HomeTab get _effectiveTab => _tabs[_effectiveIndex];
 
@@ -436,7 +429,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             onCreateActionChanged: _diariesCreateActionChanged,
             onSearchActionChanged: _diariesSearchActionChanged,
             onFabVisibilityChanged: _diariesFabVisibilityChanged,
-            onOpenSettings: _openSettings,
+            onOpenSettings: _openSettingsTab,
           ),
           HomeTab.todos => TodosPage(
             key: const PageStorageKey<String>('tab_todos'),
@@ -448,6 +441,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           HomeTab.explore => const ExplorePage(
             key: PageStorageKey<String>('tab_explore'),
+          ),
+          HomeTab.settings => const SettingsPage(
+            key: PageStorageKey<String>('tab_settings'),
           ),
         },
       ),
@@ -524,8 +520,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     final barBehavior = ref.watch(homeBarBehaviorProvider);
     // 关闭“滚动时隐藏”时直接复位隐藏态（正在 build，随后的组装读的就是
     // 新值，不需要 setState）；重新开启后从显示状态开始。
-    // 没有底栏（宽窗口、只剩日记一个 Tab）时“滚动时隐藏”不生效。
-    _barHideOnScrollEnabled = _hasBottomBar && barBehavior.hideOnScroll;
+    // 宽窗口没有底栏，“滚动时隐藏”不生效。
+    _barHideOnScrollEnabled = !_wide && barBehavior.hideOnScroll;
     if (!_barHideOnScrollEnabled && _barHiddenByScroll) {
       _barHiddenByScroll = false;
       _barScrollHider.reset();
@@ -570,11 +566,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     required HomeBarBehavior barBehavior,
   }) {
     final wide = _wide;
-    final hasBottomBar = _hasBottomBar;
-    // 并排新建按钮要有底栏才放得下；其余窄窗口（含没有底栏时）保留浮在
-    // 底栏上方的全局 FAB。宽窗口两者都没有，新建按钮在侧边栏顶部。
+    // 并排新建按钮放在底栏里；不并排时窄窗口保留浮在底栏上方的全局
+    // FAB。宽窗口两者都没有，新建按钮在侧边栏顶部。
     final inlineCreate =
-        hasBottomBar && barStyle.fabPlacement == HomeBarFabPlacement.inline;
+        !wide && barStyle.fabPlacement == HomeBarFabPlacement.inline;
     // 页面区挂在 GlobalKey 下：窄 / 宽外壳把它放在不同父级，跨过 600 时原样
     // 搬家，不重建 PageView 与保活的 Tab 页面。窄窗口下 KeyedSubtree 不产生
     // 渲染对象，树与改版前等价。
@@ -645,8 +640,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     backgroundColor: AppPagedBackground.shellColorOf(context),
                     resizeToAvoidBottomInset: false,
                     // 底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
-                    // 透出。没有底栏时内容止于窗口底部。
-                    extendBody: hasBottomBar,
+                    // 透出。宽窗口没有底栏，内容止于窗口底部。
+                    extendBody: !wide,
                     body: wide
                         ? _buildWideBody(
                             navItems: navItems,
@@ -654,7 +649,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             content: content,
                           )
                         : content,
-                    bottomNavigationBar: !hasBottomBar
+                    bottomNavigationBar: wide
                         ? null
                         : _buildBottomBar(
                             navItems: navItems,
@@ -769,7 +764,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         await _openCreate();
       case HomeTab.todos:
         await _todosCreateAction?.call();
-      case HomeTab.calendar || HomeTab.explore:
+      case HomeTab.calendar || HomeTab.explore || HomeTab.settings:
         return;
     }
   }

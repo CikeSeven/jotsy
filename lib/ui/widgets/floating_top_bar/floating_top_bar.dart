@@ -8,6 +8,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
 import '../glass/glass_reveal.dart';
+import '../glass/glass_surface.dart';
 import '../width_layout_builder.dart';
 import 'floating_island.dart';
 
@@ -107,9 +108,15 @@ class FloatingTopBar extends StatelessWidget {
   }
 }
 
-/// 状态栏那一条的底：页面内容从这里以下开始，滚上去的内容从它下面穿过，
-/// 状态栏图标因此在任何头图上都看得清。经典时为 [color]（纸色 / 页面色），
-/// 玻璃时为一条顶栏玻璃（不画描边）。
+/// 状态栏那一条的底，并往下铺过浮岛那一行逐渐变透明（与首页顶栏同一种
+/// 渐隐，经 [GlassSurface.fadeToBottom]）：上半截是完整的底，状态栏图标在
+/// 任何头图上都看得清；下半截淡到没有，滚上去的内容在浮岛之下逐渐隐去，
+/// 不再在状态栏下沿切出一道硬边。浮岛画在它之上，像浮在这片渐隐之上。
+///
+/// 经典时为 [color]（纸色 / 页面色，不模糊），玻璃时为一块顶栏玻璃（模糊
+/// 随底色一起淡出，不画描边）。高对比度时不渐隐，回到只垫状态栏、下沿是
+/// 实边（与首页顶栏一致）。渐隐的尽头正好是内容静止时的上沿
+/// （[FloatingTopBar.extent]），没有通栏头图时内容静止时不被遮住。
 ///
 /// 同时决定状态栏图标的明暗：按所在的主题（预览页是这一篇的整页主题）给出
 /// [SystemUiOverlayStyle]，浮岛隐藏时也不会回落到应用主题。
@@ -117,6 +124,13 @@ class FloatingTopBarStatusStrip extends StatelessWidget {
   const FloatingTopBarStatusStrip({super.key, required this.color});
 
   final Color color;
+
+  /// 状态栏之下渐隐带的高度：铺过浮岛那一行。
+  static const double fadeExtent = FloatingTopBar.extent;
+
+  /// 此处是否渐隐（高对比度时不渐隐）。
+  static bool fadesOf(BuildContext context) =>
+      !MediaQuery.highContrastOf(context);
 
   /// 按 [theme] 的明暗给出的状态栏样式（主题里设了顶栏样式时用主题的）。
   static SystemUiOverlayStyle overlayStyleOf(ThemeData theme) {
@@ -135,14 +149,17 @@ class FloatingTopBarStatusStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.viewPaddingOf(context).top;
+    final fades = fadesOf(context);
+    final height =
+        MediaQuery.viewPaddingOf(context).top + (fades ? fadeExtent : 0);
     final glass = AppGlass.of(context).isGlass(AppGlassComponent.topBars);
     final Widget fill = glass
-        ? const AppGlassSurface(
+        ? AppGlassSurface(
             component: AppGlassComponent.topBars,
             blur: AppGlassBlur.always,
             showBorder: false,
-            child: SizedBox.expand(),
+            fadeToBottom: fades,
+            child: const SizedBox.expand(),
           )
         // 翻页换篇时纸色随之过渡，不在半途硬切。
         : TweenAnimationBuilder<Color?>(
@@ -153,7 +170,12 @@ class FloatingTopBarStatusStrip extends StatelessWidget {
             ),
             curve: ExpressiveMotion.effects,
             builder: (BuildContext context, Color? value, Widget? _) =>
-                ColoredBox(color: value ?? color),
+                GlassSurface(
+                  fill: value ?? color,
+                  blur: false,
+                  fadeToBottom: fades,
+                  child: const SizedBox.expand(),
+                ),
           );
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyleOf(Theme.of(context)),

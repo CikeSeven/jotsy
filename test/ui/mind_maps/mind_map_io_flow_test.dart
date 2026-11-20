@@ -159,7 +159,7 @@ void main() {
     expect(find.text('Copied'), findsOneWidget);
 
     // 切到大纲后再打开，面板直接停在大纲一类。
-    await tester.tap(find.text('Outline'));
+    await tester.tap(find.byTooltip('Outline'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('More').first);
     await tester.pumpAndSettle();

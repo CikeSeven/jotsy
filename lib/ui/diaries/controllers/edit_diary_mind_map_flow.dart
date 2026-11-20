@@ -9,8 +9,8 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 ///   导图模式（[_EditDiaryMindMapFlow._syncMindMapSession]，每次构建时核对，
 ///   正文控制器被换掉——回填详情、续写草稿——时重建会话）；
 /// - 外框：不构建文字编辑器、悬浮工具栏与录音面板，整页是导图工作区
-///   （[MindMapWorkspace]），顶栏是返回、撤销 / 重做、发布（新建）或保存
-///   （手动保存）与“更多”；“更多”只有导图自己的样式、导出导图与导入，
+///   （[MindMapWorkspace]），顶栏是返回、“画布 / 大纲”切换（不显示标题）、撤销 / 重做、
+///   发布（新建）或保存（手动保存）与“更多”；“更多”只有导图自己的样式、导出导图与导入，
 ///   编辑已有日记时再加分享、编辑器设置与删除（见
 ///   [_EditDiaryReadingActions._mindMapDiaryMoreItems]），没有信息面板；
 /// - 写回：导图的每次改动经 [_EditDiaryMindMapSession] 写进正文里那一块
@@ -147,46 +147,35 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
     return MindMapPageScaffold(
       paintBackground: false,
       controller: controller,
-      title: _isCreateEntry
-          ? Text(l10n.autoT0134)
-          : ListenableBuilder(
-              listenable: controller,
-              builder: (BuildContext context, Widget? _) => Text(
-                mindMapTitle(l10n, controller.document.root.text),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
       onBack: () => unawaited(_controller.attemptExit()),
       actions: <Widget>[
         if (!_isCreateEntry && _controller.manualEditSave)
           _buildReadingSaveButton(),
-        ExpressiveMenuButton(
-          tooltip: l10n.diaryEditorMoreActions,
-          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
-          items: <Widget>[
-            ExpressiveMenuItem(
-              leadingIcon: const FaIcon(FontAwesomeIcons.palette),
-              onPressed: () => showMindMapStyleSheet(context, controller),
-              child: Text(l10n.mindMapStyleSheetTitle),
-            ),
-            ExpressiveMenuItem(
-              leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
-              onPressed: () => showMindMapExportSheet(
-                context,
-                controller.document,
-                outline: controller.outlineView,
-              ),
-              child: Text(l10n.mindMapExport),
-            ),
-            ExpressiveMenuItem(
-              leadingIcon: const FaIcon(FontAwesomeIcons.fileImport),
-              onPressed: () => importMindMapFromFile(context, controller),
-              child: Text(l10n.mindMapImport),
-            ),
-            if (reading != null) ..._mindMapDiaryMoreItems(reading),
-          ],
+      ],
+      menuTooltip: l10n.diaryEditorMoreActions,
+      menuItems: <Widget>[
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.palette),
+          onPressed: () => showMindMapStyleSheet(context, controller),
+          child: Text(l10n.mindMapStyleSheetTitle),
         ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+          onPressed: () => showMindMapExportSheet(
+            context,
+            controller.document,
+            outline: controller.outlineView,
+          ),
+          child: Text(l10n.mindMapExport),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.fileImport),
+          onPressed: () => importMindMapFromFile(context, controller),
+          child: Text(l10n.mindMapImport),
+        ),
+        if (reading != null) ..._mindMapDiaryMoreItems(reading),
+      ],
+      trailingActions: <Widget>[
         if (_isCreateEntry)
           FloatingIslandPill(
             label: l10n.autoT0136,

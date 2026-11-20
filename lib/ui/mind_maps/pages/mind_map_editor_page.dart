@@ -11,7 +11,6 @@ import '../controllers/mind_map_editing_controller.dart';
 import '../controllers/mind_map_io_flow.dart';
 import '../sections/mind_map_export_sheet.dart';
 import '../sections/mind_map_style_sheet.dart';
-import '../viewmodels/mind_map_labels.dart';
 import '../widgets/mind_map_page_scaffold.dart';
 import '../widgets/mind_map_workspace.dart';
 
@@ -65,40 +64,26 @@ class _MindMapEditorPageState extends State<MindMapEditorPage> {
       },
       child: MindMapPageScaffold(
         controller: _controller,
-        title: ListenableBuilder(
-          listenable: _controller,
-          builder: (BuildContext context, Widget? _) => Text(
-            mindMapTitle(l10n, _controller.document.root.text),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
         onBack: _close,
-        actions: <Widget>[
-          ExpressiveMenuButton(
-            tooltip: l10n.mindMapMore,
-            icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
-            items: <Widget>[
-              ExpressiveMenuItem(
-                leadingIcon: const FaIcon(FontAwesomeIcons.palette),
-                onPressed: () => showMindMapStyleSheet(context, _controller),
-                child: Text(l10n.mindMapStyleSheetTitle),
-              ),
-              ExpressiveMenuItem(
-                leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
-                onPressed: () => showMindMapExportSheet(
-                  context,
-                  _controller.document,
-                  outline: _controller.outlineView,
-                ),
-                child: Text(l10n.mindMapExport),
-              ),
-              ExpressiveMenuItem(
-                leadingIcon: const FaIcon(FontAwesomeIcons.fileImport),
-                onPressed: () => importMindMapFromFile(context, _controller),
-                child: Text(l10n.mindMapImport),
-              ),
-            ],
+        menuItems: <Widget>[
+          ExpressiveMenuItem(
+            leadingIcon: const FaIcon(FontAwesomeIcons.palette),
+            onPressed: () => showMindMapStyleSheet(context, _controller),
+            child: Text(l10n.mindMapStyleSheetTitle),
+          ),
+          ExpressiveMenuItem(
+            leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+            onPressed: () => showMindMapExportSheet(
+              context,
+              _controller.document,
+              outline: _controller.outlineView,
+            ),
+            child: Text(l10n.mindMapExport),
+          ),
+          ExpressiveMenuItem(
+            leadingIcon: const FaIcon(FontAwesomeIcons.fileImport),
+            onPressed: () => importMindMapFromFile(context, _controller),
+            child: Text(l10n.mindMapImport),
           ),
         ],
         body: (BuildContext context, double topInset) {

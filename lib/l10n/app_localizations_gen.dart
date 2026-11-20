@@ -14352,6 +14352,30 @@ abstract class AppLocalizations {
   /// **'Behavior doesn\'t change with presets or style codes.'**
   String get homeBarStyleBehaviorFooter;
 
+  /// Navigation bar style settings: title of the choice where the Settings entry lives.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings entry'**
+  String get homeBarStyleSettingsEntry;
+
+  /// Navigation bar style settings: Settings is the last tab of the navigation bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation bar'**
+  String get homeBarStyleSettingsInBar;
+
+  /// Navigation bar style settings: Settings is the last item of the More menu on the Diaries page.
+  ///
+  /// In en, this message translates to:
+  /// **'More menu'**
+  String get homeBarStyleSettingsInMenu;
+
+  /// Navigation bar style settings: footer explaining the More menu option for the Settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'In the More menu, the bar has one tab fewer and Settings opens from More at the top right of Diaries.'**
+  String get homeBarStyleSettingsEntryFooter;
+
   /// Navigation bar style settings: switch for hiding the bottom bar when scrolling down.
   ///
   /// In en, this message translates to:

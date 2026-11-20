@@ -8843,6 +8843,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Behavior doesn\'t change with presets or style codes.';
 
   @override
+  String get homeBarStyleSettingsEntry => 'Settings entry';
+
+  @override
+  String get homeBarStyleSettingsInBar => 'Navigation bar';
+
+  @override
+  String get homeBarStyleSettingsInMenu => 'More menu';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      'In the More menu, the bar has one tab fewer and Settings opens from More at the top right of Diaries.';
+
+  @override
   String get homeBarStyleHideOnScroll => 'Hide the bar when scrolling down';
 
   @override

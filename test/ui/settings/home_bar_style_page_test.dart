@@ -326,6 +326,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the settings entry moves between the bar and the more menu', (
+    tester,
+  ) async {
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    bool previewHasSettings() => find
+        .descendant(
+          of: find.byType(HomeFloatingBar),
+          matching: find.text(l10n.navSettings),
+        )
+        .evaluate()
+        .isNotEmpty;
+    expect(previewHasSettings(), isTrue);
+
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabBehavior);
+    Finder segment(String label) => find.descendant(
+      of: find.byType(ExpressiveButtonGroup<HomeBarSettingsPlacement>),
+      matching: find.text(label),
+    );
+    await tapHomeBarOption(tester, segment(l10n.homeBarStyleSettingsInMenu));
+    // 行为单独写入，外观不变；预览栏里随之少了设置。
+    expect(
+      storedHomeBarSettings(settings).behavior.settingsPlacement,
+      HomeBarSettingsPlacement.moreMenu,
+    );
+    expect(storedHomeBarSettings(settings).current, HomeBarStyle.defaults);
+    expect(previewHasSettings(), isFalse);
+
+    // 改回导航栏即回到默认：整个键移除。
+    await tapHomeBarOption(tester, segment(l10n.homeBarStyleSettingsInBar));
+    expect(settings.homeBarStyleRaw, isNull);
+    expect(previewHasSettings(), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the behavior tab always offers both switches', (tester) async {
     final (settings, l10n) = await pumpHomeBarStylePage(tester);
     await openHomeBarStyleTab(tester, l10n.homeBarStyleTabBehavior);

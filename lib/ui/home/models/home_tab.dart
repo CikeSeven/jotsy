@@ -1,16 +1,17 @@
 // 首页底栏的 Tab 身份。
 //
 // 职责：给每个 Tab 一个与位置无关的身份（文案、图标），并按功能管理开关
-// 推出当前可见的 Tab 列表。底栏顺序固定为日记、待办、日历、探索、设置；
-// 待办、日历、探索可在设置 → 功能管理中关闭，关闭后其后各 Tab 的下标都会
-// 变，所以首页一律按身份而不是下标判断“当前是哪一页”，启动时也按身份落在
-// 日记页。
+// 与设置入口的位置推出当前可见的 Tab 列表。底栏顺序固定为日记、待办、日历、
+// 探索、设置；待办、日历、探索可在设置 → 功能管理中关闭，设置可改放到日记
+// 页的“更多”菜单，之后各 Tab 的下标都会变，所以首页一律按身份而不是下标
+// 判断“当前是哪一页”，启动时也按身份落在日记页。
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/services/app_features.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/models/app_surface_enums.dart';
+import 'home_bar_style/home_bar_style_enums.dart';
 
 /// 首页 Tab。底栏中的顺序只由 [allHomeTabsInBarOrder] 决定，不依赖声明顺序。
 enum HomeTab {
@@ -62,19 +63,29 @@ const List<HomeTab> allHomeTabsInBarOrder = <HomeTab>[
   HomeTab.settings,
 ];
 
-/// 按功能开关推出可见的 Tab，即底栏（宽窗口为侧边栏）从左到右的顺序。
+/// 按功能开关与设置入口的位置 [settings] 推出可见的 Tab，即底栏（宽窗口为
+/// 侧边栏）从左到右的顺序。
 ///
 /// 顺序固定取 [allHomeTabsInBarOrder]，关闭的 Tab 直接去掉、其余不挪位置。
-/// 日记与设置始终可见：日记是应用的主体，设置是重新打开功能的入口；因此
-/// 结果至少有两项，底栏始终是正常的导航行。
-List<HomeTab> visibleHomeTabs(AppFeatures features) => <HomeTab>[
+/// 日记始终可见且排第一；设置在导航栏时排最后（不能关：它是重新打开功能的
+/// 入口），放到日记页“更多”菜单时不在这里。设置不在导航栏、待办日历探索
+/// 又都关闭时只剩日记一项，首页不显示底栏（见 `HomePage`）。
+List<HomeTab> visibleHomeTabs(
+  AppFeatures features, {
+  required HomeBarSettingsPlacement settings,
+}) => <HomeTab>[
   for (final tab in allHomeTabsInBarOrder)
-    if (_isVisible(tab, features)) tab,
+    if (_isVisible(tab, features, settings)) tab,
 ];
 
-bool _isVisible(HomeTab tab, AppFeatures features) => switch (tab) {
-  HomeTab.diaries || HomeTab.settings => true,
+bool _isVisible(
+  HomeTab tab,
+  AppFeatures features,
+  HomeBarSettingsPlacement settings,
+) => switch (tab) {
+  HomeTab.diaries => true,
   HomeTab.todos => features.todos,
   HomeTab.calendar => features.calendar,
   HomeTab.explore => features.explore,
+  HomeTab.settings => settings == HomeBarSettingsPlacement.bar,
 };

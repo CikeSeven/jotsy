@@ -14,6 +14,9 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style_enums.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
@@ -33,6 +36,7 @@ Future<void> _pumpHome(
   WidgetTester tester, {
   Size size = _desktop,
   int diaryCount = 0,
+  String? homeBarRaw,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -40,6 +44,7 @@ Future<void> _pumpHome(
   // 列表布局：滚动用例按单列卡片的高度取滚动距离（瀑布流两列只有一半高）。
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.diary_layout_mode': 'list',
+    'app.settings.home_bar_style': ?homeBarRaw,
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -141,6 +146,25 @@ void main() {
       await _unmount(tester);
     });
   }
+
+  testWidgets('with settings in the more menu the rail has no settings and '
+      'pins nothing', (tester) async {
+    await _pumpHome(
+      tester,
+      homeBarRaw: const HomeBarSettings(
+        behavior: HomeBarBehavior(
+          settingsPlacement: HomeBarSettingsPlacement.moreMenu,
+        ),
+      ).encode(),
+    );
+    final l10n = _l10n(tester);
+    expect(_railItem(l10n.navSettings), findsNothing);
+    // 最后一项（探索）紧接在日历下面，不被钉到栏底。
+    final calendar = tester.getRect(_railItem(l10n.navCalendar));
+    final explore = tester.getRect(_railItem(l10n.navExplore));
+    expect(explore.top - calendar.bottom, lessThan(100));
+    await _unmount(tester);
+  });
 
   testWidgets('a phone-sized window keeps the bottom bar and global FAB', (
     tester,

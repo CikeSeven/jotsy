@@ -8027,6 +8027,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeBarStyleBehaviorFooter => '動作はプリセットやスタイルコードでは変わりません。';
 
   @override
+  String get homeBarStyleSettingsEntry => '設定の入口';
+
+  @override
+  String get homeBarStyleSettingsInBar => 'ナビゲーションバー';
+
+  @override
+  String get homeBarStyleSettingsInMenu => '「その他」メニュー';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      '「その他」メニューに置くとバーの項目が一つ減り、日記ページ右上の「その他」から設定を開きます。';
+
+  @override
   String get homeBarStyleHideOnScroll => '下にスクロールするとバーを隠す';
 
   @override

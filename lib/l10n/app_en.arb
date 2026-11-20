@@ -11302,6 +11302,22 @@
   "@homeBarStyleBehaviorFooter": {
     "description": "Navigation bar style settings: behavior group footer."
   },
+  "homeBarStyleSettingsEntry": "Settings entry",
+  "@homeBarStyleSettingsEntry": {
+    "description": "Navigation bar style settings: title of the choice where the Settings entry lives."
+  },
+  "homeBarStyleSettingsInBar": "Navigation bar",
+  "@homeBarStyleSettingsInBar": {
+    "description": "Navigation bar style settings: Settings is the last tab of the navigation bar."
+  },
+  "homeBarStyleSettingsInMenu": "More menu",
+  "@homeBarStyleSettingsInMenu": {
+    "description": "Navigation bar style settings: Settings is the last item of the More menu on the Diaries page."
+  },
+  "homeBarStyleSettingsEntryFooter": "In the More menu, the bar has one tab fewer and Settings opens from More at the top right of Diaries.",
+  "@homeBarStyleSettingsEntryFooter": {
+    "description": "Navigation bar style settings: footer explaining the More menu option for the Settings entry."
+  },
   "homeBarStyleHideOnScroll": "Hide the bar when scrolling down",
   "@homeBarStyleHideOnScroll": {
     "description": "Navigation bar style settings: switch for hiding the bottom bar when scrolling down."

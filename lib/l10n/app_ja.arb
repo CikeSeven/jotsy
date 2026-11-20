@@ -11361,6 +11361,22 @@
   "@homeBarStyleBehaviorFooter": {
     "description": "Navigation bar style settings: behavior group footer."
   },
+  "homeBarStyleSettingsEntry": "設定の入口",
+  "@homeBarStyleSettingsEntry": {
+    "description": "Navigation bar style settings: title of the choice where the Settings entry lives."
+  },
+  "homeBarStyleSettingsInBar": "ナビゲーションバー",
+  "@homeBarStyleSettingsInBar": {
+    "description": "Navigation bar style settings: Settings is the last tab of the navigation bar."
+  },
+  "homeBarStyleSettingsInMenu": "「その他」メニュー",
+  "@homeBarStyleSettingsInMenu": {
+    "description": "Navigation bar style settings: Settings is the last item of the More menu on the Diaries page."
+  },
+  "homeBarStyleSettingsEntryFooter": "「その他」メニューに置くとバーの項目が一つ減り、日記ページ右上の「その他」から設定を開きます。",
+  "@homeBarStyleSettingsEntryFooter": {
+    "description": "Navigation bar style settings: footer explaining the More menu option for the Settings entry."
+  },
   "homeBarStyleHideOnScroll": "下にスクロールするとバーを隠す",
   "@homeBarStyleHideOnScroll": {
     "description": "Navigation bar style settings: switch for hiding the bottom bar when scrolling down."

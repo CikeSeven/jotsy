@@ -7888,6 +7888,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStyleBehaviorFooter => '行为不随预设和样式码改变。';
 
   @override
+  String get homeBarStyleSettingsEntry => '设置入口';
+
+  @override
+  String get homeBarStyleSettingsInBar => '导航栏';
+
+  @override
+  String get homeBarStyleSettingsInMenu => '“更多”菜单';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      '放进“更多”菜单时导航栏少一项，从日记页右上角的“更多”打开设置。';
+
+  @override
   String get homeBarStyleHideOnScroll => '下滑时收起底栏';
 
   @override

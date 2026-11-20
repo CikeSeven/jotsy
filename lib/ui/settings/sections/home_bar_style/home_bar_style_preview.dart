@@ -73,8 +73,8 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
   static const double _fabEnd = 20;
   static const double _topBarHeight = 56;
 
-  /// 预览栏里的项目：与首页底栏相同，按功能开关取可见的 Tab（固定顺序，
-  /// 日记在最左、设置在最右），build 时更新。看到的就是自己底栏的项数与
+  /// 预览栏里的项目：与首页底栏相同，按功能开关与“设置入口”取可见的 Tab
+  /// （固定顺序，日记在最左、设置在最右），build 时更新。看到的就是自己底栏的项数与
   /// 宽度；画框比屏幕窄 32，画全部五项时 320dp 的屏上连同并排按钮放不下。
   List<HomeTab> _tabs = const <HomeTab>[HomeTab.diaries];
 
@@ -125,7 +125,10 @@ class _HomeBarStylePreviewState extends ConsumerState<HomeBarStylePreview>
 
   @override
   Widget build(BuildContext context) {
-    _tabs = visibleHomeTabs(ref.watch(appFeaturesProvider));
+    _tabs = visibleHomeTabs(
+      ref.watch(appFeaturesProvider),
+      settings: widget.controller.behavior.settingsPlacement,
+    );
     final controller = widget.controller;
     final appTheme = Theme.of(context);
     final brightness = controller.previewBrightness ?? appTheme.brightness;

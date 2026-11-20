@@ -1,4 +1,4 @@
-/// 首页栏（底部导航栏与四个 Tab 的顶栏）样式的枚举。
+/// 首页栏（底部导航栏与各 Tab 的顶栏）样式与行为的枚举。
 ///
 /// 枚举名即持久化值（设置键、备份与样式码里），改名会让已保存的选择失效；
 /// 旧版本读到不认识的值时回退该字段的默认值（旧数据里已移除的
@@ -15,3 +15,8 @@ enum HomeBarLabelMode { always, selected, never }
 /// 新建按钮（FAB）相对悬浮底栏的位置：[above] 浮在底栏上方；[inline] 并排
 /// 放在底栏右侧。
 enum HomeBarFabPlacement { above, inline }
+
+/// 设置的入口（栏的行为，见 `HomeBarBehavior.settingsPlacement`）：[bar]
+/// 导航栏（窄窗口底栏、宽窗口侧边栏）末尾的“设置”Tab；[moreMenu] 日记页顶栏
+/// “更多”菜单的末项，推入带返回键的设置页，不占导航栏。
+enum HomeBarSettingsPlacement { bar, moreMenu }

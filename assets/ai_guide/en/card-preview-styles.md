@@ -41,7 +41,7 @@ Diary cards (the cards on the home page, in search, archive and the calendar), t
 - **Material**: Solid or Glass. With glass the bottom bar becomes a floating capsule, with Blur, Opacity, Tint, Shadow and Outlines to adjust, and you can turn on **Glass top bars too**.
 - **Floating bar** (glass only): Height, Corner radius, Side margins, Distance from bottom; place the New button **Above the bar** or **Beside the bar**.
 - **Items**: Labels (Always / Selected only / Hidden), Icon size, Selection indicator (Capsule / Block / None).
-- **Behavior**: Hide the bar when scrolling down (only with the floating glass bar), Indicator follows swipes.
+- **Behavior**: Settings entry (Navigation bar / More menu, Navigation bar by default), Hide the bar when scrolling down (only with the floating glass bar), Indicator follows swipes.
 
 ## Notes
 - In wide windows (such as on a computer) the home bottom bar becomes a navigation rail on the left.

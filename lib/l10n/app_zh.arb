@@ -11302,6 +11302,22 @@
   "@homeBarStyleBehaviorFooter": {
     "description": "导航栏样式设置：行为分组的附注。"
   },
+  "homeBarStyleSettingsEntry": "设置入口",
+  "@homeBarStyleSettingsEntry": {
+    "description": "导航栏样式设置：选择设置入口位置的那一行标题。"
+  },
+  "homeBarStyleSettingsInBar": "导航栏",
+  "@homeBarStyleSettingsInBar": {
+    "description": "导航栏样式设置：设置入口选项，作为导航栏末尾的 Tab。"
+  },
+  "homeBarStyleSettingsInMenu": "“更多”菜单",
+  "@homeBarStyleSettingsInMenu": {
+    "description": "导航栏样式设置：设置入口选项，放在日记页顶栏的“更多”菜单里。"
+  },
+  "homeBarStyleSettingsEntryFooter": "放进“更多”菜单时导航栏少一项，从日记页右上角的“更多”打开设置。",
+  "@homeBarStyleSettingsEntryFooter": {
+    "description": "导航栏样式设置：设置入口分组的附注，说明放进“更多”菜单的效果。"
+  },
   "homeBarStyleHideOnScroll": "下滑时收起底栏",
   "@homeBarStyleHideOnScroll": {
     "description": "导航栏样式设置：下滑收起底栏的开关。"

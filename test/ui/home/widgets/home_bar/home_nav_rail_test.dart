@@ -51,6 +51,7 @@ Future<void> _pump(
   Size size = const Size(800, 600),
   double textScale = 1,
   Brightness brightness = Brightness.light,
+  bool pinLastItem = true,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -69,6 +70,7 @@ Future<void> _pump(
                 selectedIndex: selected,
                 onTap: onTap ?? (_) {},
                 style: style ?? _style(),
+                pinLastItem: pinLastItem,
                 leading: HomeNavRailCreateButton(
                   label: 'New',
                   onPressed: onCreate ?? () {},
@@ -162,6 +164,21 @@ void main() {
       tester.getRect(_cells.at(4)).top - tester.getRect(_cells.at(3)).bottom,
       greaterThan(100),
     );
+  });
+
+  testWidgets('without a pinned item every destination stacks from the top', (
+    tester,
+  ) async {
+    // 设置放到日记页“更多”菜单时：最后一项（探索）不固定在栏底。
+    await _pump(tester, pinLastItem: false);
+    for (var i = 1; i < 5; i++) {
+      expect(
+        tester.getRect(_cells.at(i)).top -
+            tester.getRect(_cells.at(i - 1)).bottom,
+        closeTo(8, 0.01),
+      );
+    }
+    expect(tester.getRect(_cells.at(4)).bottom, lessThan(600 - 16 - 100));
   });
 
   testWidgets('a destination is the same cell as on the bottom bar', (

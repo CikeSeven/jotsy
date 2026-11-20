@@ -9112,6 +9112,19 @@ class AppLocalizationsRu extends AppLocalizations {
       'Поведение не меняется при выборе пресетов и кодов стиля.';
 
   @override
+  String get homeBarStyleSettingsEntry => 'Где «Настройки»';
+
+  @override
+  String get homeBarStyleSettingsInBar => 'Панель навигации';
+
+  @override
+  String get homeBarStyleSettingsInMenu => 'Меню «Ещё»';
+
+  @override
+  String get homeBarStyleSettingsEntryFooter =>
+      'В меню «Ещё» на панели станет на один раздел меньше, а «Настройки» откроются через «Ещё» в правом верхнем углу «Записей».';
+
+  @override
   String get homeBarStyleHideOnScroll => 'Скрывать панель при прокрутке вниз';
 
   @override

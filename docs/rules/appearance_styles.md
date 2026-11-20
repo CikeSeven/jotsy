@@ -31,6 +31,7 @@
 - 必须：顶栏下缘渐变 / 分隔线 / 实边只由 `topBarFades` 决定；渐变时栏内自带底色的控件改用 `topBarControlFill`。
 - 禁止：用 `ShaderMask` / `Opacity` 或叠多层模糊做顶栏渐变（只经 `GlassSurface.fadeToBottom`），或借它做颜色过渡。
 - 必须：新增首页 Tab 经 `HomeChromeScope` 取样式、`HomeTopBarSurface` 画顶栏，末尾补底部安全区。
+- 必须：设置入口的位置只存 `HomeBarBehavior.settingsPlacement`（默认导航栏）：在导航栏时日记页“更多”菜单不列设置，在菜单时导航栏没有设置 Tab，两处禁止同时出现；Tab 集合只经 `visibleHomeTabs` 推出。
 
 ## 日记页浮岛顶栏
 - 必须：预览、阅读式编辑、新建、导图、封存与出错页的顶栏只经 `FloatingTopBarHost`（`lib/ui/widgets/floating_top_bar/`）画浮岛；禁止给这些页的 Scaffold 设 `appBar` 或另拼浮岛。

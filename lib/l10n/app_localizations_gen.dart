@@ -26989,7 +26989,7 @@ abstract class AppLocalizations {
   /// Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.
   ///
   /// In en, this message translates to:
-  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_edits{Changes} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} other{}}'**
+  /// **'{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_edits{Changes} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} arg_chapter_id{Chapter} other{}}'**
   String aiToolArgName(String key);
 
   /// Value of an enum tool parameter (parameter_value); empty means no translation and the raw value is shown.
@@ -27009,6 +27009,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Take 1 entry out of “{name}”} other{Take {count} entries out of “{name}”}}'**
   String aiToolRemoveFromNotebookNamed(int count, String name);
+
+  /// AI step card: edit chapters of a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit notebook chapters'**
+  String get aiToolEditNotebookChapters;
+
+  /// AI step card: edit chapters of a named notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit chapters of “{name}”'**
+  String aiToolEditNotebookChaptersOf(String name);
+
+  /// AI step card: delete chapters from a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 chapter} other{Delete {count} chapters}}'**
+  String aiToolDeleteNotebookChapters(int count);
+
+  /// AI step card: delete chapters from a named notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 chapter from “{name}”} other{Delete {count} chapters from “{name}”}}'**
+  String aiToolDeleteNotebookChaptersNamed(String name, int count);
+
+  /// AI confirmation card: delete a single named chapter from a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete chapter “{chapter}” from “{notebook}”'**
+  String aiToolDeleteNotebookChapterNamed(String notebook, String chapter);
+
+  /// AI confirmation card: note how many entries move to No chapter when chapters are deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry will go back to No chapter; no entries are deleted.} other{{count} entries will go back to No chapter; no entries are deleted.}}'**
+  String aiToolDeleteNotebookChaptersUnassign(int count);
+
+  /// AI step card: move entries in a notebook to a chapter or No chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Change chapter of 1 entry} other{Change chapter of {count} entries}}'**
+  String aiToolMoveToChapter(int count);
+
+  /// AI step card: move entries in a named notebook to a chapter or No chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Change chapter of 1 entry in “{name}”} other{Change chapter of {count} entries in “{name}”}}'**
+  String aiToolMoveToChapterIn(int count, String name);
+
+  /// Tool detail label: chapters to add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add chapters'**
+  String get aiToolArgAddChapters;
+
+  /// Tool detail label: chapters to rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename chapters'**
+  String get aiToolArgRenameChapters;
+
+  /// Tool detail label: chapter order.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter order'**
+  String get aiToolArgChapterOrder;
+
+  /// AI confirmation preview line when chapters are reordered.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder chapters'**
+  String get aiToolReorderChaptersPreview;
 
   /// Snackbar after an AI card took the user to the home screen: back returns to the chat.
   ///

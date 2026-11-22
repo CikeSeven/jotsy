@@ -74,9 +74,10 @@ class ListNotebooksTool extends AiTool {
 
   @override
   String get description =>
-      "List the user's notebooks (tree order) with id, kind, parent and "
-      'entry count. Manual notebooks hold chosen entries; smart notebooks '
-      'gather entries by rules. Private notebooks are not listed.';
+      "List the user's notebooks (tree order) with id, kind, parent, entry "
+      'count, and (for manual notebooks that have them) chapters (id and title '
+      'in order). Manual notebooks hold chosen entries; smart notebooks gather '
+      'entries by rules. Private notebooks are not listed.';
 
   @override
   AiObjectSchema get schema =>
@@ -113,6 +114,11 @@ class ListNotebooksTool extends AiTool {
               'kind': notebook.kind == NotebookKind.smart ? 'smart' : 'manual',
               'parent_id': ?notebook.parentId,
               if (notebook.isManual) 'entries': counts[notebook.id] ?? 0,
+              if (notebook.isManual && notebook.payload.chapters.isNotEmpty)
+                'chapters': [
+                  for (final chapter in notebook.payload.chapters)
+                    <String, Object?>{'id': chapter.id, 'title': chapter.title},
+                ],
               if (notebook.isClosed) 'closed': true,
             },
         ],

@@ -140,6 +140,7 @@ void main() {
         'trash_diaries': {'ids'},
         'add_to_notebook': {'ids'},
         'remove_from_notebook': {'ids'},
+        'move_to_notebook_chapter': {'ids'},
         'add_comment': {'id'},
         'create_todo': {'diary_id'},
         'update_todos': {'diary_id'},
@@ -184,6 +185,14 @@ void main() {
       expect(defaults, isNot(contains('list_todos')));
       expect(defaults, isNot(contains('list_anniversaries')));
       expect(defaults, contains('list_notebooks'));
+      expect(
+        defaults,
+        containsAll([
+          'edit_notebook_chapters',
+          'delete_notebook_chapters',
+          'move_to_notebook_chapter',
+        ]),
+      );
       final more = available(
         AppFeatures.defaults.copyWith(
           todos: true,
@@ -206,6 +215,9 @@ void main() {
         ]),
       );
       expect(more, isNot(contains('list_notebooks')));
+      expect(more, isNot(contains('edit_notebook_chapters')));
+      expect(more, isNot(contains('delete_notebook_chapters')));
+      expect(more, isNot(contains('move_to_notebook_chapter')));
     });
 
     test(
@@ -324,6 +336,91 @@ void main() {
       });
       final diaries = ((outcome.data! as Map)['diaries'] as List).cast<Map>();
       expect(diaries.map((d) => d['title']), ['一号', '二号']);
+    });
+
+    test('filters and reports chapters inside a manual notebook', () async {
+      final prep = NotebookChapter(id: 'ch000001', title: '行前');
+      final trip = NotebookChapter(id: 'ch000002', title: '行程');
+      final nb = await db.createNotebook(
+        name: '旅行手记',
+        payload: NotebookPayload(chapters: [prep, trip]),
+      );
+      final smart = await db.createNotebook(
+        name: '智能本',
+        kind: NotebookKind.smart,
+      );
+      final d1 = await diary('准备行李', '一二三', at: DateTime(2026, 10, 1, 9));
+      final d2 = await diary('到东京', '四五', at: DateTime(2026, 10, 2, 9));
+      final d3 = await diary('随记', '六', at: DateTime(2026, 10, 3, 9));
+      await db.addDiariesToNotebook(nb, [d1], chapterId: prep.id);
+      await db.addDiariesToNotebook(nb, [d2], chapterId: trip.id);
+      await db.addDiariesToNotebook(nb, [d3]);
+
+      // list_notebooks 列出手动本的有序章节，无章节或智能本不带 chapters。
+      final listed = await run('list_notebooks', {});
+      final notebooks = ((listed.data! as Map)['notebooks'] as List)
+          .cast<Map>();
+      final listedNb = notebooks.firstWhere((n) => n['id'] == nb);
+      expect(listedNb['chapters'], [
+        {'id': prep.id, 'title': '行前'},
+        {'id': trip.id, 'title': '行程'},
+      ]);
+      final listedSmart = notebooks.firstWhere((n) => n['id'] == smart);
+      expect(listedSmart.containsKey('chapters'), isFalse);
+
+      // search_diaries 按本子查询时带上每篇所属章节。
+      final all = await run('search_diaries', {
+        'notebook_id': nb,
+        'sort': 'oldest',
+      });
+      final allDiaries = ((all.data! as Map)['diaries'] as List).cast<Map>();
+      expect(allDiaries[0]['chapter_id'], prep.id);
+      expect(allDiaries[0]['chapter'], '行前');
+      expect(allDiaries[1]['chapter_id'], trip.id);
+      expect(allDiaries[1]['chapter'], '行程');
+      expect(allDiaries[2].containsKey('chapter_id'), isFalse);
+
+      // 按章节标题筛选、按空串筛选未分章，以及统计同样支持章节筛选。
+      final inTrip = await run('search_diaries', {
+        'notebook_id': nb,
+        'chapter_id': '行程',
+      });
+      expect(
+        (((inTrip.data! as Map)['diaries']) as List).cast<Map>().map(
+          (d) => d['id'],
+        ),
+        [d2],
+      );
+      final unassigned = await run('search_diaries', {
+        'notebook_id': nb,
+        'chapter_id': '',
+      });
+      expect(
+        (((unassigned.data! as Map)['diaries']) as List).cast<Map>().map(
+          (d) => d['id'],
+        ),
+        [d3],
+      );
+      final stats = await run('diary_stats', {
+        'notebook_id': nb,
+        'chapter_id': prep.id,
+      });
+      expect((stats.data! as Map)['entries'], 1);
+      expect((stats.data! as Map)['words'], 3);
+
+      // 异常路径：缺少 notebook_id、对智能本用 chapter_id、章节不存在。
+      expect(
+        () => run('search_diaries', {'chapter_id': prep.id}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect(
+        () => run('search_diaries', {'notebook_id': smart, 'chapter_id': ''}),
+        throwsA(isA<AiToolFailure>()),
+      );
+      expect(
+        () => run('search_diaries', {'notebook_id': nb, 'chapter_id': '不存在'}),
+        throwsA(isA<AiToolFailure>()),
+      );
     });
   });
 

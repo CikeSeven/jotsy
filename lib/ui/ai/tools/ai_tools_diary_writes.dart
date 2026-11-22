@@ -20,11 +20,14 @@ import '../../../l10n/app_localizations.dart';
 import '../../diaries/controllers/publish_new_diary_directly.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/publish_metadata_composer.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
 import '../models/ai_tool_subject.dart';
 import '../viewmodels/ai_citations.dart';
 import 'ai_diary_markdown_edit.dart';
 import 'ai_tool.dart';
 import 'ai_tool_writes.dart';
+import 'ai_tools_notebook_chapters.dart';
+import 'ai_tools_organize_writes.dart';
 
 String _firstLine(String text, [int max = 40]) {
   final line = text.trim().split('\n').first.trim();
@@ -64,9 +67,10 @@ class CreateDiaryTool extends AiTool {
       'alone keeps the current time of day; future dates fall back to now. '
       'Tags that do not exist are created. `mood` must be one of the mood '
       'options from get_app_context. Only manual, non-private notebooks can '
-      'be chosen. To add photos the user sent in this chat, put ![](P1) on '
-      'its own line where a photo belongs, or list references (P1…) in '
-      '`images` to add them after the body.';
+      'be chosen (with an optional `chapter_id`, by id or unique title). To '
+      'add photos the user sent in this chat, put ![](P1) on its own line '
+      'where a photo belongs, or list references (P1…) in `images` to add '
+      'them after the body.';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -88,6 +92,10 @@ class CreateDiaryTool extends AiTool {
       'weather': AiStringSchema(maxLength: 40),
       'location': AiStringSchema(maxLength: 100),
       'notebook_id': AiStringSchema(),
+      'chapter_id': AiStringSchema(
+        description:
+            'Optional chapter (id or unique title) inside `notebook_id`.',
+      ),
     },
     required: <String>['body'],
   );
@@ -149,16 +157,18 @@ class CreateDiaryTool extends AiTool {
     if (!diaryBlocksHaveVisibleContent(document)) throw empty;
     final mood = await _checkedMood(context, args['mood']);
     final notebookId = args['notebook_id'] as String?;
+    final chapterRef = args['chapter_id'] as String?;
+    if (chapterRef != null && notebookId == null) {
+      throw const AiToolFailure('`chapter_id` requires `notebook_id`.');
+    }
+    NotebookView? notebook;
+    NotebookChapter? chapter;
     if (notebookId != null) {
-      final notebook = (await context.notebookTree())[notebookId];
-      if (!features.notebooks ||
-          notebook == null ||
-          !notebook.isManual ||
-          notebook.isPrivate ||
-          context.prefs.privacy.excludedNotebookIds.contains(notebookId)) {
-        throw const AiToolFailure(
-          'That notebook cannot take entries here (it must be a manual, '
-          'non-private notebook). Call list_notebooks.',
+      notebook = await aiOpenManualNotebook(context, notebookId);
+      if (chapterRef != null) {
+        chapter = aiResolveNotebookChapter(
+          notebook.payload.chapters,
+          chapterRef,
         );
       }
     }
@@ -182,6 +192,9 @@ class CreateDiaryTool extends AiTool {
         createdAtOverride: requested,
         selectedTagIds: tags.ids.values.toSet(),
         notebookIds: [?notebookId],
+        notebookChapterIds: chapter == null
+            ? const <String, String>{}
+            : <String, String>{notebookId!: chapter.id},
         moodEmoji: mood,
         weather: (args['weather'] as String?)?.trim(),
         location: (args['location'] as String?)?.trim(),
@@ -202,11 +215,16 @@ class CreateDiaryTool extends AiTool {
         'id': id,
         'ref': ref,
         'date': aiToolDateTime(created.createdAt),
+        'chapter_id': ?chapter?.id,
         if (requested != null && requested.isAfter(context.now))
           'note': 'The date was in the future, so it is dated now.',
       },
       summary: context.l10n.aiToolDiaryCreated(aiDiaryName(created)),
-      subjects: [aiDiarySubject(created)],
+      subjects: [
+        if (notebook != null)
+          AiToolSubject.notebook(notebook.id, notebook.name, input: true),
+        aiDiarySubject(created),
+      ],
       undo: <String, Object?>{
         'id': id,
         'fingerprint': aiDiaryFingerprint(created),

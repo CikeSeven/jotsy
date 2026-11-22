@@ -20211,7 +20211,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_edits{Изменения} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} arg_images{Фото} arg_attachments{Фото из чата} arg_kind_template{Шаблон} arg_add_rules{Добавить интервалы} arg_remove_rules{Удалить интервалы} arg_clear_rules{Удалить все интервалы} arg_default_template_id{Шаблон по умолчанию} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Даты} arg_due_range{Срок} arg_merge_from{Объединяемые теги} arg_query{Ключевые слова} arg_tags{Теги} arg_mood{Настроение} arg_include_archived{Включая архив} arg_sort{Порядок} arg_limit{Не больше} arg_group_by{Группировка} arg_date{Дата} arg_time{Время} arg_title{Заголовок} arg_name{Название} arg_note{Заметка} arg_color{Цвет} arg_weather{Погода} arg_location{Место} arg_text{Текст} arg_edits{Изменения} arg_body{Текст записи} arg_priority{Приоритет} arg_list{Список} arg_status{Статус} arg_scale{Размер шрифта} arg_repeat{Повтор} arg_remove{Убрать теги} arg_add{Добавить теги} arg_remind_before_minutes{Напомнить заранее} arg_parent_id{Родительский блокнот} arg_offset{Начиная с символа} arg_new_name{Новое название} arg_mode{Оформление} arg_language{Язык} arg_into{Объединить в} arg_feature{Функция} arg_enabled{Включено} arg_clear_due{Убрать срок} arg_kind_diary{Запись} arg_kind_notebook{Блокнот} arg_kind_tag{Тег} arg_kind_todo{Задача} arg_kind_anniversary{Памятная дата} arg_kind_day{День} arg_steps{Шаги} arg_reminders{Напоминания} arg_add_steps{Добавить шаги} arg_check_steps{Отметить шаги} arg_uncheck_steps{Снять отметку} arg_remove_steps{Удалить шаги} arg_all_day{Весь день} arg_kind_todoList{Список задач} arg_images{Фото} arg_attachments{Фото из чата} arg_kind_template{Шаблон} arg_add_rules{Добавить интервалы} arg_remove_rules{Удалить интервалы} arg_clear_rules{Удалить все интервалы} arg_default_template_id{Шаблон по умолчанию} arg_chapter_id{Глава} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {
@@ -20252,6 +20252,98 @@
         "type": "String"
       }
     }
+  },
+  "aiToolEditNotebookChapters": "Изменить главы блокнота",
+  "@aiToolEditNotebookChapters": {
+    "description": "AI step card: edit chapters of a notebook."
+  },
+  "aiToolEditNotebookChaptersOf": "Изменить главы «{name}»",
+  "@aiToolEditNotebookChaptersOf": {
+    "description": "AI step card: edit chapters of a named notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChapters": "{count, plural, one{Удалить {count} главу} few{Удалить {count} главы} many{Удалить {count} глав} other{Удалить {count} глав}}",
+  "@aiToolDeleteNotebookChapters": {
+    "description": "AI step card: delete chapters from a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChaptersNamed": "{count, plural, one{Удалить {count} главу из «{name}»} few{Удалить {count} главы из «{name}»} many{Удалить {count} глав из «{name}»} other{Удалить {count} глав из «{name}»}}",
+  "@aiToolDeleteNotebookChaptersNamed": {
+    "description": "AI step card: delete chapters from a named notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChapterNamed": "Удалить главу «{chapter}» из «{notebook}»",
+  "@aiToolDeleteNotebookChapterNamed": {
+    "description": "AI confirmation card: delete a single named chapter from a notebook.",
+    "placeholders": {
+      "notebook": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChaptersUnassign": "{count, plural, one{{count} запись вернётся в раздел «Без главы»; сами записи не удаляются.} few{{count} записи вернутся в раздел «Без главы»; сами записи не удаляются.} many{{count} записей вернутся в раздел «Без главы»; сами записи не удаляются.} other{{count} записи вернутся в раздел «Без главы»; сами записи не удаляются.}}",
+  "@aiToolDeleteNotebookChaptersUnassign": {
+    "description": "AI confirmation card: note how many entries move to No chapter when chapters are deleted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolMoveToChapter": "{count, plural, one{Изменить главу {count} записи} few{Изменить главу {count} записей} many{Изменить главу {count} записей} other{Изменить главу {count} записей}}",
+  "@aiToolMoveToChapter": {
+    "description": "AI step card: move entries in a notebook to a chapter or No chapter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolMoveToChapterIn": "{count, plural, one{Изменить главу {count} записи в «{name}»} few{Изменить главу {count} записей в «{name}»} many{Изменить главу {count} записей в «{name}»} other{Изменить главу {count} записей в «{name}»}}",
+  "@aiToolMoveToChapterIn": {
+    "description": "AI step card: move entries in a named notebook to a chapter or No chapter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgAddChapters": "Добавить главы",
+  "@aiToolArgAddChapters": {
+    "description": "Tool detail label: chapters to add."
+  },
+  "aiToolArgRenameChapters": "Переименовать главы",
+  "@aiToolArgRenameChapters": {
+    "description": "Tool detail label: chapters to rename."
+  },
+  "aiToolArgChapterOrder": "Порядок глав",
+  "@aiToolArgChapterOrder": {
+    "description": "Tool detail label: chapter order."
+  },
+  "aiToolReorderChaptersPreview": "Изменить порядок глав",
+  "@aiToolReorderChaptersPreview": {
+    "description": "AI confirmation preview line when chapters are reordered."
   },
   "aiChatReturnHint": "Нажмите «Назад», чтобы вернуться к чату",
   "@aiChatReturnHint": {

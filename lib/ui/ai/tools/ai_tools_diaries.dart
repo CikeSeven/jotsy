@@ -17,6 +17,7 @@ import '../../../utils/text_stats.dart';
 import '../../explore/controllers/explore_stats_builder.dart';
 import '../../explore/viewmodels/explore_entry.dart';
 import '../../notebooks/models/notebook_scope_resolver.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
 import '../viewmodels/ai_context_budget.dart';
 import '../viewmodels/ai_recap_material.dart';
 import '../viewmodels/ai_retrieval.dart';
@@ -24,6 +25,7 @@ import '../models/ai_tool_subject.dart';
 import 'ai_diary_markdown.dart';
 import 'ai_tool.dart';
 import 'ai_tools_images.dart';
+import 'ai_tools_notebook_chapters.dart';
 
 /// 搜索结果每篇的摘录上限（字）。
 const int _excerptWords = 60;
@@ -44,7 +46,10 @@ class SearchDiariesTool extends AiTool {
   @override
   String get description =>
       'Find diary entries. Keywords match title or body (any keyword); '
-      'dates are inclusive; tags must all match. Returns each entry with a '
+      'dates are inclusive; tags must all match. With `notebook_id` on a '
+      'manual notebook, `chapter_id` filters by a chapter (id or unique title; '
+      '"" for entries with no chapter) and results include `chapter_id` and '
+      '`chapter` when the notebook has chapters. Returns each entry with a '
       'reference like D3, its id, date, title, a short excerpt and `photos` '
       '(how many photos it has; entries without it have none); use '
       'read_diaries for full text. Private entries are never returned. '
@@ -65,6 +70,12 @@ class SearchDiariesTool extends AiTool {
         description: "One of the user's mood options (an emoji).",
       ),
       'notebook_id': AiStringSchema(),
+      'chapter_id': AiStringSchema(
+        allowEmpty: true,
+        description:
+            'Chapter id or unique title inside `notebook_id`; "" means '
+            'entries in that notebook with no chapter. Manual notebooks only.',
+      ),
       'include_archived': AiBooleanSchema(),
       'sort': AiStringSchema(
         enumValues: <String>['relevant', 'newest', 'oldest'],
@@ -82,13 +93,20 @@ class SearchDiariesTool extends AiTool {
   }
 
   @override
+  String? describeArg(AppLocalizations l10n, String key, Object? value) =>
+      key == 'chapter_id' && value == ''
+      ? l10n.notebookChapterUnassigned
+      : null;
+
+  @override
   Future<AiToolOutcome> run(
     AiToolContext context,
     Map<String, Object?> args,
   ) async {
     final keywords = _keywords(args['query'] as String?);
     final mood = (args['mood'] as String?)?.trim();
-    final diaries = await _query(context, args, keywords: keywords, limit: 400);
+    final queried = await _query(context, args, keywords: keywords, limit: 400);
+    final diaries = queried.diaries;
     final filtered = [
       for (final diary in diaries)
         if (mood == null || diary.mood?.trim() == mood) diary,
@@ -104,10 +122,24 @@ class SearchDiariesTool extends AiTool {
     };
     final limit = args['limit'] as int? ?? 20;
     final picked = ordered.take(limit).toList();
-    final photos = await aiDiaryPhotoCounts(context, [
-      for (final diary in picked) diary.diaryId,
-    ]);
-    final notebook = await aiNotebookParamSubject(context, args['notebook_id']);
+    final pickedIds = [for (final diary in picked) diary.diaryId];
+    final photos = await aiDiaryPhotoCounts(context, pickedIds);
+    final notebook = queried.notebook;
+    final chaptersById =
+        notebook != null &&
+            notebook.isManual &&
+            notebook.payload.chapters.isNotEmpty
+        ? <String, NotebookChapter>{
+            for (final chapter in notebook.payload.chapters)
+              chapter.id: chapter,
+          }
+        : const <String, NotebookChapter>{};
+    final entryChapters = chaptersById.isEmpty || pickedIds.isEmpty
+        ? const <String, String?>{}
+        : await context.database.getNotebookEntryChapters(
+            notebook!.id,
+            pickedIds,
+          );
     return AiToolOutcome(
       data: <String, Object?>{
         'matched': filtered.length,
@@ -120,6 +152,7 @@ class SearchDiariesTool extends AiTool {
               diary,
               keywords,
               photos: photos[diary.diaryId] ?? 0,
+              chapter: chaptersById[entryChapters[diary.diaryId]],
             ),
         ],
         if (photos.isNotEmpty) 'photos_hint': aiPhotosHint(context),
@@ -130,7 +163,8 @@ class SearchDiariesTool extends AiTool {
       },
       summary: context.l10n.aiToolFoundEntries(filtered.length),
       subjects: [
-        ?notebook,
+        if (notebook != null)
+          AiToolSubject.notebook(notebook.id, notebook.name, input: true),
         ...aiTagParamSubjects(args['tags']),
         for (final diary in picked) aiContextDiarySubject(diary),
       ],
@@ -157,11 +191,16 @@ class SearchDiariesTool extends AiTool {
     AiContextDiary diary,
     List<String> keywords, {
     required int photos,
+    NotebookChapter? chapter,
   }) {
     final excerpt = _excerpt(diary.contentText, keywords);
     final granted = context.allowance.take(TextStats.countWords(excerpt));
     return <String, Object?>{
       ...aiDiaryToolHeader(context, diary, photos: photos),
+      if (chapter != null) ...<String, Object?>{
+        'chapter_id': chapter.id,
+        'chapter': chapter.title,
+      },
       'words': TextStats.countWords(diary.contentText),
       if (granted > 0) 'excerpt': aiTruncateWords(excerpt, granted),
     };
@@ -322,6 +361,12 @@ class DiaryStatsTool extends AiTool {
       'to': AiDateSchema(description: 'Last day, YYYY-MM-DD.'),
       'tags': AiArraySchema(items: AiStringSchema(), maxItems: 10),
       'notebook_id': AiStringSchema(),
+      'chapter_id': AiStringSchema(
+        allowEmpty: true,
+        description:
+            'Chapter id or unique title inside `notebook_id`; "" means '
+            'entries in that notebook with no chapter. Manual notebooks only.',
+      ),
       'group_by': AiStringSchema(
         enumValues: <String>['none', 'day', 'week', 'month', 'year'],
       ),
@@ -333,16 +378,23 @@ class DiaryStatsTool extends AiTool {
       l10n.aiToolDiaryStats;
 
   @override
+  String? describeArg(AppLocalizations l10n, String key, Object? value) =>
+      key == 'chapter_id' && value == ''
+      ? l10n.notebookChapterUnassigned
+      : null;
+
+  @override
   Future<AiToolOutcome> run(
     AiToolContext context,
     Map<String, Object?> args,
   ) async {
-    final diaries = await _query(
+    final queried = await _query(
       context,
       args,
       includeArchived: true,
       keywords: const <String>[],
     );
+    final diaries = queried.diaries;
     final privacy = context.prefs.privacy;
     final stats = AiRecapStats.of(diaries);
     final days = <DateTime>{
@@ -367,7 +419,7 @@ class DiaryStatsTool extends AiTool {
       }
     }
     final ordered = groups.keys.toList()..sort();
-    final notebook = await aiNotebookParamSubject(context, args['notebook_id']);
+    final notebook = queried.notebook;
     return AiToolOutcome(
       data: <String, Object?>{
         'entries': stats.entries,
@@ -399,7 +451,11 @@ class DiaryStatsTool extends AiTool {
           ],
       },
       summary: context.l10n.aiToolStatsEntries(stats.entries),
-      subjects: [?notebook, ...aiTagParamSubjects(args['tags'])],
+      subjects: [
+        if (notebook != null)
+          AiToolSubject.notebook(notebook.id, notebook.name, input: true),
+        ...aiTagParamSubjects(args['tags']),
+      ],
     );
   }
 
@@ -451,7 +507,7 @@ String _ref(AiToolContext context, AiContextDiary diary) => context.citations
     .refFor(diary.diaryId, title: diary.title, date: diary.createdAt);
 
 /// 按工具参数查日记（统一经 `getAiContextDiaries`）。
-Future<List<AiContextDiary>> _query(
+Future<({List<AiContextDiary> diaries, NotebookView? notebook})> _query(
   AiToolContext context,
   Map<String, Object?> args, {
   required List<String> keywords,
@@ -482,7 +538,12 @@ Future<List<AiContextDiary>> _query(
     }
   }
   var scope = DiaryListScope.all;
+  NotebookView? resolvedNotebook;
   final notebookId = args['notebook_id'] as String?;
+  final chapterRef = args['chapter_id'] as String?;
+  if (chapterRef != null && notebookId == null) {
+    throw const AiToolFailure('`chapter_id` requires `notebook_id`.');
+  }
   if (notebookId != null) {
     final tree = await context.notebookTree();
     final notebook = tree[notebookId];
@@ -493,9 +554,34 @@ Future<List<AiContextDiary>> _query(
         'No such notebook. Call list_notebooks to see the notebooks.',
       );
     }
-    scope = notebookStatsScope(notebook, tree: tree);
+    resolvedNotebook = notebook;
+    if (chapterRef != null) {
+      if (!notebook.isManual) {
+        throw const AiToolFailure('Smart notebooks do not have chapters.');
+      }
+      final trimmed = chapterRef.trim();
+      if (trimmed.isEmpty) {
+        scope = resolveNotebookScope(
+          notebook,
+          tree: tree,
+          unassignedChapterOnly: true,
+        );
+      } else {
+        final chapter = aiResolveNotebookChapter(
+          notebook.payload.chapters,
+          trimmed,
+        );
+        scope = resolveNotebookScope(
+          notebook,
+          tree: tree,
+          chapterId: chapter.id,
+        );
+      }
+    } else {
+      scope = notebookStatsScope(notebook, tree: tree);
+    }
   }
-  return database.getAiContextDiaries(
+  final diaries = await database.getAiContextDiaries(
     start: from,
     end: to == null ? null : DateTime(to.year, to.month, to.day + 1),
     scope: scope,
@@ -511,4 +597,5 @@ Future<List<AiContextDiary>> _query(
     limit: limit,
     now: context.now,
   );
+  return (diaries: diaries, notebook: resolvedNotebook);
 }

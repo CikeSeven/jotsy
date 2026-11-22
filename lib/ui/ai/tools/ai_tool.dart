@@ -469,17 +469,6 @@ AiToolSubject aiContextDiarySubject(AiContextDiary diary) =>
       date: diary.createdAt,
     );
 
-/// 参数里的日记本（筛选条件）作为涉及对象；不存在时为 null。
-Future<AiToolSubject?> aiNotebookParamSubject(
-  AiToolContext context,
-  Object? notebookId,
-) async {
-  if (notebookId is! String || notebookId.isEmpty) return null;
-  final notebook = (await context.notebookTree())[notebookId];
-  if (notebook == null) return null;
-  return AiToolSubject.notebook(notebook.id, notebook.name, input: true);
-}
-
 /// 参数里的标签名（筛选条件）作为涉及对象。
 List<AiToolSubject> aiTagParamSubjects(Object? names) => [
   if (names is List)

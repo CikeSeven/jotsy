@@ -15,10 +15,12 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/ai/agent/ai_tool_schema.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../notebooks/viewmodels/notebook_book_layout.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../settings/controllers/tag_cleanup.dart';
 import 'ai_tool.dart';
 import 'ai_tool_writes.dart';
+import 'ai_tools_notebook_chapters.dart';
 import '../models/ai_tool_subject.dart';
 
 /// 按名称找标签（不区分大小写）；没有时抛 [AiToolFailure]。
@@ -356,7 +358,10 @@ class DeleteTagTool extends AiTool {
 }
 
 /// AI 能动的日记本：存在、手动本、不私密（含继承）、没被 AI 隐私排除。
-Future<NotebookView> _openNotebook(AiToolContext context, String id) async {
+Future<NotebookView> aiOpenManualNotebook(
+  AiToolContext context,
+  String id,
+) async {
   if (!context.env.features.notebooks) {
     throw const AiToolFailure('Notebooks are turned off.');
   }
@@ -372,7 +377,7 @@ Future<NotebookView> _openNotebook(AiToolContext context, String id) async {
   if (!notebook.isManual) {
     throw const AiToolFailure(
       'This is a smart notebook: it gathers entries by rules and cannot '
-      'take entries by hand.',
+      'take entries or chapters by hand.',
     );
   }
   return notebook;
@@ -418,7 +423,7 @@ class CreateNotebookTool extends AiTool {
   ) async {
     final parentId = args['parent_id'] as String?;
     if (parentId != null) {
-      final parent = await _openNotebook(context, parentId);
+      final parent = await aiOpenManualNotebook(context, parentId);
       if (!parent.canHaveChildren) {
         throw const AiToolFailure(
           'That notebook cannot have sub-notebooks (too deep).',
@@ -541,8 +546,10 @@ class AddToNotebookTool extends AiTool {
 
   @override
   String get description =>
-      'Put entries (by id) into a manual notebook. An entry can be in '
-      'several notebooks.';
+      'Put entries (by id) into a manual notebook, optionally into one of its '
+      'chapters (`chapter_id`, by id or unique title). An entry can be in '
+      'several notebooks; if `chapter_id` is given, entries already in this '
+      'notebook are moved to that chapter too.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'ids'};
@@ -552,6 +559,11 @@ class AddToNotebookTool extends AiTool {
     properties: <String, AiSchema>{
       'notebook_id': AiStringSchema(),
       'ids': AiArraySchema(items: AiStringSchema(), maxItems: 100),
+      'chapter_id': AiStringSchema(
+        description:
+            'Optional chapter (id or unique title) in this notebook to place '
+            'the entries into.',
+      ),
     },
     required: <String>['notebook_id', 'ids'],
   );
@@ -589,34 +601,73 @@ class AddToNotebookTool extends AiTool {
     Map<String, Object?> args,
   ) async {
     final database = context.database;
-    final notebook = await _openNotebook(
+    final notebook = await aiOpenManualNotebook(
       context,
       args['notebook_id']! as String,
     );
+    final chapterRef = args['chapter_id'] as String?;
+    final targetChapter = chapterRef == null
+        ? null
+        : aiResolveNotebookChapter(notebook.payload.chapters, chapterRef);
     final diaries = await aiWritableDiaries(
       context,
       (args['ids']! as List).cast<String>(),
     );
     final ids = [for (final found in diaries) found.diary.diaryId];
-    final memberships = await database.getNotebookIdsForDiaries(ids);
-    final added = [
-      for (final id in ids)
-        if (!(memberships[id]?.contains(notebook.id) ?? false)) id,
-    ];
-    await database.addDiariesToNotebook(notebook.id, added);
+    final currentChapters = await database.getNotebookEntryChapters(
+      notebook.id,
+      ids,
+    );
+    final added = <String>[];
+    final movedBefore = <String, String?>{};
+    for (final id in ids) {
+      if (!currentChapters.containsKey(id)) {
+        added.add(id);
+      } else if (targetChapter != null) {
+        final effective = validNotebookChapterId(
+          notebook.payload.chapters,
+          currentChapters[id],
+        );
+        if (effective != targetChapter.id) {
+          movedBefore[id] = effective;
+        }
+      }
+    }
+    if (added.isNotEmpty) {
+      await database.addDiariesToNotebook(
+        notebook.id,
+        added,
+        chapterId: targetChapter?.id,
+      );
+    }
+    if (movedBefore.isNotEmpty) {
+      await database.setNotebookEntriesChapter(
+        notebook.id,
+        movedBefore.keys,
+        targetChapter!.id,
+      );
+    }
     aiRefreshDiaries(context.container, added);
     return AiToolOutcome(
       data: <String, Object?>{
         'ok': true,
         'added': added.length,
         'already_there': ids.length - added.length,
+        if (movedBefore.isNotEmpty) 'moved_to_chapter': movedBefore.length,
+        'chapter_id': ?targetChapter?.id,
       },
-      summary: context.l10n.aiToolEntriesChanged(added.length),
+      summary: context.l10n.aiToolEntriesChanged(
+        added.length + movedBefore.length,
+      ),
       subjects: [
         AiToolSubject.notebook(notebook.id, notebook.name, input: true),
         for (final found in diaries) aiDiarySubject(found.diary),
       ],
-      undo: <String, Object?>{'notebook': notebook.id, 'ids': added},
+      undo: <String, Object?>{
+        'notebook': notebook.id,
+        'ids': added,
+        if (movedBefore.isNotEmpty) 'previousChapters': movedBefore,
+      },
     );
   }
 
@@ -626,11 +677,20 @@ class AddToNotebookTool extends AiTool {
     Map<String, Object?> data, {
     bool force = false,
   }) async {
+    final database = container.read(appDatabaseProvider);
+    final notebookId = data['notebook']! as String;
     final ids = aiUndoStrings(data['ids']);
-    await container
-        .read(appDatabaseProvider)
-        .removeDiariesFromNotebook(data['notebook']! as String, ids);
-    aiRefreshDiaries(container, ids);
+    if (ids.isNotEmpty) {
+      await database.removeDiariesFromNotebook(notebookId, ids);
+      aiRefreshDiaries(container, ids);
+    }
+    final previous = data['previousChapters'];
+    if (previous is Map && previous.isNotEmpty) {
+      await database.restoreNotebookEntryChapters(notebookId, <String, String?>{
+        for (final entry in previous.entries)
+          if (entry.key is String) entry.key as String: entry.value as String?,
+      });
+    }
   }
 }
 
@@ -694,7 +754,7 @@ class RemoveFromNotebookTool extends AiTool {
     AiToolContext context,
     Map<String, Object?> args,
   ) async {
-    final notebook = await _openNotebook(
+    final notebook = await aiOpenManualNotebook(
       context,
       args['notebook_id']! as String,
     );

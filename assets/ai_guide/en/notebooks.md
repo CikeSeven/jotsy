@@ -51,4 +51,4 @@ With "Hide from All entries" or "Lock", the notebook's entries stay out of All e
 - Notebooks are on by default and can be turned off in Settings → Features. While off, entries in hidden and locked notebooks stay out of sight; turning notebooks back on restores them.
 - Linux has no system verification, so set an app passcode in Settings → App lock & passcode before locking a notebook.
 - Search results can be saved with "Save as smart notebook", and a date range on the calendar with "Save as notebook".
-- The AI assistant can create and rename notebooks and add or remove entries, for example "Create a Travel notebook and add the entries tagged #travel".
+- The AI assistant can create and rename notebooks, add, rename, reorder and delete chapters, and add, remove or assign entries to chapters, for example "Add Planning and Trip chapters to my Travel notebook and put entries tagged #travel into Trip".

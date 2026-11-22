@@ -15112,6 +15112,7 @@ class AppLocalizationsZh extends AppLocalizations {
       'arg_remove_rules': '删除时间段',
       'arg_clear_rules': '清除全部时间段',
       'arg_default_template_id': '默认模板',
+      'arg_chapter_id': '章节',
       'other': '',
     });
     return '$_temp0';
@@ -15161,6 +15162,56 @@ class AppLocalizationsZh extends AppLocalizations {
   String aiToolRemoveFromNotebookNamed(int count, String name) {
     return '把 $count 篇日记移出「$name」';
   }
+
+  @override
+  String get aiToolEditNotebookChapters => '编辑日记本章节';
+
+  @override
+  String aiToolEditNotebookChaptersOf(String name) {
+    return '编辑「$name」的章节';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapters(int count) {
+    return '删除 $count 个章节';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersNamed(String name, int count) {
+    return '删除「$name」的 $count 个章节';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapterNamed(String notebook, String chapter) {
+    return '删除「$notebook」的章节「$chapter」';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersUnassign(int count) {
+    return '其中的 $count 篇日记会回到未分章，日记本身不会被删除';
+  }
+
+  @override
+  String aiToolMoveToChapter(int count) {
+    return '调整 $count 篇日记的章节';
+  }
+
+  @override
+  String aiToolMoveToChapterIn(int count, String name) {
+    return '调整「$name」里 $count 篇日记的章节';
+  }
+
+  @override
+  String get aiToolArgAddChapters => '添加章节';
+
+  @override
+  String get aiToolArgRenameChapters => '重命名章节';
+
+  @override
+  String get aiToolArgChapterOrder => '章节顺序';
+
+  @override
+  String get aiToolReorderChaptersPreview => '调整章节顺序';
 
   @override
   String get aiChatReturnHint => '按返回键即可回到刚才的对话';

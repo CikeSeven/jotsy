@@ -29,6 +29,7 @@ import '../../diary_templates/models/diary_template_prefs.dart';
 import '../../diary_templates/providers/diary_template_providers.dart';
 import '../../diary_templates/viewmodels/diary_template_auto_labels.dart';
 import '../../diary_templates/viewmodels/diary_template_variable_values.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
 import '../models/ai_tool_subject.dart';
 import 'ai_template_markdown_parse.dart';
 import 'ai_tool.dart';
@@ -36,6 +37,8 @@ import 'ai_tool_template_facts.dart';
 import 'ai_tool_template_parts.dart';
 import 'ai_tool_writes.dart';
 import 'ai_tools_diary_writes.dart';
+import 'ai_tools_notebook_chapters.dart';
+import 'ai_tools_organize_writes.dart';
 
 const AiObjectSchema _ruleSchema = AiObjectSchema(
   properties: <String, AiSchema>{
@@ -344,6 +347,10 @@ class CreateDiaryFromTemplateTool extends AiTool {
       'tags': AiArraySchema(items: AiStringSchema(maxLength: 40), maxItems: 20),
       'mood': AiStringSchema(),
       'notebook_id': AiStringSchema(),
+      'chapter_id': AiStringSchema(
+        description:
+            'Optional chapter (id or unique title) inside `notebook_id`.',
+      ),
     },
     required: <String>['template_id', 'body'],
   );
@@ -435,7 +442,21 @@ class CreateDiaryFromTemplateTool extends AiTool {
 
     final mood = await _mood(context, settings, args['mood'], template);
     final notebookId = args['notebook_id'] as String?;
-    if (notebookId != null) await _checkNotebook(context, notebookId);
+    final chapterRef = args['chapter_id'] as String?;
+    if (chapterRef != null && notebookId == null) {
+      throw const AiToolFailure('`chapter_id` requires `notebook_id`.');
+    }
+    NotebookView? notebook;
+    NotebookChapter? chapter;
+    if (notebookId != null) {
+      notebook = await aiOpenManualNotebook(context, notebookId);
+      if (chapterRef != null) {
+        chapter = aiResolveNotebookChapter(
+          notebook.payload.chapters,
+          chapterRef,
+        );
+      }
+    }
     final tags = await database.ensureTagsByName([
       for (final tag in template.tags) (name: tag.name, color: tag.color),
       for (final name in (args['tags'] as List?)?.cast<String>() ?? const [])
@@ -451,6 +472,9 @@ class CreateDiaryFromTemplateTool extends AiTool {
         createdAtOverride: requested,
         selectedTagIds: tags.ids.values.toSet(),
         notebookIds: [?notebookId],
+        notebookChapterIds: chapter == null
+            ? const <String, String>{}
+            : <String, String>{notebookId!: chapter.id},
         moodEmoji: mood,
         energyLevel: template.energy?.toDouble(),
         capsuleUnlockAt: capsule == null
@@ -480,6 +504,7 @@ class CreateDiaryFromTemplateTool extends AiTool {
         'id': id,
         'ref': ref,
         'date': aiToolDateTime(created.createdAt),
+        'chapter_id': ?chapter?.id,
         if (capsule != null)
           'note': 'Sealed as a time capsule (${capsule.name}) by the template.',
       },
@@ -490,6 +515,8 @@ class CreateDiaryFromTemplateTool extends AiTool {
       ),
       subjects: [
         aiTemplateSubject(context.l10n, template, input: true),
+        if (notebook != null)
+          AiToolSubject.notebook(notebook.id, notebook.name, input: true),
         aiDiarySubject(created),
       ],
       // 与 create_diary 同一份撤销数据，撤销也交给它。
@@ -527,19 +554,5 @@ class CreateDiaryFromTemplateTool extends AiTool {
     }
     final preset = template.mood;
     return preset != null && options.contains(preset) ? preset : null;
-  }
-
-  static Future<void> _checkNotebook(AiToolContext context, String id) async {
-    final notebook = (await context.notebookTree())[id];
-    if (!context.env.features.notebooks ||
-        notebook == null ||
-        !notebook.isManual ||
-        notebook.isPrivate ||
-        context.prefs.privacy.excludedNotebookIds.contains(id)) {
-      throw const AiToolFailure(
-        'That notebook cannot take entries here (it must be a manual, '
-        'non-private notebook). Call list_notebooks.',
-      );
-    }
   }
 }

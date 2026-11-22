@@ -6263,6 +6263,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось отменить. Повторите попытку';
 
   @override
+  String get diaryDraftsSelect => 'Выбрать';
+
+  @override
+  String get diaryDraftContinue => 'Продолжить';
+
+  @override
   String get diaryDraftPickerTitle => 'Продолжить черновик';
 
   @override

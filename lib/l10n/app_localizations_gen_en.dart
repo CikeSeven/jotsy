@@ -6111,6 +6111,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDraftsRestoreFailed => 'Couldn\'t undo. Try again';
 
   @override
+  String get diaryDraftsSelect => 'Select';
+
+  @override
+  String get diaryDraftContinue => 'Continue writing';
+
+  @override
   String get diaryDraftPickerTitle => 'Continue a draft';
 
   @override

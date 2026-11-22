@@ -7789,7 +7789,7 @@
   },
   "diaryDraftDeleted": "下書きを削除しました",
   "@diaryDraftDeleted": {
-    "description": "Snackbar after swiping a draft away (with undo)."
+    "description": "Snackbar after deleting one draft by swiping it away or from its right-click menu (with undo)."
   },
   "diaryDraftsDeleted": "{count}件の下書きを削除しました",
   "@diaryDraftsDeleted": {
@@ -7820,6 +7820,14 @@
   "diaryDraftsRestoreFailed": "元に戻せませんでした。もう一度お試しください",
   "@diaryDraftsRestoreFailed": {
     "description": "Snackbar when restoring deleted drafts fails."
+  },
+  "diaryDraftsSelect": "選択",
+  "@diaryDraftsSelect": {
+    "description": "Drafts page top-bar button on desktop: enter multi-select mode (checkboxes on every row, nothing selected yet)."
+  },
+  "diaryDraftContinue": "続きを書く",
+  "@diaryDraftContinue": {
+    "description": "Draft row right-click menu on desktop: continue the draft in the editor."
   },
   "diaryDraftPickerTitle": "下書きの続きを書く",
   "@diaryDraftPickerTitle": {

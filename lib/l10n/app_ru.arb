@@ -7789,7 +7789,7 @@
   },
   "diaryDraftDeleted": "Черновик удалён",
   "@diaryDraftDeleted": {
-    "description": "Snackbar after swiping a draft away (with undo)."
+    "description": "Snackbar after deleting one draft by swiping it away or from its right-click menu (with undo)."
   },
   "diaryDraftsDeleted": "{count, plural, one{Удалён {count} черновик} few{Удалено {count} черновика} many{Удалено {count} черновиков} other{Удалено {count} черновика}}",
   "@diaryDraftsDeleted": {
@@ -7820,6 +7820,14 @@
   "diaryDraftsRestoreFailed": "Не удалось отменить. Повторите попытку",
   "@diaryDraftsRestoreFailed": {
     "description": "Snackbar when restoring deleted drafts fails."
+  },
+  "diaryDraftsSelect": "Выбрать",
+  "@diaryDraftsSelect": {
+    "description": "Drafts page top-bar button on desktop: enter multi-select mode (checkboxes on every row, nothing selected yet)."
+  },
+  "diaryDraftContinue": "Продолжить",
+  "@diaryDraftContinue": {
+    "description": "Draft row right-click menu on desktop: continue the draft in the editor."
   },
   "diaryDraftPickerTitle": "Продолжить черновик",
   "@diaryDraftPickerTitle": {

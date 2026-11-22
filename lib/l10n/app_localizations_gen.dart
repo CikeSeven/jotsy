@@ -10038,7 +10038,7 @@ abstract class AppLocalizations {
   /// **'Edited {time} · {words} words'**
   String diaryDraftEditedAt(String time, String words);
 
-  /// Snackbar after swiping a draft away (with undo).
+  /// Snackbar after deleting one draft by swiping it away or from its right-click menu (with undo).
   ///
   /// In en, this message translates to:
   /// **'Draft deleted'**
@@ -10073,6 +10073,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t undo. Try again'**
   String get diaryDraftsRestoreFailed;
+
+  /// Drafts page top-bar button on desktop: enter multi-select mode (checkboxes on every row, nothing selected yet).
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get diaryDraftsSelect;
+
+  /// Draft row right-click menu on desktop: continue the draft in the editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue writing'**
+  String get diaryDraftContinue;
 
   /// Title of the sheet shown on “New” when drafts exist.
   ///

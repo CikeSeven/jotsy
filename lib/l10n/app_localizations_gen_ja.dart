@@ -5610,6 +5610,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryDraftsRestoreFailed => '元に戻せませんでした。もう一度お試しください';
 
   @override
+  String get diaryDraftsSelect => '選択';
+
+  @override
+  String get diaryDraftContinue => '続きを書く';
+
+  @override
   String get diaryDraftPickerTitle => '下書きの続きを書く';
 
   @override

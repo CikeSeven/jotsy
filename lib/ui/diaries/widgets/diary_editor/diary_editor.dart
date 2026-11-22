@@ -43,6 +43,7 @@ import 'diary_block_commands.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_mind_map_editing.dart';
 import 'diary_editor_spans.dart';
+import 'diary_link_spans.dart';
 import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
 import 'diary_editor_selection_toolbar.dart';
@@ -251,6 +252,14 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       fromEditor: !widget.controller.readOnly,
     ),
   );
+
+  /// 编辑选区的链接：工具栏「链接」、Ctrl / ⌘ + K 与单击网址链接共用
+  /// [editDiaryLink] 的对话框。返回 false 表示没有打开（正文只读或已卸载）。
+  bool _editLink() {
+    if (!mounted || widget.controller.readOnly) return false;
+    unawaited(editDiaryLink(context, widget.controller));
+    return true;
+  }
 
   /// 能链接的种类：日记本功能关闭时只有日记。
   Set<DiaryLinkKind> _linkKinds() => {
@@ -523,6 +532,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               notebooksEnabled: notebooksEnabled,
               plainColor: body.color,
               onOpen: _openLink,
+              onEditWebLink: _editLink,
             ),
           ),
         ),
@@ -635,28 +645,23 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
                 return KeyEventResult.handled;
               },
             ),
-        // 桌面的 Ctrl / ⌘ + K 打开与工具栏「链接」相同的对话框，取代上游的
-        // 链接浮层（样式与校验都与应用不一致）。手机保持上游行为。
-        if (AppPlatform.isDesktop)
-          af.CommandShortcutEvent(
-            key: 'diary_edit_link',
-            getDescription: () => 'edit link',
-            command: 'ctrl+k',
-            macOSCommand: 'cmd+k',
-            handler: (_) {
-              if (!mounted || controller.readOnly) {
-                return KeyEventResult.ignored;
-              }
-              unawaited(editDiaryLink(context, controller));
-              return KeyEventResult.handled;
-            },
-          ),
+        // Ctrl / ⌘ + K 打开与工具栏「链接」相同的对话框，取代上游的链接浮层
+        // （样式与校验都与应用不一致，手机窄屏上还会摆到屏幕外，#336）。
+        // 手机接实体键盘时上游同样弹那个浮层，所以不分平台。
+        af.CommandShortcutEvent(
+          key: 'diary_edit_link',
+          getDescription: () => 'edit link',
+          command: 'ctrl+k',
+          macOSCommand: 'cmd+k',
+          handler: (_) =>
+              _editLink() ? KeyEventResult.handled : KeyEventResult.ignored,
+        ),
         for (final event in af.standardCommandShortcutEvents)
           if (!kUpstreamTableCommandKeys.contains(event.key) &&
               !identical(event, af.toggleHighlightCommand) &&
+              !identical(event, af.showLinkMenuCommand) &&
               !(AppPlatform.isDesktop &&
-                  (identical(event, af.exitEditingCommand) ||
-                      identical(event, af.showLinkMenuCommand)))) ...[
+                  identical(event, af.exitEditingCommand))) ...[
             // 嵌入块旁的退格 / Delete 紧排在上游同键命令之前：上游会越过
             // 嵌入块合并文字（见 diary_embed_editing.dart）。“段首转正文”
             // 排在上游退格之前，仍先于这里。

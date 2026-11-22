@@ -146,10 +146,19 @@ DiaryLinkTarget? diaryLinkTargetAtSelection(DiaryEditorController controller) {
 ) {
   final selection = controller.selection?.normalized;
   if (selection == null || !selection.isCollapsed) return null;
-  final path = selection.end.path;
-  final delta = controller.document.nodeAtPath(path)?.delta;
+  final node = controller.document.nodeAtPath(selection.end.path);
+  return node == null ? null : diaryLinkRangeAt(node, selection.end.offset);
+}
+
+/// 文字块 [node] 里 [offset] 处或紧挨着的那段链接，口径同
+/// [diaryLinkRangeAtCaret]（点按链接时也用它选中整段：一段链接里有加粗等
+/// 格式不同的片段时，上游只给被点的那一片）。
+({af.Selection range, String href})? diaryLinkRangeAt(
+  af.Node node,
+  int offset,
+) {
+  final delta = node.delta;
   if (delta == null) return null;
-  final offset = selection.end.offset;
   // 相邻且 href 相同的片段（加粗等其他属性不同）并成一段。
   final runs = <(int, int, String)>[];
   var position = 0;
@@ -177,7 +186,7 @@ DiaryLinkTarget? diaryLinkTargetAtSelection(DiaryEditorController controller) {
   if (hit == null) return null;
   return (
     range: af.Selection.single(
-      path: path,
+      path: node.path,
       startOffset: hit.$1,
       endOffset: hit.$2,
     ),

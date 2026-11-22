@@ -7736,7 +7736,7 @@
   },
   "diaryDraftDeleted": "已删除草稿",
   "@diaryDraftDeleted": {
-    "description": "左滑删除一份草稿后的提示（带撤销）。"
+    "description": "左滑或从右键菜单删除一份草稿后的提示（带撤销）。"
   },
   "diaryDraftsDeleted": "已删除 {count} 份草稿",
   "@diaryDraftsDeleted": {
@@ -7767,6 +7767,14 @@
   "diaryDraftsRestoreFailed": "撤销失败，请重试",
   "@diaryDraftsRestoreFailed": {
     "description": "撤销删除草稿失败时的提示。"
+  },
+  "diaryDraftsSelect": "多选",
+  "@diaryDraftsSelect": {
+    "description": "桌面上草稿箱顶栏的按钮：进入多选（每行出现勾选框，尚未选中任何一份）。"
+  },
+  "diaryDraftContinue": "继续写",
+  "@diaryDraftContinue": {
+    "description": "桌面上草稿行右键菜单：打开编辑页续写这份草稿。"
   },
   "diaryDraftPickerTitle": "继续写草稿",
   "@diaryDraftPickerTitle": {

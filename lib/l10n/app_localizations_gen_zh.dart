@@ -5495,6 +5495,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryDraftsRestoreFailed => '撤销失败，请重试';
 
   @override
+  String get diaryDraftsSelect => '多选';
+
+  @override
+  String get diaryDraftContinue => '继续写';
+
+  @override
   String get diaryDraftPickerTitle => '继续写草稿';
 
   @override

@@ -7736,7 +7736,7 @@
   },
   "diaryDraftDeleted": "Draft deleted",
   "@diaryDraftDeleted": {
-    "description": "Snackbar after swiping a draft away (with undo)."
+    "description": "Snackbar after deleting one draft by swiping it away or from its right-click menu (with undo)."
   },
   "diaryDraftsDeleted": "{count, plural, =1{Deleted 1 draft} other{Deleted {count} drafts}}",
   "@diaryDraftsDeleted": {
@@ -7767,6 +7767,14 @@
   "diaryDraftsRestoreFailed": "Couldn't undo. Try again",
   "@diaryDraftsRestoreFailed": {
     "description": "Snackbar when restoring deleted drafts fails."
+  },
+  "diaryDraftsSelect": "Select",
+  "@diaryDraftsSelect": {
+    "description": "Drafts page top-bar button on desktop: enter multi-select mode (checkboxes on every row, nothing selected yet)."
+  },
+  "diaryDraftContinue": "Continue writing",
+  "@diaryDraftContinue": {
+    "description": "Draft row right-click menu on desktop: continue the draft in the editor."
   },
   "diaryDraftPickerTitle": "Continue a draft",
   "@diaryDraftPickerTitle": {

@@ -17997,6 +17997,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'arg_remove_rules': 'Удалить интервалы',
       'arg_clear_rules': 'Удалить все интервалы',
       'arg_default_template_id': 'Шаблон по умолчанию',
+      'arg_chapter_id': 'Глава',
       'other': '',
     });
     return '$_temp0';
@@ -18062,6 +18063,100 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get aiToolEditNotebookChapters => 'Изменить главы блокнота';
+
+  @override
+  String aiToolEditNotebookChaptersOf(String name) {
+    return 'Изменить главы «$name»';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapters(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалить $count глав',
+      many: 'Удалить $count глав',
+      few: 'Удалить $count главы',
+      one: 'Удалить $count главу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersNamed(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалить $count глав из «$name»',
+      many: 'Удалить $count глав из «$name»',
+      few: 'Удалить $count главы из «$name»',
+      one: 'Удалить $count главу из «$name»',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapterNamed(String notebook, String chapter) {
+    return 'Удалить главу «$chapter» из «$notebook»';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersUnassign(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count записи вернутся в раздел «Без главы»; сами записи не удаляются.',
+      many:
+          '$count записей вернутся в раздел «Без главы»; сами записи не удаляются.',
+      few:
+          '$count записи вернутся в раздел «Без главы»; сами записи не удаляются.',
+      one:
+          '$count запись вернётся в раздел «Без главы»; сами записи не удаляются.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolMoveToChapter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Изменить главу $count записей',
+      many: 'Изменить главу $count записей',
+      few: 'Изменить главу $count записей',
+      one: 'Изменить главу $count записи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolMoveToChapterIn(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Изменить главу $count записей в «$name»',
+      many: 'Изменить главу $count записей в «$name»',
+      few: 'Изменить главу $count записей в «$name»',
+      one: 'Изменить главу $count записи в «$name»',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolArgAddChapters => 'Добавить главы';
+
+  @override
+  String get aiToolArgRenameChapters => 'Переименовать главы';
+
+  @override
+  String get aiToolArgChapterOrder => 'Порядок глав';
+
+  @override
+  String get aiToolReorderChaptersPreview => 'Изменить порядок глав';
 
   @override
   String get aiChatReturnHint => 'Нажмите «Назад», чтобы вернуться к чату';

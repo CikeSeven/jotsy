@@ -173,6 +173,97 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
     });
   }
 
+  /// 查询 [diaryIds] 在手动日记本 [notebookId] 中的当前章节：
+  /// 只返回**已收录在本子里**的日记（业务 id → `chapter_id`，未分章为 null；
+  /// 含归档日记）。不在本子里或不存在的日记不出现在结果里。
+  Future<Map<String, String?>> getNotebookEntryChapters(
+    String notebookId,
+    Iterable<String> diaryIds,
+  ) async {
+    final notebook = await _requireManualNotebook(notebookId);
+    final ids = diaryIds.toSet().toList();
+    if (ids.isEmpty) return const <String, String?>{};
+    final result = <String, String?>{};
+    for (final chunk in _chunked(ids)) {
+      final query =
+          selectOnly(diaryNotebooks).join(<Join>[
+              innerJoin(diaries, diaries.id.equalsExp(diaryNotebooks.diaryId)),
+            ])
+            ..addColumns(<Expression<Object>>[
+              diaries.diaryId,
+              diaryNotebooks.chapterId,
+            ])
+            ..where(
+              diaryNotebooks.notebookId.equals(notebook.id) &
+                  diaries.diaryId.isIn(chunk),
+            );
+      for (final row in await query.get()) {
+        result[row.read(diaries.diaryId)!] = row.read(diaryNotebooks.chapterId);
+      }
+    }
+    return result;
+  }
+
+  /// 按 [chaptersByDiaryId]（业务 id → 原 `chapter_id`）在同一事务里写回各篇
+  /// 日记在手动日记本 [notebookId] 里的章节，不改成书顺序（撤销换章用）。
+  /// 本子已删除或已不是手动本时静默返回；指向已不存在章节的落到“未分章”。
+  Future<void> restoreNotebookEntryChapters(
+    String notebookId,
+    Map<String, String?> chaptersByDiaryId,
+  ) {
+    if (chaptersByDiaryId.isEmpty) return Future<void>.value();
+    return transaction(() async {
+      final notebook = await (select(
+        notebooks,
+      )..where((t) => t.notebookId.equals(notebookId))).getSingleOrNull();
+      if (notebook == null || !notebook.acceptsManualEntries) return;
+      final local = await _diaryLocalIds(chaptersByDiaryId.keys);
+      final byChapter = <String?, List<int>>{};
+      for (final entry in chaptersByDiaryId.entries) {
+        final localId = local[entry.key];
+        if (localId == null) continue;
+        final chapter = _validChapterId(notebook, entry.value);
+        byChapter.putIfAbsent(chapter, () => <int>[]).add(localId);
+      }
+      for (final entry in byChapter.entries) {
+        for (final chunk in _chunked(entry.value)) {
+          await (update(diaryNotebooks)..where(
+                (t) => t.notebookId.equals(notebook.id) & t.diaryId.isIn(chunk),
+              ))
+              .write(DiaryNotebooksCompanion(chapterId: Value(entry.key)));
+        }
+      }
+    });
+  }
+
+  /// 手动日记本 [notebookId] 里，[chapterIds] 中这些章节目前总共有多少条
+  /// 成员行（含归档与回收站，判断撤销新建章节是否会让已有日记回到未分章用）。
+  Future<int> countNotebookEntriesInChapters(
+    String notebookId,
+    Iterable<String> chapterIds,
+  ) async {
+    final ids = chapterIds.toSet().toList();
+    if (ids.isEmpty) return 0;
+    final notebook = await (select(
+      notebooks,
+    )..where((t) => t.notebookId.equals(notebookId))).getSingleOrNull();
+    if (notebook == null || !notebook.acceptsManualEntries) return 0;
+    var total = 0;
+    final countExp = diaryNotebooks.diaryId.count();
+    for (final chunk in _chunked(ids)) {
+      final row =
+          await (selectOnly(diaryNotebooks)
+                ..addColumns(<Expression<Object>>[countExp])
+                ..where(
+                  diaryNotebooks.notebookId.equals(notebook.id) &
+                      diaryNotebooks.chapterId.isIn(chunk),
+                ))
+              .getSingle();
+      total += row.read(countExp) ?? 0;
+    }
+    return total;
+  }
+
   /// 目录页保存手动排序：[ordered] 里的日记依次占位置 0..n-1 并改为各自的
   /// 章节；不在列表里的成员（例如排序途中别处新加入的）接在后面，保持原有
   /// 相对顺序、章节不变。不在本子里的日记与重复项忽略。

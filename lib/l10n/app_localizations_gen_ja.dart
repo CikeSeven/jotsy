@@ -15370,6 +15370,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'arg_remove_rules': '時間帯を削除',
       'arg_clear_rules': '時間帯をすべて削除',
       'arg_default_template_id': '既定のテンプレート',
+      'arg_chapter_id': '章',
       'other': '',
     });
     return '$_temp0';
@@ -15419,6 +15420,56 @@ class AppLocalizationsJa extends AppLocalizations {
   String aiToolRemoveFromNotebookNamed(int count, String name) {
     return '$count 件の日記を「$name」から外す';
   }
+
+  @override
+  String get aiToolEditNotebookChapters => '日記帳の章を編集';
+
+  @override
+  String aiToolEditNotebookChaptersOf(String name) {
+    return '「$name」の章を編集';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapters(int count) {
+    return '$count 件の章を削除';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersNamed(String name, int count) {
+    return '「$name」から $count 件の章を削除';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapterNamed(String notebook, String chapter) {
+    return '「$notebook」の章「$chapter」を削除';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersUnassign(int count) {
+    return '含まれる日記 $count 件は「章なし」に戻ります。日記は削除されません。';
+  }
+
+  @override
+  String aiToolMoveToChapter(int count) {
+    return '$count 件の日記の章を変更';
+  }
+
+  @override
+  String aiToolMoveToChapterIn(int count, String name) {
+    return '「$name」の $count 件の日記の章を変更';
+  }
+
+  @override
+  String get aiToolArgAddChapters => '章を追加';
+
+  @override
+  String get aiToolArgRenameChapters => '章名を変更';
+
+  @override
+  String get aiToolArgChapterOrder => '章の順番';
+
+  @override
+  String get aiToolReorderChaptersPreview => '章の順番を変更';
 
   @override
   String get aiChatReturnHint => '戻るボタンで先ほどの会話に戻れます';

@@ -400,6 +400,70 @@ void main() {
         ('乙', null),
       ]);
     });
+
+    test(
+      'chapter snapshot deletion, restoration and entry chapter helpers work',
+      () async {
+        final one = NotebookChapter(id: 'c1', title: '一');
+        final two = NotebookChapter(id: 'c2', title: '二');
+        final book = await notebook(
+          '本子',
+          payload: NotebookPayload(
+            description: '简介',
+            chapters: <NotebookChapter>[one, two],
+          ),
+        );
+        final a = await diary('甲');
+        final b = await diary('乙');
+        final outside = await diary('丙');
+        await db.addDiariesToNotebook(book, <String>[a], chapterId: 'c1');
+        await db.addDiariesToNotebook(book, <String>[b], chapterId: 'c2');
+
+        expect(await db.getNotebookEntryChapters(book, [a, b, outside]), {
+          a: 'c1',
+          b: 'c2',
+        });
+        expect(await db.countNotebookEntriesInChapters(book, ['c1']), 1);
+        expect(await db.countNotebookEntriesInChapters(book, ['c1', 'c2']), 2);
+
+        // 批量分别恢复各篇章节。
+        await db.setNotebookEntriesChapter(book, [a, b], null);
+        await db.restoreNotebookEntryChapters(book, {
+          a: 'c1',
+          b: 'c2',
+          outside: 'c1',
+        });
+        expect(await db.getNotebookEntryChapters(book, [a, b]), {
+          a: 'c1',
+          b: 'c2',
+        });
+
+        // 删除章节快照 + JSON 往返 + 恢复（保留期间改动过的简介）。
+        final snapshot = await db.deleteNotebookChaptersWithSnapshot(book, [
+          'c1',
+        ]);
+        expect(snapshot.clearedEntries, {a: 'c1'});
+        expect(await db.getNotebookEntryChapters(book, [a, b]), {
+          a: null,
+          b: 'c2',
+        });
+        final roundTrip = NotebookChaptersDeletion.fromJson(snapshot.toJson());
+        await db.updateNotebook(
+          book,
+          payload: (await db.getNotebook(
+            book,
+          ))!.parsedPayload.copyWith(description: '新简介'),
+        );
+        await db.restoreNotebookChaptersDeletion(roundTrip);
+        final restored = (await db.getNotebook(book))!;
+        expect(restored.parsedPayload.description, '新简介');
+        expect(restored.parsedPayload.chapters, [one, two]);
+        expect(await db.getNotebookEntryChapters(book, [a, b]), {
+          a: 'c1',
+          b: 'c2',
+        });
+      },
+    );
   });
 
   group('diary writes', () {

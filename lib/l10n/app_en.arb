@@ -19644,7 +19644,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_edits{Changes} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{Dates} arg_due_range{Due} arg_merge_from{Tags merged} arg_query{Keywords} arg_tags{Tags} arg_mood{Mood} arg_include_archived{Include archived} arg_sort{Order} arg_limit{At most} arg_group_by{Group by} arg_date{Date} arg_time{Time} arg_title{Title} arg_name{Name} arg_note{Note} arg_color{Color} arg_weather{Weather} arg_location{Place} arg_text{Text} arg_edits{Changes} arg_body{Body} arg_priority{Priority} arg_list{List} arg_status{Status} arg_scale{Text size} arg_repeat{Repeat} arg_remove{Tags removed} arg_add{Tags added} arg_remind_before_minutes{Remind before} arg_parent_id{Parent notebook} arg_offset{Start at character} arg_new_name{New name} arg_mode{Appearance} arg_language{Language} arg_into{Merge into} arg_feature{Feature} arg_enabled{On} arg_clear_due{Clear due date} arg_kind_diary{Entry} arg_kind_notebook{Notebook} arg_kind_tag{Tag} arg_kind_todo{To-do} arg_kind_anniversary{Anniversary} arg_kind_day{Day} arg_steps{Steps} arg_reminders{Reminders} arg_add_steps{Steps added} arg_check_steps{Steps checked} arg_uncheck_steps{Steps unchecked} arg_remove_steps{Steps removed} arg_all_day{All day} arg_kind_todoList{To-do list} arg_images{Photos} arg_attachments{Chat photos} arg_kind_template{Template} arg_add_rules{Add time ranges} arg_remove_rules{Remove time ranges} arg_clear_rules{Remove all time ranges} arg_default_template_id{Default template} arg_chapter_id{Chapter} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {
@@ -19685,6 +19685,98 @@
         "type": "String"
       }
     }
+  },
+  "aiToolEditNotebookChapters": "Edit notebook chapters",
+  "@aiToolEditNotebookChapters": {
+    "description": "AI step card: edit chapters of a notebook."
+  },
+  "aiToolEditNotebookChaptersOf": "Edit chapters of “{name}”",
+  "@aiToolEditNotebookChaptersOf": {
+    "description": "AI step card: edit chapters of a named notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChapters": "{count, plural, =1{Delete 1 chapter} other{Delete {count} chapters}}",
+  "@aiToolDeleteNotebookChapters": {
+    "description": "AI step card: delete chapters from a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChaptersNamed": "{count, plural, =1{Delete 1 chapter from “{name}”} other{Delete {count} chapters from “{name}”}}",
+  "@aiToolDeleteNotebookChaptersNamed": {
+    "description": "AI step card: delete chapters from a named notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChapterNamed": "Delete chapter “{chapter}” from “{notebook}”",
+  "@aiToolDeleteNotebookChapterNamed": {
+    "description": "AI confirmation card: delete a single named chapter from a notebook.",
+    "placeholders": {
+      "notebook": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChaptersUnassign": "{count, plural, =1{1 entry will go back to No chapter; no entries are deleted.} other{{count} entries will go back to No chapter; no entries are deleted.}}",
+  "@aiToolDeleteNotebookChaptersUnassign": {
+    "description": "AI confirmation card: note how many entries move to No chapter when chapters are deleted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolMoveToChapter": "{count, plural, =1{Change chapter of 1 entry} other{Change chapter of {count} entries}}",
+  "@aiToolMoveToChapter": {
+    "description": "AI step card: move entries in a notebook to a chapter or No chapter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolMoveToChapterIn": "{count, plural, =1{Change chapter of 1 entry in “{name}”} other{Change chapter of {count} entries in “{name}”}}",
+  "@aiToolMoveToChapterIn": {
+    "description": "AI step card: move entries in a named notebook to a chapter or No chapter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgAddChapters": "Add chapters",
+  "@aiToolArgAddChapters": {
+    "description": "Tool detail label: chapters to add."
+  },
+  "aiToolArgRenameChapters": "Rename chapters",
+  "@aiToolArgRenameChapters": {
+    "description": "Tool detail label: chapters to rename."
+  },
+  "aiToolArgChapterOrder": "Chapter order",
+  "@aiToolArgChapterOrder": {
+    "description": "Tool detail label: chapter order."
+  },
+  "aiToolReorderChaptersPreview": "Reorder chapters",
+  "@aiToolReorderChaptersPreview": {
+    "description": "AI confirmation preview line when chapters are reordered."
   },
   "aiChatReturnHint": "Press back to return to the chat",
   "@aiChatReturnHint": {

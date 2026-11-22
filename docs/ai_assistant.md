@@ -161,16 +161,16 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | 工具 | 作用 | 数据来源 |
 |---|---|---|
 | `get_app_context` | 今天（含农历、节气、法定节假日）、平台、界面语言、开启的功能、心情选项、本轮剩余字数 | `CalendarLunarDay`、`AppPlatform`、`AppFeatures`、`SettingsService.moodOptions` |
-| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本找日记，返回编号、id、日期、标题、摘录与图片张数（`photos`，没有图片的不写，说明里写明“没写就是没有”） | `getAiContextDiaries`、`aiRankDiaries`、`aiDiaryPhotoCounts` |
+| `search_diaries` | 按关键词（任一命中）/ 日期（含两端）/ 标签（全部命中）/ 心情 / 日记本（手动本可按 `chapter_id` 筛章节，`""` 为未分章）找日记，返回编号、id、日期、标题、摘录、手动有章本里的章节与图片张数（`photos`，没有图片的不写，说明里写明“没写就是没有”） | `getAiContextDiaries`、`aiRankDiaries`、`aiDiaryPhotoCounts`、`getNotebookEntryChapters` |
 | `read_diaries` | 按 id 读全文（一次最多 10 篇），正文为正文 Markdown（`edit_diary` 照这份改），图片写“[图片 n]”并给出张数 | `aiAgentReadDiary`（`getAiDiary`；私密日记、排除的本子与标签一律不给） |
 | `view_images` | 看日记里的图片（按序号）或对话里用户发的图片（按 P 编号），能发图的一轮才有 | `aiAgentReadDiary`、`AiVisionImages`、`AiImageBudget` |
-| `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组 | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
+| `diary_stats` | 篇数、字数、记录天数、最长 / 当前连续天数、常用心情与标签，可按日 / 周 / 月 / 年分组（手动本可按 `chapter_id` 筛章节） | `getAiContextDiaries`、`AiRecapStats`、`ExploreStatsBuilder` |
 | `get_calendar_day` | 某天的农历、节假日、这天的心情、写的日记（只给标题与图片张数）、到期待办、纪念日 | 日记、待办、纪念日、这天的心情各自的查询 |
 | `list_todos` | 未完成 / 已完成 / 全部，可按到期日、关键词（与日期可同时用）、清单（`""` 为收集箱）、优先级筛选；每项带步骤、提醒、重复（与改动类工具的参数同一写法，见 `aiTodoItem`）与完成时间（待办功能开启时） | 待办查询 |
 | `list_todo_lists` | 各清单与收集箱的未完成 / 已完成数，以及新待办默认进哪个清单 | `watchTodoListProgress`、`TodoSettings` |
 | `list_anniversaries` | 纪念日与下一次日期、还有几天（纪念日功能开启时） | `AnniversaryCountdown` |
 | `list_tags` | 标签与使用篇数（排除的标签不列） | `watchAllTags`、`watchTagUsageCounts` |
-| `list_notebooks` | 日记本树（私密 / 上锁本与排除的本子不列） | `notebookTreeProvider` |
+| `list_notebooks` | 日记本树（私密 / 上锁本与排除的本子不列）；有章节的手动本带章节列表（id、标题，按顺序） | `notebookTreeProvider` |
 | `list_templates` | 日记模板（我的在前、内置在后，不含正文）、已删除的内置模板、自动套用（默认模板与时间段规则）、建议条开关、日记本的默认模板、各变量在界面语言里的写法（模板功能开启时） | `DiaryTemplateLibrary`（与管理页同一口径）、`DiaryTemplatePrefs` |
 | `get_template` | 模板的全部设置与正文（模板 Markdown，见下），原样交回 `update_template` 不算改动 | `aiTemplateMarkdownOf` |
 | `get_settings` | `change_settings` 能改的各项设置的当前值（与参数同一写法；功能关着的不列），以及主题、主题色、字号、界面语言 | `aiSettingSpecs` |
@@ -180,7 +180,7 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 
 | 工具 | 作用 | 写库 | 撤销 |
 |---|---|---|---|
-| `create_diary` | 新建日记（正文 Markdown、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本）；正文里单独一行的 `![](P1)` 与 `images`（P 编号，接在正文后）把对话里的图片放进正文（与 `edit_diary` 同一套读法：对空正文整段替换，写之前全部校验，有一个不对就整次不写） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
+| `create_diary` | 新建日记（正文 Markdown、日期与时刻、标签（没有的就建）、心情（只能取心情选项）、天气、地点、手动日记本与可选章节）；正文里单独一行的 `![](P1)` 与 `images`（P 编号，接在正文后）把对话里的图片放进正文（与 `edit_diary` 同一套读法：对空正文整段替换，写之前全部校验，有一个不对就整次不写） | `publishNewDiaryDirectly` | 摘掉顺带新建的标签、移入回收站、删掉没人用的新标签 |
 | `edit_diary` | 改正文：`edits[]`（old_text → new_text，按正文 Markdown 精确替换）或 `body`（整段替换），见下“正文 Markdown 与改正文”；导图日记不改 | `updateDiaryContent`（不碰标题、元数据、归档与删除） | 写回原正文 |
 | `update_diary` | 改标题、日期、时刻、心情、天气、地点（空字符串清空） | `patchDiaryFields`（不碰归档、删除、标签与正文） | 写回原值 |
 | `tag_diaries` | 批量加减标签 | `applyDiaryTagBatch` | `restoreDiaryTagBatch` |
@@ -190,7 +190,10 @@ SSE 解码处理跨块的 UTF-8、CRLF、多行 `data:`、`event:`、注释行�
 | `create_tag` / `rename_tag` | 新建、改名或改色 | `ensureTagsByName` / `updateTag` | 删掉没人用的新标签 / 改回 |
 | `merge_tags` / `delete_tag` | 合并 / 删除标签（**确认**，覆盖私密与回收站里的日记） | `mergeTags` / `deleteTagWithSnapshot` + `forgetDeletedTags` | 按快照原样放回（期间建了同名标签时报冲突） |
 | `create_notebook` / `rename_notebook` | 新建手动本（可选上级）/ 改名 | `createNotebook` / `updateNotebook` | 删掉（已收了日记时先报冲突）/ 改回 |
-| `add_to_notebook` / `remove_from_notebook` | 收录 / 移出（只动手动、非私密的本子） | 日记本成员 ops | 移出新收的 / 放回原成员行 |
+| `add_to_notebook` / `remove_from_notebook` | 收录（可选指定章节，已在本子里的也会移入该章）/ 移出（只动手动、非私密的本子） | 日记本成员 ops | 移出新收的并恢复原本已在本子里日记的原章节 / 放回原成员行 |
+| `edit_notebook_chapters` | 编辑手动日记本的章节：新增、重命名、调整顺序（只动手动、非私密的本子，支持按 id 或唯一标题匹配，顺序按 rename → add → order） | `updateNotebook`（只改 payload 的 `chapters`） | 写回原章节列表（之后章节被改过或新建章节里已放进日记时先报冲突） |
+| `delete_notebook_chapters` | 删除手动日记本的一个或多个章节（**确认**；其中的日记回到“未分章”，日记本身不动） | `deleteNotebookChaptersWithSnapshot` | `restoreNotebookChaptersDeletion`（写回原章节并恢复原属日记的章节归属，期间章节列表变过时报冲突） |
+| `move_to_notebook_chapter` | 把手动日记本里已有的日记移到指定章节，或传 `""` 移回“未分章”（不改成书顺序） | `setNotebookEntriesChapter` | `restoreNotebookEntryChapters`（按每篇原来的章节写回） |
 | `create_todo` / `update_todos` / `complete_todos` / `delete_todos`（**确认**） | 待办：清单按名称（`""` 为收集箱，新建时不给为设置里的默认清单）；提醒（截止前若干分钟，或截止日当天 / 之前某天的某个时刻）、重复（每天 / 每周几 / 每月 / 每年 / 法定工作日，间隔、从完成起算、截止日期或次数）与步骤；设提醒或重复时没有截止日按详情页口径定为今天；批量只给日期时各自保留时刻（与多选改日期同一口径），`all_day` 才改为全天；关联 / 解除关联日记（只经 `aiWritableDiary`）；带提醒时按待办页口径申请通知权限，本平台没有提醒时其余照做并告诉模型；全部校验在写库之前 | 待办 ops | 删掉 / 截止日一组（日期、时刻、提醒、重复、稍后提醒）经 `restoreTodoFields`、清单与优先级同样、改回关联日记与标题备注 / 倒序 `undoTodoCompletion` / `restoreTodos` |
 | `reopen_todos` / `edit_todo_steps` | 把已完成的改回未完成 / 一项待办的步骤：新增、勾选、取消勾选、删除（按步骤 id 或标题） | `uncompleteTodo` / `setTodoSteps` | `restoreTodoCompletedAt` / 写回原步骤 |
 | `create_todo_list` / `rename_todo_list` / `delete_todo_list`（**确认**，连同其中的待办） | 待办清单（按名称，不重名、不叫 Inbox；颜色与图标不动） | 清单 ops | 删掉（已放进待办时先报冲突，强制时把待办移回收集箱再删）/ 改回 / `restoreTodoList` |

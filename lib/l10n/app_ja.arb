@@ -20211,7 +20211,7 @@
       }
     }
   },
-  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_edits{変更} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} arg_kind_template{テンプレート} arg_add_rules{時間帯を追加} arg_remove_rules{時間帯を削除} arg_clear_rules{時間帯をすべて削除} arg_default_template_id{既定のテンプレート} other{}}",
+  "aiToolArgName": "{key, select, arg_date_range{日付} arg_due_range{期限} arg_merge_from{統合するタグ} arg_query{キーワード} arg_tags{タグ} arg_mood{気分} arg_include_archived{アーカイブを含む} arg_sort{並び順} arg_limit{最大} arg_group_by{まとめ方} arg_date{日付} arg_time{時刻} arg_title{タイトル} arg_name{名前} arg_note{メモ} arg_color{色} arg_weather{天気} arg_location{場所} arg_text{内容} arg_edits{変更} arg_body{本文} arg_priority{優先度} arg_list{リスト} arg_status{状態} arg_scale{文字サイズ} arg_repeat{繰り返し} arg_remove{外すタグ} arg_add{付けるタグ} arg_remind_before_minutes{事前通知} arg_parent_id{親の日記帳} arg_offset{読み始め位置} arg_new_name{新しい名前} arg_mode{外観} arg_language{言語} arg_into{統合先} arg_feature{機能} arg_enabled{オン} arg_clear_due{期限を消す} arg_kind_diary{日記} arg_kind_notebook{日記帳} arg_kind_tag{タグ} arg_kind_todo{ToDo} arg_kind_anniversary{記念日} arg_kind_day{日} arg_steps{ステップ} arg_reminders{リマインダー} arg_add_steps{追加するステップ} arg_check_steps{完了にするステップ} arg_uncheck_steps{未完了に戻すステップ} arg_remove_steps{削除するステップ} arg_all_day{終日} arg_kind_todoList{リスト} arg_images{画像} arg_attachments{チャットの画像} arg_kind_template{テンプレート} arg_add_rules{時間帯を追加} arg_remove_rules{時間帯を削除} arg_clear_rules{時間帯をすべて削除} arg_default_template_id{既定のテンプレート} arg_chapter_id{章} other{}}",
   "@aiToolArgName": {
     "description": "Name of a tool parameter in the readable details (arg_ + parameter name); empty means no translation and the raw name is shown.",
     "placeholders": {
@@ -20252,6 +20252,98 @@
         "type": "String"
       }
     }
+  },
+  "aiToolEditNotebookChapters": "日記帳の章を編集",
+  "@aiToolEditNotebookChapters": {
+    "description": "AI step card: edit chapters of a notebook."
+  },
+  "aiToolEditNotebookChaptersOf": "「{name}」の章を編集",
+  "@aiToolEditNotebookChaptersOf": {
+    "description": "AI step card: edit chapters of a named notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChapters": "{count} 件の章を削除",
+  "@aiToolDeleteNotebookChapters": {
+    "description": "AI step card: delete chapters from a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChaptersNamed": "「{name}」から {count} 件の章を削除",
+  "@aiToolDeleteNotebookChaptersNamed": {
+    "description": "AI step card: delete chapters from a named notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChapterNamed": "「{notebook}」の章「{chapter}」を削除",
+  "@aiToolDeleteNotebookChapterNamed": {
+    "description": "AI confirmation card: delete a single named chapter from a notebook.",
+    "placeholders": {
+      "notebook": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolDeleteNotebookChaptersUnassign": "含まれる日記 {count} 件は「章なし」に戻ります。日記は削除されません。",
+  "@aiToolDeleteNotebookChaptersUnassign": {
+    "description": "AI confirmation card: note how many entries move to No chapter when chapters are deleted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolMoveToChapter": "{count} 件の日記の章を変更",
+  "@aiToolMoveToChapter": {
+    "description": "AI step card: move entries in a notebook to a chapter or No chapter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiToolMoveToChapterIn": "「{name}」の {count} 件の日記の章を変更",
+  "@aiToolMoveToChapterIn": {
+    "description": "AI step card: move entries in a named notebook to a chapter or No chapter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiToolArgAddChapters": "章を追加",
+  "@aiToolArgAddChapters": {
+    "description": "Tool detail label: chapters to add."
+  },
+  "aiToolArgRenameChapters": "章名を変更",
+  "@aiToolArgRenameChapters": {
+    "description": "Tool detail label: chapters to rename."
+  },
+  "aiToolArgChapterOrder": "章の順番",
+  "@aiToolArgChapterOrder": {
+    "description": "Tool detail label: chapter order."
+  },
+  "aiToolReorderChaptersPreview": "章の順番を変更",
+  "@aiToolReorderChaptersPreview": {
+    "description": "AI confirmation preview line when chapters are reordered."
   },
   "aiChatReturnHint": "戻るボタンで先ほどの会話に戻れます",
   "@aiChatReturnHint": {

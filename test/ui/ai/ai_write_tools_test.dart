@@ -48,6 +48,10 @@ const Set<String> _covered = <String>{
   'rename_notebook',
   'add_to_notebook',
   'remove_from_notebook',
+  // 日记本章节（往返测试在 ai_notebook_chapters_tools_test.dart）。
+  'edit_notebook_chapters',
+  'delete_notebook_chapters',
+  'move_to_notebook_chapter',
   // 日记模板（往返测试在 ai_template_tools_test.dart）。
   'create_template',
   'update_template',

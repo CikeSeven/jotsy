@@ -17329,6 +17329,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'arg_remove_rules': 'Remove time ranges',
       'arg_clear_rules': 'Remove all time ranges',
       'arg_default_template_id': 'Default template',
+      'arg_chapter_id': 'Chapter',
       'other': '',
     });
     return '$_temp0';
@@ -17390,6 +17391,87 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get aiToolEditNotebookChapters => 'Edit notebook chapters';
+
+  @override
+  String aiToolEditNotebookChaptersOf(String name) {
+    return 'Edit chapters of “$name”';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapters(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count chapters',
+      one: 'Delete 1 chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersNamed(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count chapters from “$name”',
+      one: 'Delete 1 chapter from “$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolDeleteNotebookChapterNamed(String notebook, String chapter) {
+    return 'Delete chapter “$chapter” from “$notebook”';
+  }
+
+  @override
+  String aiToolDeleteNotebookChaptersUnassign(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count entries will go back to No chapter; no entries are deleted.',
+      one: '1 entry will go back to No chapter; no entries are deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolMoveToChapter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Change chapter of $count entries',
+      one: 'Change chapter of 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiToolMoveToChapterIn(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Change chapter of $count entries in “$name”',
+      one: 'Change chapter of 1 entry in “$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiToolArgAddChapters => 'Add chapters';
+
+  @override
+  String get aiToolArgRenameChapters => 'Rename chapters';
+
+  @override
+  String get aiToolArgChapterOrder => 'Chapter order';
+
+  @override
+  String get aiToolReorderChaptersPreview => 'Reorder chapters';
 
   @override
   String get aiChatReturnHint => 'Press back to return to the chat';

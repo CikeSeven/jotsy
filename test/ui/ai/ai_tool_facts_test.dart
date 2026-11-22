@@ -171,6 +171,87 @@ void main() {
     expect(name, contains('3'));
   });
 
+  test('notebook chapter tools never leak raw chapter ids or JSON', () {
+    final editFacts = aiToolFacts(
+      zh,
+      call(
+        'edit_notebook_chapters',
+        {
+          'notebook_id': 'nb-uuid',
+          'add': ['序言', '尾声'],
+          'rename': [
+            {'chapter': 'ch000001', 'title': '行前准备'},
+          ],
+          'order': ['ch000002', 'ch000001'],
+        },
+        subjects: const [AiToolSubject.notebook('nb-uuid', '旅行手记')],
+      ),
+    );
+    final byLabel = {for (final f in editFacts) f.label: f.value};
+    expect(byLabel[zh.aiToolArgName('arg_kind_notebook')], '旅行手记');
+    expect(byLabel[zh.aiToolArgAddChapters], '序言、尾声');
+    expect(byLabel[zh.aiToolArgRenameChapters], '行前准备');
+    expect(byLabel.containsKey(zh.aiToolArgChapterOrder), isFalse);
+    final joined = editFacts.map((f) => f.value).join('\n');
+    expect(joined, isNot(contains('ch000001')));
+    expect(joined, isNot(contains('ch000002')));
+    expect(joined, isNot(contains('{')));
+
+    final deleteFacts = aiToolFacts(
+      zh,
+      call(
+        'delete_notebook_chapters',
+        {
+          'notebook_id': 'nb-uuid',
+          'chapters': ['ch000001'],
+        },
+        subjects: const [AiToolSubject.notebook('nb-uuid', '旅行手记')],
+      ),
+    );
+    expect(deleteFacts.map((f) => f.value).join(), isNot(contains('ch000001')));
+
+    final unassignedFacts = aiToolFacts(
+      zh,
+      call(
+        'move_to_notebook_chapter',
+        {
+          'notebook_id': 'nb-uuid',
+          'ids': ['d1'],
+          'chapter_id': '',
+        },
+        subjects: [
+          const AiToolSubject.notebook('nb-uuid', '旅行手记', input: true),
+          AiToolSubject.diary('d1', title: '海边', date: DateTime(2026, 11, 1)),
+        ],
+      ),
+    );
+    final moveByLabel = {for (final f in unassignedFacts) f.label: f.value};
+    expect(
+      moveByLabel[zh.aiToolArgName('arg_chapter_id')],
+      zh.notebookChapterUnassigned,
+    );
+
+    final withChapterId = aiToolFacts(
+      zh,
+      call(
+        'move_to_notebook_chapter',
+        {
+          'notebook_id': 'nb-uuid',
+          'ids': ['d1'],
+          'chapter_id': 'ch000001',
+        },
+        subjects: [
+          const AiToolSubject.notebook('nb-uuid', '旅行手记', input: true),
+          AiToolSubject.diary('d1', title: '海边', date: DateTime(2026, 11, 1)),
+        ],
+      ),
+    );
+    expect(
+      withChapterId.map((f) => f.value).join(),
+      isNot(contains('ch000001')),
+    );
+  });
+
   test('subjects survive the step record round trip', () {
     final record =
         call(

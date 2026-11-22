@@ -10,6 +10,8 @@ import 'ai_tools_diaries.dart';
 import 'ai_tools_diary_edit.dart';
 import 'ai_tools_diary_writes.dart';
 import 'ai_tools_images.dart';
+import 'ai_tools_notebook_chapter_actions.dart';
+import 'ai_tools_notebook_chapters.dart';
 import 'ai_tools_organize.dart';
 import 'ai_tools_organize_writes.dart';
 import 'ai_tools_preferences.dart';
@@ -60,6 +62,9 @@ const List<AiTool> aiTools = <AiTool>[
   RenameNotebookTool(),
   AddToNotebookTool(),
   RemoveFromNotebookTool(),
+  EditNotebookChaptersTool(),
+  DeleteNotebookChaptersTool(),
+  MoveToNotebookChapterTool(),
   // 日记模板。
   CreateTemplateTool(),
   UpdateTemplateTool(),

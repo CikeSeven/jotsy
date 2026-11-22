@@ -354,6 +354,130 @@ GROUP BY n.notebook_id
     });
   }
 
+  /// 删除手动日记本 [notebookId] 中的若干章节（[chapterIds]），同一事务里把
+  /// 原本属于这些章节的日记移回“未分章”，并返回完整快照供
+  /// [restoreNotebookChaptersDeletion] 撤销。
+  ///
+  /// 本子不存在、不是手动本或没有任何有效可删章节时抛 [ArgumentError]。
+  Future<NotebookChaptersDeletion> deleteNotebookChaptersWithSnapshot(
+    String notebookId,
+    Iterable<String> chapterIds,
+  ) {
+    return transaction(() async {
+      final row = await _requireManualNotebook(notebookId);
+      final payload = row.parsedPayload;
+      final before = payload.chapters;
+      final existing = payload.chapterIds;
+      final deleting = <String>{
+        for (final id in chapterIds)
+          if (existing.contains(id)) id,
+      };
+      if (deleting.isEmpty) {
+        throw ArgumentError.value(chapterIds, 'chapterIds', '没有可删除的章节');
+      }
+      final cleared = <String, String>{};
+      for (final chunk in _chunked(deleting.toList())) {
+        final query =
+            selectOnly(diaryNotebooks).join(<Join>[
+                innerJoin(
+                  diaries,
+                  diaries.id.equalsExp(diaryNotebooks.diaryId),
+                ),
+              ])
+              ..addColumns(<Expression<Object>>[
+                diaries.diaryId,
+                diaryNotebooks.chapterId,
+              ])
+              ..where(
+                diaryNotebooks.notebookId.equals(row.id) &
+                    diaryNotebooks.chapterId.isIn(chunk),
+              );
+        for (final entry in await query.get()) {
+          final chapterId = entry.read(diaryNotebooks.chapterId);
+          if (chapterId != null) {
+            cleared[entry.read(diaries.diaryId)!] = chapterId;
+          }
+        }
+      }
+      final after = <NotebookChapter>[
+        for (final chapter in before)
+          if (!deleting.contains(chapter.id)) chapter,
+      ];
+      final afterPayload = payload.copyWith(chapters: after);
+      await (update(notebooks)..where((t) => t.id.equals(row.id))).write(
+        NotebooksCompanion(
+          payload: Value(afterPayload.encode()),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await (update(diaryNotebooks)..where(
+            (t) =>
+                t.notebookId.equals(row.id) &
+                t.chapterId.isNotNull() &
+                t.chapterId.isNotIn(afterPayload.chapterIds),
+          ))
+          .write(const DiaryNotebooksCompanion(chapterId: Value(null)));
+      return NotebookChaptersDeletion(
+        notebookId: notebookId,
+        beforeChapters: List<NotebookChapter>.unmodifiable(before),
+        afterChapters: List<NotebookChapter>.unmodifiable(after),
+        clearedEntries: Map<String, String>.unmodifiable(cleared),
+      );
+    });
+  }
+
+  /// 撤销 [deleteNotebookChaptersWithSnapshot]：写回原章节列表（保留其他
+  /// payload 字段的最新值），并恢复当时回到“未分章”的日记归属。
+  ///
+  /// 若删除之后章节列表又被改过且 [force] 为 false，抛 [StateError]；
+  /// 非强制时只恢复目前仍为“未分章”的日记，不覆盖期间已被重新分章的条目。
+  Future<void> restoreNotebookChaptersDeletion(
+    NotebookChaptersDeletion deletion, {
+    bool force = false,
+  }) {
+    return transaction(() async {
+      final row = await getNotebook(deletion.notebookId);
+      if (row == null || !row.acceptsManualEntries) return;
+      final current = row.parsedPayload;
+      if (!force &&
+          !_sameNotebookChapters(current.chapters, deletion.afterChapters)) {
+        throw StateError('章节列表在删除后已发生变化');
+      }
+      await (update(notebooks)..where((t) => t.id.equals(row.id))).write(
+        NotebooksCompanion(
+          payload: Value(
+            current.copyWith(chapters: deletion.beforeChapters).encode(),
+          ),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      if (deletion.clearedEntries.isEmpty) return;
+      final validIds = <String>{
+        for (final chapter in deletion.beforeChapters) chapter.id,
+      };
+      final local = await _diaryLocalIds(deletion.clearedEntries.keys);
+      final byChapter = <String, List<int>>{};
+      for (final entry in deletion.clearedEntries.entries) {
+        final localId = local[entry.key];
+        if (localId == null || !validIds.contains(entry.value)) continue;
+        byChapter.putIfAbsent(entry.value, () => <int>[]).add(localId);
+      }
+      for (final entry in byChapter.entries) {
+        for (final chunk in _chunked(entry.value)) {
+          await (update(diaryNotebooks)..where((t) {
+                var filter =
+                    t.notebookId.equals(row.id) & t.diaryId.isIn(chunk);
+                if (!force) {
+                  filter = filter & t.chapterId.isNull();
+                }
+                return filter;
+              }))
+              .write(DiaryNotebooksCompanion(chapterId: Value(entry.key)));
+        }
+      }
+    });
+  }
+
   String _normalizeNotebookName(String name) {
     final normalized = name.trim();
     if (normalized.isEmpty || normalized.length > 60) {
@@ -405,4 +529,73 @@ class NotebookDeletion {
 
   /// 移进回收站前处于归档的日记 → 原归档时间，撤销时放回归档。
   final Map<String, DateTime?> _archivedBeforeTrash;
+}
+
+/// [AppDatabase.deleteNotebookChaptersWithSnapshot] 的撤销快照：删除前后的
+/// 章节列表，以及当时被清空章节归属的日记业务 id → 原章节 id。
+@immutable
+class NotebookChaptersDeletion {
+  const NotebookChaptersDeletion({
+    required this.notebookId,
+    required this.beforeChapters,
+    required this.afterChapters,
+    required this.clearedEntries,
+  });
+
+  final String notebookId;
+  final List<NotebookChapter> beforeChapters;
+  final List<NotebookChapter> afterChapters;
+  final Map<String, String> clearedEntries;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'notebookId': notebookId,
+    'before': _encodeChapters(beforeChapters),
+    'after': _encodeChapters(afterChapters),
+    if (clearedEntries.isNotEmpty) 'cleared': clearedEntries,
+  };
+
+  factory NotebookChaptersDeletion.fromJson(Map<String, Object?> json) {
+    final rawCleared = json['cleared'];
+    final cleared = <String, String>{};
+    if (rawCleared is Map) {
+      for (final entry in rawCleared.entries) {
+        if (entry.key is String && entry.value is String) {
+          cleared[entry.key as String] = entry.value as String;
+        }
+      }
+    }
+    return NotebookChaptersDeletion(
+      notebookId: json['notebookId']! as String,
+      beforeChapters: _decodeChapters(json['before']),
+      afterChapters: _decodeChapters(json['after']),
+      clearedEntries: Map<String, String>.unmodifiable(cleared),
+    );
+  }
+
+  static List<Map<String, String>> _encodeChapters(
+    List<NotebookChapter> chapters,
+  ) => <Map<String, String>>[
+    for (final chapter in chapters)
+      <String, String>{'id': chapter.id, 'title': chapter.title},
+  ];
+
+  static List<NotebookChapter> _decodeChapters(Object? raw) {
+    if (raw is! List) return const <NotebookChapter>[];
+    return List<NotebookChapter>.unmodifiable(<NotebookChapter>[
+      for (final item in raw)
+        if (item is Map && item['id'] is String && item['title'] is String)
+          ?NotebookChapter.tryCreate(
+            id: item['id'] as String,
+            title: item['title'] as String,
+          ),
+    ]);
+  }
+}
+
+bool _sameNotebookChapters(List<NotebookChapter> a, List<NotebookChapter> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }

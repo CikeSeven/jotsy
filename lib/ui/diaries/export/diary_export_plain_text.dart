@@ -7,10 +7,11 @@ import 'diary_export_blocks.dart';
 /// Markdown，`**粗体**` 之类的标记会原样露出来，所以只保留读得懂的结构：
 /// 列表用 `•` / `1.` / `☐` / `☑` 前缀、引用用 `> `、标注以图标开头、折叠
 /// 列表以 `▸ ` 开头（导出时一律展开，子块照常缩进跟在后面）、表格每行一行
-/// （格间 ` | `），缩进两格一级；上下标与字号没有纯文本写法，只写文字；链接文字
-/// 与地址不同时在后面附上地址；分隔线写成一行 [dividerLine]。嵌入块交给
-/// [embedLabel] 决定写成一行说明还是略过（返回 null）。连续空行压成一行，
-/// 首尾空行去掉。
+/// （格间 ` | `），缩进两格一级；块内的软换行另起一行，续行与第一行的文字
+/// 对齐（引用的续行仍以 `> ` 开头）；上下标与字号没有纯文本写法，只写
+/// 文字；链接文字与地址不同时在后面附上地址；分隔线写成一行
+/// [dividerLine]。嵌入块交给 [embedLabel] 决定写成一行说明还是略过（返回
+/// null）。连续空行压成一行，首尾空行去掉。
 class ExportPlainText {
   const ExportPlainText._();
 
@@ -41,7 +42,6 @@ class ExportPlainText {
         }
         continue;
       }
-      final text = block.inlines.map(_inlineText).join();
       final prefix = switch (block.kind) {
         ExportBlockKind.bullet ||
         ExportBlockKind.ordered => '${block.listMarker} ',
@@ -53,11 +53,21 @@ class ExportPlainText {
         ExportBlockKind.toggle => '▸ ',
         _ => '',
       };
-      lines.add(
-        text.isEmpty && prefix.isEmpty
-            ? ''
-            : '${'  ' * block.indent}$prefix$text',
-      );
+      // 软换行后的续行仍属于这一块：引用照样以 `> ` 开头，其余与第一行
+      // 的文字对齐（列表标记、图标只写一次）。
+      final continuation = block.kind == ExportBlockKind.quote
+          ? prefix
+          : ' ' * prefix.length;
+      final indent = '  ' * block.indent;
+      for (final (index, runs) in ExportBlock.splitLines(
+        block.inlines,
+      ).indexed) {
+        final text = runs.map(_inlineText).join();
+        final lead = index == 0 ? prefix : continuation;
+        lines.add(
+          text.isEmpty && lead.trim().isEmpty ? '' : '$indent$lead$text',
+        );
+      }
     }
     return collapseBlankLines(lines);
   }

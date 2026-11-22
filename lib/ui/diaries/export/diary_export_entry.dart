@@ -327,7 +327,7 @@ class DiaryExportLabels {
       inlines.add(ExportInline(commentImagesNote(missing)));
     }
     if (inlines.isEmpty) return const <List<ExportInline>>[];
-    return ExportBlock.tableCellParagraphs(inlines);
+    return ExportBlock.splitLines(inlines);
   }
 
   /// 留言里没有以图片写出的 [count] 张图片的占位：“[图片]”或“[图片 ×N]”。

@@ -3,28 +3,24 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../../../core/database/diary_blocks/diary_blocks_schema.dart'
-    show kDiaryCalloutDefaultIcon;
-import '../models/diary_callout_tone.dart';
 import '../models/diary_thumbnail_rows.dart';
-import '../widgets/diary_editor/diary_callout_block.dart'
-    show kDiaryCalloutIconGap;
 import 'diary_export_blocks.dart';
 import 'diary_export_image_box.dart';
 import 'diary_export_media.dart';
 import 'diary_export_pdf_emoji.dart';
 import 'diary_export_pdf_inline.dart';
 import 'diary_export_pdf_line_break.dart';
+import 'diary_export_pdf_list_item.dart' show DiaryPdfPlaceholder;
 import 'diary_export_pdf_text_effects.dart';
 
-/// PDF 正文里的图片（含并排的一排小图）、标注、折叠列表与表格
-/// （[buildDiaryPdfBody] 调用）。
+/// PDF 正文里的图片（含并排的一排小图）、折叠列表与表格（[buildDiaryPdfBody]
+/// 调用；标注见 `diary_export_pdf_callout.dart`）。
 ///
 /// - 输入：共用块模型里的一块（颜色已在 prepareBody 压平到白纸上）与已经
 ///   排好的行内文字；
 /// - 输出：可交给 `MultiPage` 的组件，不做 IO、不读设置；
 /// - 只画矢量形状与文字，不依赖字体里的符号字形：内置的 HarmonyOS Sans SC
-///   没有 ▸ 这类几何符号，写成文字会印成方框；emoji（标注的图标）经
+///   没有 ▸ 这类几何符号，写成文字会印成方框；表格里的 emoji 经
 ///   [DiaryPdfEmoji] 画成图片。
 
 /// 正文图片：尺寸、小图与对齐与应用一致（口径见 [ExportImageBox]，逻辑
@@ -66,7 +62,8 @@ pw.Widget? buildDiaryPdfThumbnailRow(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: <pw.Widget>[
               for (final (index, picture) in pictures.indexed) ...<pw.Widget>[
-                if (index > 0) pw.SizedBox(width: kDiaryThumbnailRowGap * _pt),
+                if (index > 0)
+                  pw.SizedBox(width: kDiaryThumbnailRowGap * diaryPdfPt),
                 picture,
               ],
             ],
@@ -75,8 +72,8 @@ pw.Widget? buildDiaryPdfThumbnailRow(
   );
 }
 
-/// 应用的逻辑像素折成磅（96 DPI）。
-const double _pt = 0.75;
+/// 应用的逻辑像素折成磅（96 DPI）：图片尺寸、小图间距与标注的图标间距共用。
+const double diaryPdfPt = 0.75;
 
 /// 一张图片本身（不含缩进与对齐）；读不出尺寸时为 null。
 pw.Widget? _pdfPicture(ExportBlock block, Uint8List bytes) {
@@ -86,18 +83,18 @@ pw.Widget? _pdfPicture(ExportBlock block, Uint8List bytes) {
     block,
     info.width,
     info.height,
-    maxHeight: 560 / _pt,
+    maxHeight: 560 / diaryPdfPt,
   );
   final memory = pw.MemoryImage(bytes);
   if (box.thumbnail) {
-    final radius = box.radius * _pt;
+    final radius = box.radius * diaryPdfPt;
     return pw.ClipRRect(
       horizontalRadius: radius,
       verticalRadius: radius,
       child: pw.Image(
         memory,
-        width: box.width * _pt,
-        height: box.height * _pt,
+        width: box.width * diaryPdfPt,
+        height: box.height * diaryPdfPt,
         fit: pw.BoxFit.cover,
         alignment: box.keepsTop ? pw.Alignment.topCenter : pw.Alignment.center,
       ),
@@ -107,7 +104,11 @@ pw.Widget? _pdfPicture(ExportBlock block, Uint8List bytes) {
   // FittedBox 按比例缩小。
   return pw.FittedBox(
     fit: pw.BoxFit.scaleDown,
-    child: pw.Image(memory, width: box.width * _pt, height: box.height * _pt),
+    child: pw.Image(
+      memory,
+      width: box.width * diaryPdfPt,
+      height: box.height * diaryPdfPt,
+    ),
   );
 }
 
@@ -137,101 +138,41 @@ pw.Widget _placePdfImage(
   );
 }
 
-/// 标注：圆角浅色底，左侧一条强调色竖条，颜色只取 [DiaryCalloutTone] 的
-/// 纸面配色（导出纸面恒为白底）。
-///
-/// 与应用一样，行首是标注的图标（缺省 [kDiaryCalloutDefaultIcon]），按正文
-/// 字号 [base] 画，隔 [kDiaryCalloutIconGap] 接文字；对齐只作用于文字，图标
-/// 始终在起始侧。图标是 emoji，经 [emoji] 画成图片；没给 [emoji] 时不画图标
-/// （写成文字只会印成方框）。
-pw.Widget buildDiaryPdfCallout(
-  ExportBlock block,
-  pw.Widget text, {
-  required pw.TextStyle base,
-  required pw.TextDirection textDirection,
-  DiaryPdfEmoji? emoji,
-}) {
-  final tone = DiaryCalloutTone.fromId(block.calloutTone);
-  final icon = block.calloutIcon ?? kDiaryCalloutDefaultIcon;
-  final content = emoji == null || icon.trim().isEmpty
-      ? text
-      : pw.Directionality(
-          textDirection: textDirection,
-          child: pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: <pw.Widget>[
-              pw.RichText(
-                text: diaryPdfTextSpan(icon, style: base, emoji: emoji),
-              ),
-              pw.SizedBox(width: kDiaryCalloutIconGap * _pt),
-              pw.Expanded(child: text),
-            ],
-          ),
-        );
-  // 竖条用 Positioned 贴住左缘、上下撑满，再整体按圆角裁切：pdf 库的
-  // 圆角边框只支持四边相同，不能直接画“只有左边”的粗边。
-  return pw.ClipRRect(
-    horizontalRadius: 6,
-    verticalRadius: 6,
-    child: pw.Container(
-      color: PdfColor.fromInt(tone.paperBackground.toARGB32()),
-      child: pw.Stack(
-        children: <pw.Widget>[
-          // 与编辑器一致，标注铺满整行宽度，不随文字长短收缩。
-          pw.SizedBox(
-            width: double.infinity,
-            child: pw.Padding(
-              padding: const pw.EdgeInsets.fromLTRB(13, 6, 10, 6),
-              child: content,
-            ),
-          ),
-          pw.Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: pw.Container(
-              width: 3,
-              color: PdfColor.fromInt(tone.paperAccent.toARGB32()),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 /// 折叠列表的标题行：行首一个朝下的小三角（导出一律展开，子块照常以
 /// 更深的缩进跟在后面）。三角是矢量路径而不是 ▸ / ▾ 字符：内置字体没有
 /// 这些字形。[fontSize] 为标题行的字号，三角按它缩放并对齐第一行文字。
+/// [continued] 为软换行后的续行（见 `buildDiaryPdfBody`）：三角只占位不画。
 pw.Widget buildDiaryPdfToggle(
   pw.Widget text, {
   required double fontSize,
   required pw.TextDirection textDirection,
+  bool continued = false,
 }) {
   final side = fontSize * 0.5;
+  final triangle = pw.Padding(
+    // 三角的中心大致落在第一行文字的 x 字高中线上。
+    padding: pw.EdgeInsetsDirectional.only(
+      top: fontSize * 0.42,
+      end: fontSize * 0.45,
+    ),
+    child: pw.CustomPaint(
+      size: PdfPoint(side, side * 0.8),
+      // pdf 画布原点在左下：上边两个角在 y = 高，尖朝下在 y = 0。
+      painter: (PdfGraphics canvas, PdfPoint size) => canvas
+        ..setFillColor(PdfColors.grey700)
+        ..moveTo(0, size.y)
+        ..lineTo(size.x, size.y)
+        ..lineTo(size.x / 2, 0)
+        ..closePath()
+        ..fillPath(),
+    ),
+  );
   return pw.Directionality(
     textDirection: textDirection,
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: <pw.Widget>[
-        pw.Padding(
-          // 三角的中心大致落在第一行文字的 x 字高中线上。
-          padding: pw.EdgeInsetsDirectional.only(
-            top: fontSize * 0.42,
-            end: fontSize * 0.45,
-          ),
-          child: pw.CustomPaint(
-            size: PdfPoint(side, side * 0.8),
-            // pdf 画布原点在左下：上边两个角在 y = 高，尖朝下在 y = 0。
-            painter: (PdfGraphics canvas, PdfPoint size) => canvas
-              ..setFillColor(PdfColors.grey700)
-              ..moveTo(0, size.y)
-              ..lineTo(size.x, size.y)
-              ..lineTo(size.x / 2, 0)
-              ..closePath()
-              ..fillPath(),
-          ),
-        ),
+        continued ? DiaryPdfPlaceholder(triangle) : triangle,
         pw.Expanded(child: text),
       ],
     ),

@@ -1,7 +1,8 @@
 part of 'diary_export_blocks.dart';
 
 /// 先序读取树的真实深度，不经编辑器或平铺格式往返。代码块内的换行拆成
-/// 导出行，语言保持到每一行，供各格式整块高亮与围栏分组共用。
+/// 导出行，语言保持到每一行，供各格式整块高亮与围栏分组共用；其余文字块
+/// 的软换行留在块内（[ExportInline.lineBreak]），序号与标记只算一项。
 ///
 /// - 折叠列表与段落一样是容器：子块照常以更深的缩进跟在后面（导出时全部
 ///   展开）。
@@ -117,11 +118,15 @@ List<ExportBlock> _parseNativeBlocks(Map<String, Object?> document) {
         : null;
     final icon = data[kDiaryCalloutIconKey];
     final tone = data[kDiaryCalloutToneKey];
+    // 代码块每行一块；其余文字块整块一块，软换行写成块内换行（#341：拆成
+    // 几块时一个列表项会变成几项、各带一个序号）。
     final lines = type == kDiaryBlockLinkCard
         ? [
             [ExportInline(diaryLinkCardTitle(data)!)],
           ]
-        : _inlineLines(node);
+        : kind == ExportBlockKind.code
+        ? _inlineLines(node)
+        : [_joinLines(_inlineLines(node))];
     for (final line in lines) {
       final level = data['level'];
       blocks.add(
@@ -195,8 +200,8 @@ ExportAlign _exportAlign(Object? value) => switch (value) {
   _ => ExportAlign.start,
 };
 
-/// 文字块的行内片段按块内换行切成行（只有代码块会有多行）；没有文字时为
-/// 一个空行。
+/// 文字块的行内片段按块内换行（代码块的行、其余块的软换行）切成行；没有
+/// 文字时为一个空行。
 List<List<ExportInline>> _inlineLines(Map<String, Object?> node) {
   final lines = <List<ExportInline>>[[]];
   for (final op in diaryBlockDelta(node)) {
@@ -217,6 +222,15 @@ List<List<ExportInline>> _inlineLines(Map<String, Object?> node) {
   return lines;
 }
 
+/// 几行接成一串行内片段，行与行之间放一个 [ExportInline.lineBreak]。
+List<ExportInline> _joinLines(Iterable<List<ExportInline>> lines) =>
+    <ExportInline>[
+      for (final (index, line) in lines.indexed) ...<ExportInline>[
+        if (index > 0) ExportInline.lineBreak,
+        ...line,
+      ],
+    ];
+
 /// 表格的格子文字（[ExportBlock.tableRows]）：一格里的各段（及段内换行）
 /// 之间放一个 [ExportInline.lineBreak]。
 List<List<List<ExportInline>>> _tableRows(DiaryTableGrid table) {
@@ -224,15 +238,12 @@ List<List<List<ExportInline>>> _tableRows(DiaryTableGrid table) {
     for (var row = 0; row < table.rows; row++)
       List.unmodifiable(<List<ExportInline>>[
         for (var col = 0; col < table.cols; col++)
-          List<ExportInline>.unmodifiable(<ExportInline>[
-            for (final (index, line) in <List<ExportInline>>[
+          List<ExportInline>.unmodifiable(
+            _joinLines(<List<ExportInline>>[
               for (final block in table.textBlocksAt(row, col))
                 ..._inlineLines(block),
-            ].indexed) ...<ExportInline>[
-              if (index > 0) ExportInline.lineBreak,
-              ...line,
-            ],
-          ]),
+            ]),
+          ),
       ]),
   ]);
 }

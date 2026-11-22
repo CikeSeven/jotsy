@@ -49,13 +49,18 @@ class DiaryHtmlMarkup {
   /// 布尔属性：网页只写名字，XHTML 写成 `name="name"`。
   String flag(String name) => xhtml ? '$name="$name"' : name;
 
-  /// 表格格子里两段之间的换行。
+  /// 块内换行（软换行、表格格子里两段之间）。
   String get lineBreak => xhtml ? '<br/>' : '<br>';
 
-  /// 一段行内片段写成 HTML。
+  /// 一段行内片段写成 HTML；块内换行（[ExportInline.lineBreak]）写成
+  /// [lineBreak]，仍在同一个元素里（列表项不会多出一项）。
   String inlines(List<ExportInline> runs) {
     final out = StringBuffer();
     for (final run in runs) {
+      if (run.isLineBreak) {
+        out.write(lineBreak);
+        continue;
+      }
       var html = text(run.text);
       final colors = colorStyle(run.color, run.background);
       // 颜色写在下划线 / 删除线外层，线与文字同色（与应用一致）；写在链接

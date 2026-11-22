@@ -110,6 +110,42 @@ void main() {
     ]);
   });
 
+  test('an overdue daily todo still schedules throughout the window', () {
+    final row = _todo(
+      due: '2026-01-01',
+      minute: 9 * 60,
+      reminders: const [TodoReminder.beforeDue(28 * 24 * 60)],
+      repeat: TodoRepeatRule(
+        frequency: TodoRepeatFrequency.daily,
+        anchor: DateTime(2026, 1, 1),
+      ),
+    );
+    final plan = planTodoReminders(todos: [row], now: now);
+    expect(plan, hasLength(30));
+    expect(plan.first.fireAt, DateTime(2026, 11, 10, 9));
+    expect(plan.first.occurrence, DateTime(2026, 12, 8));
+    expect(plan.last.fireAt, DateTime(2026, 12, 9, 9));
+  });
+
+  test('expired occurrences still count toward a finite repeat rule', () {
+    final row = _todo(
+      due: '2026-10-01',
+      minute: 9 * 60,
+      reminders: const [TodoReminder.beforeDue(0)],
+      repeat: TodoRepeatRule(
+        frequency: TodoRepeatFrequency.daily,
+        anchor: DateTime(2026, 10, 1),
+        count: 43,
+      ),
+      repeatDone: 1,
+    );
+    final plan = planTodoReminders(todos: [row], now: now);
+    expect(plan.map((r) => r.fireAt), [
+      DateTime(2026, 11, 10, 9),
+      DateTime(2026, 11, 11, 9),
+    ]);
+  });
+
   test(
     'snooze is planned even without a due date; completed todos are not',
     () {

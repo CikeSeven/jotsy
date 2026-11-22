@@ -6,6 +6,9 @@ class FakeTodoNotificationGateway implements TodoNotificationGateway {
       <int, TodoNotificationRequest>{};
   final List<int> cancelled = <int>[];
   int scheduleCalls = 0;
+  int initializationFailures = 0;
+  int pendingFailures = 0;
+  final Set<int> scheduleFailures = <int>{};
   bool enabled = true;
   bool exact = true;
   int permissionRequests = 0;
@@ -22,6 +25,10 @@ class FakeTodoNotificationGateway implements TodoNotificationGateway {
     required TodoNotificationTexts texts,
     required void Function(TodoNotificationEvent event) onEvent,
   }) async {
+    if (initializationFailures > 0) {
+      initializationFailures--;
+      throw StateError('Initialization failed');
+    }
     initialized = true;
     _onEvent = onEvent;
   }
@@ -47,13 +54,22 @@ class FakeTodoNotificationGateway implements TodoNotificationGateway {
   Future<bool> exactAlarmsAllowed() async => exact;
 
   @override
-  Future<Map<int, String>> pending() async => <int, String>{
-    for (final entry in scheduled.entries) entry.key: entry.value.payload,
-  };
+  Future<Map<int, String>> pending() async {
+    if (pendingFailures > 0) {
+      pendingFailures--;
+      throw StateError('Pending query failed');
+    }
+    return <int, String>{
+      for (final entry in scheduled.entries) entry.key: entry.value.payload,
+    };
+  }
 
   @override
   Future<void> schedule(TodoNotificationRequest request) async {
     scheduleCalls++;
+    if (scheduleFailures.remove(request.id)) {
+      throw StateError('Scheduling failed');
+    }
     scheduled[request.id] = request;
   }
 

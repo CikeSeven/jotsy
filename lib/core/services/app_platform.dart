@@ -131,8 +131,8 @@ abstract final class AppPlatform {
 
   /// 应用没在运行时也能按时提醒：只有手机交给系统闹钟定时（Android 的
   /// AlarmManager、iOS 的本地通知）。Linux 的插件不支持定时，Windows 未打包成
-  /// MSIX 时取消已排的通知不可靠，macOS 没有接原生时区通道，桌面一律在应用
-  /// 运行期间用进程内计时器按时弹出，设置页写明“应用运行时才会提醒”。
+  /// MSIX 时取消已排的通知不可靠。桌面一律在应用运行期间用进程内计时器
+  /// 按时弹出，设置页写明“应用运行时才会提醒”。
   static bool get supportsBackgroundReminders => isAndroid || isIOS;
 
   /// 通知的锁屏可见性（“锁屏时隐藏内容”）：只有 Android 能逐条设置；iOS

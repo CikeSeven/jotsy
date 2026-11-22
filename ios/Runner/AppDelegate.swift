@@ -29,8 +29,7 @@ import flutter_local_notifications
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  /// 待办提醒：定时通知按本机时区排，时区名只有原生知道。iOS 的通知设置
-  /// 页由系统设置统一提供，这里打开本应用的设置页。
+  /// 待办提醒：打开本应用的系统设置页。
   private func registerNotifications(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(
       name: "com.jotsy.diary/notifications",
@@ -38,8 +37,6 @@ import flutter_local_notifications
     )
     channel.setMethodCallHandler { call, result in
       switch call.method {
-      case "timeZone":
-        result(TimeZone.current.identifier)
       case "openNotificationSettings":
         guard let url = URL(string: UIApplication.openSettingsURLString) else {
           result(false)

@@ -88,6 +88,7 @@ class LanSyncSessionHello {
     required this.syncSettings,
     required this.restoredPending,
     this.automatic = false,
+    this.serverPort,
   });
 
   factory LanSyncSessionHello.parse(LanSyncMessage message) {
@@ -109,6 +110,9 @@ class LanSyncSessionHello {
       syncSettings: _bool(message, 'settings'),
       restoredPending: _bool(message, 'restored'),
       automatic: _bool(message, 'auto'),
+      serverPort: message.fields['port'] == null
+          ? null
+          : message.requireInt('port', min: 1, max: 65535),
     );
   }
 
@@ -125,6 +129,11 @@ class LanSyncSessionHello {
   /// 只在发起方的 hello 里有意义：是不是自动同步。
   final bool automatic;
 
+  /// 这一方 TCP 服务端现在监听的端口；没在监听、或对方是不带这个字段的
+  /// 旧版本时为 null。入站连接的源端口是对方的临时端口，响应方要靠它才
+  /// 知道之后该连对方哪个端口（docs §9“对方的地址”）。
+  final int? serverPort;
+
   LanSyncMessage toMessage() => LanSyncMessage(LanSyncSessionMessages.hello, {
     'f': formatVersion,
     'app': appVersion,
@@ -132,6 +141,7 @@ class LanSyncSessionHello {
     'settings': syncSettings,
     'restored': restoredPending,
     'auto': automatic,
+    'port': ?serverPort,
   });
 
   /// 两端同步的是不是同一套东西。

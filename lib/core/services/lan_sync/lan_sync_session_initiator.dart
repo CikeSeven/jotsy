@@ -10,6 +10,7 @@ extension _Initiator on LanSyncSession {
       syncSettings: _syncSettings,
       restoredPending: peer.restoredPending,
       automatic: _automatic,
+      serverPort: _context.serverPort,
     );
     await _write(() => _channel.send(mine.toMessage()));
     final reply = await _expect(const {

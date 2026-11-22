@@ -85,7 +85,7 @@ extension _Server on LanSyncService {
       if (result.paired) {
         await _completeIncomingPairing(result, remoteHost, slot);
       } else {
-        await _serveSession(result);
+        await _serveSession(result, remoteHost);
       }
     } on LanSyncHandshakeException catch (error) {
       final pairing = slot.pairing;
@@ -170,7 +170,13 @@ extension _Server on LanSyncService {
   /// 已配对设备发来的同步：正有会话时以 busy 拒绝（会话层回 `sync.reject`），
   /// 否则作为响应方运行。是否接受自动同步取本机全局与这台设备的开关；这台
   /// 设备还有没处理的“需要确认”时也拒绝自动同步，等用户手动处理。
-  Future<void> _serveSession(LanSyncHandshakeResult result) async {
+  ///
+  /// 会话结束后（含以 busy / declined 拒绝的）按这条连接更新对方的地址：
+  /// 握手已认证对方身份，拒绝发生在 hello 之后、对方的服务端口已经拿到。
+  Future<void> _serveSession(
+    LanSyncHandshakeResult result,
+    String? remoteHost,
+  ) async {
     final peerId = result.peer.deviceId;
     final device = _store.peer(peerId);
     // 握手刚好在关闭期间完成：关闭已经取消过 `_active`，这里再占位就会有一个
@@ -200,6 +206,11 @@ extension _Server on LanSyncService {
       busy: busy,
       timeouts: timings.session,
     );
+    Future<void> noteAddress() => _notePeerAddress(
+      peerId,
+      host: remoteHost,
+      port: session.peerServerPort ?? _presence[peerId]?.beacon.port,
+    );
     if (busy) {
       _rejecting.add(session);
       try {
@@ -207,6 +218,7 @@ extension _Server on LanSyncService {
       } finally {
         _rejecting.remove(session);
       }
+      await noteAddress();
       return;
     }
     final active = _active = _ActiveSession(
@@ -224,6 +236,7 @@ extension _Server on LanSyncService {
       active.finish();
       _publish();
     }
+    await noteAddress();
     await _finishSession(outcome, firstSync: device.lastSyncAt == null);
   }
 }

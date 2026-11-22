@@ -135,6 +135,7 @@ class LanSyncSession {
   bool _cancelled = false;
   bool _abortSent = false;
   bool _helloDone = false;
+  int? _peerServerPort;
   bool _settingsIncluded = false;
   LanSyncConfirmationRequest? _pendingConfirmation;
   SyncMediaStaging? _staging;
@@ -154,6 +155,10 @@ class LanSyncSession {
 
   /// 是否为自动同步（响应方在收到 hello 之后才知道）。
   bool get automatic => _automatic;
+
+  /// 响应方：发起方在 hello 里宣告的服务端口（还没收到 hello、或对方是不带
+  /// 这个字段的旧版本时为 null）。收到 hello 之后、即使随即拒绝，也已经有值。
+  int? get peerServerPort => _peerServerPort;
 
   /// 正在等用户应答的确认请求（“查看”时再交给界面一次）。
   LanSyncConfirmationRequest? get pendingConfirmation => _pendingConfirmation;

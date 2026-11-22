@@ -22,6 +22,7 @@ class LanSyncSessionContext {
     required this.isEditing,
     this.clock = DateTime.now,
     this.appVersion = '',
+    this.serverPort,
   });
 
   final String deviceId;
@@ -38,6 +39,9 @@ class LanSyncSessionContext {
   final bool Function() isEditing;
   final DateTime Function() clock;
   final String appVersion;
+
+  /// 本机 TCP 服务端现在监听的端口（随 hello 告诉对方）；没在监听时为 null。
+  final int? serverPort;
 }
 
 /// 对方（来自配对记录）与本机对它的记忆。

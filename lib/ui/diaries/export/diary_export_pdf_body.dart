@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import 'diary_export_blocks.dart';
 import 'diary_export_code.dart';
+import 'diary_export_pdf_callout.dart';
 import 'diary_export_pdf_heading.dart';
 import 'diary_export_pdf_inline.dart';
 import 'diary_export_pdf_line_break.dart';
@@ -16,8 +17,8 @@ import 'diary_export_pdf_text_effects.dart';
 /// PDF 正文直接使用共用块模型渲染，不再调用编辑器插件。图片已在准备阶段
 /// 载入并替换为虚拟地址，媒体已换为说明文字；这里不做 IO、不改原文。
 /// 按段/代码行返回可分页的组件，避免把整篇长文放进一个不可分页的容器。
-/// 图片（含并排的一排小图）、标注、折叠列表与表格的画法见
-/// `diary_export_pdf_rich_blocks.dart`。
+/// 图片（含并排的一排小图）、折叠列表与表格的画法见
+/// `diary_export_pdf_rich_blocks.dart`，标注见 `diary_export_pdf_callout.dart`。
 ///
 /// 正文顶层连续的小图与应用一样三张一排（[ExportBlock.thumbnailRow]）：
 /// 一排的几块合成一个组件（[buildDiaryPdfThumbnailRow]），读到这一排第一张
@@ -56,6 +57,142 @@ List<pw.Widget> buildDiaryPdfBody(
     );
     if (index == null || index < 0 || index >= images.length) return null;
     return images[index];
+  }
+
+  // 一个文字组件：[runs] 是整块的文字，或不能跨页的块里的一行（见循环里
+  // 软换行的说明）；[first] / [last] 为它是不是块的第一 / 最后一行：标记、
+  // 图标、首行缩进与段前距只在第一行，段后距只在最后一行，中间不加段距。
+  // 整块一个组件时两者都为 true，与没有软换行时完全相同。
+  pw.Widget textBlock(
+    ExportBlock block,
+    List<ExportInline> runs, {
+    required bool first,
+    required bool last,
+  }) {
+    final isCode = block.kind == ExportBlockKind.code;
+    final palette = code?.paper;
+    final base = isCode
+        ? pw.TextStyle(
+            font: codeFont,
+            fontSize: 10,
+            lineSpacing: 1,
+            color: palette == null
+                ? PdfColors.black
+                : PdfColor.fromInt(palette.foreground.toARGB32()),
+          )
+        : theme.defaultTextStyle;
+    final checked = block.kind == ExportBlockKind.checked;
+    // 已完成的待办与应用一样：没设颜色的文字转灰，整项划线。
+    final style = checked ? base.copyWith(color: PdfColors.grey600) : base;
+    final indentChars = first
+        ? block.firstLineIndentOf(
+            regular: firstLineIndent,
+            marked: markedFirstLineIndent,
+          )
+        : 0.0;
+    final spans = <pw.InlineSpan>[
+      // pdf 库没有首行缩进，段首放一个占位宽度的空白组件：只占第一行，
+      // 折行后的各行照常顶格；高度为 0，不改变行高。
+      if (indentChars > 0)
+        pw.WidgetSpan(
+          child: pw.SizedBox(width: indentChars * (base.fontSize ?? 12)),
+        ),
+      for (final run in runs)
+        buildDiaryPdfInline(
+          checked ? run.copyWith(strike: true) : run,
+          style,
+          effects: effects,
+          bodyFontSize: base.fontSize ?? 12,
+          isCodeBlock: isCode,
+        ),
+      if (runs.isEmpty) pw.TextSpan(text: ' ', style: base),
+    ];
+    final align = switch (block.align) {
+      ExportAlign.center => pw.TextAlign.center,
+      ExportAlign.end => rtl ? pw.TextAlign.left : pw.TextAlign.right,
+      ExportAlign.justify => pw.TextAlign.justify,
+      ExportAlign.start => rtl ? pw.TextAlign.right : pw.TextAlign.left,
+    };
+    // 撑满宽度，对齐才落在整行上（见本函数注释）。
+    pw.Widget content = pw.SizedBox(
+      width: double.infinity,
+      child: pw.RichText(
+        text: pw.TextSpan(children: spans),
+        textDirection: direction,
+        textAlign: align,
+        softWrap: true,
+        overflow: pw.TextOverflow.span,
+        lineSplitter: diaryPdfLineSplitter,
+      ),
+    );
+    if (isCode) {
+      content = pw.Container(
+        padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        color: palette == null
+            ? PdfColors.grey100
+            : PdfColor.fromInt(palette.background.toARGB32()),
+        child: pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.SizedBox(
+              width: 24,
+              child: pw.Text(
+                '$codeLine',
+                style: base.copyWith(
+                  color: palette == null
+                      ? PdfColors.grey600
+                      : PdfColor.fromInt(palette.lineNumber.toARGB32()),
+                ),
+              ),
+            ),
+            pw.Expanded(child: content),
+          ],
+        ),
+      );
+    } else if (block.isListItem) {
+      content = buildDiaryPdfListItem(
+        block,
+        content,
+        base: base,
+        textDirection: direction,
+        continued: !first,
+      );
+    } else if (block.kind == ExportBlockKind.toggle) {
+      content = buildDiaryPdfToggle(
+        content,
+        fontSize: base.fontSize ?? 12,
+        textDirection: direction,
+        continued: !first,
+      );
+    } else if (block.kind == ExportBlockKind.callout) {
+      content = buildDiaryPdfCallout(
+        block,
+        content,
+        base: base,
+        textDirection: direction,
+        emoji: effects.emoji,
+        first: first,
+        last: last,
+      );
+    } else if (block.kind == ExportBlockKind.quote) {
+      content = pw.Container(
+        padding: const pw.EdgeInsetsDirectional.only(start: 10),
+        decoration: const pw.BoxDecoration(
+          border: pw.Border(
+            left: pw.BorderSide(color: PdfColors.grey400, width: 2),
+          ),
+        ),
+        child: content,
+      );
+    }
+    return pw.Padding(
+      padding: pw.EdgeInsetsDirectional.only(
+        start: block.indent * 18.0,
+        top: isCode || !first ? 0 : 3.5,
+        bottom: isCode || !last ? 0 : 2.5,
+      ),
+      child: content,
+    );
   }
 
   for (var i = 0; i < blocks.length; i++) {
@@ -122,123 +259,29 @@ List<pw.Widget> buildDiaryPdfBody(
         effects: effects,
       );
     } else {
-      final palette = code?.paper;
-      final base = isCode
-          ? pw.TextStyle(
-              font: codeFont,
-              fontSize: 10,
-              lineSpacing: 1,
-              color: palette == null
-                  ? PdfColors.black
-                  : PdfColor.fromInt(palette.foreground.toARGB32()),
-            )
-          : theme.defaultTextStyle;
-      final checked = block.kind == ExportBlockKind.checked;
-      // 已完成的待办与应用一样：没设颜色的文字转灰，整项划线。
-      final style = checked ? base.copyWith(color: PdfColors.grey600) : base;
-      final indentChars = block.firstLineIndentOf(
-        regular: firstLineIndent,
-        marked: markedFirstLineIndent,
-      );
-      final spans = <pw.InlineSpan>[
-        // pdf 库没有首行缩进，段首放一个占位宽度的空白组件：只占第一行，
-        // 折行后的各行照常顶格；高度为 0，不改变行高。
-        if (indentChars > 0)
-          pw.WidgetSpan(
-            child: pw.SizedBox(width: indentChars * (base.fontSize ?? 12)),
-          ),
-        for (final run in block.inlines)
-          buildDiaryPdfInline(
-            checked ? run.copyWith(strike: true) : run,
-            style,
-            effects: effects,
-            bodyFontSize: base.fontSize ?? 12,
-            isCodeBlock: isCode,
-          ),
-        if (block.inlines.isEmpty) pw.TextSpan(text: ' ', style: base),
-      ];
-      final align = switch (block.align) {
-        ExportAlign.center => pw.TextAlign.center,
-        ExportAlign.end => rtl ? pw.TextAlign.left : pw.TextAlign.right,
-        ExportAlign.justify => pw.TextAlign.justify,
-        ExportAlign.start => rtl ? pw.TextAlign.right : pw.TextAlign.left,
-      };
-      // 撑满宽度，对齐才落在整行上（见本函数注释）。
-      content = pw.SizedBox(
-        width: double.infinity,
-        child: pw.RichText(
-          text: pw.TextSpan(children: spans),
-          textDirection: direction,
-          textAlign: align,
-          softWrap: true,
-          overflow: pw.TextOverflow.span,
-          lineSplitter: diaryPdfLineSplitter,
-        ),
-      );
-      if (isCode) {
-        content = pw.Container(
-          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          color: palette == null
-              ? PdfColors.grey100
-              : PdfColor.fromInt(palette.background.toARGB32()),
-          child: pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.SizedBox(
-                width: 24,
-                child: pw.Text(
-                  '$codeLine',
-                  style: base.copyWith(
-                    color: palette == null
-                        ? PdfColors.grey600
-                        : PdfColor.fromInt(palette.lineNumber.toARGB32()),
-                  ),
-                ),
-              ),
-              pw.Expanded(child: content),
-            ],
-          ),
-        );
-      } else if (block.isListItem) {
-        content = buildDiaryPdfListItem(
-          block,
-          content,
-          base: base,
-          textDirection: direction,
-        );
-      } else if (block.kind == ExportBlockKind.toggle) {
-        content = buildDiaryPdfToggle(
-          content,
-          fontSize: base.fontSize ?? 12,
-          textDirection: direction,
-        );
-      } else if (block.kind == ExportBlockKind.callout) {
-        content = buildDiaryPdfCallout(
-          block,
-          content,
-          base: base,
-          textDirection: direction,
-          emoji: effects.emoji,
-        );
-      } else if (block.kind == ExportBlockKind.quote) {
-        content = pw.Container(
-          padding: const pw.EdgeInsetsDirectional.only(start: 10),
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(
-              left: pw.BorderSide(color: PdfColors.grey400, width: 2),
+      // 软换行（[ExportInline.lineBreak]）：段落、引用与代码行的组件能跨页，
+      // 整块一个 RichText，由 pdf 库在 `\n` 处换行。列表项、待办、折叠列表
+      // 与标注是“标记 + 文字”的 Row，pdf 库不能在 Row 里分页，整块高过一页
+      // 时整份导出失败，所以逐行各成一个组件（同留言），读起来仍是一块。
+      final lines =
+          block.isListItem ||
+              block.kind == ExportBlockKind.toggle ||
+              block.kind == ExportBlockKind.callout
+          ? ExportBlock.splitLines(block.inlines)
+          : <List<ExportInline>>[block.inlines];
+      for (final (index, runs) in lines.indexed) {
+        result.add(
+          effects.wrap(
+            textBlock(
+              block,
+              runs,
+              first: index == 0,
+              last: index == lines.length - 1,
             ),
           ),
-          child: content,
         );
       }
-      content = pw.Padding(
-        padding: pw.EdgeInsetsDirectional.only(
-          start: block.indent * 18.0,
-          top: isCode ? 0 : 3.5,
-          bottom: isCode ? 0 : 2.5,
-        ),
-        child: content,
-      );
+      continue;
     }
     result.add(effects.wrap(content));
   }

@@ -29,7 +29,10 @@ part 'diary_export_native_blocks.dart';
 /// 为什么不让每个写出器各自遍历正文：块文档的嵌套、列表序号与样式、代码
 /// 块的行，以及历史 Delta 里挂在换行符上的行级属性，各写一遍既重复也容易
 /// 在边界（只含嵌入的行、跨缩进的编号）上各自出错。这里统一解析一次：
-/// - 每个文本行成为一个 [ExportBlock]，带块类型、缩进与按段计数的序号；
+/// - 每个文字块成为一个 [ExportBlock]，带块类型、缩进与按段计数的序号；
+///   块内的软换行（桌面 Shift + Enter 等）留在这一块里，写成
+///   [ExportInline.lineBreak]，不另起一块——否则一个列表项会被拆成几项、
+///   各自带上序号（#341）。代码块例外：每行一块（行号、高亮与围栏按行算）；
 /// - 图片单独成块（[ExportBlockKind.image]），录音 / 视频 / 附件成块
 ///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；分隔线成块
 ///   （[ExportBlockKind.divider]）；正文顶层连续的小图与应用一样三张一排，
@@ -113,7 +116,9 @@ class ExportInline {
     );
   }
 
-  /// 表格格子里两段之间的换行（见 [ExportBlock.tableRows]）。
+  /// 块内换行：文字块里的软换行（见 [ExportBlock.inlines]），以及表格格子里
+  /// 两段之间（见 [ExportBlock.tableRows]）。按行写出的写出器经
+  /// [ExportBlock.splitLines] 切行。
   static const ExportInline lineBreak = ExportInline('\n');
 
   final String text;
@@ -146,7 +151,7 @@ class ExportInline {
     return scale == null || scale == 1 ? null : scale;
   }
 
-  /// 是否为格子里的段间换行（[lineBreak]）。
+  /// 是否为块内换行（[lineBreak]）。
   bool get isLineBreak => text == '\n';
 
   /// 改文字或颜色、补斜体或删除线后的副本（PDF 准备正文时压平颜色、给代码
@@ -201,6 +206,10 @@ class ExportBlock {
   });
 
   final ExportBlockKind kind;
+
+  /// 块的行内片段。块内的软换行是一个 [ExportInline.lineBreak]（其余片段
+  /// 不含换行），写出器写成所在格式的块内换行，列表标记、图标只写在第一
+  /// 行；代码块每行一块，不含换行。
   final List<ExportInline> inlines;
 
   /// 标题级别 1~6；其他块为 0。
@@ -313,7 +322,7 @@ class ExportBlock {
 
   /// 一格的几段以空格相连，空段略过。
   static List<ExportInline> _tableTextCell(List<ExportInline> cell) {
-    final kept = tableCellParagraphs(
+    final kept = splitLines(
       cell,
     ).where((List<ExportInline> runs) => _joinText(runs).trim().isNotEmpty);
     return <ExportInline>[
@@ -324,19 +333,20 @@ class ExportBlock {
     ];
   }
 
-  /// 把一格的行内片段按 [ExportInline.lineBreak] 切成段（至少一段，空格子
-  /// 为一个空段）；按段写出格子的写出器（Word 每段一个 `w:p`）与上面的
-  /// 文字行共用。
-  static List<List<ExportInline>> tableCellParagraphs(List<ExportInline> cell) {
-    final paragraphs = <List<ExportInline>>[<ExportInline>[]];
-    for (final run in cell) {
+  /// 把行内片段（一块的 [inlines] 或一格的文字）按 [ExportInline.lineBreak]
+  /// 切成行（至少一行，没有文字时为一个空行）。按行写出的写出器共用：表格
+  /// 格子每段一行（Word 每段一个 `w:p`）、上面的文字行，以及正文块的续行
+  /// （Markdown、纯文本的续行缩进，PDF 不能跨页的块逐行成组件）。
+  static List<List<ExportInline>> splitLines(List<ExportInline> runs) {
+    final lines = <List<ExportInline>>[<ExportInline>[]];
+    for (final run in runs) {
       if (run.isLineBreak) {
-        paragraphs.add(<ExportInline>[]);
+        lines.add(<ExportInline>[]);
       } else {
-        paragraphs.last.add(run);
+        lines.last.add(run);
       }
     }
-    return paragraphs;
+    return lines;
   }
 
   /// 同缩进、同对齐的普通段落，文字换成 [inlines]（写出器把块退化为段落时

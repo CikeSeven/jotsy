@@ -793,11 +793,14 @@ class _DocxBuilder {
     return '<w:r>$props$content</w:r>';
   }
 
-  /// [bold] 把整段加粗（表头格子）。
+  /// [bold] 把整段加粗（表头格子）。块内换行（[ExportInline.lineBreak]）
+  /// 写成段内换行 `<w:br/>`，仍是同一段（列表项不会多出一个标记）。
   List<String> inlines(List<ExportInline> runs, {bool bold = false}) {
     return <String>[
       for (final inline in runs)
-        _withLink(inline.link, _inline(inline, bold: bold)),
+        inline.isLineBreak
+            ? '<w:r><w:br/></w:r>'
+            : _withLink(inline.link, _inline(inline, bold: bold)),
     ];
   }
 
@@ -945,7 +948,7 @@ class _DocxBuilder {
           '${header ? '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>' : ''}'
           '</w:tcPr>',
         );
-        for (final paragraph in ExportBlock.tableCellParagraphs(cell)) {
+        for (final paragraph in ExportBlock.splitLines(cell)) {
           out.write(
             '<w:p><w:pPr><w:pStyle w:val="TableText"/></w:pPr>'
             '${inlines(paragraph, bold: header).join()}</w:p>',

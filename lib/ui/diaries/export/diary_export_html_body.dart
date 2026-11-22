@@ -370,9 +370,7 @@ class DiaryHtmlBody {
   /// `<thead>`、用 `<th>`。一格里的几段以换行相连。
   void _writeTable(StringBuffer out, ExportBlock block, {String? nest}) {
     String cell(String tag, List<ExportInline> runs) {
-      final paragraphs = ExportBlock.tableCellParagraphs(
-        runs,
-      ).map(markup.inlines);
+      final paragraphs = ExportBlock.splitLines(runs).map(markup.inlines);
       return '<$tag>${paragraphs.join(markup.lineBreak)}</$tag>';
     }
 

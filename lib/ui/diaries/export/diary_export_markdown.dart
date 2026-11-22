@@ -21,11 +21,12 @@ import 'diary_export_naming.dart';
 /// 字段；标题只写在 front matter 里，正文不再重复一级标题，避免导回后
 /// 正文开头多出一行标题。
 ///
-/// 正文按块写出：每个文本行一段（段间空一行，保留原来的分行），列表、
-/// 待办、引用、代码块用标准语法；找不到的图片直接略过，未打包的录音、
-/// 视频、附件写成一行名称。标注写成以图标开头的引用（`> 💡 文字`），折叠
-/// 列表展开写成 `▸ 标题` 加照常跟在后面的子块，表格写成 GFM 管道表格，
-/// 上下标写成 `<sup>` / `<sub>`；字号与对齐没有 Markdown 写法，略过。
+/// 正文按块写出：每块一段（段间空一行，保留原来的分行；块内的软换行写成
+/// 硬换行，列表项的续行仍属于这一项），列表、待办、引用、代码块用标准
+/// 语法；找不到的图片直接略过，未打包的录音、视频、附件写成一行名称。
+/// 标注写成以图标开头的引用（`> 💡 文字`），折叠列表展开写成 `▸ 标题`
+/// 加照常跟在后面的子块，表格写成 GFM 管道表格，上下标写成 `<sup>` /
+/// `<sub>`；字号与对齐没有 Markdown 写法，略过。
 ///
 /// 导出成书（[write] 的 `book` 不为 null）时全书写进一个 `<书名>.md`（有
 /// 媒体时同样打包 `media/`）：开头是扉页（`# 书名`、封面、简介、统计行与
@@ -387,7 +388,7 @@ class DiaryMarkdownWriter {
       switch (block.kind) {
         case ExportBlockKind.paragraph:
           flush();
-          final text = _inlines(block.inlines);
+          final text = _blockText(block.inlines);
           // 空行只用来分段，段间本就空一行，不再额外写出。
           if (text.trim().isNotEmpty) {
             sections.add(_escapeLineStart(text));
@@ -397,19 +398,26 @@ class DiaryMarkdownWriter {
           // 行），不并成一个引用。
           flush();
           final icon = block.calloutIcon ?? kDiaryCalloutDefaultIcon;
-          sections.add('> $icon ${_inlines(block.inlines)}'.trimRight());
+          sections.add(
+            '> $icon ${_blockText(block.inlines, continuation: '> ')}'
+                .trimRight(),
+          );
         case ExportBlockKind.toggle:
           // Markdown 没有折叠写法（`<details>` 里的 Markdown 多数阅读器不
           // 解析）：导出时一律展开，标题前加 `▸ `，子块照常跟在后面。
           flush();
-          sections.add('▸ ${_inlines(block.inlines)}'.trimRight());
+          sections.add('▸ ${_blockText(block.inlines)}'.trimRight());
         case ExportBlockKind.table:
           flush();
           sections.add(_table(block));
         case ExportBlockKind.heading:
           flush();
           final level = (block.level + headingOffset).clamp(1, 6);
-          sections.add('${'#' * level} ${_inlines(block.inlines)}');
+          // ATX 标题只能占一行：软换行写成 `<br>`（同表格格子）。
+          final title = ExportBlock.splitLines(
+            block.inlines,
+          ).map(_inlines).join('<br>');
+          sections.add('${'#' * level} $title');
         case ExportBlockKind.bullet ||
             ExportBlockKind.ordered ||
             ExportBlockKind.checked ||
@@ -420,12 +428,15 @@ class DiaryMarkdownWriter {
             ExportBlockKind.unchecked => '- [ ]',
             _ => '-',
           };
-          addTo(
-            'list',
-            '${'    ' * block.indent}$marker ${_inlines(block.inlines)}',
+          final indent = '    ' * block.indent;
+          // 续行对齐到这一项的文字，仍属于这一项。
+          final text = _blockText(
+            block.inlines,
+            continuation: ' ' * (indent.length + marker.length + 1),
           );
+          addTo('list', '$indent$marker $text');
         case ExportBlockKind.quote:
-          addTo('quote', '> ${_inlines(block.inlines)}');
+          addTo('quote', '> ${_blockText(block.inlines, continuation: '> ')}');
         case ExportBlockKind.code:
           addTo('code', block.plainText, language: block.codeLanguage);
         case ExportBlockKind.image:
@@ -458,6 +469,20 @@ class DiaryMarkdownWriter {
     flush();
     return sections;
   }
+
+  /// 一块的文字：块内换行（软换行）写成硬换行——行尾两个空格再换行。不用
+  /// 反斜杠：本应用的 Markdown 导入逐行读取，反斜杠会留在文字里。续行以
+  /// [continuation] 开头（列表项为对齐到文字的空格，引用与标注为 `> `），
+  /// 行首经 [_escapeLineStart]，不会被读成新的列表项或标题。
+  static String _blockText(
+    List<ExportInline> runs, {
+    String continuation = '',
+  }) => <String>[
+    for (final (index, line) in ExportBlock.splitLines(runs).indexed)
+      index == 0
+          ? _inlines(line)
+          : '$continuation${_escapeLineStart(_inlines(line))}',
+  ].join('  \n');
 
   static String _inlines(List<ExportInline> runs) {
     final out = StringBuffer();
@@ -497,7 +522,7 @@ class DiaryMarkdownWriter {
   /// 转义），一格里的几段以 `<br>` 相连（表格行不能真的换行）。
   static String _table(ExportBlock block) {
     String cell(List<ExportInline> runs) => <String>[
-      for (final paragraph in ExportBlock.tableCellParagraphs(runs))
+      for (final paragraph in ExportBlock.splitLines(runs))
         _inlines(paragraph).trim(),
     ].join('<br>').replaceAll('|', r'\|');
     String row(Iterable<String> cells) => '| ${cells.join(' | ')} |';

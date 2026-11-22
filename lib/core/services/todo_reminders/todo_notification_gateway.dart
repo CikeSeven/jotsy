@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:meta/meta.dart';
 
 import 'todo_reminder_planner.dart';
@@ -98,6 +99,7 @@ class TodoNotificationRequest {
     required this.languageCode,
     required this.snoozeMinutes,
     required this.hideOnLockScreen,
+    this.androidExact,
   });
 
   final PlannedReminder reminder;
@@ -108,31 +110,36 @@ class TodoNotificationRequest {
   final int snoozeMinutes;
   final bool hideOnLockScreen;
 
+  /// Android 闹钟模式，随 payload 保存，权限变化后可以补排系统撤下的闹钟。
+  final bool? androidExact;
+
   int get id => reminder.id;
 
   /// 写进通知的 payload：待办与这一次（见 [encodeTodoReminderPayload]），
   /// 外加语言、锁屏隐藏与内容指纹——标题、正文或外观变了，同一个 id 的通知
   /// 要重排，对账时按指纹判断。
-  String get payload {
-    final base = reminder.payload;
+  String get payload => payloadForAlarmMode(androidExact);
+
+  String payloadForAlarmMode(bool? exact) {
     final extra = jsonEncode(<String, Object?>{
       'l': languageCode,
       if (hideOnLockScreen) 'h': 1,
-      'c': contentHash,
+      if (exact != null) 'a': exact ? 1 : 0,
+      'c': _contentHash,
     });
-    return '$base|$extra';
+    return '${reminder.payload}|$extra';
   }
 
-  int get contentHash =>
-      Object.hash(
-        reminder.title,
-        body,
-        reminder.fireAt.millisecondsSinceEpoch,
-        snoozeMinutes,
-        hideOnLockScreen,
-        languageCode,
-      ) &
-      0x7fffffff;
+  // 指纹跨进程持久化，Object.hash 的随机种子会让重启后的对账全部重排。
+  String get _contentHash {
+    final content = jsonEncode(<Object?>[
+      reminder.title,
+      body,
+      reminder.fireAt.millisecondsSinceEpoch,
+      snoozeMinutes,
+    ]);
+    return sha256.convert(utf8.encode(content)).toString().substring(0, 16);
+  }
 }
 
 /// payload 里 [TodoNotificationRequest.payload] 追加的部分。
@@ -159,10 +166,10 @@ class TodoNotificationRequest {
 /// 桌面在进程里计时（[DesktopTodoNotificationGateway]），测试换成假实现。
 ///
 /// 只碰带待办 payload 前缀的通知（[kTodoReminderPayloadPrefix]），不动别的
-/// 通知。所有方法在不支持的平台或插件出错时都不抛出，失败按“没有”处理：
-/// 提醒是锦上添花，不能让它把页面或同步带崩。
+/// 通知。初始化、读取队列和排程操作的失败由调度器处理，以便保留已有通知
+/// 并重试；权限检查的结果直接供设置页显示。
 abstract class TodoNotificationGateway {
-  /// 初始化插件、渠道与时区；[onEvent] 收到点开与按钮（应用在运行时）。
+  /// 初始化插件和通知渠道；[onEvent] 收到点开与按钮（应用在运行时）。
   Future<void> initialize({
     required TodoNotificationTexts texts,
     required void Function(TodoNotificationEvent event) onEvent,

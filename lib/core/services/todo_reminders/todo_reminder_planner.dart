@@ -105,10 +105,11 @@ int todoReminderNotificationId(String todoId, DateTime fireAt) {
 /// 按未完成的待办排出接下来要弹的提醒（纯函数，无 IO、不读时钟）。
 ///
 /// 规则：
-/// - 只排 [now] 之后、[horizon] 之内的；已经过去的不补弹；
+/// - 只新排 [now] 之后、[horizon] 之内的；最近一天仍在系统队列里的
+///   [pendingIds] 也参与对账，避免取消系统因省电而推迟的提醒；
 /// - 每条提醒相对这一次的截止日计算（[TodoReminder.fireAt]）；全天待办的
 ///   “准时 / 提前若干分钟”提醒没有意义，跳过；
-/// - 重复待办把窗口内的每一次都展开（最多 [maxOccurrencesPerTodo] 次），
+/// - 重复待办把窗口内的每一次都展开，
 ///   “一共重复 N 次”的按剩余次数截断——应用没打开、没机会重排时，后面几次
 ///   也照样会响；
 /// - “稍后提醒”（`snoozed_until`）单独排一条；
@@ -119,14 +120,25 @@ List<PlannedReminder> planTodoReminders({
   required DateTime now,
   Duration horizon = const Duration(days: 30),
   int limit = 200,
-  int maxOccurrencesPerTodo = 31,
+  Set<int> pendingIds = const <int>{},
 }) {
+  final start = pendingIds.isEmpty
+      ? now
+      : now.subtract(const Duration(days: 1));
   final end = now.add(horizon);
+  final dayBeforeStart = DateTime(start.year, start.month, start.day - 1);
+  // 窗口之外的截止日也可能有提前提醒，用日历天数覆盖夏令时切换。
+  final lastDueDay = DateTime(
+    end.year,
+    end.month,
+    end.day + TodoReminder.maxDaysBefore,
+  );
   final planned = <int, PlannedReminder>{};
 
   void add(TodoRow row, DateTime occurrence, DateTime fireAt, bool snooze) {
-    if (!fireAt.isAfter(now) || fireAt.isAfter(end)) return;
+    if (fireAt.isBefore(start) || fireAt.isAfter(end)) return;
     final id = todoReminderNotificationId(row.todoId, fireAt);
+    if (!fireAt.isAfter(now) && !pendingIds.contains(id)) return;
     planned.putIfAbsent(
       id,
       () => PlannedReminder(
@@ -145,7 +157,7 @@ List<PlannedReminder> planTodoReminders({
     if (row.completedAt != null) continue;
     final dueText = row.dueDate;
     final due = dueText == null ? null : parseAnniversaryDate(dueText);
-    final snoozed = row.snoozedUntil;
+    final snoozed = row.snoozedUntil?.toLocal();
     if (snoozed != null) {
       add(
         row,
@@ -157,35 +169,32 @@ List<PlannedReminder> planTodoReminders({
     if (due == null) continue;
     final reminders = decodeTodoReminders(row.reminders);
     if (reminders.isEmpty) continue;
-    final occurrences = <DateTime>[due];
     final rule = decodeTodoRepeat(row.repeat);
-    if (rule != null) {
-      final done = decodeTodoMetadata(
-        row.metadata,
-      )[TodoMetadataKeys.repeatDone];
-      final count = rule.count;
-      final remaining = count == null
-          ? maxOccurrencesPerTodo
-          : count - (done is int ? done : 0);
-      // 提醒最早提前 28 天：窗口末尾再往后看 28 天的截止日，它们的提醒可能
-      // 落在窗口里。
-      final lookahead = end.add(
-        const Duration(days: TodoReminder.maxDaysBefore + 1),
-      );
-      var cursor = due;
-      while (occurrences.length < remaining &&
-          occurrences.length < maxOccurrencesPerTodo) {
-        final next = TodoRecurrence.nextAfter(rule, cursor);
-        if (next == null || next.isAfter(lookahead)) break;
-        occurrences.add(next);
-        cursor = next;
-      }
+    final count = rule?.count;
+    final done = count == null
+        ? null
+        : decodeTodoMetadata(row.metadata)[TodoMetadataKeys.repeatDone];
+    var remaining = count == null ? null : count - (done is int ? done : 0);
+    var occurrence = due;
+    if (rule != null && remaining == null && due.isBefore(dayBeforeStart)) {
+      // 无次数上限时可以直接跳过很久以前的截止日。有限次的仍要把它们计入次数。
+      final next = TodoRecurrence.nextAfter(rule, dayBeforeStart);
+      if (next == null) continue;
+      occurrence = next;
     }
-    for (final occurrence in occurrences) {
-      for (final reminder in reminders) {
-        final fireAt = reminder.fireAt(occurrence, row.dueMinute);
-        if (fireAt != null) add(row, occurrence, fireAt, false);
+    while (!occurrence.isAfter(lastDueDay) &&
+        (remaining == null || remaining > 0)) {
+      if (occurrence.isAfter(dayBeforeStart)) {
+        for (final reminder in reminders) {
+          final fireAt = reminder.fireAt(occurrence, row.dueMinute);
+          if (fireAt != null) add(row, occurrence, fireAt, false);
+        }
       }
+      if (rule == null) break;
+      final next = TodoRecurrence.nextAfter(rule, occurrence);
+      if (next == null) break;
+      occurrence = next;
+      if (remaining != null) remaining--;
     }
   }
 

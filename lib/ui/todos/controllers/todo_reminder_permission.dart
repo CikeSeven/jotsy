@@ -6,7 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/services/todo_reminders/todo_notification_gateway_plugin.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
-import 'todo_reminder_scheduler.dart';
+import '../providers/todo_reminder_providers.dart';
 
 /// 给待办加上提醒后确认系统允许发通知：没有允许时请求一次（Android 13+ /
 /// iOS 弹出系统对话框，每次运行只问一次）；仍不允许时给出提示，按钮跳到

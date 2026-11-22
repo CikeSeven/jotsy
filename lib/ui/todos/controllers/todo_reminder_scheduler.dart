@@ -2,109 +2,28 @@ import 'dart:async';
 
 import 'package:flutter/material.dart' show DateUtils;
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
-import '../../../core/services/app_service.dart';
 import '../../../core/services/todo_reminders/todo_notification_actions.dart';
 import '../../../core/services/todo_reminders/todo_notification_gateway.dart';
-import '../../../core/services/todo_reminders/todo_notification_gateway_desktop.dart';
-import '../../../core/services/todo_reminders/todo_notification_gateway_plugin.dart';
 import '../../../core/services/todo_reminders/todo_reminder_planner.dart';
-import '../../settings/providers/app_features_provider.dart';
 import '../models/todo_settings.dart';
-import '../providers/todo_providers.dart';
 import '../widgets/todo_labels.dart';
 
-/// 系统通知的实现：手机交给系统定时，桌面在进程里计时；不支持的平台为 null。
-/// 测试换成假实现。
-final todoNotificationGatewayProvider = Provider<TodoNotificationGateway?>((
-  Ref ref,
-) {
-  if (!AppPlatform.supportsReminders) return null;
-  return AppPlatform.supportsBackgroundReminders
-      ? PluginTodoNotificationGateway()
-      : DesktopTodoNotificationGateway();
-});
+// 应用运行时补排进入 30 天窗口的提醒。手机退到后台后仍由系统负责投递。
+const _replanInterval = Duration(minutes: 15);
+const _retryIntervals = <Duration>[
+  Duration(seconds: 2),
+  Duration(seconds: 10),
+  Duration(minutes: 1),
+];
 
-/// 点通知要打开的待办（业务 id）；首页消费后置回 null。
-final todoNotificationOpenRequestProvider =
-    NotifierProvider<TodoNotificationOpenRequest, String?>(
-      TodoNotificationOpenRequest.new,
-    );
-
-class TodoNotificationOpenRequest extends Notifier<String?> {
-  @override
-  String? build() => null;
-
-  void request(String todoId) => state = todoId;
-
-  void consume() => state = null;
-}
-
-/// 待办提醒的调度器（由 `NodeDiaryApp` 常驻监听，整个应用生命周期只有一份）。
-///
-/// 输入：功能开关、待办偏好、界面语言与未完成的待办（drift `.watch()`：本机
-/// 编辑、局域网同步与导入备份都会推过来）。每次输入变化防抖 [_replanDelay]
-/// 后重新排：按 [planTodoReminders] 算出接下来要弹的提醒，与系统里已排好的
-/// 待办通知对账——只取消多出来的、只补上缺的或内容变了的。回到前台、桌面上
-/// 每隔 [_desktopReplanInterval] 也重排一次（时间过去了、电脑睡眠过、时区
-/// 变了）。功能关闭时取消全部待办通知。
-///
-/// 通知的点开与按钮：主 isolate 直接处理；Android 上应用在后台时插件在后台
-/// isolate 回调，经 [TodoNotificationActionPort] 转回这里（见
-/// `todo_notification_actions.dart`）。点开交给首页打开详情
-/// （[todoNotificationOpenRequestProvider]）。
-final todoReminderSchedulerProvider = Provider<TodoReminderScheduler?>((
-  Ref ref,
-) {
-  final gateway = ref.watch(todoNotificationGatewayProvider);
-  if (gateway == null) return null;
-  final scheduler = TodoReminderScheduler(
-    gateway: gateway,
-    database: ref.read(appDatabaseProvider),
-    onOpen: (String todoId) =>
-        ref.read(todoNotificationOpenRequestProvider.notifier).request(todoId),
-  );
-  ref.onDispose(scheduler.dispose);
-  ref.listen<bool>(
-    appFeaturesProvider.select((features) => features.todos),
-    (_, bool enabled) => scheduler.enabled = enabled,
-    fireImmediately: true,
-  );
-  ref.listen<TodoSettings>(
-    todoSettingsProvider,
-    (_, TodoSettings settings) => scheduler.settings = settings,
-    fireImmediately: true,
-  );
-  ref.listen<AsyncValue<List<TodoRow>>>(openTodosProvider, (
-    _,
-    AsyncValue<List<TodoRow>> next,
-  ) {
-    final rows = next.value;
-    if (rows != null) scheduler.todos = rows;
-  }, fireImmediately: true);
-  final settingsService = ref.watch(settingsServiceProvider).asData?.value;
-  if (settingsService != null) {
-    final locale = settingsService.localeNotifier;
-    void onLocale() => scheduler.locale = locale.value;
-    locale.addListener(onLocale);
-    ref.onDispose(() => locale.removeListener(onLocale));
-    onLocale();
-  }
-  return scheduler;
-});
-
-/// 输入防抖（非动画计时）：一次编辑常连着改好几列，不必每列都对账一次。
-const Duration _replanDelay = Duration(milliseconds: 500);
-
-/// 桌面的定期重排（非动画计时）：进程内计时器在电脑睡眠时会晚到。
-const Duration _desktopReplanInterval = Duration(minutes: 15);
-
+/// 对账数据库规划和系统队列。输入和生命周期变化会触发串行排程。
+/// 通知按钮写入数据库，点按详情通过 [onOpen] 交由应用处理。
 class TodoReminderScheduler {
   TodoReminderScheduler({
     required this.gateway,
@@ -120,27 +39,34 @@ class TodoReminderScheduler {
   /// 只供测试注入的时钟。
   final DateTime Function() now;
 
-  bool _enabled = false;
+  bool? _enabled;
   TodoSettings _settings = TodoSettings.defaults;
   List<TodoRow>? _todos;
   Locale _locale = const Locale('en');
-  bool _started = false;
+  bool _initialized = false;
+  Set<int>? _restoringAndroidAlarms = AppPlatform.isAndroid ? <int>{} : null;
   bool _disposed = false;
   bool _permissionAsked = false;
   Timer? _replan;
+  Timer? _retry;
+  int _retryStep = 0;
   Timer? _periodic;
   AppLifecycleListener? _lifecycle;
   late final TodoNotificationActionPort _port = TodoNotificationActionPort(
     _handleAction,
   );
 
-  /// 当前一次对账；重排时等它结束再开始，免得两次对账交错。
   Future<void> _reconciling = Future<void>.value();
+  Future<void>? _queuedReconcile;
 
   set enabled(bool value) {
-    if (_enabled == value && _started) return;
+    if (_enabled == value) return;
     _enabled = value;
-    if (value) unawaited(_start());
+    _lifecycle ??= AppLifecycleListener(onResume: _scheduleReplan);
+    _periodic?.cancel();
+    _periodic = value
+        ? Timer.periodic(_replanInterval, (_) => _scheduleReplan())
+        : null;
     _scheduleReplan();
   }
 
@@ -168,108 +94,157 @@ class TodoReminderScheduler {
     return lookupAppLocalizations(locale);
   }
 
-  /// 第一次开启时初始化插件、接收端口与冷启动的点开。
-  Future<void> _start() async {
-    if (_started) return;
-    _started = true;
-    try {
-      await gateway.initialize(
-        texts: todoNotificationTextsOf(_l10n),
-        onEvent: (TodoNotificationEvent event) =>
-            unawaited(_handleAction(event)),
-      );
-      _port.open();
-      final launch = await gateway.takeLaunchEvent();
-      if (launch != null && !_disposed) unawaited(_handleAction(launch));
-    } catch (error) {
-      debugPrint('todo reminders: start failed: $error');
-    }
+  Future<void> _initialize() async {
+    await gateway.initialize(
+      texts: todoNotificationTextsOf(_l10n),
+      onEvent: (event) => unawaited(_handleAction(event)),
+    );
     if (_disposed) return;
-    _lifecycle = AppLifecycleListener(onResume: _scheduleReplan);
-    if (AppPlatform.isDesktop) {
-      _periodic = Timer.periodic(
-        _desktopReplanInterval,
-        (_) => _scheduleReplan(),
-      );
-    }
-    _scheduleReplan();
+    _initialized = true;
+    _port.open();
+    final launch = await gateway.takeLaunchEvent();
+    if (launch != null) unawaited(_handleAction(launch));
   }
 
   void _scheduleReplan() {
-    if (_disposed || !_started) return;
-    _replan?.cancel();
-    _replan = Timer(_replanDelay, () {
-      _reconciling = _reconciling.then((_) => _reconcile());
-    });
+    if (_disposed || _enabled == null) return;
+    // 合并同一轮事件里的流更新。多等一个防抖间隔会错过刚保存的整分钟提醒。
+    _replan ??= Timer(Duration.zero, () => unawaited(replanNow()));
   }
 
-  /// 立即重排（测试与调试用）；返回对账结束的 Future。
   @visibleForTesting
   Future<void> replanNow() {
     _replan?.cancel();
-    return _reconciling = _reconciling.then((_) => _reconcile());
+    _replan = null;
+    // 排程操作需要串行；进行中的一轮至多积一轮后续对账。
+    return _queuedReconcile ??= _reconciling = _reconciling.then((_) {
+      _queuedReconcile = null;
+      return _reconcile();
+    });
   }
 
   Future<void> _reconcile() async {
-    if (_disposed) return;
+    _retry?.cancel();
+    _retry = null;
+    if (_disposed || _enabled == null) return;
+
     try {
-      final pending = await gateway.pending();
-      final todos = _todos;
-      if (!_enabled || todos == null) {
-        if (!_enabled) {
-          for (final id in pending.keys) {
-            await gateway.cancel(id);
-          }
-        }
+      final success = await _reconcilePending(enabled: _enabled!);
+      if (success) {
+        _retryStep = 0;
         return;
-      }
-      final l10n = _l10n;
-      // 正文里的星期、月日与时刻按界面语言格式化；调度器不在界面里，不能
-      // 指望 MaterialApp 的本地化委托已经加载过这门语言的日期数据。
-      await initializeDateFormatting(l10n.localeName);
-      final today = DateUtils.dateOnly(now());
-      final requests = <int, TodoNotificationRequest>{
-        for (final reminder in planTodoReminders(
-          todos: todos,
-          now: now(),
-          limit: AppPlatform.isIOS ? 60 : 200,
-        ))
-          reminder.id: TodoNotificationRequest(
-            reminder: reminder,
-            body: _body(l10n, reminder, today),
-            languageCode: l10n.localeName,
-            snoozeMinutes: _settings.snoozeMinutes,
-            hideOnLockScreen: _settings.hideContentOnLockScreen,
-          ),
-      };
-      for (final entry in pending.entries) {
-        final wanted = requests[entry.key];
-        if (wanted == null || wanted.payload != entry.value) {
-          await gateway.cancel(entry.key);
-        }
-      }
-      for (final request in requests.values) {
-        if (pending[request.id] != request.payload) {
-          await gateway.schedule(request);
-        }
       }
     } catch (error) {
       debugPrint('todo reminders: reconcile failed: $error');
     }
+    if (_disposed) return;
+    _retry = Timer(_retryIntervals[_retryStep], _scheduleReplan);
+    if (_retryStep < _retryIntervals.length - 1) _retryStep++;
   }
 
-  /// 通知正文：这一次的截止日（与时刻），如“今天 15:00”“明天”；稍后提醒
-  /// 且没有截止日时写“稍后提醒”。
-  String _body(
-    AppLocalizations l10n,
-    PlannedReminder reminder,
-    DateTime today,
-  ) {
-    final todo = _todos?.where((row) => row.todoId == reminder.todoId);
-    final hasDue =
-        todo != null && todo.isNotEmpty && todo.first.dueDate != null;
-    if (!hasDue) return l10n.todoNotificationSnoozedBody;
-    final date = TodoLabels.relativeDay(l10n, reminder.occurrence, today);
+  Future<bool> _reconcilePending({required bool enabled}) async {
+    if (enabled && !_initialized) await _initialize();
+    final todos = _todos;
+    if (_disposed || _enabled != enabled || (enabled && todos == null)) {
+      return true;
+    }
+
+    final pending = <int, String>{...await gateway.pending()};
+    final clock = now();
+    final limit = AppPlatform.isIOS ? 60 : 200;
+    final requests = enabled
+        ? await _planRequests(todos!, clock, limit, pending.keys.toSet())
+        : const <int, TodoNotificationRequest>{};
+
+    // Android 插件的 pending 来自持久化缓存，系统强停后缓存仍在。每次冷启动
+    // 向 AlarmManager 确认未来的闹钟，同 id 覆盖，保留正在等系统投递的提醒。
+    final restoredAlarms = enabled ? _restoringAndroidAlarms : null;
+    var success = true;
+    for (final entry in pending.entries.toList()) {
+      if (_disposed || _enabled != enabled) return true;
+      final request = requests[entry.key];
+      if (request != null) {
+        final payload = request.reminder.payload;
+        final sameOccurrence =
+            entry.value == payload || entry.value.startsWith('$payload|');
+        final visibilityAllowed =
+            !request.hideOnLockScreen ||
+            decodeTodoNotificationExtras(entry.value)?.hide == true;
+        if (sameOccurrence && visibilityAllowed) {
+          continue;
+        }
+      }
+      try {
+        await gateway.cancel(entry.key);
+        pending.remove(entry.key);
+      } catch (error) {
+        success = false;
+        debugPrint('todo reminders: cancelling ${entry.key} failed: $error');
+      }
+    }
+    for (final request in requests.values) {
+      if (_disposed || _enabled != enabled) return true;
+      if (!request.reminder.fireAt.isAfter(now())) continue;
+      final existing = pending[request.id];
+      if (existing == request.payload &&
+          (restoredAlarms == null || restoredAlarms.contains(request.id))) {
+        continue;
+      }
+      if (existing == null && pending.length >= limit) continue;
+      try {
+        // 替换现有 id 由系统完成，避免先取消后排程失败时丢掉原提醒。
+        await gateway.schedule(request);
+        pending[request.id] = request.payload;
+        restoredAlarms?.add(request.id);
+      } catch (error) {
+        success = false;
+        debugPrint('todo reminders: scheduling ${request.id} failed: $error');
+      }
+    }
+    if (success && enabled) _restoringAndroidAlarms = null;
+    return success;
+  }
+
+  Future<Map<int, TodoNotificationRequest>> _planRequests(
+    List<TodoRow> todos,
+    DateTime clock,
+    int limit,
+    Set<int> pendingIds,
+  ) async {
+    final l10n = _l10n;
+    final settings = _settings;
+    await initializeDateFormatting(l10n.localeName);
+    final exact = AppPlatform.isAndroid
+        ? await gateway.exactAlarmsAllowed()
+        : null;
+    return <int, TodoNotificationRequest>{
+      for (final reminder in planTodoReminders(
+        todos: todos,
+        now: clock,
+        limit: limit,
+        pendingIds: AppPlatform.supportsBackgroundReminders
+            ? pendingIds
+            : const <int>{},
+      ))
+        reminder.id: TodoNotificationRequest(
+          reminder: reminder,
+          body: _body(l10n, reminder),
+          languageCode: l10n.localeName,
+          snoozeMinutes: settings.snoozeMinutes,
+          hideOnLockScreen: settings.hideContentOnLockScreen,
+          androidExact: exact,
+        ),
+    };
+  }
+
+  /// “今天”“明天”以弹出通知那天为准，否则提前排好的通知会显示过期的相对日期。
+  String _body(AppLocalizations l10n, PlannedReminder reminder) {
+    if (reminder.snooze) return l10n.todoNotificationSnoozedBody;
+    final date = TodoLabels.relativeDay(
+      l10n,
+      reminder.occurrence,
+      DateUtils.dateOnly(reminder.fireAt.toLocal()),
+    );
     final minute = reminder.dueMinute;
     if (minute == null) return date;
     final time = DateFormat.jm(
@@ -293,14 +268,18 @@ class TodoReminderScheduler {
     if (await gateway.notificationsEnabled()) return true;
     if (_permissionAsked) return false;
     _permissionAsked = true;
-    return gateway.requestPermission();
+    final allowed = await gateway.requestPermission();
+    if (allowed) _scheduleReplan();
+    return allowed;
   }
 
   void dispose() {
+    if (_disposed) return;
     _disposed = true;
     _replan?.cancel();
+    _retry?.cancel();
     _periodic?.cancel();
     _lifecycle?.dispose();
-    _port.close();
+    if (_initialized) _port.close();
   }
 }

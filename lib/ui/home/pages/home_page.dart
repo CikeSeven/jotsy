@@ -18,7 +18,7 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/todos/controllers/todo_navigation.dart';
-import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
+import 'package:node_diary/ui/todos/providers/todo_reminder_providers.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/widgets/scroll_chrome_hider.dart';
 import 'package:node_diary/ui/home/controllers/page_position_listenable.dart';

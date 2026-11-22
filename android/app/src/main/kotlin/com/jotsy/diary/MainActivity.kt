@@ -174,12 +174,10 @@ class MainActivity : FlutterFragmentActivity() {
           else -> result.notImplemented()
         }
       }
-    // 待办提醒：定时通知要按本机时区排（夏令时切换后仍是墙上时钟的那一刻），
-    // 时区名只有原生知道；权限被拒后从设置页跳到系统的应用通知设置。
+    // 待办提醒权限被拒后，从设置页跳到系统的应用通知设置。
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, notificationsChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
-          "timeZone" -> result.success(java.util.TimeZone.getDefault().id)
           "openNotificationSettings" -> result.success(openNotificationSettings())
           else -> result.notImplemented()
         }

@@ -1,11 +1,18 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/todo_reminders/todo_notification_actions.dart';
 import 'package:node_diary/core/services/todo_reminders/todo_notification_gateway.dart';
 import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
 import 'package:node_diary/ui/todos/models/todo_settings.dart';
+import 'package:node_diary/ui/todos/providers/todo_reminder_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_todo_notifications.dart';
 
@@ -17,12 +24,13 @@ void main() {
   late TodoReminderScheduler scheduler;
   final opened = <String>[];
   // 固定的“现在”：明天 9 点的提醒总在窗口里。
-  final now = DateTime(2026, 11, 10, 8);
+  late DateTime now;
 
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     gateway = FakeTodoNotificationGateway();
     opened.clear();
+    now = DateTime(2026, 11, 10, 8);
     scheduler = TodoReminderScheduler(
       gateway: gateway,
       database: db,
@@ -65,7 +73,7 @@ void main() {
       final request = gateway.scheduled.values.single;
       expect(request.reminder.fireAt, DateTime(2026, 11, 11, 8, 45));
       expect(request.reminder.title, '交周报');
-      expect(request.body, contains('明天'));
+      expect(request.body, contains('今天'));
       expect(request.snoozeMinutes, TodoSettings.defaults.snoozeMinutes);
     },
   );
@@ -84,6 +92,7 @@ void main() {
     await feed();
     expect(gateway.scheduleCalls, 2, reason: '标题变了，内容指纹变了要重排');
     expect(gateway.scheduled.values.single.reminder.title, '交月报');
+    expect(gateway.cancelled, isEmpty);
 
     await db.setTodoReminders(id, const <TodoReminder>[]);
     await feed();
@@ -109,6 +118,124 @@ void main() {
       expect(gateway.scheduled, isEmpty);
     },
   );
+
+  test(
+    'cold startup waits for saved settings before clearing the queue',
+    () async {
+      await addTodo();
+      scheduler.enabled = true;
+      await feed();
+      scheduler.dispose();
+      expect(gateway.scheduled, hasLength(1));
+
+      SharedPreferences.setMockInitialValues({});
+      final ready = Completer<SettingsService>();
+      final container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          todoNotificationGatewayProvider.overrideWithValue(gateway),
+          settingsServiceProvider.overrideWith((_) => ready.future),
+        ],
+      );
+      addTearDown(container.dispose);
+      final restarted = container.read(todoReminderSchedulerProvider)!;
+      await restarted.replanNow();
+      expect(gateway.scheduled, hasLength(1));
+
+      ready.complete(await SettingsService.create());
+      await container.read(settingsServiceProvider.future);
+      await restarted.replanNow();
+      expect(gateway.scheduled, isEmpty);
+    },
+  );
+
+  test(
+    'an overdue pending alarm survives until delivered or removed',
+    () async {
+      final id = await addTodo();
+      scheduler.enabled = true;
+      await feed();
+      final alarm = gateway.scheduled.values.single;
+      now = alarm.reminder.fireAt.add(const Duration(minutes: 10));
+      await feed();
+      expect(gateway.scheduled.values.single, alarm);
+      expect(gateway.scheduleCalls, 1);
+      expect(gateway.cancelled, isEmpty);
+
+      await db.setTodoReminders(id, const <TodoReminder>[]);
+      await feed();
+      expect(gateway.scheduled, isEmpty);
+    },
+  );
+
+  test(
+    'Android alarms are repaired when the exact permission changes',
+    () async {
+      await addTodo();
+      scheduler.enabled = true;
+      await feed();
+      final alarm = gateway.scheduled.values.single;
+      expect(alarm.androidExact, isTrue);
+
+      gateway.exact = false;
+      await scheduler.replanNow();
+      expect(gateway.scheduled[alarm.id]!.androidExact, isFalse);
+      expect(gateway.cancelled, isEmpty);
+      expect(gateway.scheduleCalls, 2);
+    },
+  );
+
+  test('an unsuccessful replacement keeps the previous alarm', () async {
+    final id = await addTodo();
+    scheduler.enabled = true;
+    await feed();
+    final alarm = gateway.scheduled.values.single;
+
+    gateway.scheduleFailures.add(alarm.id);
+    await db.setTodoTitle(id, '更新标题');
+    await addTodo(title: '第二项');
+    await feed();
+    expect(gateway.scheduled[alarm.id], alarm);
+    expect(gateway.scheduled, hasLength(2));
+    expect(gateway.cancelled, isEmpty);
+
+    await scheduler.replanNow();
+    expect(gateway.scheduled[alarm.id]!.reminder.title, '更新标题');
+    expect(gateway.scheduleCalls, 4);
+  });
+
+  testWidgets('startup retries plugin initialization and pending reads', (
+    tester,
+  ) async {
+    final rows = await tester.runAsync(() async {
+      await addTodo();
+      return db.getOpenTodos();
+    });
+    gateway
+      ..initializationFailures = 1
+      ..pendingFailures = 1;
+    final retryingScheduler = TodoReminderScheduler(
+      gateway: gateway,
+      database: db,
+      onOpen: opened.add,
+      now: () => now,
+    );
+    try {
+      retryingScheduler
+        ..todos = rows!
+        ..enabled = true;
+      await tester.pump(Duration.zero);
+      expect(gateway.initializationFailures, 0);
+      expect(gateway.initialized, isFalse);
+      await tester.pump(const Duration(seconds: 2));
+      expect(gateway.initialized, isTrue);
+      expect(gateway.scheduled, isEmpty);
+      await tester.pump(const Duration(seconds: 10));
+      expect(gateway.scheduled, hasLength(1));
+    } finally {
+      retryingScheduler.dispose();
+    }
+  });
 
   test('settings changes reach the notifications', () async {
     await addTodo();

@@ -37,7 +37,7 @@ import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.d
 import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
 import 'package:node_diary/ui/home_widgets/controllers/home_widget_launch_inbox.dart';
 import 'package:node_diary/ui/home_widgets/controllers/home_widget_sync_controller.dart';
-import 'package:node_diary/ui/todos/controllers/todo_reminder_scheduler.dart';
+import 'package:node_diary/ui/todos/providers/todo_reminder_providers.dart';
 import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
 
 import '../core/services/settings_service.dart';

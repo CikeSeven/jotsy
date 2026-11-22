@@ -5,11 +5,10 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest_10y.dart' as tz_data;
-import 'package:timezone/timezone.dart' as tz;
 
 import '../../../l10n/app_localizations_gen.dart';
 import '../../database/app_database.dart';
+import '../app_platform.dart';
 import 'todo_notification_gateway.dart';
 import 'todo_notification_gateway_plugin.dart';
 import 'todo_reminder_planner.dart';
@@ -125,12 +124,11 @@ Future<void> todoNotificationBackgroundHandler(
   try {
     final wrote = await applyTodoNotificationAction(database, event);
     if (!wrote) return;
-    final plugin = FlutterLocalNotificationsPlugin();
     if (event.action == TodoNotificationAction.snooze) {
-      await _scheduleSnooze(plugin, database, event, response.payload);
+      await _scheduleSnooze(database, event, response.payload);
     } else if (event.action == TodoNotificationAction.complete) {
       await cancelTodoOccurrenceNotifications(
-        plugin,
+        FlutterLocalNotificationsPlugin(),
         todoId: event.todoId,
         occurrence: event.occurrence,
       );
@@ -157,32 +155,25 @@ Future<bool> _forwardToMainIsolate(NotificationResponse response) async {
 }
 
 /// 后台排“稍后提醒”：主 isolate 不在，没人按库里的 `snoozed_until` 重排。
-/// 一次性的、几分钟后的通知，按绝对时刻（UTC）排即可，不必读本机时区。
 Future<void> _scheduleSnooze(
-  FlutterLocalNotificationsPlugin plugin,
   AppDatabase database,
   TodoNotificationEvent event,
   String? payload,
 ) async {
   final row = await database.getTodo(event.todoId);
-  final until = row?.snoozedUntil;
-  if (row == null || until == null) return;
-  tz_data.initializeTimeZones();
+  if (row == null) return;
+  final reminder = planTodoReminders(
+    todos: [row],
+    now: DateTime.now(),
+  ).where((reminder) => reminder.snooze).firstOrNull;
+  if (reminder == null) return;
+
   final extras = decodeTodoNotificationExtras(payload);
   final l10n = lookupAppLocalizations(
-    Locale(
-      extras?.languageCode ?? PlatformDispatcher.instance.locale.languageCode,
-    ),
+    _notificationLocale(extras?.languageCode),
   );
-  final occurrence = parseAnniversaryDate(event.occurrence) ?? until;
-  final reminder = PlannedReminder(
-    id: todoReminderNotificationId(row.todoId, until),
-    todoId: row.todoId,
-    title: row.title,
-    occurrence: occurrence,
-    dueMinute: row.dueMinute,
-    fireAt: until,
-    snooze: true,
+  final gateway = PluginTodoNotificationGateway.forBackground(
+    todoNotificationTextsOf(l10n),
   );
   final request = TodoNotificationRequest(
     reminder: reminder,
@@ -190,20 +181,20 @@ Future<void> _scheduleSnooze(
     languageCode: l10n.localeName,
     snoozeMinutes: event.snoozeMinutes,
     hideOnLockScreen: extras?.hide ?? false,
+    androidExact: AppPlatform.isAndroid
+        ? await gateway.exactAlarmsAllowed()
+        : null,
   );
-  await plugin.zonedSchedule(
-    id: request.id,
-    title: reminder.title,
-    body: request.body,
-    scheduledDate: tz.TZDateTime.from(until.toUtc(), tz.UTC),
-    notificationDetails: todoNotificationDetails(
-      texts: todoNotificationTextsOf(l10n),
-      snoozeMinutes: event.snoozeMinutes,
-      hideOnLockScreen: request.hideOnLockScreen,
-    ),
-    androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-    payload: request.payload,
+  await gateway.schedule(request);
+}
+
+Locale _notificationLocale(String? languageCode) {
+  final locale = Locale(
+    languageCode ?? PlatformDispatcher.instance.locale.languageCode,
   );
+  return AppLocalizations.delegate.isSupported(locale)
+      ? locale
+      : const Locale('en');
 }
 
 /// 后台完成后取消同一次剩下的提醒（如“提前 1 天”已响、“准时”还没响）。

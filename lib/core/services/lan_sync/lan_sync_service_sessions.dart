@@ -61,6 +61,7 @@ extension _Sessions on LanSyncService {
     isEditing: editing.isEditing,
     clock: hooks.clock,
     appVersion: appVersion,
+    serverPort: _server?.port,
   );
 
   LanSyncHandshake _handshake() => LanSyncHandshake(
@@ -99,6 +100,30 @@ extension _Sessions on LanSyncService {
     await _store.updatePeer(
       hello.deviceId,
       (d) => d.copyWith(name: hello.name, platform: hello.platform),
+    );
+  }
+
+  /// 已配对设备连进来、握手认证过之后记下它现在的地址（docs §9“对方的
+  /// 地址”）。为什么：对方的 IP 变了（DHCP 重新分配、换了网卡）而本机又收
+  /// 不到它的信标（对方不可被发现、路由器不转发广播等）时，本机发起只能连
+  /// 上次的地址，会一直连不上；对方能连进来就说明这个地址是通的。
+  ///
+  /// [host] 是入站连接的对端地址；端口不能取它（那是对方的临时端口），取
+  /// 对方 hello 里宣告的服务端口，旧版本不带时取在线信标的端口，都没有就
+  /// 保留上次的端口。
+  Future<void> _notePeerAddress(
+    String peerId, {
+    required String? host,
+    required int? port,
+  }) async {
+    final device = _store.peer(peerId);
+    if (device == null) return;
+    final nextHost = host ?? device.lastHost;
+    final nextPort = port ?? device.lastPort;
+    if (nextHost == device.lastHost && nextPort == device.lastPort) return;
+    await _store.updatePeer(
+      peerId,
+      (d) => d.copyWith(lastHost: () => nextHost, lastPort: () => nextPort),
     );
   }
 

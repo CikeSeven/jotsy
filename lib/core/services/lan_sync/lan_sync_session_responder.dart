@@ -8,12 +8,14 @@ extension _Responder on LanSyncSession {
       await _expect(const {LanSyncSessionMessages.hello}),
     );
     _automatic = theirs.automatic;
+    _peerServerPort = theirs.serverPort;
     final mine = LanSyncSessionHello(
       formatVersion: kSyncFormatVersion,
       appVersion: _context.appVersion,
       entities: lanSyncEntityNames(),
       syncSettings: _syncSettings,
       restoredPending: peer.restoredPending,
+      serverPort: _context.serverPort,
     );
     // 版本先于忙碌：版本不同时对方需要升级，这比“稍后再试”更有用。
     final reject = !mine.compatibleWith(theirs)

@@ -13,7 +13,7 @@ import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_link_candidate.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_spans.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_link_spans.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_link_dialog.dart';
 
 import '../../../support/diary_link_editor_harness.dart';
@@ -220,6 +220,7 @@ void main() {
       DiaryLinkSpanOptions(
         state: state,
         onOpen: opened.add,
+        onEditWebLink: () => fail('diary links do not open the link dialog'),
         notebooksEnabled: notebooks,
         plainColor: const Color(0xFF111111),
       ),

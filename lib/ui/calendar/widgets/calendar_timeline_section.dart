@@ -210,6 +210,7 @@ class CalendarTimelineSection extends StatelessWidget {
             child: ContainerTransformSource(
               tag: diaryCardTransitionTag(diary.diary.diaryId),
               borderRadius: 22,
+              shadows: AppCardSurface.shadowsOf(context),
               child: AppCardSurface(
                 borderRadius: const BorderRadius.all(Radius.circular(22)),
                 child: Builder(

@@ -31,70 +31,78 @@ void main() {
     Color cardBColor = Colors.teal,
     Color? listBackgroundColor,
     bool glassCardA = false,
+    List<BoxShadow> cardAShadows = const <BoxShadow>[],
   }) async {
     final results = <Object?>[];
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    Widget card(String tag, double top, Color color, {bool glass = false}) =>
-        Positioned.fromRect(
-          rect: cardRect.translate(0, top - cardRect.top),
-          child: ContainerTransformSource(
-            tag: tag,
-            borderRadius: 16,
-            child: Builder(
-              builder: (BuildContext tapContext) => GestureDetector(
-                onTap: () async {
-                  final origin = ContainerTransformSource.capture(tapContext);
-                  captured?.add(origin);
-                  if (origin == null) {
-                    return;
-                  }
-                  results.add(
-                    await Navigator.of(tapContext).push<Object?>(
-                      ContainerTransformPageRoute<Object?>(
-                        origin: origin,
-                        returnsToOrigin: returnsToOrigin,
-                        builder: (BuildContext context) => const _DetailPage(),
+    Widget card(
+      String tag,
+      double top,
+      Color color, {
+      bool glass = false,
+      List<BoxShadow> shadows = const <BoxShadow>[],
+    }) => Positioned.fromRect(
+      rect: cardRect.translate(0, top - cardRect.top),
+      child: ContainerTransformSource(
+        tag: tag,
+        borderRadius: 16,
+        shadows: shadows,
+        child: Builder(
+          builder: (BuildContext tapContext) => GestureDetector(
+            onTap: () async {
+              final origin = ContainerTransformSource.capture(tapContext);
+              captured?.add(origin);
+              if (origin == null) {
+                return;
+              }
+              results.add(
+                await Navigator.of(tapContext).push<Object?>(
+                  ContainerTransformPageRoute<Object?>(
+                    origin: origin,
+                    returnsToOrigin: returnsToOrigin,
+                    builder: (BuildContext context) => const _DetailPage(),
+                  ),
+                ),
+              );
+            },
+            child: glass && backdropLink != null
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      CompositedTransformFollower(
+                        link: backdropLink,
+                        showWhenUnlinked: false,
+                        offset: Offset(cardRect.left, top),
+                        child: ColoredBox(color: color),
                       ),
-                    ),
-                  );
-                },
-                child: glass && backdropLink != null
-                    ? Stack(
-                        fit: StackFit.expand,
+                      Column(
                         children: <Widget>[
-                          CompositedTransformFollower(
-                            link: backdropLink,
-                            showWhenUnlinked: false,
-                            offset: Offset(cardRect.left, top),
-                            child: ColoredBox(color: color),
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Text('card $tag'),
-                              Hero(
-                                tag: 'cover $tag',
-                                child: Text('cover $tag'),
-                              ),
-                            ],
-                          ),
+                          Text('card $tag'),
+                          Hero(tag: 'cover $tag', child: Text('cover $tag')),
                         ],
-                      )
-                    : ColoredBox(
-                        color: color,
-                        child: Column(
-                          children: <Widget>[
-                            Text('card $tag'),
-                            // 与详情页同一标签的共享元素（列表封面 ↔ 预览页头图）。
-                            Hero(tag: 'cover $tag', child: Text('cover $tag')),
-                          ],
-                        ),
                       ),
-              ),
-            ),
+                    ],
+                  )
+                : DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: shadows,
+                    ),
+                    child: Column(
+                      children: <Widget>[
+                        Text('card $tag'),
+                        // 与详情页同一标签的共享元素（列表封面 ↔ 预览页头图）。
+                        Hero(tag: 'cover $tag', child: Text('cover $tag')),
+                      ],
+                    ),
+                  ),
           ),
-        );
+        ),
+      ),
+    );
     if (disableAnimations) {
       tester.platformDispatcher.accessibilityFeaturesTestValue =
           const FakeAccessibilityFeatures(disableAnimations: true);
@@ -113,7 +121,13 @@ void main() {
             backdropLink,
             Stack(
               children: <Widget>[
-                card('a', cardATop, cardAColor, glass: glassCardA),
+                card(
+                  'a',
+                  cardATop,
+                  cardAColor,
+                  glass: glassCardA,
+                  shadows: cardAShadows,
+                ),
                 card('b', cardBTop, cardBColor),
                 if (backdropLink != null) _followerBand(backdropLink),
               ],
@@ -324,6 +338,90 @@ void main() {
       // 落定当帧恢复原卡片绘制。
       expect(await scenePixel(tester, scene, exposedSlot), cardAColor);
       expect(await scenePixel(tester, scene, neighborCard), cardBColor);
+    },
+  );
+
+  testWidgets(
+    'the card shadow stays seamless at opening start and closing end',
+    (tester) async {
+      // 测试环境默认关掉投影模糊；开启真实模糊，才能验证与真机一致的投影衔接。
+      debugDisableShadows = false;
+      try {
+        final scene = GlobalKey();
+        const listBg = Color(0xFFFFFFFF);
+        const cardAColor = Color(0xFF009688);
+        const shadows = <BoxShadow>[
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ];
+        await pumpList(
+          tester,
+          sceneKey: scene,
+          cardATop: 460,
+          cardBTop: 140,
+          cardAColor: cardAColor,
+          listBackgroundColor: listBg,
+          cardAShadows: shadows,
+        );
+        // 卡片下缘外侧 4px：正落在卡片投影里。
+        const shadowProbe = Offset(200, 584);
+        final idleShadow = await scenePixel(tester, scene, shadowProbe);
+        // 确认这里确实画着明显的投影（比纯白背景暗不少）。
+        expect(idleShadow.r, lessThan(0.85));
+
+        await tester.tap(find.text('card a'));
+        // 推入起步前几帧（含原卡片隐藏、容器接管的那一帧）：外侧投影与静止态
+        // 完全一致，不能突然消失。
+        for (var frame = 0; frame < 4; frame++) {
+          await tester.pump();
+          expectColorNear(
+            await scenePixel(tester, scene, shadowProbe),
+            idleShadow,
+            reason: 'opening hold frame $frame shadow must not snap off',
+          );
+        }
+        await pumpStart(tester);
+        final route = routeOf(tester);
+        while (route.animation!.value < 0.4) {
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        final midP = route.animation!.value;
+        // 展开移开后，原位置外侧不残留旧卡片的投影。
+        expectColorNear(
+          await scenePixel(tester, scene, shadowProbe),
+          Color.alphaBlend(Colors.black.withValues(alpha: 0.28 * midP), listBg),
+          reason: 'old shadow must not stay behind after card moves away',
+        );
+        await tester.pumpAndSettle();
+
+        // 返回到最后一两帧（容器已落到距原位不到 1px）：投影已经平滑回到静止态
+        // 浓度，路由卸载恢复原卡片瞬间不会突然跳出投影。
+        Navigator.of(tester.element(find.byType(_DetailPage))).pop();
+        await pumpClosingHold(tester);
+        await pumpStart(tester);
+        while (route.animation!.value > 0.002) {
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        expect(route.animation!.value, greaterThan(0));
+        final nearLand = await scenePixel(tester, scene, shadowProbe);
+        expectColorNear(
+          nearLand,
+          idleShadow,
+          reason:
+              'shadow right before landing should match resting card shadow',
+        );
+        await tester.pumpAndSettle();
+        expectColorNear(
+          await scenePixel(tester, scene, shadowProbe),
+          idleShadow,
+          reason: 'resting shadow restored after dismiss',
+        );
+      } finally {
+        debugDisableShadows = true;
+      }
     },
   );
 

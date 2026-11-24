@@ -151,6 +151,7 @@ class _Frame {
     required this.radius,
     required this.transform,
     required this.scrimAlpha,
+    required this.shadowAlpha,
     required this.groupAlpha,
     required this.cardAlpha,
   });
@@ -161,6 +162,9 @@ class _Frame {
   /// 页面（整屏布局）到容器的变换：按宽度等比缩放，左上角对齐容器。
   final Matrix4 transform;
   final double scrimAlpha;
+
+  /// 容器外侧投影的强度倍率（0 = 整页无投影，1 = 卡片静止态完整投影）。
+  final double shadowAlpha;
 
   /// 底 + 页面整体的透明度：有卡片可落时恒为 1，只有原地退场时随进度变化。
   final double groupAlpha;
@@ -379,6 +383,7 @@ class RenderContainerTransform extends RenderBox
       )!,
       transform: transform,
       scrimAlpha: _maxScrim * p,
+      shadowAlpha: fallback ? 0 : 1 - p,
       groupAlpha: fallback ? p : 1,
       cardAlpha: fallback ? 0 : 1 - _cardFade.transform(p),
     );
@@ -406,6 +411,9 @@ class RenderContainerTransform extends RenderBox
       );
     }
     final rrect = frame.radius.toRRect(frame.rect);
+    if (frame.shadowAlpha > 0) {
+      _paintShadows(context.canvas, offset, rrect, frame.shadowAlpha);
+    }
     _clipLayer.layer = context.pushClipRRect(
       needsCompositing,
       offset,
@@ -415,6 +423,34 @@ class RenderContainerTransform extends RenderBox
           _paintContainer(context, offset, frame, child),
       oldLayer: _clipLayer.layer,
     );
+  }
+
+  /// 在容器圆角外侧接力绘制卡片投影：起点与终点强度为 1（与隐藏前的原卡片
+  /// 逐像素一致），展开到整页途中平滑淡出至 0。容器全程不透明，一律按 normal
+  /// 模糊画在容器下面，外侧像素与 `BoxDecoration` / `DiaryCardOuterShadowDecoration`
+  /// / `OuterShadowPainter` 一致，同时避开 `BlurStyle.outer` 的内部填色缺陷。
+  void _paintShadows(Canvas canvas, Offset offset, RRect rrect, double alpha) {
+    final shadows = _geometry.closed?.shadows;
+    if (shadows == null || shadows.isEmpty) {
+      return;
+    }
+    final shifted = rrect.shift(offset);
+    for (final shadow in shadows) {
+      final scaledAlpha = shadow.color.a * alpha;
+      if (scaledAlpha <= 0) {
+        continue;
+      }
+      final paint = BoxShadow(
+        color: shadow.color.withValues(alpha: scaledAlpha),
+        offset: shadow.offset,
+        blurRadius: shadow.blurRadius,
+        spreadRadius: shadow.spreadRadius,
+      ).toPaint();
+      canvas.drawRRect(
+        shifted.shift(shadow.offset).inflate(shadow.spreadRadius),
+        paint,
+      );
+    }
   }
 
   void _paintContainer(

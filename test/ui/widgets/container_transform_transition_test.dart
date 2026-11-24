@@ -113,6 +113,7 @@ Future<_Harness> _pump(
   Widget? page,
   BorderRadius pageRadius = BorderRadius.zero,
   bool fallback = false,
+  List<BoxShadow> shadows = const <BoxShadow>[],
 }) async {
   tester.view.physicalSize = _size;
   tester.view.devicePixelRatio = 1;
@@ -131,6 +132,7 @@ Future<_Harness> _pump(
         : ContainerTransformShot(
             rect: _card,
             radius: 16,
+            shadows: shadows,
             image: cardImage,
             imageRect: _card,
           ),
@@ -384,4 +386,48 @@ void main() {
       }
     },
   );
+
+  testWidgets('card shadows fade smoothly with progress and stay outside', (
+    tester,
+  ) async {
+    final h = await _pump(
+      tester,
+      background: const AppBackground(),
+      shadows: const <BoxShadow>[
+        BoxShadow(
+          color: Color(0x80000000),
+          blurRadius: 12,
+          offset: Offset(0, 6),
+          // 半透明卡片传进来的 BlurStyle.outer 也应按外侧 normal 模糊画，
+          // 不在容器内留下暗块。
+          blurStyle: BlurStyle.outer,
+        ),
+      ],
+    );
+    h.progress.value = 0;
+    await tester.pump();
+    final atZero = await h.colorAt(
+      tester,
+      Offset(_card.center.dx, _card.bottom + 4),
+    );
+    final farList = await h.colorAt(tester, const Offset(200, 760));
+    expect(atZero.r, lessThan(farList.r - 0.1));
+    // 容器内仍是完整卡片色，不被投影压暗。
+    expect(await h.insideColor(tester), _teal);
+
+    h.progress.value = 0.5;
+    await tester.pump();
+    final midRect = h.container(tester);
+    final atMid = await h.colorAt(
+      tester,
+      Offset(midRect.center.dx, midRect.bottom + 4),
+    );
+    final farMid = await h.colorAt(tester, const Offset(200, 760));
+    expect(atMid.r, lessThan(farMid.r - 0.03));
+
+    h.progress.value = 1;
+    await tester.pump();
+    expect(await h.colorAt(tester, const Offset(200, 760)), h.scheme.surface);
+    await tester.pumpWidget(const SizedBox());
+  });
 }

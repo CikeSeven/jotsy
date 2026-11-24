@@ -1,5 +1,6 @@
 import 'dart:ui' as ui show Image;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -30,6 +31,7 @@ class ContainerTransformSource extends StatefulWidget {
     super.key,
     required this.tag,
     required this.borderRadius,
+    this.shadows = const <BoxShadow>[],
     required this.child,
   });
 
@@ -38,6 +40,10 @@ class ContainerTransformSource extends StatefulWidget {
 
   /// 卡片的圆角：展开起点与收回终点的圆角。
   final double borderRadius;
+
+  /// 卡片的外侧投影：转场隐藏原卡片后由容器接力绘制并随进度淡出，避免展开
+  /// 起点与收回落定瞬间投影突然消失或跳出。
+  final List<BoxShadow> shadows;
 
   final Widget child;
 
@@ -115,25 +121,31 @@ class ContainerTransformOrigin {
   final ContainerTransformBounds bounds;
 }
 
-/// 某一刻来源卡片在导航器坐标系里的位置与圆角。
+/// 某一刻来源卡片在导航器坐标系里的位置、圆角与投影。
 @immutable
 class ContainerTransformBounds {
-  const ContainerTransformBounds({required this.rect, required this.radius});
+  const ContainerTransformBounds({
+    required this.rect,
+    required this.radius,
+    this.shadows = const <BoxShadow>[],
+  });
 
   final Rect rect;
   final double radius;
+  final List<BoxShadow> shadows;
 
   @override
   bool operator ==(Object other) =>
       other is ContainerTransformBounds &&
       other.rect == rect &&
-      other.radius == radius;
+      other.radius == radius &&
+      listEquals(other.shadows, shadows);
 
   @override
-  int get hashCode => Object.hash(rect, radius);
+  int get hashCode => Object.hash(rect, radius, Object.hashAll(shadows));
 }
 
-/// 某一刻来源卡片在导航器坐标系里的位置、圆角、画面与绘制占用句柄。
+/// 某一刻来源卡片在导航器坐标系里的位置、圆角、投影、画面与绘制占用句柄。
 ///
 /// [image] 覆盖导航器坐标系里的 [imageRect]（卡片露在页面里的部分，卡片一
 /// 部分滑出屏幕时比 [rect] 小）；截图失败（如含平台视图）时两者为 null，
@@ -142,6 +154,7 @@ class ContainerTransformShot {
   ContainerTransformShot({
     required this.rect,
     required this.radius,
+    this.shadows = const <BoxShadow>[],
     this.image,
     this.imageRect,
     this.holdSource,
@@ -150,12 +163,14 @@ class ContainerTransformShot {
   ContainerTransformShot.fromBounds(ContainerTransformBounds bounds)
     : rect = bounds.rect,
       radius = bounds.radius,
+      shadows = bounds.shadows,
       image = null,
       imageRect = null,
       holdSource = null;
 
   final Rect rect;
   final double radius;
+  final List<BoxShadow> shadows;
   final ui.Image? image;
   final Rect? imageRect;
 
@@ -164,7 +179,7 @@ class ContainerTransformShot {
   final ValueGetter<VoidCallback>? holdSource;
 
   ContainerTransformBounds get bounds =>
-      ContainerTransformBounds(rect: rect, radius: radius);
+      ContainerTransformBounds(rect: rect, radius: radius, shadows: shadows);
 
   void dispose() => image?.dispose();
 }
@@ -235,7 +250,11 @@ class _ContainerTransformSourceState extends State<ContainerTransformSource> {
     );
     return rect == null
         ? null
-        : ContainerTransformBounds(rect: rect, radius: widget.borderRadius);
+        : ContainerTransformBounds(
+            rect: rect,
+            radius: widget.borderRadius,
+            shadows: widget.shadows,
+          );
   }
 
   /// 量出卡片在导航器里的位置，并从所在路由最外层重绘边界裁出它的画面。
@@ -303,6 +322,7 @@ class _ContainerTransformSourceState extends State<ContainerTransformSource> {
     return ContainerTransformShot(
       rect: rect,
       radius: widget.borderRadius,
+      shadows: widget.shadows,
       image: image,
       imageRect: imageRect,
       holdSource: _visibility.hold,

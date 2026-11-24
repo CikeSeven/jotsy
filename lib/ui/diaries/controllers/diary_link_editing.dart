@@ -122,18 +122,23 @@ void deleteDiaryLinkCard(DiaryEditorController controller, af.Node card) {
   controller.apply(transaction);
 }
 
-/// 选区所在的日记链接：选中文字全在同一个日记链接里，或折叠光标在一段
-/// 日记链接里或紧挨着它（见 [diaryLinkRangeAtCaret]）。不是日记链接时为 null。
-DiaryLinkTarget? diaryLinkTargetAtSelection(DiaryEditorController controller) {
+/// 选区或光标所在的链接地址（网址与日记链接都算）：选中文字全在同一个
+/// 链接里，或折叠光标在一段链接里或紧挨着它（见 [diaryLinkRangeAtCaret]）。
+/// 不是链接时为 null。
+String? diaryLinkHrefAtSelection(DiaryEditorController controller) {
   final selection = controller.selection?.normalized;
   if (selection == null) return null;
   if (!selection.isCollapsed) {
-    return DiaryLinkTarget.tryParse(
-      controller.selectionAttributes[kDiaryInlineHref],
-    );
+    final href = controller.selectionAttributes[kDiaryInlineHref];
+    return href is String && href.isNotEmpty ? href : null;
   }
-  return DiaryLinkTarget.tryParse(diaryLinkRangeAtCaret(controller)?.href);
+  return diaryLinkRangeAtCaret(controller)?.href;
 }
+
+/// 选区所在的日记链接：选中文字全在同一个日记链接里，或折叠光标在一段
+/// 日记链接里或紧挨着它（见 [diaryLinkRangeAtCaret]）。不是日记链接时为 null。
+DiaryLinkTarget? diaryLinkTargetAtSelection(DiaryEditorController controller) =>
+    DiaryLinkTarget.tryParse(diaryLinkHrefAtSelection(controller));
 
 /// 折叠光标所在或紧挨着的那段链接（同一个 `href` 的连续文字，网址与日记
 /// 链接都算）：返回整段的选区与地址；光标不挨着链接时为 null。前后各有

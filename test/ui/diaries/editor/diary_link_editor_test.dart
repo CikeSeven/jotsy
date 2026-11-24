@@ -220,6 +220,7 @@ void main() {
       DiaryLinkSpanOptions(
         state: state,
         onOpen: opened.add,
+        onOpenWebLink: (_) => fail('diary links do not open web links'),
         onEditWebLink: () => fail('diary links do not open the link dialog'),
         notebooksEnabled: notebooks,
         plainColor: const Color(0xFF111111),

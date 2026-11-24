@@ -4,7 +4,7 @@
 /// - 输入：上游逐片段给出的块、偏移、片段与默认样式，以及 [DiaryLinkSpanOptions]；
 /// - 输出：带点按识别器的 [TextSpan]（日记本功能关闭时日记本链接为普通文字）；
 /// - 副作用：编辑态单击写正文选区（整段链接），网址链接随后打开应用的链接
-///   对话框；打开日记链接经 `openDiaryLinkTarget`，网址经上游 `editorLaunchUrl`。
+///   对话框；打开日记链接经 `openDiaryLinkTarget`，网址经 `openExternalLink`。
 library;
 
 import 'dart:async';
@@ -23,6 +23,7 @@ class DiaryLinkSpanOptions {
   const DiaryLinkSpanOptions({
     required this.state,
     required this.onOpen,
+    required this.onOpenWebLink,
     required this.onEditWebLink,
     required this.notebooksEnabled,
     required this.plainColor,
@@ -32,6 +33,9 @@ class DiaryLinkSpanOptions {
 
   /// 打开链接目标（编辑态是否打开日记本由它决定，见 `openDiaryLinkTarget`）。
   final ValueChanged<DiaryLinkTarget> onOpen;
+
+  /// 打开网址链接（经应用统一的 `openExternalLink`，不经上游 `editorLaunchUrl`）。
+  final ValueChanged<String> onOpenWebLink;
 
   /// 编辑态单击网址链接、整段选中之后调用：打开应用的链接对话框。
   final VoidCallback onEditWebLink;
@@ -140,12 +144,14 @@ TextSpan diaryLinkTextSpan(
   );
 }
 
-/// 网址链接的片段，取代上游的 `defaultTextSpanDecoratorForAttribute`：上游
-/// 编辑态单击后弹出自己的链接浮层（`showLinkMenu`），按“编辑器宽高减去
-/// 固定 300”摆位置，手机窄屏上会摆到屏幕外（#336），样式与网址校验也与
-/// 应用不一致。这里单击选中整段后交给 [DiaryLinkSpanOptions.onEditWebLink]
-/// （应用的链接对话框）；打开仍经上游的 `editorLaunchUrl`，外观不变
-/// （[before] 已带链接色）。
+/// 网址链接的片段，取代上游的 `defaultTextSpanDecoratorForAttribute`：
+/// - 编辑态单击：上游会弹出按“编辑器宽高减去固定 300”摆放的 `showLinkMenu`，
+///   手机窄屏上会出界（#336），这里改为选中整段后交给
+///   [DiaryLinkSpanOptions.onEditWebLink]（应用的链接对话框）；
+/// - 打开网址：上游 `editorLaunchUrl` 会先调 `canLaunchUrlString` 且默认
+///   应用内打开，Android 11+ 上容易被包可见性静默拦住（#346），这里改为交给
+///   [DiaryLinkSpanOptions.onOpenWebLink]（经 `openExternalLink`）。
+/// 外观不变（[before] 已带链接色）。
 TextSpan diaryWebLinkTextSpan(
   af.Node node,
   int index,
@@ -161,7 +167,7 @@ TextSpan diaryWebLinkTextSpan(
     node,
     index,
     insert,
-    open: () => unawaited(af.editorLaunchUrl(href)),
+    open: () => links.onOpenWebLink(href),
     onSelected: links.onEditWebLink,
   ),
   mouseCursor: SystemMouseCursors.click,

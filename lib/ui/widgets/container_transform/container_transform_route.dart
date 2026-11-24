@@ -11,22 +11,25 @@ import 'container_transform_transition.dart';
 ///
 /// 输入：页面 [builder] 与点按时记下的起点 [ContainerTransformOrigin]（由
 /// [ContainerTransformSource.capture] 得到）。画面见
-/// [ContainerTransformTransition]：容器全程不透明，起点与终点恰好盖住原
-/// 卡片；容器里卡片的样子从下层快照里裁出，与页面互相渐变，原卡片不隐藏、
-/// 也不另外截图。
+/// [ContainerTransformTransition]：容器全程不透明，里面是页面与起飞 / 返回
+/// 前从页面层截下的卡片画面互相渐变；容器接管后通过
+/// `ContainerTransformSourceVisibility` 暂停原卡片绘制（保留布局），展开与
+/// 收回途中容器移开、露出原位置时列表里不会再有一张原卡片，归位当帧再无缝
+/// 恢复。
 ///
 /// 时序（为什么要“先等几帧再起步”）：
-/// - 推入：页面的首帧（构建、排版整篇正文；Hero 控制器让它 offstage，只排
-///   版不绘制）与第二帧（第一次绘制）往往要几十毫秒。普通路由在这之前就
-///   开始计时，首帧一卡，下一帧的进度直接跳过一大截——这就是打开时那一下
-///   顿挫。这里的进度先停在 0（容器停在卡片上，画的就是快照里的这张卡片，
-///   与屏上分毫不差），首帧同时把下层拍成快照，两帧都画完才开始计时，整段
-///   曲线一帧不落；
-/// - 返回：下层页面此前不在屏上，返回的第一帧要重新排版、绘制它，同样先停
-///   在整页上：这一帧把下层拍成快照，再空等一帧让光栅追上，然后按布局量
-///   出卡片此刻的位置（内容可能刚改过）并缩回去。展开途中返回时下层
-///   一直在屏上、快照也在，当场量完就原路返回。找不到卡片（翻到了别的一
-///   篇且它不在屏上、日记已删除、[returnsToOrigin] 说不回）时原地缩小淡出；
+/// - 推入：首帧 Hero 控制器让新路由 offstage，页面只构建、排版，下层仍实时
+///   绘制（原卡片照常显示，不会先闪空位）；首帧末从页面层截下这张卡片、隐藏
+///   原卡片并开启下层快照；第二帧页面首次绘制（进度仍在 0，容器画着刚截下的
+///   卡片盖在原位）且下层拍成不含原卡片的快照；第三帧空等光栅追上，随后才
+///   开始计时，整段曲线一帧不落；
+/// - 返回：停稳后下层此前不在屏上，首帧先实时排版并绘制（内容可能刚改过，
+///   画面仍停在整页上盖住下层）；首帧末量出归位卡片的新位置并截下画面，
+///   隐藏这张卡片并开启下层快照；第二帧拍下不含该卡片的下层快照，第三帧空等
+///   光栅追上，然后缩回去。展开途中返回同一张卡片时卡片已藏好、截图与下层
+///   快照都还在，当场原路返回；展开途中换了返回目标则先恢复旧卡片、重拍新
+///   目标后再返回。找不到卡片（翻到了别的一篇且它不在屏上、日记已删除、
+///   [returnsToOrigin] 说不回）时原地缩小淡出；
 /// - 等待最多 [GatedCurveSimulation.maxHold]，防止哪一帧迟迟不来时卡住。
 ///
 /// 进度由模拟直接给出（已套上 [ExpressiveMotion.containerSpring]），推入、
@@ -39,9 +42,9 @@ import 'container_transform_transition.dart';
 /// 下层页面画成快照（[delegatedTransition]，见
 /// [ContainerTransformBelowSnapshot]）：转场途中下层页面完全静止（只盖一层
 /// 遮罩），却仍要逐帧重新光栅化——首页满屏玻璃卡片的背景模糊、动图封面，
-/// 一帧就要 8ms 上下，在 120Hz 下光凭它就吃满预算。改画快照后每帧只剩一张
-/// 贴图；停稳或归位当帧恢复实时绘制。原卡片不隐藏，快照里照常有它，被容器
-/// 盖着；容器里卡片的样子也从这张快照里裁（[ContainerTransformTransition.belowSnapshot]）。
+/// 一帧就要 8ms 上下，在 120Hz 下光凭它就吃满预算。原卡片隐藏后改画快照，
+/// 每帧只剩一张不含原卡片的贴图（其余玻璃卡片的预模糊取样照常保留）；停稳
+/// 或归位当帧恢复原卡片与下层实时绘制。
 ///
 /// 被别的普通页面盖住时（预览页进编辑页）按主题转场让开，与
 /// `MaterialPageRoute` 一致。
@@ -54,7 +57,9 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
     super.settings,
   }) : _originRoute = origin.route,
        _returnTag = origin.tag,
-       _geometry = ContainerTransformGeometry(origin.bounds);
+       _geometry = ContainerTransformGeometry(
+         ContainerTransformShot.fromBounds(origin.bounds),
+       );
 
   final WidgetBuilder builder;
 
@@ -72,6 +77,8 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   Object _returnTag;
   final ContainerTransformGeometry _geometry;
   ContainerTransformGate _gate = ContainerTransformGate.opened();
+  VoidCallback? _releaseSource;
+  Object? _heldTag;
   bool _disposed = false;
 
   /// 下层页面的快照开关（见类注释“下层页面画成快照”）。
@@ -141,62 +148,129 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
 
   void _handleStatus(AnimationStatus status) {
     if (status.isCompleted || status.isDismissed) {
-      // 下层页面同一帧恢复实时绘制：归位时卡片与列表都是最新的样子；停稳
-      // 时下层已经 offstage，不必再留着整屏快照。
+      // 停稳或归位当帧交还来源卡片、释放卡片截图并恢复下层实时绘制：归位
+      // 时原卡片无缝接替容器（不闪空位）；停稳时下层已经 offstage，不必再
+      // 留着整屏快照与卡片图。
+      _restoreSource();
+      _geometry.replace(null);
       _belowSnapshot.enabled = false;
     }
+  }
+
+  void _holdSource(ContainerTransformShot? shot, Object tag) {
+    _restoreSource();
+    _releaseSource = shot?.holdSource?.call();
+    _heldTag = _releaseSource == null ? null : tag;
+  }
+
+  void _restoreSource() {
+    _releaseSource?.call();
+    _releaseSource = null;
+    _heldTag = null;
   }
 
   @override
   TickerFuture didPush() {
     final gate = _gate = ContainerTransformGate();
-    // 第一帧：Hero 控制器让新路由 offstage，页面只构建、排版，下层这一帧
-    // 就拍成快照（原卡片照常在里面，之后被容器盖住）；第二帧：页面第一次
-    // 绘制，容器停在卡片上。两帧的重活分开，都画完才开始计时。
-    _belowSnapshot.enabled = true;
-    afterContainerTransformFrames(2, () {
-      if (_disposed || !identical(_gate, gate)) return;
-      gate.open(
-        duration: ExpressiveMotion.containerOpen,
-        curve: ExpressiveMotion.containerSpring,
+    // 首帧新路由 offstage，下层仍实时绘制（原卡片还在屏上，不闪空位）；
+    // 首帧末从页面层截下卡片、隐藏原卡片并开启下层快照；第二帧新路由首次
+    // 绘制且下层拍出不含原卡片的快照；第三帧空等光栅追上后开始计时。
+    afterContainerTransformFrames(1, () {
+      if (_disposed ||
+          !identical(_gate, gate) ||
+          controller?.status != AnimationStatus.forward) {
+        return;
+      }
+      final shot = locateContainerTransformSource(
+        _returnTag,
+        route: _originRoute,
+        requireVisible: false,
       );
+      if (shot != null) {
+        _geometry.replace(shot);
+        _holdSource(shot, _returnTag);
+      }
+      _belowSnapshot.enabled = true;
+      afterContainerTransformFrames(2, () {
+        if (_disposed || !identical(_gate, gate)) return;
+        gate.open(
+          duration: ExpressiveMotion.containerOpen,
+          curve: ExpressiveMotion.containerSpring,
+        );
+      });
     });
     return super.didPush();
   }
 
   @override
   bool didPop(T? result) {
-    final gate = _gate = ContainerTransformGate();
-    final toOrigin = returnsToOrigin?.call(result) ?? true;
-    // 展开途中返回：下层一直在屏上（布局就是此刻的），快照也还开着。
-    final belowOnScreen = _belowSnapshot.enabled;
-    _belowSnapshot.enabled = true;
-    void land() {
-      final bounds = !toOrigin || _reduceMotion
-          ? null
-          : locateContainerTransformSource(_returnTag, route: _originRoute);
-      _geometry.replace(bounds);
-      gate.open(
-        duration: bounds == null
-            ? ExpressiveMotion.medium
-            : ExpressiveMotion.containerClose,
-        curve: bounds == null
-            ? ExpressiveMotion.effects
-            : ExpressiveMotion.containerSpring,
-      );
-    }
-
-    if (belowOnScreen) {
-      land();
+    if (willHandlePopInternally) {
       return super.didPop(result);
     }
-    // 停稳后返回：下层此前 offstage，这一帧重新排版并拍成快照（仍停在整页
-    // 上，看不出在等），下一帧空等光栅追上，重活不落进曲线；之后按此刻的
-    // 布局量出卡片并起步。
-    afterContainerTransformFrames(2, () {
+    final gate = _gate = ContainerTransformGate();
+    final toOrigin = returnsToOrigin?.call(result) ?? true;
+    final reduce = _reduceMotion;
+    final reuse =
+        toOrigin &&
+        !reduce &&
+        _releaseSource != null &&
+        _heldTag == _returnTag &&
+        _geometry.closed != null;
+    if (reuse) {
+      // 展开途中返回同一张卡片：原卡片已藏好、截图与下层快照都还在，当场
+      // 原路返回，不重拍也不跳变。
+      gate.open(
+        duration: ExpressiveMotion.containerClose,
+        curve: ExpressiveMotion.containerSpring,
+      );
+      return super.didPop(result);
+    }
+    // 其余情况先归还之前藏起的卡片并恢复下层实时绘制：停稳后返回要等下层
+    // 重新排版绘制，才能量出并截下此刻的卡片；展开途中换了目标或无处可回
+    // 同样要先把旧卡片放回列表，免得列表留下空位。
+    _restoreSource();
+    _belowSnapshot.enabled = false;
+    if (!toOrigin || reduce) {
+      _geometry.replace(null);
+      _belowSnapshot.enabled = true;
+      afterContainerTransformFrames(2, () {
+        if (_disposed || !identical(_gate, gate)) return;
+        if (controller == null || controller!.isDismissed) return;
+        gate.open(
+          duration: ExpressiveMotion.medium,
+          curve: ExpressiveMotion.effects,
+        );
+      });
+      return super.didPop(result);
+    }
+    // 首帧下层实时排版并绘制（停稳后返回时仍被整页盖住）；帧末量出归位卡片
+    // 并截下画面、隐藏它再开启下层快照；随后拍不含该卡片的快照、空等一帧
+    // 光栅追上后起步。
+    afterContainerTransformFrames(1, () {
       if (_disposed || !identical(_gate, gate)) return;
       if (controller == null || controller!.isDismissed) return;
-      land();
+      final shot = locateContainerTransformSource(
+        _returnTag,
+        route: _originRoute,
+        requireVisible: true,
+      );
+      _geometry.replace(shot);
+      if (shot != null) {
+        _holdSource(shot, _returnTag);
+      }
+      _belowSnapshot.enabled = true;
+      afterContainerTransformFrames(2, () {
+        if (_disposed || !identical(_gate, gate)) return;
+        if (controller == null || controller!.isDismissed) return;
+        gate.open(
+          duration: shot == null
+              ? ExpressiveMotion.medium
+              : ExpressiveMotion.containerClose,
+          curve: shot == null
+              ? ExpressiveMotion.effects
+              : ExpressiveMotion.containerSpring,
+        );
+      });
     });
     return super.didPop(result);
   }
@@ -276,7 +350,6 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
       // 整页的圆角取屏幕自带的圆角：卡片一路长成屏幕的形状，落位与物理
       // 圆角重合（读不到时为直角）。
       pageRadius: DisplayCorners.radii,
-      belowSnapshot: _belowSnapshot,
       backdrop: backdrop ?? ColoredBox(color: theme.scaffoldBackgroundColor),
       child: outgoing,
     );
@@ -286,6 +359,7 @@ class ContainerTransformPageRoute<T> extends PageRoute<T> {
   void dispose() {
     _disposed = true;
     controller?.removeStatusListener(_handleStatus);
+    _restoreSource();
     _geometry.dispose();
     // 下层路由此时已不再包快照（下层的次级进度已归零，见
     // `ModalRoute._buildFlexibleTransitions`），不会再用到它。

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../widgets/glass/outer_shadow_painter.dart';
 import 'app_glass_scope.dart';
 import 'app_glass_surface.dart';
 
@@ -58,6 +59,29 @@ class AppCardSurface extends StatelessWidget {
   /// 当前位置的卡片是否用玻璃（便于调用方在卡片之外做相应调整）。
   static bool isGlass(BuildContext context) =>
       AppGlass.of(context).isGlass(AppGlassComponent.cards);
+
+  /// 当前位置卡片表面的外侧投影（供 `ContainerTransformSource` 转场衔接，
+  /// 避免隐藏原卡片时投影突然消失或落定瞬间突然跳出）。
+  static List<BoxShadow> shadowsOf(BuildContext context, {bool shadow = true}) {
+    if (!shadow) {
+      return const <BoxShadow>[];
+    }
+    if (isGlass(context)) {
+      final color = AppGlass.of(context).shadowColor;
+      if (color.a == 0) {
+        return const <BoxShadow>[];
+      }
+      return <BoxShadow>[
+        BoxShadow(
+          color: color,
+          offset: OuterShadowPainter.offset,
+          blurRadius: OuterShadowPainter.blur,
+        ),
+      ];
+    }
+    return AppEffects.restingCardShadow(Theme.of(context).colorScheme) ??
+        const <BoxShadow>[];
+  }
 
   @override
   Widget build(BuildContext context) {

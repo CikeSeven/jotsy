@@ -6,15 +6,14 @@ import 'package:node_diary/ui/app_surface/models/app_surface_settings.dart';
 import 'package:node_diary/ui/app_surface/providers/app_surface_settings_provider.dart';
 import 'package:node_diary/ui/app_surface/services/app_background_image_cache.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
-import 'package:node_diary/ui/widgets/container_transform/container_transform_below_snapshot.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_source.dart';
 import 'package:node_diary/ui/widgets/container_transform/container_transform_transition.dart';
 
 import '../app_surface/app_surface_test_images.dart';
 
 /// 截取真实合成结果：容器在任何进度下都不透明，后面的列表从不透出；里面
-/// 起点 / 终点是从下层快照裁出的卡片（这里是整屏 teal 快照），中段与页面
-/// （带它所在区域的背景）互相渐变；容器之外只有下层列表与遮罩。
+/// 起点 / 终点是截下的卡片画面（这里是 teal），中段与页面（带它所在区域的
+/// 背景）互相渐变；容器之外只有下层列表与遮罩。
 const _size = Size(400, 800);
 const _card = Rect.fromLTWH(16, 200, 368, 120);
 const _backdropKey = ValueKey<String>('backdrop');
@@ -114,6 +113,7 @@ Future<_Harness> _pump(
   Widget? page,
   BorderRadius pageRadius = BorderRadius.zero,
   bool fallback = false,
+  List<BoxShadow> shadows = const <BoxShadow>[],
 }) async {
   tester.view.physicalSize = _size;
   tester.view.devicePixelRatio = 1;
@@ -122,18 +122,25 @@ Future<_Harness> _pump(
     seedColor: Colors.indigo,
     brightness: brightness,
   );
-  final geometry = ContainerTransformGeometry(
-    fallback ? null : const ContainerTransformBounds(rect: _card, radius: 16),
-  );
-  addTearDown(geometry.dispose);
-  // 下层快照：整屏 teal，裁出来的卡片也是 teal。
-  final snapshot = (await tester.runAsync(
-    () => paintedImage(_size.width.round(), _size.height.round(), _teal),
+  // 截下的卡片画面：整块 teal，覆盖 _card。
+  final cardImage = (await tester.runAsync(
+    () => paintedImage(_card.width.round(), _card.height.round(), _teal),
   ))!;
-  addTearDown(snapshot.dispose);
-  final below = ContainerTransformBelowSnapshotController()
-    ..debugSetSnapshot(snapshot, Offset.zero & _size);
-  addTearDown(below.dispose);
+  final geometry = ContainerTransformGeometry(
+    fallback
+        ? null
+        : ContainerTransformShot(
+            rect: _card,
+            radius: 16,
+            shadows: shadows,
+            image: cardImage,
+            imageRect: _card,
+          ),
+  );
+  if (fallback) {
+    addTearDown(cardImage.dispose);
+  }
+  addTearDown(geometry.dispose);
   final progress = AnimationController(vsync: tester, value: 0.15);
   addTearDown(progress.dispose);
   final cache = AppBackgroundImageCache(loader: loader?.call);
@@ -170,7 +177,6 @@ Future<_Harness> _pump(
               geometry: geometry,
               scrimColor: scheme.scrim,
               pageRadius: pageRadius,
-              belowSnapshot: below,
               backdrop:
                   backdrop ??
                   const AppPageBackgroundFill(
@@ -380,4 +386,48 @@ void main() {
       }
     },
   );
+
+  testWidgets('card shadows fade smoothly with progress and stay outside', (
+    tester,
+  ) async {
+    final h = await _pump(
+      tester,
+      background: const AppBackground(),
+      shadows: const <BoxShadow>[
+        BoxShadow(
+          color: Color(0x80000000),
+          blurRadius: 12,
+          offset: Offset(0, 6),
+          // 半透明卡片传进来的 BlurStyle.outer 也应按外侧 normal 模糊画，
+          // 不在容器内留下暗块。
+          blurStyle: BlurStyle.outer,
+        ),
+      ],
+    );
+    h.progress.value = 0;
+    await tester.pump();
+    final atZero = await h.colorAt(
+      tester,
+      Offset(_card.center.dx, _card.bottom + 4),
+    );
+    final farList = await h.colorAt(tester, const Offset(200, 760));
+    expect(atZero.r, lessThan(farList.r - 0.1));
+    // 容器内仍是完整卡片色，不被投影压暗。
+    expect(await h.insideColor(tester), _teal);
+
+    h.progress.value = 0.5;
+    await tester.pump();
+    final midRect = h.container(tester);
+    final atMid = await h.colorAt(
+      tester,
+      Offset(midRect.center.dx, midRect.bottom + 4),
+    );
+    final farMid = await h.colorAt(tester, const Offset(200, 760));
+    expect(atMid.r, lessThan(farMid.r - 0.03));
+
+    h.progress.value = 1;
+    await tester.pump();
+    expect(await h.colorAt(tester, const Offset(200, 760)), h.scheme.surface);
+    await tester.pumpWidget(const SizedBox());
+  });
 }

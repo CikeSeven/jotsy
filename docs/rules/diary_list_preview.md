@@ -6,8 +6,8 @@
 - 必须：“打开日记时直接编辑”（默认关）开启时跳过预览页；导图日记一律直接进编辑页（见 `mind_maps.md`）。
 - 禁止：未解封的时间胶囊与查不到的日记绕过预览页（封存页）；宽窗口右栏选中不算打开。
 - 必须：从搜索结果打开时带上搜索词，打开查找栏并跳到第一处、不弹键盘（见 `editor.md`）。
-- 必须：可点开的日记卡片包 `ContainerTransformSource`，经 `openDiaryPage(origin:)` 从卡片展开。
-- 禁止：转场容器透出列表、另截或隐藏原卡片，或换回 SDK `SnapshotWidget`（玻璃卡片会变透明）。
+- 必须：可点开的日记卡片包 `ContainerTransformSource`，经 `openDiaryPage(origin:)` 从卡片展开；卡片画面从页面层截取，容器接管后经 `ContainerTransformSourceVisibility` 暂停原卡片绘制（保留布局），拍下层快照前必须先隐藏原卡片（展开 / 收回露出原位置时不再留着原卡片），停稳、归位或提前移除路由时当帧恢复。
+- 禁止：转场容器透出列表、给原卡片套 `Opacity`，或换回 SDK `SnapshotWidget`（玻璃卡片会变透明）。
 - 必须：等待路由入场结束只经 `RouteEntranceWaiter`，禁止直接读路由 `animation`。
 
 ## 预览页

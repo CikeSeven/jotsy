@@ -158,6 +158,7 @@
 - 必须：工作流 action 固定到 commit SHA 并注明版本；默认只读权限，写权限只给确需的 job。
 - 禁止：CI 门禁读取签名材料或 secrets；secrets 只在 `release-apk.yml` 的发布构建 job 使用，网盘应用密钥只经 `tool/write_cloud_backup_keys.dart` 写入。发布流程见 `release_website.md`。
 - 必须：安装 Android 包先 `adb devices -l` 确认设备，多台时指定序列号，用 `adb -s <serial> install -r` 覆盖安装；profile 包须用相同 release 签名，签名缺失或不匹配就停止。
+- 必须：在工作树本地构建需 release 签名的 Android 包时，将主目录被忽略的 `android/key.properties` 与对应 keystore 软链接进工作树 `android/`（禁止复制提交或修改原文件）；主目录也缺失时才按签名缺失停止。
 - 禁止：为安装执行 `adb uninstall`、`pm clear` 等会丢数据的操作；覆盖安装失败时保留设备数据并报告原因。
 - 禁止：未经请求接管长生命周期任务并长时间阻塞终端。
 - 例外：用户明确要求接管运行 / 调试时可执行，并持续同步状态。
@@ -178,7 +179,7 @@
 - 必须：改动仓库内容前先新建工作树，改动、验证、提交、推送都在工作树里完成；代理自带工作树工具（Claude Code 为 `EnterWorktree`）时使用该工具，没有该工具时允许用 `git worktree add` 创建在已忽略的 `.worktrees/` 下。
 - 必须：工作树基于最新 `origin/main`：创建前 `git fetch origin`，落后就 `git merge --ff-only origin/main`；新工作树先 `flutter pub get`。
 - 禁止：在主目录改文件、切分支或提交；代理自带工作树工具时手动 `git worktree add`，或把工作树建在未忽略路径；在工作树中读写主目录文件；使用不带标记的 `git stash` / `git stash pop`。
-- 例外：只读工作不需要工作树；用户明确要求在主目录改动时照做。
+- 例外：只读工作不需要工作树；用户明确要求在主目录改动时照做；工作树本地构建 Android 包时允许软链接主目录被忽略的 `android/key.properties` 与 keystore（见 §7）。
 - 必须：开 PR 前 `git fetch origin`，有新提交就 `git merge origin/main`（已推送分支不 rebase），解决冲突后重跑相关检查；PR 说明写明合并了哪些冲突、怎么解决。
 
 ## 10. 维护机制

@@ -328,6 +328,7 @@ class DiaryCard extends StatefulWidget {
     return ContainerTransformSource(
       tag: diaryCardTransitionTag(diaryId),
       borderRadius: radius,
+      shadows: appearance.surface.shadows,
       child: card,
     );
   }

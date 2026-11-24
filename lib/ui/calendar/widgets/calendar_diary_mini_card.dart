@@ -118,12 +118,17 @@ class CalendarDiaryMiniCard extends StatelessWidget {
         ),
       ),
     );
+    final isGlass = AppGlass.of(context).isGlass(AppGlassComponent.cards);
+    final cardShadows = isGlass
+        ? const <BoxShadow>[]
+        : AppEffects.restingCardShadow(colorScheme) ?? const <BoxShadow>[];
     Widget source(Widget card) => ContainerTransformSource(
       tag: diaryCardTransitionTag(diary.diary.diaryId),
       borderRadius: radiusValue,
+      shadows: cardShadows,
       child: card,
     );
-    if (AppGlass.of(context).isGlass(AppGlassComponent.cards)) {
+    if (isGlass) {
       // 小卡片既出现在页面上（那年今日横条），也叠在纪念日详情的卡片里：
       // 不做模糊、只用半透明底，叠在玻璃卡片上时不会同一区域两层模糊；
       // 外侧投影在小块上显得脏，也不画。

@@ -35,9 +35,9 @@ import '../viewmodels/mind_map_visuals.dart';
 ///   的距离（顶上盖着顶栏与视图切换）。为什么不用 `Scrollable.ensureVisible`
 ///   按比例对齐：那会把本来就看得见的行也挪走，键盘升着时视口只剩上面一
 ///   小截，40% 处紧贴顶栏，点哪行哪行就跳到最上面；
-/// - 编辑中的按键：Enter 在后面加同级（行首回车加在前面），空行退格删除这
-///   一行并编辑上一行；桌面另有 Tab / Shift + Tab 缩进与取消缩进、Alt + ↑ /
-///   ↓ 上移下移、Esc 结束编辑。
+/// - 编辑中的按键：Enter 在后面加同级（行首回车加在前面，手机软键盘的回车
+///   同样、键盘不收起），空行退格删除这一行并编辑上一行；桌面另有 Tab /
+///   Shift + Tab 缩进与取消缩进、Alt + ↑ / ↓ 上移下移、Esc 结束编辑。
 class MindMapOutlineRow extends StatefulWidget {
   const MindMapOutlineRow({
     super.key,
@@ -155,6 +155,25 @@ class _MindMapOutlineRowState extends State<MindMapOutlineRow> {
     widget.onNodeMenu?.call(id, globalPosition);
   }
 
+  /// 回车：在这一行后面加同级（光标在有字的行首时加在前面），中心主题加
+  /// 子主题；新主题接着编辑，键盘不收起。硬件回车与手机软键盘的动作键都
+  /// 走这里。
+  void _addNextTopic() {
+    final text = _text;
+    if (text == null) return;
+    final id = widget.node.id;
+    _controller.select(id);
+    final atStart =
+        text.selection.isCollapsed &&
+        text.selection.baseOffset == 0 &&
+        text.text.isNotEmpty;
+    if (id == _controller.document.root.id) {
+      _controller.addChild(parentId: id);
+    } else {
+      _controller.addSibling(before: atStart);
+    }
+  }
+
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
@@ -172,16 +191,7 @@ class _MindMapOutlineRowState extends State<MindMapOutlineRow> {
     final id = widget.node.id;
     final isRoot = id == _controller.document.root.id;
     if (key == LogicalKeyboardKey.enter && !keys.isShiftPressed) {
-      _controller.select(id);
-      final atStart =
-          text.selection.isCollapsed &&
-          text.selection.baseOffset == 0 &&
-          text.text.isNotEmpty;
-      if (isRoot) {
-        _controller.addChild(parentId: id);
-      } else {
-        _controller.addSibling(before: atStart);
-      }
+      _addNextTopic();
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.backspace && text.text.isEmpty && !isRoot) {
@@ -315,10 +325,14 @@ class _MindMapOutlineRowState extends State<MindMapOutlineRow> {
             contextMenuBuilder: appTextContextMenuBuilder,
             scrollPadding: widget.revealPadding,
             keyboardType: TextInputType.multiline,
+            // 手机软键盘的回车是动作键（不输入换行），按下同硬件回车加下一
+            // 个主题，所以标成“下一项”而不是“完成”；结束编辑经附件条的
+            // 完成。必须给 onEditingComplete：不给时 next / done 动作会先
+            // 让输入框失焦、收起键盘。桌面的回车由 [_onKey] 接走。
             textInputAction: AppPlatform.isDesktop
                 ? TextInputAction.newline
-                : TextInputAction.done,
-            onSubmitted: (_) => _controller.stopEditing(),
+                : TextInputAction.next,
+            onEditingComplete: _addNextTopic,
             decoration: InputDecoration(
               isCollapsed: true,
               border: InputBorder.none,

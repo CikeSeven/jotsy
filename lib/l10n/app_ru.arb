@@ -21515,6 +21515,14 @@
   "@mindMapAddSibling": {
     "description": "Mind map: add a topic at the same level next to the selected one (dock button and menu item)."
   },
+  "mindMapAddLeft": "Слева",
+  "@mindMapAddLeft": {
+    "description": "Mind map (balanced layout, central topic selected): add a main topic on the left side of the central topic (dock button, keyboard accessory and menu item)."
+  },
+  "mindMapAddRight": "Справа",
+  "@mindMapAddRight": {
+    "description": "Mind map (balanced layout, central topic selected): add a main topic on the right side of the central topic (dock button, keyboard accessory and menu item)."
+  },
   "mindMapEditText": "Изменить",
   "@mindMapEditText": {
     "description": "Mind map: start editing the text of the selected topic."

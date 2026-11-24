@@ -16099,6 +16099,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mindMapAddSibling => '同级主题';
 
   @override
+  String get mindMapAddLeft => '向左添加';
+
+  @override
+  String get mindMapAddRight => '向右添加';
+
+  @override
   String get mindMapEditText => '编辑';
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../../widgets/desktop_horizontal_scroll.dart';
@@ -14,7 +15,8 @@ import '../controllers/mind_map_editing_controller.dart';
 /// - 没选中：添加主题（加在根下）、导图样式、适应屏幕（大纲里没有）；
 /// - 选中主题：子主题、同级主题、插入（图标、标签、备注、链接、待办）、
 ///   主题样式、删除（根不能删）、更多（编辑文字、收起 / 展开、复制、剪切、
-///   粘贴，弹出菜单）。
+///   粘贴，弹出菜单）。平衡结构的画布上选中中心主题时，子主题与同级主题换成
+///   “向左添加 / 向右添加”（根没有同级，两个按钮原本是同一个动作）。
 /// 窄屏放不下时横向滚动（桌面可拖动 / Shift + 滚轮）。
 class MindMapDock extends StatelessWidget {
   const MindMapDock({
@@ -58,6 +60,7 @@ class MindMapDock extends StatelessWidget {
             ? null
             : controller.document.index[selected];
         final isRoot = selected == controller.document.root.id;
+        final sides = isRoot && controller.canChooseSide;
         final List<Widget> buttons = node == null
             ? <Widget>[
                 _DockButton(
@@ -100,16 +103,29 @@ class MindMapDock extends StatelessWidget {
                   ),
               ]
             : <Widget>[
-                _DockButton(
-                  icon: FontAwesomeIcons.diagramSuccessor,
-                  label: l10n.mindMapAddChild,
-                  onPressed: () => controller.addChild(),
-                ),
-                _DockButton(
-                  icon: FontAwesomeIcons.diagramNext,
-                  label: l10n.mindMapAddSibling,
-                  onPressed: () => controller.addSibling(),
-                ),
+                if (sides) ...<Widget>[
+                  _DockButton(
+                    icon: FontAwesomeIcons.arrowLeftLong,
+                    label: l10n.mindMapAddLeft,
+                    onPressed: () => controller.addBranch(kMindMapSideLeft),
+                  ),
+                  _DockButton(
+                    icon: FontAwesomeIcons.arrowRightLong,
+                    label: l10n.mindMapAddRight,
+                    onPressed: () => controller.addBranch(kMindMapSideRight),
+                  ),
+                ] else ...<Widget>[
+                  _DockButton(
+                    icon: FontAwesomeIcons.diagramSuccessor,
+                    label: l10n.mindMapAddChild,
+                    onPressed: () => controller.addChild(),
+                  ),
+                  _DockButton(
+                    icon: FontAwesomeIcons.diagramNext,
+                    label: l10n.mindMapAddSibling,
+                    onPressed: () => controller.addSibling(),
+                  ),
+                ],
                 _DockButton(
                   icon: FontAwesomeIcons.faceSmile,
                   label: l10n.mindMapInsert,

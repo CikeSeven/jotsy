@@ -11,11 +11,13 @@ import '../../../../core/services/app_platform.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../core/services/diary_media_storage_service.dart';
 import '../../../settings/providers/app_features_provider.dart';
+import '../../../settings/widgets/external_link.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
 import '../../controllers/diary_block_editing.dart';
 import '../../controllers/diary_block_group_move.dart';
 import '../../controllers/diary_editor_clipboard.dart';
+import '../../controllers/diary_link_editing.dart';
 import '../../controllers/diary_link_open_flow.dart';
 import '../../controllers/diary_link_search.dart';
 import '../../models/diary_link_candidate.dart';
@@ -252,6 +254,33 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
       fromEditor: !widget.controller.readOnly,
     ),
   );
+
+  /// 打开正文里的外部链接：经 [openExternalLink]（外部应用打开，打不开时
+  /// 复制并提示），不再经上游 `editorLaunchUrl`（#346）。
+  void _openWebLink(String href) {
+    if (!mounted) return;
+    unawaited(openExternalLink(context, href));
+  }
+
+  /// Alt + Enter 打开选区 / 光标所在的链接，取代上游 `openInlineLinkCommand`
+  /// （上游只经 `editorLaunchUrl`，不认日记链接，且外部链接在 Android 上
+  /// 会先查 `canLaunchUrl`）。
+  bool _openLinkAtSelection() {
+    if (!mounted) return false;
+    final href = diaryLinkHrefAtSelection(widget.controller);
+    if (href == null) return false;
+    final target = DiaryLinkTarget.tryParse(href);
+    if (target != null) {
+      if (target.kind == DiaryLinkKind.notebook &&
+          !ref.read(appFeaturesProvider).notebooks) {
+        return false;
+      }
+      _openLink(target);
+    } else {
+      _openWebLink(href);
+    }
+    return true;
+  }
 
   /// 编辑选区的链接：工具栏「链接」、Ctrl / ⌘ + K 与单击网址链接共用
   /// [editDiaryLink] 的对话框。返回 false 表示没有打开（正文只读或已卸载）。
@@ -532,6 +561,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
               notebooksEnabled: notebooksEnabled,
               plainColor: body.color,
               onOpen: _openLink,
+              onOpenWebLink: _openWebLink,
               onEditWebLink: _editLink,
             ),
           ),
@@ -656,10 +686,22 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
           handler: (_) =>
               _editLink() ? KeyEventResult.handled : KeyEventResult.ignored,
         ),
+        // Alt + Enter 打开光标或选区所在的链接，取代上游 `openInlineLinkCommand`
+        // （上游只调 `editorLaunchUrl`，不认日记链接，Android 11+ 上外部链接也
+        // 会被 `canLaunchUrl` 拦住，#346）。
+        af.CommandShortcutEvent(
+          key: 'diary_open_link',
+          getDescription: () => 'open link',
+          command: 'alt+enter',
+          handler: (_) => _openLinkAtSelection()
+              ? KeyEventResult.handled
+              : KeyEventResult.ignored,
+        ),
         for (final event in af.standardCommandShortcutEvents)
           if (!kUpstreamTableCommandKeys.contains(event.key) &&
               !identical(event, af.toggleHighlightCommand) &&
               !identical(event, af.showLinkMenuCommand) &&
+              !identical(event, af.openInlineLinkCommand) &&
               !(AppPlatform.isDesktop &&
                   identical(event, af.exitEditingCommand))) ...[
             // 嵌入块旁的退格 / Delete 紧排在上游同键命令之前：上游会越过

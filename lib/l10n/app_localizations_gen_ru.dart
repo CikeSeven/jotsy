@@ -19218,6 +19218,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get mindMapAddSibling => 'Рядом';
 
   @override
+  String get mindMapAddLeft => 'Слева';
+
+  @override
+  String get mindMapAddRight => 'Справа';
+
+  @override
   String get mindMapEditText => 'Изменить';
 
   @override

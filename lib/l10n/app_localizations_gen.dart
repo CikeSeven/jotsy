@@ -28730,6 +28730,18 @@ abstract class AppLocalizations {
   /// **'Sibling'**
   String get mindMapAddSibling;
 
+  /// Mind map (balanced layout, central topic selected): add a main topic on the left side of the central topic (dock button, keyboard accessory and menu item).
+  ///
+  /// In en, this message translates to:
+  /// **'Add left'**
+  String get mindMapAddLeft;
+
+  /// Mind map (balanced layout, central topic selected): add a main topic on the right side of the central topic (dock button, keyboard accessory and menu item).
+  ///
+  /// In en, this message translates to:
+  /// **'Add right'**
+  String get mindMapAddRight;
+
   /// Mind map: start editing the text of the selected topic.
   ///
   /// In en, this message translates to:

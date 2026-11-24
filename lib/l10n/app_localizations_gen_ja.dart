@@ -16367,6 +16367,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get mindMapAddSibling => '同レベル';
 
   @override
+  String get mindMapAddLeft => '左に追加';
+
+  @override
+  String get mindMapAddRight => '右に追加';
+
+  @override
   String get mindMapEditText => '編集';
 
   @override

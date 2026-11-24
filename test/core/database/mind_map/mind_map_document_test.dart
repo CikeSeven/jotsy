@@ -129,6 +129,55 @@ void main() {
       },
     );
 
+    test('addChild fixes the side only for branches of the root', () {
+      final document = sample();
+      final (onRoot, branch) = MindMapOps.addChild(
+        document,
+        'root',
+        side: kMindMapSideLeft,
+      );
+      expect(onRoot.index[branch!]!.side, kMindMapSideLeft);
+      // 更深的层级没有一侧之分，传了也不写。
+      final (deeper, child) = MindMapOps.addChild(
+        document,
+        'a',
+        side: kMindMapSideLeft,
+      );
+      expect(deeper.index[child!]!.side, isNull);
+      // 认不出的一侧按没指定处理。
+      final (odd, oddId) = MindMapOps.addChild(document, 'root', side: 'x');
+      expect(odd.index[oddId!]!.side, isNull);
+    });
+
+    test('pinRootSides fixes only unpinned root branches it knows about', () {
+      final document = MindMapOps.updateNode(
+        sample(),
+        'b',
+        (node) => node.copyWith(side: kMindMapSideLeft),
+      );
+      final pinned = MindMapOps.pinRootSides(document, <String, String>{
+        'a': kMindMapSideRight,
+        // 已经固定的不改、不是根的分支不管、认不出的一侧忽略。
+        'b': kMindMapSideRight,
+        'a1': kMindMapSideLeft,
+      });
+      expect(pinned.index['a']!.side, kMindMapSideRight);
+      expect(pinned.index['b']!.side, kMindMapSideLeft);
+      expect(pinned.index['a1']!.side, isNull);
+      // 无事可做时原样返回。
+      expect(
+        identical(MindMapOps.pinRootSides(pinned, const {}), pinned),
+        isTrue,
+      );
+      expect(
+        identical(
+          MindMapOps.pinRootSides(document, <String, String>{'a': 'x'}),
+          document,
+        ),
+        isTrue,
+      );
+    });
+
     test('moveNode refuses moving into its own subtree and keeps order', () {
       final document = sample();
       expect(

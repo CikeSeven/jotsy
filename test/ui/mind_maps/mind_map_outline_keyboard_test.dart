@@ -166,6 +166,78 @@ void main() {
     expect(controller.document.root.children.length, topicCount + 6);
   });
 
+  testWidgets('the soft keyboard Enter adds a sibling below and keeps '
+      'editing with the keyboard up', (tester) async {
+    final controller = await pumpOutline(tester);
+    await tester.tap(find.text('T5'));
+    await tester.pump();
+    await tester.pump();
+    await raiseKeyboard(tester);
+
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    final children = controller.document.root.children;
+    expect(children.length, topicCount + 1);
+    expect(children[4].text, 'T5');
+    final added = children[5];
+    expect(added.text, isEmpty);
+    expect(controller.editingId, added.id);
+    expect(tester.testTextInput.isVisible, isTrue);
+
+    // 接着打字写进新主题。
+    tester.testTextInput.enterText('T5b');
+    await tester.pump();
+    expect(controller.document.index[added.id]!.text, 'T5b');
+  });
+
+  testWidgets('the soft keyboard Enter at the start of a topic adds the '
+      'sibling before it', (tester) async {
+    final controller = await pumpOutline(tester);
+    await tester.tap(find.text('T5'));
+    await tester.pump();
+    await tester.pump();
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'T5',
+        selection: TextSelection.collapsed(offset: 0),
+      ),
+    );
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    final children = controller.document.root.children;
+    expect(children[4].text, isEmpty);
+    expect(children[5].text, 'T5');
+    expect(controller.editingId, children[4].id);
+    expect(tester.testTextInput.isVisible, isTrue);
+  });
+
+  testWidgets('Enter on the central topic of a long outline brings the new '
+      'child, built far below, into view and keeps the keyboard', (
+    tester,
+  ) async {
+    final controller = await pumpOutline(tester);
+    await tester.tap(find.text('Plan'));
+    await tester.pump();
+    await tester.pump();
+    await raiseKeyboard(tester);
+
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    final children = controller.document.root.children;
+    expect(children.length, topicCount + 1);
+    // 子主题排在最后，原本在已构建的范围之外。
+    expect(controller.editingId, children.last.id);
+    final field = find.byType(TextField);
+    expect(field, findsOneWidget);
+    expect(
+      tester.getRect(field).bottom,
+      lessThanOrEqualTo(accessoryTop(tester)),
+    );
+    expect(tester.getRect(field).top, greaterThanOrEqualTo(0));
+    expect(tester.testTextInput.isVisible, isTrue);
+  });
+
   testWidgets('a topic under the top bar is revealed below it', (tester) async {
     // 宿主的浮岛顶栏盖住顶上这一截（状态栏 + 浮岛那一行）。
     const topBar = 56.0;

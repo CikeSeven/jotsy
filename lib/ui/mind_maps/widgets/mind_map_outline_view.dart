@@ -17,9 +17,12 @@ import 'mind_map_outline_row.dart';
 ///   条与快捷键与画布相同）；
 /// - 长按（手机）或右键（桌面）一行弹出与画布相同的主题菜单（[onNodeMenu]，
 ///   编辑文字、加主题、插入、主题样式、复制剪切粘贴、删除等）；
-/// - 编辑中：Enter 在后面加同级（行首回车加在前面），空行退格删除这一行并
-///   编辑上一行；桌面另有 Tab / Shift + Tab 缩进与取消缩进、Alt + ↑ / ↓
-///   上移下移；手机上这些操作在键盘上方的附件条里（由工作区提供）；
+/// - 编辑中：Enter 在后面加同级（行首回车加在前面，手机软键盘的回车同样、
+///   键盘不收起），空行退格删除这一行并编辑上一行；桌面另有 Tab / Shift +
+///   Tab 缩进与取消缩进、Alt + ↑ / ↓ 上移下移；手机上这些操作在键盘上方的
+///   附件条里（由工作区提供）；
+/// - 新进入编辑的主题那一行不在已构建的范围里时（见 [_revealEditing]），
+///   先把列表跳到它附近，输入框建出来才拿得到焦点、键盘不收起；
 /// - 只读时只能展开收起（不写回文档，见 [MindMapEditingController] 的只读）。
 class MindMapOutlineView extends StatefulWidget {
   const MindMapOutlineView({
@@ -57,7 +60,77 @@ class _MindMapOutlineViewState extends State<MindMapOutlineView> {
   final Set<String> _readOnlyExpanded = <String>{};
   final Set<String> _readOnlyCollapsed = <String>{};
 
+  /// 自带控制器（不用页面的 PrimaryScrollController）：[_revealEditing]
+  /// 要按估算的位置跳。
+  final ScrollController _scroll = ScrollController();
+
+  /// 上一次通知时正在编辑的主题（只在换了主题时检查要不要跳）。
+  String? _lastEditing;
+
   MindMapEditingController get _controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastEditing = _controller.editingId;
+    _controller.addListener(_onControllerChanged);
+  }
+
+  @override
+  void didUpdateWidget(MindMapOutlineView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.controller, widget.controller)) {
+      oldWidget.controller.removeListener(_onControllerChanged);
+      _lastEditing = widget.controller.editingId;
+      widget.controller.addListener(_onControllerChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onControllerChanged);
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _onControllerChanged() {
+    final id = _controller.editingId;
+    if (id == _lastEditing) return;
+    _lastEditing = id;
+    if (id == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _revealEditing(id));
+  }
+
+  /// 正在编辑的行没建出来时把列表跳到它附近。
+  ///
+  /// 中心主题回车加的子主题排在最后、在展开着一大棵子树的主题后面加的同级
+  /// 排在子树之后，都可能落在列表已构建（视口加缓存区）的范围之外：那一行
+  /// 不构建，输入框就拿不到焦点，键盘随之收起。这一帧过后输入框仍没挂到
+  /// 文字会话上，就按行的平均高度估算它的位置跳过去（行高不一，估算可能
+  /// 差几行，所以再看下一帧，最多 [attempts] 次）；建出来后输入框获得焦点，
+  /// 自己按 `revealPadding` 精确露出光标。
+  void _revealEditing(String id, {int attempts = 3}) {
+    if (!mounted || attempts <= 0 || !_scroll.hasClients) return;
+    if (_controller.editingId != id ||
+        _controller.textSession.current != null) {
+      return;
+    }
+    final rows = _rows(_controller.document);
+    final index = rows.indexWhere((row) => row.$1.id == id);
+    if (index < 0) return;
+    final position = _scroll.position;
+    final rowExtent =
+        (position.maxScrollExtent + position.viewportDimension) / rows.length;
+    position.jumpTo(
+      (index * rowExtent - position.viewportDimension / 2).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      ),
+    );
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _revealEditing(id, attempts: attempts - 1),
+    );
+  }
 
   bool _collapsed(MindMapNode node) {
     if (!_controller.readOnly) return node.collapsed;
@@ -107,6 +180,9 @@ class _MindMapOutlineViewState extends State<MindMapOutlineView> {
         final styles = look.styles;
         final rows = _rows(document);
         return ListView.builder(
+          controller: _scroll,
+          // 与不传控制器时一样：内容不满一屏也能拖（顶栏随拖动显隐）。
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: widget.padding + const EdgeInsets.fromLTRB(8, 8, 16, 24),
           itemCount: rows.length,
           itemBuilder: (BuildContext context, int i) {

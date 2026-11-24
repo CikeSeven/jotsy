@@ -181,12 +181,14 @@ abstract final class MindMapOps {
   }
 
   /// 在 [parentId] 下插入一个新节点（[index] 缺省为末尾），返回新文档与新
-  /// 节点 id；做不到时 id 为 null。
+  /// 节点 id；做不到时 id 为 null。[side] 只在父节点是根时写入（固定新
+  /// 分支在平衡结构里的一侧），其余层级忽略。
   static (MindMapDocument, String?) addChild(
     MindMapDocument document,
     String parentId, {
     String text = '',
     int? index,
+    String? side,
     math.Random? random,
   }) {
     final idx = document.index;
@@ -197,7 +199,11 @@ abstract final class MindMapOps {
       return (document, null);
     }
     final id = newMindMapNodeId(idx.contains, random);
-    final node = MindMapNode(id: id, text: text);
+    final node = MindMapNode(
+      id: id,
+      text: text,
+      side: parentId == idx.root.id ? _validSide(side) : null,
+    );
     final at = (index ?? parent.children.length).clamp(
       0,
       parent.children.length,
@@ -248,6 +254,37 @@ abstract final class MindMapOps {
       newId,
     );
   }
+
+  /// 把根下还没固定一侧的分支固定到 [sides] 给出的一侧（id →
+  /// [kMindMapSideLeft] / [kMindMapSideRight]，通常是画布上此刻画在哪边）；
+  /// 已经固定的、[sides] 里没有的原样不动。
+  ///
+  /// 为什么需要：没固定的分支由布局按高度平衡分到两边，分支一增一挪就重新
+  /// 分配，已有分支会跳到另一边。用户自己指定一侧（向左 / 向右添加、在某
+  /// 一侧旁加同级、拖到另一侧）之前先固定，画面上已有的分支都留在原地。
+  static MindMapDocument pinRootSides(
+    MindMapDocument document,
+    Map<String, String> sides,
+  ) {
+    if (sides.isEmpty) return document;
+    final root = document.root;
+    var changed = false;
+    final children = <MindMapNode>[];
+    for (final child in root.children) {
+      final side = child.side == null ? _validSide(sides[child.id]) : null;
+      if (side == null) {
+        children.add(child);
+      } else {
+        changed = true;
+        children.add(child.copyWith(side: side));
+      }
+    }
+    if (!changed) return document;
+    return document.copyWith(root: root.copyWith(children: children));
+  }
+
+  static String? _validSide(String? side) =>
+      side == kMindMapSideLeft || side == kMindMapSideRight ? side : null;
 
   /// 删除节点（连同子树）；根不会被删除。
   static MindMapDocument removeNodes(

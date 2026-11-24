@@ -142,6 +142,139 @@ void main() {
     expect(scene.byId[last], isNotNull);
   });
 
+  group('choosing a side in the balanced layout', () {
+    /// 中心主题下四个一样高的分支：自动分配时 A、B 在右，C、D 在左。
+    MindMapEditingController fourBranches() {
+      var document = MindMapDocument.blank(text: 'Root');
+      for (final text in <String>['A', 'B', 'C', 'D']) {
+        (document, _) = MindMapOps.addChild(
+          document,
+          document.root.id,
+          text: text,
+          random: math.Random(text.codeUnitAt(0)),
+        );
+      }
+      final controller = MindMapEditingController(document);
+      controller.placedRootSides = () => layoutMindMap(
+        controller.document,
+        config(MindMapStructure.mindMap),
+      ).rootSides;
+      return controller;
+    }
+
+    String idOf(MindMapEditingController controller, String text) =>
+        controller.document.root.children.firstWhere((n) => n.text == text).id;
+
+    Map<String, String> sidesByText(MindMapEditingController controller) {
+      final sides = layoutMindMap(
+        controller.document,
+        config(MindMapStructure.mindMap),
+      ).rootSides;
+      return <String, String>{
+        for (final child in controller.document.root.children)
+          child.text: sides[child.id]!,
+      };
+    }
+
+    test('scene reports each branch side, only for the balanced layout', () {
+      final controller = fourBranches();
+      expect(sidesByText(controller), <String, String>{
+        'A': kMindMapSideRight,
+        'B': kMindMapSideRight,
+        'C': kMindMapSideLeft,
+        'D': kMindMapSideLeft,
+      });
+      final logic = layoutMindMap(
+        controller.document,
+        config(MindMapStructure.logicRight),
+      );
+      expect(logic.rootSides, isEmpty);
+      controller.dispose();
+    });
+
+    test('add left puts the new branch on the left and no branch jumps', () {
+      final controller = fourBranches();
+      // 对照：只固定新分支、其余不固定时，C 会被重新平衡到右边。
+      final (control, _) = MindMapOps.addChild(
+        controller.document,
+        controller.document.root.id,
+        text: 'E',
+        side: kMindMapSideLeft,
+      );
+      final controlScene = layoutMindMap(
+        control,
+        config(MindMapStructure.mindMap),
+      );
+      expect(controlScene.rootSides[idOf(controller, 'C')], kMindMapSideRight);
+
+      final id = controller.addBranch(kMindMapSideLeft, edit: false)!;
+      controller.setText(id, 'E');
+      expect(sidesByText(controller), <String, String>{
+        'A': kMindMapSideRight,
+        'B': kMindMapSideRight,
+        'C': kMindMapSideLeft,
+        'D': kMindMapSideLeft,
+        'E': kMindMapSideLeft,
+      });
+      expect(controller.selectedId, id);
+      // 固定与加分支是一步撤销。
+      controller.undo();
+      controller.undo();
+      expect(controller.document.root.children.length, 4);
+      expect(
+        controller.document.root.children.every((n) => n.side == null),
+        isTrue,
+      );
+      controller.dispose();
+    });
+
+    test('a sibling of a left branch stays on the left', () {
+      final controller = fourBranches();
+      controller.select(idOf(controller, 'D'));
+      final id = controller.addSibling(edit: false)!;
+      controller.setText(id, 'E');
+      expect(sidesByText(controller), <String, String>{
+        'A': kMindMapSideRight,
+        'B': kMindMapSideRight,
+        'C': kMindMapSideLeft,
+        'D': kMindMapSideLeft,
+        'E': kMindMapSideLeft,
+      });
+      controller.dispose();
+    });
+
+    test('dragging a branch across moves only that branch', () {
+      final controller = fourBranches();
+      final a = idOf(controller, 'A');
+      controller.move(
+        a,
+        MindMapDropTarget(
+          parentId: controller.document.root.id,
+          index: 3,
+          side: kMindMapSideLeft,
+        ),
+      );
+      expect(sidesByText(controller), <String, String>{
+        'B': kMindMapSideRight,
+        'C': kMindMapSideLeft,
+        'D': kMindMapSideLeft,
+        'A': kMindMapSideLeft,
+      });
+      controller.dispose();
+    });
+
+    test('without a canvas nothing is pinned', () {
+      final controller = fourBranches()..placedRootSides = () => null;
+      controller.select(idOf(controller, 'D'));
+      controller.addSibling(edit: false);
+      expect(
+        controller.document.root.children.every((n) => n.side == null),
+        isTrue,
+      );
+      controller.dispose();
+    });
+  });
+
   test('collapsed branches are not laid out and show a hidden count', () {
     final document = randomTree(7, nodes: 30);
     final branch = document.root.children.firstWhere(

@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
+import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../models/mind_map_options.dart';
 import '../viewmodels/mind_map_visuals.dart';
 import 'mind_map_node_content.dart';
@@ -189,6 +190,25 @@ final class MindMapScene {
 
   /// 全部节点（含收起徽标的位置）的外接矩形。
   final Rect bounds;
+
+  /// 平衡结构（思维导图）里根的各个分支此刻画在哪一侧（id →
+  /// [kMindMapSideLeft] / [kMindMapSideRight]），按节点在根的左右判断，
+  /// 自动分配的与固定了的都算；其他结构为空。
+  Map<String, String> get rootSides {
+    if (structure != MindMapStructure.mindMap || nodes.isEmpty) {
+      return const <String, String>{};
+    }
+    // 绘制顺序父在子前，根是第一个。
+    final root = nodes.first;
+    final center = root.rect.center.dx;
+    return <String, String>{
+      for (final node in nodes)
+        if (node.parentId == root.id)
+          node.id: node.rect.center.dx < center
+              ? kMindMapSideLeft
+              : kMindMapSideRight,
+    };
+  }
 
   static Rect _boundsOf(
     List<MindMapSceneNode> nodes,

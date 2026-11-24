@@ -13,6 +13,7 @@ import 'package:node_diary/core/services/ai/ai_provider_config.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
 import 'package:node_diary/core/services/ai/ai_service.dart';
 import 'package:node_diary/core/services/ai/ai_vision.dart';
+import 'package:node_diary/core/services/storage/managed_media_dedup.dart';
 import 'package:node_diary/core/services/storage/storage_reference_index.dart';
 import 'package:node_diary/core/services/storage/storage_usage_models.dart';
 import 'package:node_diary/ui/ai/controllers/ai_chat_controller.dart';
@@ -89,6 +90,9 @@ void main() {
       await file.create(recursive: true);
       await file.writeAsBytes(base64Decode(jpgBase64));
     });
+    // 与经 DiaryMediaStorageService.importFile 导入的一样：本次导入所有，
+    // 没写进库时回滚可以删掉它。
+    FreshManagedFiles.claim(file.path);
     return file.path;
   }
 

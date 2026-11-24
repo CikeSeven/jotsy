@@ -82,7 +82,7 @@
 | 背景、玻璃材质、页面底色、提示条与小控件的玻璃主题 | `app_surface.md` |
 | 日记卡片样式、心情颜色、预览页样式、导航栏样式、日记页浮岛顶栏 | `appearance_styles.md` |
 | 编辑器与正文（块文档、排版、格式、表格、代码块、工具栏、键盘） | `editor.md` |
-| 看图、图片解码与长图、HEIF、这天的照片、拍照 / 录像 | `media.md` |
+| 看图、图片解码与长图、HEIF、这天的照片、拍照 / 录像、媒体入库与导入时复用 | `media.md` |
 | 打开日记、预览翻页、标签搜索、快速滚动条、批量标签 | `diary_list_preview.md` |
 | 草稿与发布页 | `drafts_publish.md` |
 | 日记模板 | `diary_templates.md` |
@@ -97,7 +97,7 @@
 | 局域网同步，以及会被同步的数据 | `lan_sync.md` |
 | 导入 / 恢复、云端笔记导入、网盘备份 | `backup_import.md` |
 | 分享与导出 | `export_share.md` |
-| 存储管理 | `storage.md` |
+| 存储管理（含重复文件合并） | `storage.md` |
 | 桌面小组件 | `home_widgets.md` |
 | 功能管理开关 | `app_features.md` |
 | 应用锁、应用密码、验证身份 | `app_lock.md` |

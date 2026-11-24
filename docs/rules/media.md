@@ -27,7 +27,7 @@
 - 必须：系统权限框只由用户点按触发；只申请图片与视频读取，只授权图片时照常列出照片。
 - 必须：插入只复制进日记私有目录，禁止改动相册原文件；勾选状态只在本次编辑页内存。
 - 必须：预览页 `openDiaryDayPhotoPreview` 只负责查看、勾选与插入，不提供分享 / 保存。
-- 必须：设为封面只限图片，经 `DiaryMetaActions.setCoverFromFile` 拷贝（新建写草稿，编辑写这篇日记）；禁止引用相册原图路径。
+- 必须：设为封面只限图片，经 `DiaryMetaActions.setCoverFromFile` 拷贝（新建写草稿，编辑写这篇日记；已插入正文的同一张图直接共用那份文件）；禁止引用相册原图路径。
 
 ## 拍照 / 录像
 - 必须：只在 `AppPlatform.supportsCameraCapture`（Android）交给系统相机，经 `DiaryMediaImportController.captureAndInsert` 插入；禁止引入相机插件；文件不存系统相册。
@@ -39,6 +39,12 @@
 - 必须：旧 HEIF 图只经 `HeifMediaRepairService` 修复（等编辑会话全部关闭），引用一次事务改写，原 HEIC 交给媒体回收。
 - 必须：桌面 HEIF 图解码失败时，占位说明原因与补救（在手机上打开后再同步）。
 - 禁止：原地覆盖托管文件，重编码一律写新路径再改引用，以免同步对端拿不到；压缩与删除见 `storage.md`。
+
+## 重复的图片与视频
+- 必须：`DiaryMediaStorageService.importFile` 与 `DiaryCoverStorageService.importCover` 复制、转码后经 `ManagedMediaDedup.adopt`：可共用目录里已有逐字节相同的文件就改用它、删掉新副本；可共用的目录与存储管理合并同一份规则（`storage.md`「重复文件」），显示名仍按这次导入。
+- 必须：复用前把那份文件的修改时间设为现在，再等正在进行的媒体回收结束、确认文件还在；有托管媒体写入者（压缩、HEIC 修复、同步）时不复用；任何失败都退回用新副本。
+- 必须：导入失败、取消或移除还没保存的图片时，回滚只经 `deleteManagedDiaryFile` / `deleteManagedCover`，只删本进程刚导入、没被复用过的文件（`FreshManagedFiles`）；禁止另写直接删除托管文件的回滚。
+- 例外：第三方笔记导入与备份合并导入不在入库时复用，留下的重复由存储管理合并。
 
 ## 导入音频
 - 必须：导入的音频经 `probeAudioDuration` 读得出时长才做成录音块，否则当附件。

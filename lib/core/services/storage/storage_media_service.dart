@@ -12,19 +12,25 @@ import '../data_archive_service.dart';
 import '../diary_font_storage_service.dart';
 import '../diary_media_cleanup_service.dart';
 import '../editing_session_registry.dart';
+import '../lan_sync/sync/sync_media_index.dart';
 import '../managed_file_paths.dart';
 import '../managed_media_write_gate.dart';
 import '../settings_service.dart';
 import '../video_poster_cache.dart';
+import 'managed_media_content_index.dart';
 import 'media_compressor.dart';
 import 'storage_cache_catalog.dart';
 import 'storage_compress_plan.dart';
+import 'storage_duplicates.dart';
 import 'storage_media_edit_plan.dart';
 import 'storage_reference_index.dart';
 import 'storage_usage_models.dart';
 import 'storage_usage_scanner.dart';
 
-/// 存储管理的编排（docs/rules/storage.md）：扫描占用、删除与压缩媒体、清理。
+part 'storage_media_service_duplicates.dart';
+
+/// 存储管理的编排（docs/rules/storage.md）：扫描占用、删除与压缩媒体、清理；
+/// 重复文件的查找与合并在 `storage_media_service_duplicates.dart`。
 ///
 /// 删除与压缩都遵守同一条链路，任何一步都不覆盖、不预先删除被引用的文件：
 /// 1. 守卫：有编辑页这类握着整份内存副本的阻塞者时拒绝（它们之后整份写回
@@ -186,6 +192,22 @@ class StorageMediaService {
       }),
     );
   }
+
+  /// 在 [report] 的被引用媒体里找重复文件（内容逐字节相同）。只给同一目录
+  /// 范围里大小相同的文件算哈希（缓存在 `ManagedMediaContentIndex`，文件不变
+  /// 就不再读），并顺手去掉索引里已经不存在的文件。
+  Future<StorageDuplicates> findDuplicates(StorageUsageReport report) =>
+      _findDuplicates(report);
+
+  /// 合并 [groups]：每组副本的引用改指向保留的那份，再删掉没有引用的副本。
+  ///
+  /// [groups] 来自之前的扫描，执行时一律按现状重来：成员的内容按文件直接
+  /// 重算哈希核对（不信缓存），引用在串行队列里重新读取，再用同一套规则
+  /// 重新决定保留哪份、哪些能并。期间被改过的行跳过
+  /// （[StorageMergeResult.skippedRows]），它们引用的副本自然留下。
+  Future<StorageMergeResult> mergeDuplicates(
+    List<StorageDuplicateGroup> groups,
+  ) => _mergeDuplicates(groups);
 
   /// 压缩 [entries]：逐个写出新文件（可取消，已完成的照样提交），再一次
   /// 改写引用、删除原文件。输出没有明显变小的丢掉、保留原文件。

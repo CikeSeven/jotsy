@@ -77,11 +77,39 @@ class DiaryMediaCleanupService {
     (_) => _sweepSafely(gracePeriod ?? this.gracePeriod, includeCaches),
   );
 
+  /// 正在执行（已经开始读引用、遍历文件）的回收轮数，进程内所有实例合计。
+  static int _running = 0;
+  static Completer<void>? _idle;
+
+  /// 等正在执行的回收都结束（没有时立即返回）。
+  ///
+  /// 导入时复用已有文件（`ManagedMediaDedup`）先把文件的修改时间设为现在，
+  /// 再等这里：之后开始的回收都会因宽限期保留它，而改时间之前就已经判定
+  /// 要删它的那一轮，等它结束后再看文件还在不在。
+  static Future<void> whenSweepsIdle() =>
+      _running == 0 ? Future<void>.value() : (_idle ??= Completer()).future;
+
   Future<DiaryMediaSweepReport?> _sweepSafely(
     Duration gracePeriod,
     bool includeCaches,
   ) async {
     if (_disposed) return null;
+    _running++;
+    try {
+      return await _sweepOnce(gracePeriod, includeCaches);
+    } finally {
+      if (--_running == 0) {
+        final idle = _idle;
+        _idle = null;
+        idle?.complete();
+      }
+    }
+  }
+
+  Future<DiaryMediaSweepReport?> _sweepOnce(
+    Duration gracePeriod,
+    bool includeCaches,
+  ) async {
     try {
       final report = await _runInBackground(
         await _buildRequest(gracePeriod, includeCaches),

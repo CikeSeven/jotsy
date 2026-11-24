@@ -13846,6 +13846,73 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => '重复的文件';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    return '$count 组内容相同的文件，合并可释放 $size';
+  }
+
+  @override
+  String get storageMgmtMerge => '合并';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      '这些文件的内容完全相同。合并后只保留一份，原来用到其他副本的地方都改用它，日记里看到的不变。';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    return '$count 组 · 可释放 $size';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return '全部合并 · 释放 $size';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    return '$count 份相同 · 每份 $size · 可释放 $saved';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => '保留';
+
+  @override
+  String get storageMgmtDuplicateRetained => '不能合并';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => '没有重复的文件';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    return '合并 $count 个重复文件？';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return '每组只保留一份，其余副本删除，释放 $size。日记、封面与留言看到的都和原来一样。';
+  }
+
+  @override
+  String get storageMgmtMergeNote => '之后在这里删除保留的那份，会从所有用到它的地方一起移除。';
+
+  @override
+  String get storageMgmtMerging => '正在合并…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    return '已合并 $count 个重复文件，释放 $size';
+  }
+
+  @override
+  String get storageMgmtMergeNothing => '没有合并：这些文件已经变了，重新统计后再试。';
+
+  @override
   String get storageMgmtClear => '清理';
 
   @override

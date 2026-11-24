@@ -31,6 +31,20 @@ class StorageCompressContext {
   }
 }
 
+/// 只在私密 / 上锁的日记本里出现：揭示后可以看。
+bool storageVisibilityIsPrivate(StorageRefVisibility visibility) =>
+    visibility == StorageRefVisibility.private ||
+    visibility == StorageRefVisibility.locked;
+
+/// 要不要打码（不显示预览与标题）：未解封的时间胶囊始终打码，私密的没揭示
+/// 时打码（docs/rules/storage.md「隐私」）。
+bool storageMediaMasked(
+  StorageRefVisibility visibility, {
+  required bool revealPrivate,
+}) =>
+    visibility == StorageRefVisibility.capsule ||
+    (storageVisibilityIsPrivate(visibility) && !revealPrivate);
+
 /// 列表里的一项：要不要打码，以及按当前档位的压缩估算。
 class StorageMediaItemView {
   const StorageMediaItemView({
@@ -98,12 +112,11 @@ class StorageMediaListView {
       final estimate = compress.estimate(entry, report);
       if (filter.compressibleOnly && estimate == null) continue;
       final visibility = entry.visibility;
-      final private =
-          visibility == StorageRefVisibility.private ||
-          visibility == StorageRefVisibility.locked;
-      final masked =
-          visibility == StorageRefVisibility.capsule ||
-          (private && !revealPrivate);
+      final private = storageVisibilityIsPrivate(visibility);
+      final masked = storageMediaMasked(
+        visibility,
+        revealPrivate: revealPrivate,
+      );
       if (private && !revealPrivate) {
         maskedPrivate++;
         if (visibility == StorageRefVisibility.locked) needsVerification = true;

@@ -45,7 +45,8 @@ typedef _NotebookDraft = ({
 ///   恢复），保存时不写；智能日记本保存时一律清除目标；
 /// - 选封面只拷贝新图到封面私有目录，被替换或移除的旧封面不在这里删除——
 ///   它可能仍被已保存的数据引用，由按引用回收的清理服务处理；从本子的日记
-///   里选图（[setCoverFromFile]）同样拷贝一份，不引用日记的原图；
+///   里选图（[setCoverFromFile]）同样经 `DiaryCoverStorageService.importCover`
+///   入库，内容相同时与日记共用那份文件（按引用回收，日记删掉后封面仍在）；
 /// - 封面图换了或移除时取景（`NotebookCoverStyle` 的对齐点与放大）随之重置，
 ///   版式与纹理保留；
 /// - 上级（[parentId]）也是表单的一部分：新建时可由调用方预填（在某本的
@@ -347,9 +348,9 @@ class NotebookEditorController extends ChangeNotifier {
     }
   }
 
-  /// 把 [sourcePath]（本子里某篇日记用到的图片）拷贝进封面私有目录后设为
-  /// 封面；原图不动、也不引用它（日记删掉后封面仍在）。拷贝失败时不改动
-  /// 当前封面。
+  /// 把 [sourcePath]（本子里某篇日记用到的图片）经封面入库后设为封面：原图
+  /// 不动，内容相同时直接共用那份文件（按引用回收，日记删掉后封面仍在）。
+  /// 入库失败时不改动当前封面。
   Future<NotebookCoverPickResult> setCoverFromFile(String sourcePath) async {
     if (_importingCover) return NotebookCoverPickResult.cancelled;
     _set(() => _importingCover = true);

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_ops.dart';
 import '../../../core/database/mind_map/mind_map_rich_text.dart';
+import '../models/mind_map_options.dart';
 import '../viewmodels/mind_map_drop_planner.dart';
 import 'mind_map_text_session.dart';
 
@@ -24,6 +25,12 @@ class MindMapEditingController extends ChangeNotifier {
 
   /// 文档因编辑（含撤销 / 重做）而变化时调用；载入与 [reset] 不调用。
   ValueChanged<MindMapDocument>? onChanged;
+
+  /// 画布上根的各个分支此刻画在哪一侧（见 `MindMapScene.rootSides`），由
+  /// 持有画布的工作区接上；大纲视图、没接时为 null 或空，不固定任何分支。
+  /// 用户指定一侧的操作经它先把已有分支固定在原地（见
+  /// [MindMapOps.pinRootSides]）。
+  Map<String, String>? Function()? placedRootSides;
 
   MindMapDocument _document;
   MindMapDocument get document => _document;
@@ -51,6 +58,14 @@ class MindMapEditingController extends ChangeNotifier {
   final List<_Snapshot> _redo = <_Snapshot>[];
   Object? _lastCoalesceKey;
   DateTime _lastCommitAt = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// 是不是平衡结构（根在中间、分支分左右两侧）。
+  bool get _balanced =>
+      MindMapStructure.resolve(_document.structure) == MindMapStructure.mindMap;
+
+  /// 中心主题的操作给不给“向左 / 向右添加”：平衡结构的画布上才有（大纲里
+  /// 看不出左右，照旧是子主题 / 同级）。
+  bool get canChooseSide => _balanced && !_outlineView;
 
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
@@ -191,15 +206,41 @@ class MindMapEditingController extends ChangeNotifier {
     return id;
   }
 
-  /// 在选中节点旁加同级节点（选中的是根时加子节点）。
+  /// 在选中节点旁加同级节点（选中的是根时加子节点）。选中的是根的分支时
+  /// 先把各分支固定在画面上的一侧，新的同级就落在选中分支那一侧。
   String? addSibling({bool before = false, bool edit = true}) {
     final anchor = selectedId ?? _document.root.id;
-    final (next, id) = MindMapOps.addSibling(_document, anchor, before: before);
+    final base = _document.index.parentOf(anchor) == _document.root.id
+        ? _pinPlacedSides()
+        : _document;
+    final (next, id) = MindMapOps.addSibling(base, anchor, before: before);
     if (id == null) return null;
     _editingId = null;
     commit(next, select: id);
     if (edit) startEditing(id);
     return id;
+  }
+
+  /// 在中心主题的 [side]（`kMindMapSideLeft` / `kMindMapSideRight`）一侧
+  /// 加一个分支、选中并进入编辑（平衡结构的“向左 / 向右添加”）；已有分支
+  /// 先固定在画面上的一侧，不随新分支换边。连同固定是一步撤销。
+  String? addBranch(String side, {bool edit = true}) {
+    final (next, id) = MindMapOps.addChild(
+      _pinPlacedSides(),
+      _document.root.id,
+      side: side,
+    );
+    if (id == null) return null;
+    _editingId = null;
+    commit(next, select: id);
+    if (edit) startEditing(id);
+    return id;
+  }
+
+  MindMapDocument _pinPlacedSides() {
+    final sides = placedRootSides?.call();
+    if (sides == null || !_balanced) return _document;
+    return MindMapOps.pinRootSides(_document, sides);
   }
 
   /// 删除选中的节点（根不删），选中改到相邻的同级或父节点。[keepEditing]
@@ -232,18 +273,19 @@ class MindMapEditingController extends ChangeNotifier {
     commit(MindMapOps.setCollapsed(_document, id, !node.collapsed));
   }
 
-  /// 按落点挪动节点。
+  /// 按落点挪动节点。落点指定了一侧（拖到根的左边或右边）时先把其余分支
+  /// 固定在画面上的一侧，只有被拖的这个换边。
   void move(String id, MindMapDropTarget target) {
-    commit(
-      MindMapOps.moveNode(
-        _document,
-        id,
-        target.parentId,
-        target.index,
-        side: target.side,
-      ),
-      select: id,
+    final base = target.side == null ? _document : _pinPlacedSides();
+    final next = MindMapOps.moveNode(
+      base,
+      id,
+      target.parentId,
+      target.index,
+      side: target.side,
     );
+    // 落点没变时不为固定其余分支单独记一步撤销。
+    commit(identical(next, base) ? _document : next, select: id);
   }
 
   /// 改一个节点（样式、贴纸、标签、备注、链接、待办……），一步撤销；

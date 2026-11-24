@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/database/diary_blocks/diary_link_target.dart';
+import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../core/database/mind_map/mind_map_text.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../l10n/app_localizations.dart';
@@ -100,6 +101,7 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
   void initState() {
     super.initState();
     _controller.addListener(_onControllerChanged);
+    _controller.placedRootSides = _placedRootSides;
   }
 
   @override
@@ -107,13 +109,16 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onControllerChanged);
+      _detachPlacedSides(oldWidget.controller);
       widget.controller.addListener(_onControllerChanged);
+      widget.controller.placedRootSides = _placedRootSides;
     }
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onControllerChanged);
+    _detachPlacedSides(_controller);
     _viewport.dispose();
     _keyboardInset.dispose();
     _focus.dispose();
@@ -131,6 +136,16 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
       _focus.requestFocus();
     }
     setState(() {});
+  }
+
+  /// 画布上各分支此刻在哪一侧；大纲视图没有画布，为 null（不固定）。
+  Map<String, String>? _placedRootSides() =>
+      _canvas.currentState?.scene?.rootSides;
+
+  void _detachPlacedSides(MindMapEditingController controller) {
+    if (controller.placedRootSides == _placedRootSides) {
+      controller.placedRootSides = null;
+    }
   }
 
   /// 请求宿主的浮岛顶栏收起或浮出（见类注释）。
@@ -362,19 +377,33 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
         onPressed: () => _controller.startEditing(node.id),
         child: Text(l10n.mindMapEditText),
       ),
-      ExpressiveMenuItem(
-        leadingIcon: const FaIcon(FontAwesomeIcons.diagramSuccessor),
-        onPressed: () => _controller.addChild(parentId: node.id),
-        child: Text(l10n.mindMapAddChild),
-      ),
-      ExpressiveMenuItem(
-        leadingIcon: const FaIcon(FontAwesomeIcons.diagramNext),
-        onPressed: () {
-          _controller.select(node.id);
-          _controller.addSibling();
-        },
-        child: Text(l10n.mindMapAddSibling),
-      ),
+      // 平衡结构画布上的中心主题：子主题与同级换成向左 / 向右添加（同工具坞）。
+      if (isRoot && _controller.canChooseSide) ...<Widget>[
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.arrowLeftLong),
+          onPressed: () => _controller.addBranch(kMindMapSideLeft),
+          child: Text(l10n.mindMapAddLeft),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.arrowRightLong),
+          onPressed: () => _controller.addBranch(kMindMapSideRight),
+          child: Text(l10n.mindMapAddRight),
+        ),
+      ] else ...<Widget>[
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.diagramSuccessor),
+          onPressed: () => _controller.addChild(parentId: node.id),
+          child: Text(l10n.mindMapAddChild),
+        ),
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.diagramNext),
+          onPressed: () {
+            _controller.select(node.id);
+            _controller.addSibling();
+          },
+          child: Text(l10n.mindMapAddSibling),
+        ),
+      ],
       ExpressiveMenuItem(
         leadingIcon: const FaIcon(FontAwesomeIcons.faceSmile),
         onPressed: () => _openInsert(node.id),

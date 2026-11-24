@@ -24978,6 +24978,106 @@ abstract class AppLocalizations {
   /// **'Frees {size} left behind by deleted content'**
   String storageMgmtSuggestDatabaseSubtitle(String size);
 
+  /// Suggestion row and page title for files with identical content.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate files'**
+  String get storageMgmtSuggestDuplicates;
+
+  /// Subtitle of the duplicate files suggestion; count is the number of sets, size is what merging frees.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set of identical files, merging frees {size}} other{{count} sets of identical files, merging frees {size}}}'**
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size);
+
+  /// Button that merges duplicate files.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge'**
+  String get storageMgmtMerge;
+
+  /// Explanation at the top of the duplicate files page.
+  ///
+  /// In en, this message translates to:
+  /// **'These files have exactly the same content. Merging keeps one copy and every place that used another copy uses it instead, so your entries look the same.'**
+  String get storageMgmtDuplicatesIntro;
+
+  /// Summary on the duplicate files page; count is the number of sets.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set · {size} can be freed} other{{count} sets · {size} can be freed}}'**
+  String storageMgmtDuplicatesSummary(int count, String size);
+
+  /// Full-width button that merges every set of duplicates; size is what it frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge all · frees {size}'**
+  String storageMgmtMergeAll(String size);
+
+  /// Subtitle of one set of duplicates: number of identical copies, size of each, and what merging frees.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} identical copies · {size} each · frees {saved}'**
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  );
+
+  /// Badge on the copy that stays after merging.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get storageMgmtDuplicateKept;
+
+  /// Badge on an identical copy that cannot be merged (its references cannot point to the kept copy).
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t merge'**
+  String get storageMgmtDuplicateRetained;
+
+  /// Empty state of the duplicate files page.
+  ///
+  /// In en, this message translates to:
+  /// **'No duplicate files'**
+  String get storageMgmtDuplicatesEmpty;
+
+  /// Title of the merge confirmation; count is the number of copies removed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Merge 1 duplicate file?} other{Merge {count} duplicate files?}}'**
+  String storageMgmtMergeTitle(int count);
+
+  /// Body of the merge confirmation; size is what merging frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Each set keeps one copy and the others are removed, freeing {size}. Entries, covers and comments look the same as before.'**
+  String storageMgmtMergeBody(String size);
+
+  /// Note in the merge confirmation about deleting a shared file later.
+  ///
+  /// In en, this message translates to:
+  /// **'Afterwards, deleting the kept file here removes it from every place that uses it.'**
+  String get storageMgmtMergeNote;
+
+  /// Busy overlay while merging duplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'Merging…'**
+  String get storageMgmtMerging;
+
+  /// Shown after merging duplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Merged 1 duplicate file, freed {size}} other{Merged {count} duplicate files, freed {size}}}'**
+  String storageMgmtMerged(int count, String size);
+
+  /// Shown when nothing could be merged because the files changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was merged: these files have changed. Rescan and try again.'**
+  String get storageMgmtMergeNothing;
+
   /// Button on a suggestion row that clears it.
   ///
   /// In en, this message translates to:

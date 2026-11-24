@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/app_service.dart';
+import '../../../core/services/storage/storage_duplicates.dart';
 import '../../../core/services/storage/storage_media_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../models/storage_preferences.dart';
@@ -19,6 +20,16 @@ final storageMediaServiceProvider = Provider<StorageMediaService>(
 /// 局域网同步写库后重新扫描；删除、压缩、清理之后由流程主动失效。
 final storageReportProvider = FutureProvider.autoDispose<StorageUsageReport>(
   (Ref ref) => ref.watch(storageMediaServiceProvider).scan(),
+);
+
+/// 重复文件（内容逐字节相同的托管媒体）。跟着占用扫描走：扫描重新读取时
+/// 一起重算（同步写库后、删除 / 压缩 / 合并之后）；只给同一目录范围里大小
+/// 相同的文件算哈希，算过的有缓存。
+final storageDuplicatesProvider = FutureProvider.autoDispose<StorageDuplicates>(
+  (Ref ref) async {
+    final report = await ref.watch(storageReportProvider.future);
+    return ref.watch(storageMediaServiceProvider).findDuplicates(report);
+  },
 );
 
 /// 设置首页“存储管理”行的“已用”（只累加文件大小，不解析日记）。
@@ -62,7 +73,8 @@ final storageCompressContextProvider =
       );
     });
 
-/// 删除、压缩、清理之后：总览、媒体页与设置首页的“已用”一起重新读取。
+/// 删除、压缩、合并、清理之后：总览、媒体页、重复文件页与设置首页的
+/// “已用”一起重新读取（重复文件跟着扫描重算）。
 void refreshStorageViews(WidgetRef ref) {
   ref
     ..invalidate(storageReportProvider)

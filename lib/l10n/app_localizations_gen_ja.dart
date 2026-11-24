@@ -14096,6 +14096,75 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => '重複したファイル';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    return '内容が同じファイル $count 組、統合すると $size を解放';
+  }
+
+  @override
+  String get storageMgmtMerge => '統合';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      'これらのファイルは中身がまったく同じです。統合すると 1 つだけ残し、ほかのコピーを使っていた箇所はすべてそれを使うようになります。日記の見た目は変わりません。';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    return '$count 組 · $size を解放できます';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return 'すべて統合 · $size を解放';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    return '同じ内容 $count 個 · 1 個 $size · $saved を解放';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => '残す';
+
+  @override
+  String get storageMgmtDuplicateRetained => '統合できません';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => '重複したファイルはありません';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    return '重複ファイル $count 個を統合しますか？';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return '各組で 1 つだけ残してほかのコピーを削除し、$size を解放します。日記・カバー・コメントの見た目は変わりません。';
+  }
+
+  @override
+  String get storageMgmtMergeNote =>
+      '統合後にここで残したファイルを削除すると、それを使っているすべての箇所から取り除かれます。';
+
+  @override
+  String get storageMgmtMerging => '統合しています…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    return '重複ファイル $count 個を統合し、$size を解放しました';
+  }
+
+  @override
+  String get storageMgmtMergeNothing =>
+      '統合されませんでした。ファイルが変わっています。再集計してからもう一度お試しください。';
+
+  @override
   String get storageMgmtClear => '削除';
 
   @override

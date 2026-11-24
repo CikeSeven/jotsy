@@ -185,10 +185,13 @@ void main() {
     test(
       '$kind import copies every selected file before inserting blocks',
       () async {
+        // 内容不同的两份：内容相同的会共用一份（见下一个测试）。
+        final secondFile = File(p.join(root.path, 'second.bin'));
+        await secondFile.writeAsBytes([1, 2, 4]);
         final importer = DiaryMediaImportController(
           picker: (_) async => [
             PlatformFile(name: 'first.mp4', size: 3, path: pickedFile.path),
-            PlatformFile(name: 'second.pdf', size: 3, path: pickedFile.path),
+            PlatformFile(name: 'second.pdf', size: 3, path: secondFile.path),
           ],
         );
         addTearDown(importer.dispose);
@@ -201,8 +204,14 @@ void main() {
         final content = encodeDiaryDocumentToJson(documentController.document);
         final paths = extractDiaryFilePaths(content);
         expect(paths, hasLength(2));
+        expect(
+          [for (final path in paths) await File(path).readAsBytes()],
+          unorderedEquals(<List<int>>[
+            [1, 2, 3],
+            [1, 2, 4],
+          ]),
+        );
         for (final path in paths) {
-          expect(await File(path).readAsBytes(), [1, 2, 3]);
           expect(
             p.isWithin(
               p.join(
@@ -220,6 +229,41 @@ void main() {
       },
     );
   }
+
+  test(
+    'the same file picked twice inserts two blocks that share one copy',
+    () async {
+      final importer = DiaryMediaImportController(
+        picker: (_) async => [
+          PlatformFile(name: 'first.pdf', size: 3, path: pickedFile.path),
+          PlatformFile(name: 'again.pdf', size: 3, path: pickedFile.path),
+        ],
+      );
+      addTearDown(importer.dispose);
+      expect(
+        await importer.pickAndInsert(
+          controller: documentController,
+          kind: DiaryMediaKind.attachment,
+          isCurrent: () => true,
+        ),
+        DiaryMediaImportOutcome.inserted,
+      );
+      final content = encodeDiaryDocumentToJson(documentController.document);
+      final media = diaryContentMedia(content).toList();
+      expect(media, hasLength(2));
+      final shared = media.first.path!;
+      expect(media.last.path, shared);
+      expect(await File(shared).readAsBytes(), [1, 2, 3]);
+      // 第二份新副本连同它的导入批次目录一起删掉了。
+      final attachments = Directory(p.join(root.path, 'diary_attachments'));
+      final files = await attachments
+          .list(recursive: true)
+          .where((entity) => entity is File)
+          .toList();
+      expect(files, hasLength(1));
+      expect(await attachments.list().length, 1);
+    },
+  );
 
   test('picker cache copies are discarded once the import finishes', () async {
     // path_provider 的 mock 让临时目录与 documents 同为 root。

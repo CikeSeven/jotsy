@@ -73,7 +73,8 @@ void main() {
     await tester.runAsync(() async {
       for (final photo in [breakfast, hike]) {
         final file = File(p.join(gallery.path, '${photo.id}.png'));
-        await file.writeAsBytes(kTinyPng);
+        // 每张照片内容不同：内容相同的导入会共用一份文件。
+        await file.writeAsBytes(distinctTinyPng(photo.id));
         library.files[photo.id] = file;
       }
     });
@@ -682,7 +683,7 @@ void main() {
           (hike, 'hike.png'),
         ]) {
           final file = File(p.join(gallery.path, name));
-          await file.writeAsBytes(kTinyPng);
+          await file.writeAsBytes(distinctTinyPng(name));
           library.files[photo.id] = file;
         }
       });

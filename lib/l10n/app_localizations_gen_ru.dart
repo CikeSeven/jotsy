@@ -16264,6 +16264,115 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => 'Одинаковые файлы';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count группы одинаковых файлов, объединение освободит $size',
+      many: '$count групп одинаковых файлов, объединение освободит $size',
+      few: '$count группы одинаковых файлов, объединение освободит $size',
+      one: '$count группа одинаковых файлов, объединение освободит $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMerge => 'Объединить';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      'Содержимое этих файлов полностью совпадает. При объединении остаётся одна копия, и все места, где использовались другие копии, переходят на неё — записи выглядят как прежде.';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count группы · можно освободить $size',
+      many: '$count групп · можно освободить $size',
+      few: '$count группы · можно освободить $size',
+      one: '$count группа · можно освободить $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return 'Объединить все · освободится $size';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count одинаковой копии · по $size · освободится $saved',
+      many: '$count одинаковых копий · по $size · освободится $saved',
+      few: '$count одинаковые копии · по $size · освободится $saved',
+      one: '$count одинаковая копия · по $size · освободится $saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => 'Остаётся';
+
+  @override
+  String get storageMgmtDuplicateRetained => 'Нельзя объединить';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => 'Одинаковых файлов нет';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Объединить $count одинакового файла?',
+      many: 'Объединить $count одинаковых файлов?',
+      few: 'Объединить $count одинаковых файла?',
+      one: 'Объединить $count одинаковый файл?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return 'В каждой группе остаётся одна копия, остальные удаляются — освободится $size. Записи, обложки и комментарии выглядят как прежде.';
+  }
+
+  @override
+  String get storageMgmtMergeNote =>
+      'Если потом удалить оставшийся файл здесь, он исчезнет из всех мест, где используется.';
+
+  @override
+  String get storageMgmtMerging => 'Объединение…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Объединено $count одинакового файла, освобождено $size',
+      many: 'Объединено $count одинаковых файлов, освобождено $size',
+      few: 'Объединено $count одинаковых файла, освобождено $size',
+      one: 'Объединён $count одинаковый файл, освобождено $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMergeNothing =>
+      'Ничего не объединено: файлы изменились. Пересчитайте и попробуйте снова.';
+
+  @override
   String get storageMgmtClear => 'Очистить';
 
   @override

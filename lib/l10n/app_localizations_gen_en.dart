@@ -15697,6 +15697,99 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => 'Duplicate files';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets of identical files, merging frees $size',
+      one: '1 set of identical files, merging frees $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMerge => 'Merge';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      'These files have exactly the same content. Merging keeps one copy and every place that used another copy uses it instead, so your entries look the same.';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets · $size can be freed',
+      one: '1 set · $size can be freed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return 'Merge all · frees $size';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    return '$count identical copies · $size each · frees $saved';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => 'Kept';
+
+  @override
+  String get storageMgmtDuplicateRetained => 'Can\'t merge';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => 'No duplicate files';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Merge $count duplicate files?',
+      one: 'Merge 1 duplicate file?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return 'Each set keeps one copy and the others are removed, freeing $size. Entries, covers and comments look the same as before.';
+  }
+
+  @override
+  String get storageMgmtMergeNote =>
+      'Afterwards, deleting the kept file here removes it from every place that uses it.';
+
+  @override
+  String get storageMgmtMerging => 'Merging…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Merged $count duplicate files, freed $size',
+      one: 'Merged 1 duplicate file, freed $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMergeNothing =>
+      'Nothing was merged: these files have changed. Rescan and try again.';
+
+  @override
   String get storageMgmtClear => 'Clear';
 
   @override

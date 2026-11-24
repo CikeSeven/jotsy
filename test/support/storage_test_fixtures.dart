@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/storage/media_compressor.dart';
+import 'package:node_diary/core/services/storage/storage_duplicates.dart';
 import 'package:node_diary/core/services/storage/storage_media_service.dart';
 import 'package:node_diary/core/services/storage/storage_usage_models.dart';
 
@@ -15,10 +16,14 @@ class FakeStorageMediaService extends Fake implements StorageMediaService {
 
   StorageUsageReport report;
 
+  /// [findDuplicates] 的结果；默认没有重复文件。
+  StorageDuplicates duplicates = StorageDuplicates.none;
+
   @override
   final MediaCompressor compressor;
 
   final List<Set<String>> deleted = <Set<String>>[];
+  final List<List<StorageDuplicateGroup>> merged = [];
   final List<({bool cache, bool orphans, bool database})> cleanUps = [];
 
   /// 下一次删除 / 清理抛出的守卫拒绝。
@@ -44,6 +49,26 @@ class FakeStorageMediaService extends Fake implements StorageMediaService {
     return StorageDeleteResult(
       deletedFiles: keys.length,
       freedBytes: freed,
+      skippedRows: 0,
+    );
+  }
+
+  @override
+  Future<StorageDuplicates> findDuplicates(StorageUsageReport report) async =>
+      duplicates;
+
+  /// 合并后不再有重复（与真服务合并后重新扫描的结果一致）。
+  @override
+  Future<StorageMergeResult> mergeDuplicates(
+    List<StorageDuplicateGroup> groups,
+  ) async {
+    final reason = busy;
+    if (reason != null) throw StorageBusyException(reason);
+    merged.add(groups);
+    duplicates = StorageDuplicates.none;
+    return StorageMergeResult(
+      mergedFiles: groups.fold(0, (sum, group) => sum + group.copies.length),
+      freedBytes: groups.fold(0, (sum, group) => sum + group.savedBytes),
       skippedRows: 0,
     );
   }

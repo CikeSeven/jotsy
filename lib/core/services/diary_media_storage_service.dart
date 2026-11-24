@@ -8,6 +8,7 @@ import '../database/file_embed_codec.dart';
 import 'app_data_directory.dart';
 import 'diary_audio_storage_service.dart';
 import 'heif_image_converter.dart';
+import 'storage/managed_media_dedup.dart';
 
 /// [audio] 为从文件导入、在正文里做成录音块的音频（#251），与应用内录音
 /// 同放 `diary_recordings/`；工具栏没有单独的入口，由选文件 / 拖放按扩展名
@@ -21,7 +22,10 @@ enum DiaryMediaKind { image, video, attachment, audio }
 /// - 每次导入使用独立子目录，保留文件名及扩展名且不覆盖同名文件；
 /// - 图片若是 HEIC / HEIF / AVIF，能转码的平台（Android 9+）复制后转成同名
 ///   `.jpg` 再交给正文：桌面版解码不了这些格式（见 [HeifImageConverter]）；
-/// - 删除操作只针对托管文件，避免误删用户外部路径；
+/// - 可共用的托管目录里已有逐字节相同的文件时改用那份、删掉新副本
+///   （[ManagedMediaDedup]），同一张图插进多篇日记只占一份空间；
+/// - 删除操作只针对本次刚导入的托管文件，避免误删用户外部路径或别处在用的
+///   文件；
 /// - 这里的删除只用于从未交给正文的文件（导入失败/取消）。已写入正文的文件
 ///   可能被撤销、放弃修改或其他日记复用，统一由 DiaryMediaCleanupService
 ///   按引用回收。
@@ -86,11 +90,17 @@ class DiaryMediaStorageService {
       final stored = kind == DiaryMediaKind.image
           ? await HeifImageConverter.convertImported(target.path)
           : target.path;
+      final sizeBytes = await File(stored).length();
+      // 先登记为本次导入所有，再找同内容的已有文件：登记之后别的导入复用了
+      // 它会撤销登记，回滚就不会删掉别处在用的文件（见 FreshManagedFiles）。
+      FreshManagedFiles.claim(stored);
+      // 已有逐字节相同的文件时改用它，新副本随即删掉（见 ManagedMediaDedup）。
+      final path = await ManagedMediaDedup.adopt(stored);
       return DiaryFileAttachment(
-        path: stored,
-        // 转成 JPEG 后显示名跟着换扩展名。
+        path: path,
+        // 转成 JPEG 后显示名跟着换扩展名；复用别的文件时显示名不变。
         name: stored == target.path ? fileName : p.basename(stored),
-        sizeBytes: await File(stored).length(),
+        sizeBytes: sizeBytes,
       );
     } catch (_) {
       // 复制失败不能留下可被备份打包的半成品。
@@ -115,6 +125,12 @@ class DiaryMediaStorageService {
     return utf8.encode(safe).length <= 240 ? safe : 'attachment';
   }
 
+  /// 删除本进程刚经 [importFile] 导入、还没交给正文的文件（导入失败、取消、
+  /// 移除还没保存的图片）。
+  ///
+  /// 只删登记在 [FreshManagedFiles] 里的：导入时复用的已有文件（别的日记
+  /// 可能在用）、以前导入的文件与托管目录外的文件一律不动，交给按引用的
+  /// 媒体回收。
   static Future<void> deleteManagedDiaryFile(String? rawPath) async {
     var path = rawPath?.trim();
     if (path == null || path.isEmpty) return;
@@ -126,6 +142,7 @@ class DiaryMediaStorageService {
         return;
       }
     }
+    if (!FreshManagedFiles.release(path)) return;
     final root = await appDataRootDirectory();
     final normalized = p.normalize(path);
     for (final kind in DiaryMediaKind.values) {

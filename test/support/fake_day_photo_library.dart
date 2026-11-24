@@ -17,6 +17,11 @@ final Uint8List kTinyPng = Uint8List.fromList(const <int>[
   0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 ]);
 
+/// 与 [kTinyPng] 画面相同、字节不同的 PNG（IEND 之后追加 [tag]，解码器忽略）。
+/// 代表“不同的照片”：内容逐字节相同的导入会共用一份托管文件。
+Uint8List distinctTinyPng(String tag) =>
+    Uint8List.fromList(<int>[...kTinyPng, ...tag.codeUnits]);
+
 /// [DayPhotoLibrary] 的测试替身：按日期返回预设照片，记录每次调用。
 class FakeDayPhotoLibrary implements DayPhotoLibrary {
   FakeDayPhotoLibrary({

@@ -175,9 +175,9 @@
 - 禁止：提交说明加 `Co-Authored-By` 等署名；夹带无关改动。
 - 禁止：擅自回退用户改动、执行破坏性 git 操作（如 `git reset --hard`）或改写历史（如 `commit --amend`）。
 - 例外：用户明确授权时可执行，并先说明影响。
-- 必须：改动仓库内容前先用代理自带的工作树工具新建工作树（Claude Code 为 `EnterWorktree`），改动、验证、提交、推送都在工作树里完成。
+- 必须：改动仓库内容前先新建工作树，改动、验证、提交、推送都在工作树里完成；代理自带工作树工具（Claude Code 为 `EnterWorktree`）时使用该工具，没有该工具时允许用 `git worktree add` 创建在已忽略的 `.worktrees/` 下。
 - 必须：工作树基于最新 `origin/main`：创建前 `git fetch origin`，落后就 `git merge --ff-only origin/main`；新工作树先 `flutter pub get`。
-- 禁止：在主目录改文件、切分支或提交；手动 `git worktree add`；在工作树中读写主目录文件；使用不带标记的 `git stash` / `git stash pop`。
+- 禁止：在主目录改文件、切分支或提交；代理自带工作树工具时手动 `git worktree add`，或把工作树建在未忽略路径；在工作树中读写主目录文件；使用不带标记的 `git stash` / `git stash pop`。
 - 例外：只读工作不需要工作树；用户明确要求在主目录改动时照做。
 - 必须：开 PR 前 `git fetch origin`，有新提交就 `git merge origin/main`（已推送分支不 rebase），解决冲突后重跑相关检查；PR 说明写明合并了哪些冲突、怎么解决。
 

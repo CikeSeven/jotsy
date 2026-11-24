@@ -10,11 +10,12 @@ import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 
 /// 目录页章节标题行上的操作。
-enum NotebookChapterAction { rename, moveUp, moveDown, delete }
+enum NotebookChapterAction { rename, moveUp, moveDown, transferToChild, delete }
 
 /// 目录页的章节标题行：章节名（`titleMedium` w700 `primary`）+ 篇数 + 收起 /
-/// 展开箭头，右侧 ⋮ 菜单（重命名 / 上移 / 下移 / 删除；在两端时不给上移或
-/// 下移）与拖动手柄（与日记行的手柄在同一列）。
+/// 展开箭头，右侧 ⋮ 菜单（重命名 / 上移 / 下移 / 移到子日记本 / 删除；在两端
+/// 时不给上移或下移，不能转移到子本时不给“移到子日记本”）与拖动手柄（与日记行
+/// 的手柄在同一列）。
 ///
 /// - 点按章节名一带收起 / 展开这一章的日记（[onToggle]；没有日记时为 null，
 ///   不显示箭头、点了也没反应）。箭头与管理页的子本按钮同一组：收起时向下
@@ -30,6 +31,7 @@ class NotebookContentsChapterHeader extends StatelessWidget {
     this.isFirst = false,
     this.isLast = false,
     this.collapsed = false,
+    this.canTransferToChild = false,
     this.onToggle,
     this.onAction,
     this.dragHandle,
@@ -42,6 +44,9 @@ class NotebookContentsChapterHeader extends StatelessWidget {
 
   /// 这一章是否收起着（只在 [onToggle] 不为 null 时显示）。
   final bool collapsed;
+
+  /// 当前日记本是否支持把章节移到子日记本（最深叶子本为 false）。
+  final bool canTransferToChild;
   final VoidCallback? onToggle;
   final ValueChanged<NotebookChapterAction>? onAction;
 
@@ -103,6 +108,15 @@ class NotebookContentsChapterHeader extends StatelessWidget {
                           onPressed: () =>
                               onAction(NotebookChapterAction.moveDown),
                           child: Text(l10n.notebookChapterMoveDown),
+                        ),
+                      if (canTransferToChild)
+                        ExpressiveMenuItem(
+                          leadingIcon: const FaIcon(
+                            FontAwesomeIcons.folderTree,
+                          ),
+                          onPressed: () =>
+                              onAction(NotebookChapterAction.transferToChild),
+                          child: Text(l10n.notebookChapterTransferToChild),
                         ),
                       ExpressiveMenuItem(
                         leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),

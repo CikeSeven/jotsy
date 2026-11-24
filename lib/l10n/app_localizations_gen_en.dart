@@ -19211,4 +19211,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => 'Move later';
+
+  @override
+  String get notebookContentsTransferToChild =>
+      'Transfer contents to sub-notebook';
+
+  @override
+  String get notebookChapterTransferToChild => 'Move to sub-notebook…';
+
+  @override
+  String get notebookContentsTransferSheetTitle =>
+      'Transfer contents to which sub-notebook';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return 'Move \"$title\" to which sub-notebook';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint =>
+      'No sub-notebooks yet. Create one above to transfer into it.';
+
+  @override
+  String get notebookContentsTransferConfirmTitle => 'Transfer to sub-notebook';
+
+  @override
+  String get notebookContentsTransferAction => 'Transfer';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters chapters',
+      one: '1 chapter',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return 'Transfer $_temp0 and $_temp1 from \"$source\" to \"$target\"? Chapters and order are kept, and they are removed from \"$source\". No entries are deleted.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return 'Transfer $_temp0 from \"$source\" to \"$target\"? Their order is kept, and they are removed from \"$source\". No entries are deleted.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters chapters',
+      one: '1 chapter',
+    );
+    return 'Transfer $_temp0 from \"$source\" to \"$target\"? They will be removed from \"$source\".';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return 'Move chapter \"$chapter\" and its $_temp0 to \"$target\"? The chapter and order are kept, and they are removed from \"$source\". No entries are deleted.';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return 'Move empty chapter \"$chapter\" to \"$target\"? It will be removed from \"$source\".';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '\"$target\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return 'Transferred contents to \"$target\"';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return 'Moved \"$chapter\" to \"$target\"';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return 'Transferred to \"$target\". Moved entries now only show in that notebook';
+  }
 }

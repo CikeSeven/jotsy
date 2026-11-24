@@ -17063,4 +17063,95 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => '後ろへ移動';
+
+  @override
+  String get notebookContentsTransferToChild => '目次をサブ日記帳へ移動';
+
+  @override
+  String get notebookChapterTransferToChild => 'サブ日記帳へ移動…';
+
+  @override
+  String get notebookContentsTransferSheetTitle => '目次をどのサブ日記帳へ移動しますか';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return '「$title」をどのサブ日記帳へ移動しますか';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint =>
+      'まだサブ日記帳がありません。上から新規作成して移動できます';
+
+  @override
+  String get notebookContentsTransferConfirmTitle => 'サブ日記帳へ移動';
+
+  @override
+  String get notebookContentsTransferAction => '移動';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    return '「$source」の章$chapters件と日記$entries件をサブ日記帳「$target」へ移動しますか？章構成と並び順は維持され、「$source」からは外れます。日記は削除されません。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    return '「$source」の日記$entries件をサブ日記帳「$target」へ移動しますか？並び順は維持され、「$source」からは外れます。日記は削除されません。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    return '「$source」の章$chapters件をサブ日記帳「$target」へ移動しますか？これらの章は「$source」から外れます。';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    return '章「$chapter」と含まれる日記$entries件をサブ日記帳「$target」へ移動しますか？章と並び順は維持され、「$source」からは外れます。日記は削除されません。';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return '空の章「$chapter」をサブ日記帳「$target」へ移動しますか？この章は「$source」から外れます。';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '「$target」は非公開の日記帳です。移動した日記はその日記帳の中でのみ表示され、すべての日記には表示されなくなります。';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return '目次を「$target」へ移動しました';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return '「$chapter」を「$target」へ移動しました';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return '「$target」へ移動しました。移動した日記はその日記帳の中でのみ表示されます';
+  }
 }

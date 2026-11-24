@@ -22,23 +22,27 @@ import '../widgets/notebook_icon_grid.dart';
 /// 快速新建日记本的弹窗：名称、紧凑的颜色行与图标行（常用 6 个，“更多”
 /// 展开全部）。创建成功返回新日记本的业务 id，取消返回 null。
 ///
-/// 供收录选择器等“边选边建”的场景使用；完整设置（封面、隐私、排序、模板）
-/// 仍在编辑页。
+/// 供收录选择器与目录转移面板等“边选边建”的场景使用；完整设置（封面、隐私、
+/// 排序、模板）仍在编辑页。[parentId] 非空时直接建在该日记本下作为子日记本。
 Future<String?> showQuickCreateNotebookDialog(
   BuildContext context, {
   String? initialName,
+  String? parentId,
 }) {
   return showAppDialog<String>(
     context: context,
-    builder: (BuildContext _) =>
-        _QuickCreateNotebookDialog(initialName: initialName),
+    builder: (BuildContext _) => _QuickCreateNotebookDialog(
+      initialName: initialName,
+      parentId: parentId,
+    ),
   );
 }
 
 class _QuickCreateNotebookDialog extends ConsumerStatefulWidget {
-  const _QuickCreateNotebookDialog({this.initialName});
+  const _QuickCreateNotebookDialog({this.initialName, this.parentId});
 
   final String? initialName;
+  final String? parentId;
 
   @override
   ConsumerState<_QuickCreateNotebookDialog> createState() =>
@@ -75,6 +79,7 @@ class _QuickCreateNotebookDialogState
           .createNotebook(
             name: _name.text,
             payload: NotebookPayload(icon: _icon.name, color: _color),
+            parentId: widget.parentId,
           );
       if (mounted) Navigator.of(context).pop(id);
     } catch (error) {
@@ -91,7 +96,9 @@ class _QuickCreateNotebookDialogState
     final scheme = Theme.of(context).colorScheme;
     return AlertDialog(
       scrollable: true,
-      title: Text(l10n.notebookNew),
+      title: Text(
+        widget.parentId == null ? l10n.notebookNew : l10n.notebookSubCreate,
+      ),
       content: SizedBox(
         width: 360,
         child: Column(

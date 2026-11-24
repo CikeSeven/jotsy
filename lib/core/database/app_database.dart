@@ -59,6 +59,7 @@ part 'app_database_explore_ops.dart';
 part 'app_database_place_history_ops.dart';
 part 'app_database_notebook_hierarchy.dart';
 part 'app_database_notebook_tree_ops.dart';
+part 'app_database_notebook_transfer_ops.dart';
 part 'app_database_day_mood_schema.dart';
 part 'app_database_day_mood_ops.dart';
 part 'app_database_comment_schema.dart';
@@ -113,6 +114,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseTemplateOps,
         _AppDatabaseNotebookTreeOps,
         _AppDatabaseNotebookOps,
+        _AppDatabaseNotebookTransferOps,
         _AppDatabaseNotebookStatsOps,
         _AppDatabaseExploreOps,
         _AppDatabasePlaceHistoryOps,

@@ -21893,21 +21893,21 @@
   "@diaryThumbnailMoveLater": {
     "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
   },
-  "notebookContentsTransferToChild": "Transfer contents to sub-notebook",
-  "@notebookContentsTransferToChild": {
-    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook."
+  "notebookContentsTransfer": "Transfer contents",
+  "@notebookContentsTransfer": {
+    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire contents (all chapters and entries) to a parent or sub-notebook."
   },
-  "notebookChapterTransferToChild": "Move to sub-notebook…",
-  "@notebookChapterTransferToChild": {
-    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook."
+  "notebookChapterTransfer": "Transfer chapter…",
+  "@notebookChapterTransfer": {
+    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a parent or sub-notebook."
   },
-  "notebookContentsTransferSheetTitle": "Transfer contents to which sub-notebook",
+  "notebookContentsTransferSheetTitle": "Transfer contents to which notebook",
   "@notebookContentsTransferSheetTitle": {
-    "description": "Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents."
+    "description": "Title of the bottom sheet asking which parent or sub-notebook should receive the current notebook's entire contents."
   },
-  "notebookChapterTransferSheetTitle": "Move \"{title}\" to which sub-notebook",
+  "notebookChapterTransferSheetTitle": "Transfer \"{title}\" to which notebook",
   "@notebookChapterTransferSheetTitle": {
-    "description": "Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.",
+    "description": "Title of the bottom sheet asking which parent or sub-notebook should receive a single chapter and its entries.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -21916,19 +21916,19 @@
   },
   "notebookContentsTransferEmptyHint": "No sub-notebooks yet. Create one above to transfer into it.",
   "@notebookContentsTransferEmptyHint": {
-    "description": "Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet."
+    "description": "Empty state hint inside the transfer target picker when the current notebook has neither parent notebooks nor eligible sub-notebooks yet."
   },
-  "notebookContentsTransferConfirmTitle": "Transfer to sub-notebook",
+  "notebookContentsTransferConfirmTitle": "Confirm transfer",
   "@notebookContentsTransferConfirmTitle": {
-    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook."
+    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a parent or sub-notebook."
   },
   "notebookContentsTransferAction": "Transfer",
   "@notebookContentsTransferAction": {
-    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook."
+    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a parent or sub-notebook."
   },
   "notebookContentsTransferConfirmAll": "Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} and {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Chapters and order are kept, and they are removed from \"{source}\". No entries are deleted.",
   "@notebookContentsTransferConfirmAll": {
-    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.",
+    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a parent or sub-notebook.",
     "placeholders": {
       "source": {
         "type": "String"
@@ -21946,7 +21946,7 @@
   },
   "notebookContentsTransferConfirmEntriesOnly": "Transfer {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Their order is kept, and they are removed from \"{source}\". No entries are deleted.",
   "@notebookContentsTransferConfirmEntriesOnly": {
-    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.",
+    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a parent or sub-notebook.",
     "placeholders": {
       "source": {
         "type": "String"
@@ -21961,7 +21961,7 @@
   },
   "notebookContentsTransferConfirmChaptersOnly": "Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} from \"{source}\" to \"{target}\"? They will be removed from \"{source}\".",
   "@notebookContentsTransferConfirmChaptersOnly": {
-    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.",
+    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a parent or sub-notebook.",
     "placeholders": {
       "source": {
         "type": "String"
@@ -21976,7 +21976,7 @@
   },
   "notebookChapterTransferConfirm": "Move chapter \"{chapter}\" and its {entries, plural, =1{1 entry} other{{entries} entries}} to \"{target}\"? The chapter and order are kept, and they are removed from \"{source}\". No entries are deleted.",
   "@notebookChapterTransferConfirm": {
-    "description": "Confirmation message when moving a chapter with entries to a sub-notebook.",
+    "description": "Confirmation message when transferring a chapter with entries to a parent or sub-notebook.",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -21994,7 +21994,7 @@
   },
   "notebookChapterTransferConfirmEmpty": "Move empty chapter \"{chapter}\" to \"{target}\"? It will be removed from \"{source}\".",
   "@notebookChapterTransferConfirmEmpty": {
-    "description": "Confirmation message when moving an empty chapter to a sub-notebook.",
+    "description": "Confirmation message when transferring an empty chapter to a parent or sub-notebook.",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22016,9 +22016,27 @@
       }
     }
   },
+  "notebookContentsTransferPublicNote": "\"{target}\" is not a private notebook. Moved entries will also appear in All Diaries.",
+  "@notebookContentsTransferPublicNote": {
+    "description": "Additional warning in the transfer confirmation dialog when moving entries from a hidden or locked notebook into a normal parent notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPublic": "Transferred to \"{target}\". Moved entries now also show in All Diaries",
+  "@notebookContentsTransferredPublic": {
+    "description": "SnackBar (with an Undo action) shown after transferring entries from a private notebook into a normal parent notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "notebookContentsTransferred": "Transferred contents to \"{target}\"",
   "@notebookContentsTransferred": {
-    "description": "SnackBar shown after transferring a notebook's entire contents to a sub-notebook.",
+    "description": "SnackBar (with an Undo action) shown after transferring a notebook's entire contents to a parent or sub-notebook.",
     "placeholders": {
       "target": {
         "type": "String"
@@ -22027,7 +22045,7 @@
   },
   "notebookChapterTransferred": "Moved \"{chapter}\" to \"{target}\"",
   "@notebookChapterTransferred": {
-    "description": "SnackBar shown after moving a single chapter to a sub-notebook.",
+    "description": "SnackBar (with an Undo action) shown after transferring a single chapter to a parent or sub-notebook.",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22039,7 +22057,7 @@
   },
   "notebookContentsTransferredPrivate": "Transferred to \"{target}\". Moved entries now only show in that notebook",
   "@notebookContentsTransferredPrivate": {
-    "description": "SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.",
+    "description": "SnackBar (with an Undo action) shown after transferring entries from a normal notebook into a private sub-notebook.",
     "placeholders": {
       "target": {
         "type": "String"

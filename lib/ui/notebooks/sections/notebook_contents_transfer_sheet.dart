@@ -1,67 +1,41 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../settings/widgets/choice_sheet_parts.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
-import '../../widgets/app_modal/app_dialog.dart';
 import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../controllers/notebook_contents_controller.dart';
 import '../controllers/notebook_lock_flow.dart';
 import '../models/notebook_pick_selection.dart';
 import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_transfer_targets.dart';
 import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_foldable_rows.dart';
 import '../widgets/notebook_pick_row.dart';
+import 'notebook_contents_transfer_dialog.dart';
 import 'notebook_quick_create_dialog.dart';
 
-/// 目录页“转移到子日记本”流程（整份目录与单个章节共用）。
+/// 目录页“转移目录”流程（整份目录与单个章节共用）。
 ///
 /// - 输入：当前手动日记本 [source]、目录页控制器 [controller]、预计转移的章节数
 ///   与日记篇数，以及可选的单个章节 [chapter]（为 null 表示整份目录）。
 /// - 输出：无返回值；取消、身份验证未通过或写库失败时留在原处，不改动数据。
 /// - 副作用：可在选择面板里于 [source] 下新建子日记本；目标处于不同上锁范围时
-///   经 [authorizeNotebookEntry] 验证身份；确认后经 [controller.transferToChild]
-///   在单个事务里搬运章节与成员并弹出提示条。
-
-/// 当前日记本 [sourceId] 下面可以接收目录转移的候选子日记本：所有未合上的手动
-/// 子孙本，按 [notebookTreeRows] 树序缩进（直接子本缩进 0、孙子本缩进 1）。
-List<NotebookTreeRow> notebookChildTransferCandidates(
-  NotebookTree tree,
-  String sourceId,
-) {
-  final descendants = <String>{
-    for (final child in tree.descendantsOf(sourceId)) child.id,
-  };
-  if (descendants.isEmpty) return const <NotebookTreeRow>[];
-  return notebookTreeRows(
-    tree,
-    include: (NotebookView notebook) =>
-        descendants.contains(notebook.id) &&
-        notebook.isManual &&
-        !notebook.isClosed,
-  );
-}
-
-/// 当前手动日记本是否支持在目录页发起“转移到子日记本”：还能新建子本，或已经
-/// 有可接收转移的手动子孙本（第 3 层最深叶子本两者都不满足，入口隐藏）。
-bool canTransferNotebookContentsToChild(
-  NotebookView notebook,
-  NotebookTree? tree,
-) {
-  if (!notebook.isManual) return false;
-  if (notebook.canHaveChildren) return true;
-  if (tree == null) return false;
-  return notebookChildTransferCandidates(tree, notebook.id).isNotEmpty;
-}
-
-/// 执行“转移到子日记本”完整流程：挑选子日记本（或当场新建子本）→ 目标位于
-/// 不同上锁范围时验证身份 → 确认转移内容与私密影响 → 原子写库并提示。
+///   经 [authorizeNotebookEntry] 验证身份；确认后经 [controller.transfer] 在
+///   单个事务里搬运章节与成员，弹出带撤销的提示条。
+///
+/// 目标可以是上级（父本、祖本）或子孙本：转到子本的内容能原路转回上级，提示条
+/// 上的撤销则把两本精确还原到转移前。
 Future<void> runNotebookContentsTransferFlow(
   BuildContext context,
   WidgetRef ref, {
@@ -71,7 +45,7 @@ Future<void> runNotebookContentsTransferFlow(
   required int entryCount,
   NotebookChapter? chapter,
 }) async {
-  final target = await showNotebookChildTargetSheet(
+  final target = await showNotebookTransferTargetSheet(
     context,
     source: source,
     chapter: chapter,
@@ -83,7 +57,8 @@ Future<void> runNotebookContentsTransferFlow(
     needsAuth = notebookRequiresAuth(target);
   } else {
     // 刚在面板里新建的子本可能尚未经书架流推送回来：补进树里再按同一口径算
-    // 上锁范围，避免继承当前本锁的新子本多问一次验证。
+    // 上锁范围，避免继承当前本锁的新子本多问一次验证。往上级转属于“往上走”，
+    // 同一口径下不再验证。
     final resolvedTree = tree[target.id] != null
         ? tree
         : NotebookTree(<NotebookRow>[
@@ -109,9 +84,9 @@ Future<void> runNotebookContentsTransferFlow(
     chapter: chapter,
   );
   if (!confirmed || !context.mounted) return;
-  final NotebookContentsTransferResult result;
+  final NotebookContentsTransfer transfer;
   try {
-    result = await controller.transferToChild(
+    transfer = await controller.transfer(
       targetId: target.id,
       chapterId: chapter?.id,
     );
@@ -124,19 +99,54 @@ Future<void> runNotebookContentsTransferFlow(
   }
   if (!context.mounted) return;
   final l10n = context.l10n;
-  final becamePrivate =
-      !source.isPrivate && target.isPrivate && result.entryCount > 0;
-  final message = becamePrivate
-      ? l10n.notebookContentsTransferredPrivate(target.name)
-      : chapter != null
-      ? l10n.notebookChapterTransferred(chapter.title, target.name)
-      : l10n.notebookContentsTransferred(target.name);
-  showStyleEditorMessage(context, message);
+  final message = switch (NotebookTransferPrivacyChange.of(
+    source: source,
+    target: target,
+    entryCount: transfer.entryCount,
+  )) {
+    NotebookTransferPrivacyChange.becomesPrivate =>
+      l10n.notebookContentsTransferredPrivate(target.name),
+    NotebookTransferPrivacyChange.becomesPublic =>
+      l10n.notebookContentsTransferredPublic(target.name),
+    NotebookTransferPrivacyChange.none =>
+      chapter != null
+          ? l10n.notebookChapterTransferred(chapter.title, target.name)
+          : l10n.notebookContentsTransferred(target.name),
+  };
+  if (transfer.isEmpty) {
+    showStyleEditorMessage(context, message);
+    return;
+  }
+  // 带撤销的提示条开着时局域网同步不写入（撤销窗口），撤销写回的不会被同步
+  // 刚写入的值覆盖，反之亦然。
+  unawaited(
+    showStyleEditorUndoSnackBar(
+      context,
+      message: message,
+      onUndo: () => unawaited(_undoTransfer(context, controller, transfer)),
+    ),
+  );
 }
 
-/// 挑选目标子日记本的底部面板：列出 [source] 下所有未合上的手动子孙本（树序
-/// 缩进、可收起展开），还能建子本时顶部提供“＋ 新建子日记本”直接建完返回。
-Future<NotebookView?> showNotebookChildTargetSheet(
+Future<void> _undoTransfer(
+  BuildContext context,
+  NotebookContentsController controller,
+  NotebookContentsTransfer transfer,
+) async {
+  try {
+    await controller.undoTransfer(transfer);
+  } catch (error) {
+    debugPrint('Undoing notebook contents transfer failed: $error');
+    if (context.mounted) {
+      showStyleEditorMessage(context, context.l10n.notebookActionFailed);
+    }
+  }
+}
+
+/// 挑选目标日记本的底部面板：有上级时分“上级日记本 / 子日记本”两组，列出
+/// [source] 未合上的手动上级与手动子孙（树序缩进、可收起展开）；还能建子本
+/// 时在子本一组顶部提供“＋ 新建子日记本”，建完直接返回新子本。
+Future<NotebookView?> showNotebookTransferTargetSheet(
   BuildContext context, {
   required NotebookView source,
   NotebookChapter? chapter,
@@ -151,12 +161,12 @@ Future<NotebookView?> showNotebookChildTargetSheet(
         ? AnimationStyle.noAnimation
         : null,
     builder: (BuildContext _) =>
-        _NotebookChildTargetSheet(source: source, chapter: chapter),
+        _NotebookTransferTargetSheet(source: source, chapter: chapter),
   );
 }
 
-class _NotebookChildTargetSheet extends ConsumerWidget {
-  const _NotebookChildTargetSheet({required this.source, this.chapter});
+class _NotebookTransferTargetSheet extends ConsumerWidget {
+  const _NotebookTransferTargetSheet({required this.source, this.chapter});
 
   final NotebookView source;
   final NotebookChapter? chapter;
@@ -178,6 +188,30 @@ class _NotebookChildTargetSheet extends ConsumerWidget {
     Navigator.of(context).pop(created);
   }
 
+  Widget _rows(
+    BuildContext context,
+    WidgetRef ref,
+    List<NotebookTreeRow> rows,
+    Map<String, int> counts,
+  ) {
+    return NotebookFoldableRows(
+      rows: rows,
+      itemBuilder: (context, row, toggle) {
+        final notebook = row.notebook;
+        return NotebookPickRow(
+          key: ValueKey<String>('notebook_transfer_target_${notebook.id}'),
+          notebook: notebook,
+          state: NotebookPickState.none,
+          count: watchNotebookDisplayCount(ref, notebook, counts),
+          showCheck: false,
+          indent: row.indent,
+          toggle: toggle,
+          onTap: () => Navigator.of(context).pop(notebook),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -185,9 +219,15 @@ class _NotebookChildTargetSheet extends ConsumerWidget {
     final tree = ref.watch(notebookTreeProvider);
     final counts =
         ref.watch(notebookEntryCountsProvider).value ?? const <String, int>{};
-    final candidates = tree == null
-        ? const <NotebookTreeRow>[]
-        : notebookChildTransferCandidates(tree, source.id);
+    final targets = tree == null
+        ? const NotebookTransferTargets(
+            ancestors: <NotebookTreeRow>[],
+            descendants: <NotebookTreeRow>[],
+          )
+        : NotebookTransferTargets.of(tree, source.id);
+    final canCreate = source.canHaveChildren;
+    // 没有上级时只有子本一组，不加分组标题（与只能转到子本时一样）。
+    final grouped = targets.ancestors.isNotEmpty;
     final title = chapter == null
         ? l10n.notebookContentsTransferSheetTitle
         : l10n.notebookChapterTransferSheetTitle(chapter!.title);
@@ -228,7 +268,19 @@ class _NotebookChildTargetSheet extends ConsumerWidget {
                   AppSpacing.l,
                 ),
                 children: <Widget>[
-                  if (source.canHaveChildren)
+                  if (grouped) ...<Widget>[
+                    ChoiceSheetSectionHeader(
+                      icon: FontAwesomeIcons.arrowTurnUp,
+                      label: l10n.notebookParentLabel,
+                    ),
+                    _rows(context, ref, targets.ancestors, counts),
+                    if (canCreate || targets.descendants.isNotEmpty)
+                      ChoiceSheetSectionHeader(
+                        icon: FontAwesomeIcons.arrowTurnDown,
+                        label: l10n.notebookSubSectionTitle,
+                      ),
+                  ],
+                  if (canCreate)
                     NotebookPickCreateRow(
                       key: const ValueKey<String>(
                         'notebook_transfer_create_child',
@@ -236,7 +288,7 @@ class _NotebookChildTargetSheet extends ConsumerWidget {
                       label: l10n.notebookSubCreate,
                       onTap: () => _createChild(context, ref),
                     ),
-                  if (candidates.isEmpty)
+                  if (targets.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.m,
@@ -250,29 +302,8 @@ class _NotebookChildTargetSheet extends ConsumerWidget {
                         ),
                       ),
                     )
-                  else
-                    NotebookFoldableRows(
-                      rows: candidates,
-                      itemBuilder: (context, row, toggle) {
-                        final notebook = row.notebook;
-                        return NotebookPickRow(
-                          key: ValueKey<String>(
-                            'notebook_transfer_target_${notebook.id}',
-                          ),
-                          notebook: notebook,
-                          state: NotebookPickState.none,
-                          count: watchNotebookDisplayCount(
-                            ref,
-                            notebook,
-                            counts,
-                          ),
-                          showCheck: false,
-                          indent: row.indent,
-                          toggle: toggle,
-                          onTap: () => Navigator.of(context).pop(notebook),
-                        );
-                      },
-                    ),
+                  else if (targets.descendants.isNotEmpty)
+                    _rows(context, ref, targets.descendants, counts),
                 ],
               ),
             ),
@@ -281,117 +312,4 @@ class _NotebookChildTargetSheet extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// 转移确认框：写明即将搬运的章节数、日记篇数与目标子本；从普通本转入私密
-/// 子本且含日记时附带私密可见性说明。确认键为主色（不删除任何日记）。
-Future<bool> showNotebookContentsTransferDialog(
-  BuildContext context, {
-  required NotebookView source,
-  required NotebookView target,
-  required int chapterCount,
-  required int entryCount,
-  NotebookChapter? chapter,
-}) async {
-  final confirmed = await showAppDialog<bool>(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      final l10n = dialogContext.l10n;
-      final theme = Theme.of(dialogContext);
-      final scheme = theme.colorScheme;
-      final message = _confirmMessage(
-        l10n,
-        sourceName: source.name,
-        targetName: target.name,
-        chapterCount: chapterCount,
-        entryCount: entryCount,
-        chapter: chapter,
-      );
-      final showPrivateNote =
-          !source.isPrivate && target.isPrivate && entryCount > 0;
-      return AlertDialog(
-        title: Text(l10n.notebookContentsTransferConfirmTitle),
-        content: showPrivateNote
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(message),
-                  const SizedBox(height: AppSpacing.m),
-                  Text(
-                    l10n.notebookContentsTransferPrivateNote(target.name),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              )
-            : Text(message),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: scheme.onSurfaceVariant,
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: scheme.primary,
-              textStyle: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.notebookContentsTransferAction),
-          ),
-        ],
-      );
-    },
-  );
-  return confirmed ?? false;
-}
-
-String _confirmMessage(
-  AppLocalizations l10n, {
-  required String sourceName,
-  required String targetName,
-  required int chapterCount,
-  required int entryCount,
-  required NotebookChapter? chapter,
-}) {
-  if (chapter != null) {
-    return entryCount > 0
-        ? l10n.notebookChapterTransferConfirm(
-            chapter.title,
-            entryCount,
-            sourceName,
-            targetName,
-          )
-        : l10n.notebookChapterTransferConfirmEmpty(
-            chapter.title,
-            sourceName,
-            targetName,
-          );
-  }
-  if (chapterCount > 0 && entryCount > 0) {
-    return l10n.notebookContentsTransferConfirmAll(
-      sourceName,
-      chapterCount,
-      entryCount,
-      targetName,
-    );
-  }
-  if (chapterCount > 0) {
-    return l10n.notebookContentsTransferConfirmChaptersOnly(
-      sourceName,
-      chapterCount,
-      targetName,
-    );
-  }
-  return l10n.notebookContentsTransferConfirmEntriesOnly(
-    sourceName,
-    entryCount,
-    targetName,
-  );
 }

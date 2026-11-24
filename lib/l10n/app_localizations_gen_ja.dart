@@ -17072,17 +17072,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryThumbnailMoveLater => '後ろへ移動';
 
   @override
-  String get notebookContentsTransferToChild => '目次をサブ日記帳へ移動';
+  String get notebookContentsTransfer => '目次を移動';
 
   @override
-  String get notebookChapterTransferToChild => 'サブ日記帳へ移動…';
+  String get notebookChapterTransfer => '章を移動…';
 
   @override
-  String get notebookContentsTransferSheetTitle => '目次をどのサブ日記帳へ移動しますか';
+  String get notebookContentsTransferSheetTitle => '目次をどの日記帳へ移動しますか';
 
   @override
   String notebookChapterTransferSheetTitle(String title) {
-    return '「$title」をどのサブ日記帳へ移動しますか';
+    return '「$title」をどの日記帳へ移動しますか';
   }
 
   @override
@@ -17090,7 +17090,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'まだサブ日記帳がありません。上から新規作成して移動できます';
 
   @override
-  String get notebookContentsTransferConfirmTitle => 'サブ日記帳へ移動';
+  String get notebookContentsTransferConfirmTitle => '移動の確認';
 
   @override
   String get notebookContentsTransferAction => '移動';
@@ -17102,7 +17102,7 @@ class AppLocalizationsJa extends AppLocalizations {
     int entries,
     String target,
   ) {
-    return '「$source」の章$chapters件と日記$entries件をサブ日記帳「$target」へ移動しますか？章構成と並び順は維持され、「$source」からは外れます。日記は削除されません。';
+    return '「$source」の章$chapters件と日記$entries件を「$target」へ移動しますか？章構成と並び順は維持され、「$source」からは外れます。日記は削除されません。';
   }
 
   @override
@@ -17111,7 +17111,7 @@ class AppLocalizationsJa extends AppLocalizations {
     int entries,
     String target,
   ) {
-    return '「$source」の日記$entries件をサブ日記帳「$target」へ移動しますか？並び順は維持され、「$source」からは外れます。日記は削除されません。';
+    return '「$source」の日記$entries件を「$target」へ移動しますか？並び順は維持され、「$source」からは外れます。日記は削除されません。';
   }
 
   @override
@@ -17120,7 +17120,7 @@ class AppLocalizationsJa extends AppLocalizations {
     int chapters,
     String target,
   ) {
-    return '「$source」の章$chapters件をサブ日記帳「$target」へ移動しますか？これらの章は「$source」から外れます。';
+    return '「$source」の章$chapters件を「$target」へ移動しますか？これらの章は「$source」から外れます。';
   }
 
   @override
@@ -17130,7 +17130,7 @@ class AppLocalizationsJa extends AppLocalizations {
     String source,
     String target,
   ) {
-    return '章「$chapter」と含まれる日記$entries件をサブ日記帳「$target」へ移動しますか？章と並び順は維持され、「$source」からは外れます。日記は削除されません。';
+    return '章「$chapter」と含まれる日記$entries件を「$target」へ移動しますか？章と並び順は維持され、「$source」からは外れます。日記は削除されません。';
   }
 
   @override
@@ -17139,12 +17139,22 @@ class AppLocalizationsJa extends AppLocalizations {
     String source,
     String target,
   ) {
-    return '空の章「$chapter」をサブ日記帳「$target」へ移動しますか？この章は「$source」から外れます。';
+    return '空の章「$chapter」を「$target」へ移動しますか？この章は「$source」から外れます。';
   }
 
   @override
   String notebookContentsTransferPrivateNote(String target) {
     return '「$target」は非公開の日記帳です。移動した日記はその日記帳の中でのみ表示され、すべての日記には表示されなくなります。';
+  }
+
+  @override
+  String notebookContentsTransferPublicNote(String target) {
+    return '「$target」は非公開の日記帳ではありません。移動した日記はすべての日記にも表示されます。';
+  }
+
+  @override
+  String notebookContentsTransferredPublic(String target) {
+    return '「$target」へ移動しました。移動した日記はすべての日記にも表示されます';
   }
 
   @override

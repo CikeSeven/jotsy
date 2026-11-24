@@ -46,6 +46,7 @@ import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_mind_map_editing.dart';
 import 'diary_editor_spans.dart';
 import 'diary_link_spans.dart';
+import 'diary_pangu_spans.dart';
 import 'diary_editor_styles.dart';
 import 'diary_editor_interaction_layer.dart';
 import 'diary_editor_selection_toolbar.dart';
@@ -550,19 +551,24 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         code,
         padding: widget.padding,
         // 查找的高亮按匹配切开行内片段、改文字样式（见 DiaryFindHighlight），
-        // 包在其余行内装饰外面。
+        // 包在盘古之白与其余行内装饰外面。
         decorator: diaryFindSpanDecorator(
-          diaryEditorSpanDecorator(
-            code,
-            _tracker,
-            widget.appearance.typography.fontSize,
-            links: DiaryLinkSpanOptions(
-              state: controller.state,
-              notebooksEnabled: notebooksEnabled,
-              plainColor: body.color,
-              onOpen: _openLink,
-              onOpenWebLink: _openWebLink,
-              onEditWebLink: _editLink,
+          diaryPanguSpanDecorator(
+            enabled: widget.appearance.typography.panguSpacing,
+            fallbackFontSize: widget.appearance.typography.fontSize,
+            fallbackLetterSpacing: widget.appearance.typography.letterSpacing,
+            inner: diaryEditorSpanDecorator(
+              code,
+              _tracker,
+              widget.appearance.typography.fontSize,
+              links: DiaryLinkSpanOptions(
+                state: controller.state,
+                notebooksEnabled: notebooksEnabled,
+                plainColor: body.color,
+                onOpen: _openLink,
+                onOpenWebLink: _openWebLink,
+                onEditWebLink: _editLink,
+              ),
             ),
           ),
         ),

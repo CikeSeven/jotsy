@@ -12,6 +12,7 @@ import '../../models/time_capsule.dart';
 import '../../viewmodels/diary_card_appearance.dart';
 import '../../viewmodels/diary_card_resolved_style.dart';
 import '../../viewmodels/diary_card_view_data.dart';
+import '../diary_pangu_text.dart';
 import '../energy_battery_indicator.dart';
 import 'diary_card_cover.dart';
 
@@ -196,8 +197,9 @@ class DiaryCardLockedContent extends StatelessWidget {
           Row(
             children: <Widget>[
               Expanded(
-                child: Text(
+                child: DiaryPanguText(
                   title,
+                  panguSpacing: resolved.panguSpacing,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(

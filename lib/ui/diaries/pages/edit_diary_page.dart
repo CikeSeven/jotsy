@@ -14,6 +14,7 @@ import '../controllers/diary_editor_controller.dart' as editor;
 import '../models/diary_link_candidate.dart';
 import '../models/diary_create_initial_action.dart';
 import '../widgets/diary_editor/diary_editor.dart';
+import '../widgets/diary_pangu_text.dart';
 import '../models/diary_find_query.dart';
 import '../widgets/diary_find_bar/diary_find_bar.dart';
 import '../widgets/diary_find_bar/diary_floating_find_transitions.dart';
@@ -258,7 +259,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   static const double _readingBottomGap = 28.0;
 
   // ==================== 文本输入与焦点控制 ====================
-  final _titleController = TextEditingController();
+  final DiaryPanguTextEditingController _titleController =
+      DiaryPanguTextEditingController();
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   // 包住悬浮工具栏：颜色面板里的颜色代码输入框拿到焦点时，正文与标题都失焦，
@@ -905,6 +907,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     required DiaryTextAppearance appearance,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    _titleController.panguSpacing = appearance.typography.panguSpacing;
     final titleStyle = appearance.titleStyle(
       Theme.of(context).textTheme.headlineSmall,
     );

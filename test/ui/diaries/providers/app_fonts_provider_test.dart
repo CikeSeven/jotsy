@@ -104,6 +104,20 @@ void main() {
         AppFonts(interface: family, diary: family),
       );
     });
+
+    test(
+      'forwards the pangu spacing switch onto the theme extension',
+      () async {
+        final container = await _container(
+          const DiaryTypography(panguSpacing: true),
+        );
+
+        expect(
+          container.read(appFontsProvider),
+          const AppFonts(diaryPanguSpacing: true),
+        );
+      },
+    );
   });
 
   group('appFontsStartupReadyProvider', () {

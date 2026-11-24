@@ -18,6 +18,7 @@ void main() {
         letterSpacing: 1.25,
         paragraphSpacing: 14,
         firstLineIndent: 1.5,
+        panguSpacing: true,
       );
 
       expect(DiaryTypography.fromRaw(typography.toRaw()), typography);
@@ -113,6 +114,35 @@ void main() {
 
       expect(typography.hasDefaultMetrics, isFalse);
       expect(typography.withDefaultMetrics().firstLineIndent, 0);
+    });
+  });
+
+  group('DiaryTypography pangu spacing switch', () {
+    test('defaults to false for legacy payloads and non-bool values', () {
+      expect(DiaryTypography.fromRaw('{"fontSize":18}').panguSpacing, isFalse);
+      expect(
+        DiaryTypography.fromRaw('{"panguSpacing":"true"}').panguSpacing,
+        isFalse,
+      );
+      expect(
+        DiaryTypography.fromRaw('{"panguSpacing":1}').panguSpacing,
+        isFalse,
+      );
+    });
+
+    test('counts as a layout metric and resets with withDefaultMetrics', () {
+      final typography = const DiaryTypography().copyWith(
+        fontId: 'fabc',
+        applyFontToApp: true,
+        panguSpacing: true,
+      );
+
+      expect(typography.hasDefaultMetrics, isFalse);
+      expect(typography, isNot(typography.copyWith(panguSpacing: false)));
+      final reset = typography.withDefaultMetrics();
+      expect(reset.panguSpacing, isFalse);
+      expect(reset.fontId, 'fabc');
+      expect(reset.applyFontToApp, isTrue);
     });
   });
 

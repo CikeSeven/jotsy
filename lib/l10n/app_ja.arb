@@ -4222,6 +4222,14 @@
   "@diaryTypographyFirstLineIndentOff": {
     "description": "Body layout: value shown when the first-line indent is 0."
   },
+  "diaryTypographyPanguSpacing": "和欧文の自動スペース",
+  "@diaryTypographyPanguSpacing": {
+    "description": "Body layout: switch label for Pangu spacing (automatic visual spacing between CJK characters and Latin letters or numbers)."
+  },
+  "diaryTypographyPanguSpacingHint": "日本語・中国語と英数字の間に見た目だけの余白を入れます（本文は変更しません）",
+  "@diaryTypographyPanguSpacingHint": {
+    "description": "Body layout: subtitle explaining that Pangu spacing only affects rendering and does not modify stored text."
+  },
   "diaryTypographyDecrease": "{label}を小さくする",
   "@diaryTypographyDecrease": {
     "description": "Body layout: tooltip of the decrease button; label is the value name.",
@@ -4252,7 +4260,7 @@
   "@diaryTypographySampleTitle": {
     "description": "Body layout preview: sample title."
   },
-  "diaryTypographySampleBody": "夕方には雨がやみ、マンションの下の金木犀がいつにも増して香っていた。\n帰り道に甘栗をひと袋買って、歩きながらむいた。手のひらはずっと温かかった。\n今日は特別なことは何もなかったけれど、どの瞬間も穏やかで、書き留めておきたくなった。",
+  "diaryTypographySampleBody": "18時に雨がやみ、マンションの下の金木犀がいつにも増して香っていた。\n帰り道に甘栗を1袋買って、Lo-Fi音楽を聴きながら歩いた。手のひらはずっと温かかった。\n今日は特別なことは何もなかったけれど、どの瞬間も穏やかで、書き留めておきたくなった。",
   "@diaryTypographySampleBody": {
     "description": "Body layout preview: sample body; newlines separate paragraphs to show paragraph spacing."
   },

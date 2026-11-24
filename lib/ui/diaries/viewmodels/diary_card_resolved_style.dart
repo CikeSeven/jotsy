@@ -238,6 +238,9 @@ class DiaryCardResolvedStyle {
   bool get compact => mode == DiaryCardMode.waterfall;
   ColorScheme get colorScheme => theme.colorScheme;
 
+  /// 卡片标题与摘要是否启用盘古之白渲染间距（随 [AppFonts] 走，与字体同源）。
+  bool get panguSpacing => AppFonts.of(theme).diaryPanguSpacing;
+
   late final TextStyle? eyebrowStyle;
   late final TextStyle? titleStyle;
   late final TextStyle? previewStyle;

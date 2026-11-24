@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../utils/pangu_spacing.dart';
 import 'diary_export_pdf_emoji.dart';
 
 /// PDF 正文里中日韩文字的断行：配合 pdf 库 [pw.RichText] 的 `lineSplitter`。
@@ -24,25 +25,33 @@ import 'diary_export_pdf_emoji.dart';
 /// [diaryPdfTextSpan] 生成——不然以中日韩字开头的词会被逐字切开，又按原来的
 /// 字间空格排开。没有中日韩文字的片段原样生成，西文排版与改动前一致。
 
+/// PDF 里的盘古之白微间距：零高空占位（与首行缩进同一做法），避开 pdf 包
+/// `letterSpacing` 双倍累加问题，也不会往 PDF 文本流写入多余空格。
+pw.WidgetSpan diaryPdfPanguGap(double fontSize) =>
+    pw.WidgetSpan(child: pw.SizedBox(width: panguSpacingExtent(fontSize)));
+
 /// 一段文字的 PDF 片段：含中日韩文字时拆成子片段（见文件注释），否则就是
 /// 一个普通片段。[baseline] 不会被子片段继承，逐个写上。
 ///
 /// 给了 [emoji] 时，其中的 emoji 先切出来画成图片（[DiaryPdfEmoji.span]），
-/// 其余文字照上面拆分；没有 emoji 的文字与不给时完全相同。
+/// 其余文字照上面拆分；没有 emoji 的文字与不给时完全相同。开启 [panguSpacing]
+/// 时在中西文 / 中数字交界处插入 [diaryPdfPanguGap]。
 pw.TextSpan diaryPdfTextSpan(
   String text, {
   required pw.TextStyle style,
   double baseline = 0,
   pw.AnnotationBuilder? annotation,
   DiaryPdfEmoji? emoji,
+  bool panguSpacing = false,
 }) {
   final parts = emoji?.split(text);
   if (parts == null) {
-    return _textSpan(
+    return _textSpanWithPangu(
       text,
       style: style,
       baseline: baseline,
       annotation: annotation,
+      panguSpacing: panguSpacing,
     );
   }
   return pw.TextSpan(
@@ -53,8 +62,68 @@ pw.TextSpan diaryPdfTextSpan(
       for (final (part, isEmoji) in parts)
         isEmoji
             ? emoji!.span(part, style: style, baseline: baseline)
-            : _textSpan(part, style: style, baseline: baseline),
+            : _textSpanWithPangu(
+                part,
+                style: style,
+                baseline: baseline,
+                panguSpacing: panguSpacing,
+              ),
     ],
+  );
+}
+
+/// 在不含 emoji 的一段文字上按需插入盘古之白微间距；关闭或没有边界时直达
+/// [_textSpan]。
+pw.TextSpan _textSpanWithPangu(
+  String text, {
+  required pw.TextStyle style,
+  required double baseline,
+  pw.AnnotationBuilder? annotation,
+  required bool panguSpacing,
+}) {
+  if (!panguSpacing) {
+    return _textSpan(
+      text,
+      style: style,
+      baseline: baseline,
+      annotation: annotation,
+    );
+  }
+  final gaps = findPanguGapRanges(text);
+  if (gaps.isEmpty) {
+    return _textSpan(
+      text,
+      style: style,
+      baseline: baseline,
+      annotation: annotation,
+    );
+  }
+  final fontSize = style.fontSize ?? 12;
+  final children = <pw.InlineSpan>[];
+  var cursor = 0;
+  for (final (_, splitAt) in gaps) {
+    if (splitAt > cursor) {
+      children.add(
+        _textSpan(
+          text.substring(cursor, splitAt),
+          style: style,
+          baseline: baseline,
+        ),
+      );
+    }
+    children.add(diaryPdfPanguGap(fontSize));
+    cursor = splitAt;
+  }
+  if (cursor < text.length) {
+    children.add(
+      _textSpan(text.substring(cursor), style: style, baseline: baseline),
+    );
+  }
+  return pw.TextSpan(
+    style: style,
+    baseline: baseline,
+    annotation: annotation,
+    children: children,
   );
 }
 

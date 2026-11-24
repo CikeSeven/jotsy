@@ -21,6 +21,7 @@ class DiaryPdfHeading {
     required pw.TextDirection textDirection,
     required bool aligned,
     required DiaryPdfTextEffects effects,
+    bool panguSpacing = false,
   }) {
     // 不用 pdf 库主题的 header1–5：它们不加粗、各级只差 0.1 倍，也没有
     // 第六级。
@@ -61,15 +62,13 @@ class DiaryPdfHeading {
             // 长标题里的中文同样逐字换行（见 diaryPdfLineSplitter）。
             lineSplitter: diaryPdfLineSplitter,
             text: pw.TextSpan(
-              children: <pw.InlineSpan>[
-                for (final run in block.inlines)
-                  buildDiaryPdfInline(
-                    run,
-                    base,
-                    effects: effects,
-                    bodyFontSize: body.fontSize ?? 12,
-                  ),
-              ],
+              children: buildDiaryPdfInlines(
+                block.inlines,
+                base,
+                effects: effects,
+                bodyFontSize: body.fontSize ?? 12,
+                panguSpacing: panguSpacing,
+              ),
             ),
           ),
         ),

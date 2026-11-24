@@ -1,10 +1,60 @@
+import 'dart:math' as math;
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../utils/pangu_spacing.dart';
 import '../models/diary_text_style_options.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_pdf_line_break.dart';
 import 'diary_export_pdf_text_effects.dart';
+
+/// 把一组行内片段（段落、标题、表格单元格共用）转为 PDF 片段；开启
+/// [panguSpacing] 且不是代码块时，片段内部与跨片段交界处一并补齐盘古之白。
+List<pw.InlineSpan> buildDiaryPdfInlines(
+  List<ExportInline> runs,
+  pw.TextStyle base, {
+  required DiaryPdfTextEffects effects,
+  required double bodyFontSize,
+  bool isCodeBlock = false,
+  bool panguSpacing = false,
+  bool strike = false,
+}) {
+  final spans = <pw.InlineSpan>[];
+  ExportInline? previous;
+  for (final raw in runs) {
+    final run = strike ? raw.copyWith(strike: true) : raw;
+    if (panguSpacing &&
+        !isCodeBlock &&
+        previous != null &&
+        previous.script == null &&
+        run.script == null &&
+        !(previous.code && run.code) &&
+        hasPanguBoundaryBetween(previous.text, run.text)) {
+      final prevSize = previous.sizeScale == null
+          ? (base.fontSize ?? bodyFontSize)
+          : bodyFontSize * previous.sizeScale!;
+      final nextSize = run.sizeScale == null
+          ? (base.fontSize ?? bodyFontSize)
+          : bodyFontSize * run.sizeScale!;
+      spans.add(diaryPdfPanguGap(math.min(prevSize, nextSize)));
+    }
+    spans.add(
+      buildDiaryPdfInline(
+        run,
+        base,
+        effects: effects,
+        bodyFontSize: bodyFontSize,
+        isCodeBlock: isCodeBlock,
+        panguSpacing: panguSpacing,
+      ),
+    );
+    if (run.text.isNotEmpty) {
+      previous = run;
+    }
+  }
+  return spans;
+}
 
 /// PDF 行内样式：把共用块模型的文字、颜色、装饰和链接叠到当前段落字阶。
 /// 不改正文，不读取设置；字体回退、绘制补粗与 emoji 图片由
@@ -15,6 +65,7 @@ pw.TextSpan buildDiaryPdfInline(
   required DiaryPdfTextEffects effects,
   required double bodyFontSize,
   bool isCodeBlock = false,
+  bool panguSpacing = false,
 }) {
   // 文字色 / 背景色已经在 prepareBody 中叠到纸面上。链接与行内代码
   // 只在未设颜色时使用默认值，避免用户的格式被整份默认样式替换。
@@ -72,12 +123,13 @@ pw.TextSpan buildDiaryPdfInline(
     isCodeBlock: isCodeBlock,
   );
   // 含中日韩文字时拆成可逐字断行的子片段（见 diaryPdfLineSplitter），
-  // emoji 画成图片（见 DiaryPdfEmoji）。
+  // emoji 画成图片（见 DiaryPdfEmoji）；代码块、行内代码与上下标不插盘古之白。
   return diaryPdfTextSpan(
     run.text,
     style: style,
     baseline: baseline,
     annotation: run.link == null ? null : pw.AnnotationUrl(run.link!),
     emoji: effects.emoji,
+    panguSpacing: panguSpacing && !isCodeBlock && !run.code && script == null,
   );
 }

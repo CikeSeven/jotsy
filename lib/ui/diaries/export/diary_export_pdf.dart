@@ -254,6 +254,7 @@ class DiaryPdfWriter {
       media: media,
       images: images,
       emoji: emoji,
+      panguSpacing: typography.panguSpacing,
       wrapTitle: wrapTitle,
     );
     final body = await prepareBody(
@@ -281,6 +282,7 @@ class DiaryPdfWriter {
             typography.firstLineIndent,
             DiaryTypography.paragraphFirstLineIndent,
           ),
+          panguSpacing: typography.panguSpacing,
         ),
       );
     }
@@ -357,6 +359,7 @@ class DiaryPdfWriter {
               child: buildDiaryPdfText(
                 title,
                 emoji: emoji,
+                panguSpacing: typography.panguSpacing,
                 style: pw.TextStyle(
                   fontSize: 26,
                   fontWeight: pw.FontWeight.bold,
@@ -398,8 +401,19 @@ class DiaryPdfWriter {
     }
 
     // 扉页与目录也先建好（emoji 要在栅格化之前登记，见类注释）。
-    final titlePage = _titlePage(book, cover, emoji);
-    final contents = _contents(book, labels, pages, emoji);
+    final titlePage = _titlePage(
+      book,
+      cover,
+      emoji,
+      panguSpacing: typography.panguSpacing,
+    );
+    final contents = _contents(
+      book,
+      labels,
+      pages,
+      emoji,
+      panguSpacing: typography.panguSpacing,
+    );
     await emoji.rasterize();
     document
       ..addPage(
@@ -434,8 +448,9 @@ class DiaryPdfWriter {
   static pw.Widget _titlePage(
     DiaryExportBookLayout book,
     Uint8List? cover,
-    DiaryPdfEmoji emoji,
-  ) {
+    DiaryPdfEmoji emoji, {
+    bool panguSpacing = false,
+  }) {
     final info = cover == null ? null : ExportImageInfo.read(cover);
     pw.Widget? coverImage;
     if (cover != null && info != null && info.width > 0 && info.height > 0) {
@@ -466,6 +481,7 @@ class DiaryPdfWriter {
           buildDiaryPdfText(
             book.title,
             emoji: emoji,
+            panguSpacing: panguSpacing,
             textAlign: pw.TextAlign.center,
             style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold),
           ),
@@ -474,6 +490,7 @@ class DiaryPdfWriter {
             buildDiaryPdfText(
               book.description!,
               emoji: emoji,
+              panguSpacing: panguSpacing,
               textAlign: pw.TextAlign.center,
               style: const pw.TextStyle(fontSize: 13, color: PdfColors.grey700),
             ),
@@ -500,8 +517,9 @@ class DiaryPdfWriter {
     DiaryExportBookLayout book,
     DiaryExportLabels labels,
     Map<String, int> pages,
-    DiaryPdfEmoji emoji,
-  ) {
+    DiaryPdfEmoji emoji, {
+    bool panguSpacing = false,
+  }) {
     final widgets = <pw.Widget>[
       pw.Padding(
         padding: const pw.EdgeInsets.only(bottom: 16),
@@ -520,6 +538,7 @@ class DiaryPdfWriter {
             section.anchor,
             pages,
             emoji: emoji,
+            panguSpacing: panguSpacing,
             style: pw.TextStyle(fontSize: 12.5, fontWeight: pw.FontWeight.bold),
             top: widgets.length > 1 ? 10 : 0,
           ),
@@ -533,6 +552,7 @@ class DiaryPdfWriter {
             book.anchorOf(entry),
             pages,
             emoji: emoji,
+            panguSpacing: panguSpacing,
             style: const pw.TextStyle(fontSize: 11),
             indent: indent,
           ),
@@ -549,6 +569,7 @@ class DiaryPdfWriter {
     Map<String, int> pages, {
     required DiaryPdfEmoji emoji,
     required pw.TextStyle style,
+    bool panguSpacing = false,
     double indent = 0,
     double top = 0,
   }) {
@@ -560,7 +581,12 @@ class DiaryPdfWriter {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: <pw.Widget>[
             pw.Expanded(
-              child: buildDiaryPdfText(text, emoji: emoji, style: style),
+              child: buildDiaryPdfText(
+                text,
+                emoji: emoji,
+                panguSpacing: panguSpacing,
+                style: style,
+              ),
             ),
             pw.SizedBox(width: 12),
             // 排版时页码还不知道，先占一格；绘制时（正文已绘制完）再取。
@@ -587,12 +613,14 @@ class DiaryPdfWriter {
     required DiaryExportMediaLibrary media,
     required List<Uint8List> images,
     required DiaryPdfEmoji emoji,
+    bool panguSpacing = false,
     pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     const muted = pw.TextStyle(fontSize: 10.5, color: PdfColors.grey700);
     final title = buildDiaryPdfText(
       labels.titleOf(entry),
       emoji: emoji,
+      panguSpacing: panguSpacing,
       style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
     );
     final widgets = <pw.Widget>[

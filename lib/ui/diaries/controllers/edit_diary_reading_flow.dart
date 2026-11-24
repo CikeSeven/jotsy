@@ -221,6 +221,7 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
     required DiaryTextAppearance appearance,
     required bool contentLocked,
   }) {
+    _titleController.panguSpacing = appearance.typography.panguSpacing;
     final style = diaryPreviewTitleTextStyle(context, resolved, appearance);
     final hintColor = Theme.of(context).colorScheme.onSurfaceVariant;
     return TextField(

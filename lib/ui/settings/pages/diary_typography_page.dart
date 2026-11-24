@@ -200,6 +200,15 @@ class _DiaryTypographyPageState extends ConsumerState<DiaryTypographyPage> {
                                     AppSpacing.s,
                                   ),
                                 ),
+                                SettingsSwitchTile(
+                                  title: l10n.diaryTypographyPanguSpacing,
+                                  subtitle:
+                                      l10n.diaryTypographyPanguSpacingHint,
+                                  value: typography.panguSpacing,
+                                  onChanged: (bool value) => _controller.commit(
+                                    typography.copyWith(panguSpacing: value),
+                                  ),
+                                ),
                                 ListTile(
                                   leading: const FaIcon(
                                     FontAwesomeIcons.arrowRotateLeft,

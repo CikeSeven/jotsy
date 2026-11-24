@@ -22,6 +22,7 @@
 - 必须：日记链接只留文字（见 `diary_links.md`），思维导图按大纲导出（见 `mind_maps.md`）。
 - 必须：PDF 与 Word 的半透明颜色只经 `flattenDiaryColors` 叠到纸面再写入。
 - 必须：段落对齐、首行缩进与列表标记与应用一致，口径只经 `ExportBlock`（取导出时的排版快照）。
+- 必须：盘古之白随 `DiaryTypography.panguSpacing` 导出（关闭时产物逐字节不变）：网页与 EPUB 写 `text-autospace:normal`（`pre,code` 写 `no-autospace`），Word 写 OOXML `w:autoSpaceDE` / `w:autoSpaceDN`（代码块显式置 0），PDF 经 `diaryPdfPanguGap` 插入零高微占位；纯文本、Markdown 与 CSV 保持原文不变。
 - 必须：图片尺寸只经 `ExportImageBox` 换算（从不放大）；小图分排只在解析时算出，写出器禁止自行分组。
 - 必须：导出字体跟随 `DiaryTypography`，导入字体只经 `DiaryExportFont.load`：PDF 嵌入（嵌不进整份回落内置字体），其余格式只引用字族名。
 

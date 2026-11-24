@@ -3310,6 +3310,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTypographyFirstLineIndentOff => 'None';
 
   @override
+  String get diaryTypographyPanguSpacing => 'CJK–Latin auto spacing';
+
+  @override
+  String get diaryTypographyPanguSpacingHint =>
+      'Add visual spacing between CJK characters and Latin letters or numbers without editing text';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '$label: decrease';
   }

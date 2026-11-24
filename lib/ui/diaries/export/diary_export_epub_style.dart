@@ -28,12 +28,18 @@ class DiaryEpubStyle {
   static String css({
     DiaryExportCodeTheme? code,
     List<String> fontFamilies = const <String>[],
+    bool panguSpacing = false,
   }) {
     final out = StringBuffer(_base);
     if (fontFamilies.isNotEmpty) {
       out.write(
         'body{font-family:'
         '${fontFamilies.map(DiaryHtmlMarkup.cssString).join(',')}}\n',
+      );
+    }
+    if (panguSpacing) {
+      out.write(
+        'body{text-autospace:normal}\npre,code{text-autospace:no-autospace}\n',
       );
     }
     for (final tone in DiaryCalloutTone.values) {

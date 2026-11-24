@@ -7,6 +7,9 @@ import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../utils/pangu_spacing.dart';
+import 'diary_export_pdf_line_break.dart' show diaryPdfPanguGap;
+
 /// PDF 里的 emoji：画成图片，按行内组件排进文字。
 ///
 /// 为什么不写成文字：PDF 嵌入的字体（内置 HarmonyOS Sans SC 或导入字体）
@@ -122,17 +125,30 @@ class DiaryPdfEmoji {
 }
 
 /// 不带行内格式的一段文字（日记标题、信息行、标签、留言、扉页与目录）：
-/// 没有 emoji 时就是 [pw.Text]，有时换成同样样式的 [pw.RichText]，emoji 经
-/// [DiaryPdfEmoji.span] 画成图片。
+/// 没有 emoji 且未触发盘古之白时就是 [pw.Text]，否则换成同样样式的
+/// [pw.RichText]，emoji 经 [DiaryPdfEmoji.span] 画成图片，盘古之白以
+/// [diaryPdfPanguGap] 插入零高空占位。
 pw.Widget buildDiaryPdfText(
   String text, {
   required DiaryPdfEmoji emoji,
   pw.TextStyle? style,
   pw.TextAlign? textAlign,
+  bool panguSpacing = false,
 }) {
   final parts = emoji.split(text);
+  final fontSize = style?.fontSize ?? 12;
   if (parts == null) {
-    return pw.Text(text, style: style, textAlign: textAlign);
+    final gaps = panguSpacing ? findPanguGapRanges(text) : const <(int, int)>[];
+    if (gaps.isEmpty) {
+      return pw.Text(text, style: style, textAlign: textAlign);
+    }
+    return pw.RichText(
+      textAlign: textAlign,
+      text: pw.TextSpan(
+        style: style,
+        children: _pdfPlainPanguSpans(text, gaps, fontSize),
+      ),
+    );
   }
   return pw.RichText(
     textAlign: textAlign,
@@ -140,10 +156,38 @@ pw.Widget buildDiaryPdfText(
       style: style,
       children: <pw.InlineSpan>[
         for (final (part, isEmoji) in parts)
-          isEmoji ? emoji.span(part, style: style) : pw.TextSpan(text: part),
+          if (isEmoji)
+            emoji.span(part, style: style)
+          else if (!panguSpacing)
+            pw.TextSpan(text: part)
+          else
+            ..._pdfPlainPanguSpans(part, findPanguGapRanges(part), fontSize),
       ],
     ),
   );
+}
+
+List<pw.InlineSpan> _pdfPlainPanguSpans(
+  String text,
+  List<(int, int)> gaps,
+  double fontSize,
+) {
+  if (gaps.isEmpty) {
+    return <pw.InlineSpan>[pw.TextSpan(text: text)];
+  }
+  final out = <pw.InlineSpan>[];
+  var cursor = 0;
+  for (final (_, splitAt) in gaps) {
+    if (splitAt > cursor) {
+      out.add(pw.TextSpan(text: text.substring(cursor, splitAt)));
+    }
+    out.add(diaryPdfPanguGap(fontSize));
+    cursor = splitAt;
+  }
+  if (cursor < text.length) {
+    out.add(pw.TextSpan(text: text.substring(cursor)));
+  }
+  return out;
 }
 
 /// 一个 emoji 字素是否画成图片（[fontCovers] 为 PDF 字体是否有这个码位的

@@ -11,6 +11,7 @@ import '../../models/diary_preview_style/diary_preview_style.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import '../diary_image_source.dart';
+import '../diary_pangu_text.dart';
 import '../publish_diary_cover_sliver.dart';
 import 'diary_preview_surface.dart';
 
@@ -229,8 +230,9 @@ class DiaryPreviewTitle extends StatelessWidget {
     return DiaryPreviewSection(
       resolved: resolved,
       top: topPadding,
-      child: Text(
+      child: DiaryPanguText(
         title,
+        panguSpacing: appearance.typography.panguSpacing,
         textAlign: diaryPreviewTitleAlign(resolved.style.title),
         style: diaryPreviewTitleTextStyle(context, resolved, appearance),
       ),

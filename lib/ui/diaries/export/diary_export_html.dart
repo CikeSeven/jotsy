@@ -152,6 +152,7 @@ class DiaryHtmlWriter {
       ..write(
         '<style>$_css${codeTheme == null ? '' : _codeCss(codeTheme)}'
         '${_fontCss(fontFamilies)}'
+        '${typography.panguSpacing ? _panguCss : ''}'
         '${book == null ? '' : _bookCss}'
         '${hasRichBlocks ? _blocksCss() : ''}'
         '${hasComments ? _commentsCss : ''}'
@@ -294,6 +295,11 @@ class DiaryHtmlWriter {
     return 'body{font-family:${fontFamilies.map(DiaryHtmlMarkup.cssString).join(',')},'
         '$_fontStack}\n';
   }
+
+  /// 盘古之白（CSS Text Level 4 `text-autospace`）：只在排版开启时写出，
+  /// 代码块与行内代码保持原样。
+  static const String _panguCss =
+      'body{text-autospace:normal}pre,code{text-autospace:no-autospace}\n';
 
   static String _text(String value) => DiaryHtmlMarkup.html.text(value);
 

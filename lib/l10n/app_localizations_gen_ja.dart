@@ -2975,6 +2975,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diaryTypographyFirstLineIndentOff => 'なし';
 
   @override
+  String get diaryTypographyPanguSpacing => '和欧文の自動スペース';
+
+  @override
+  String get diaryTypographyPanguSpacingHint =>
+      '日本語・中国語と英数字の間に見た目だけの余白を入れます（本文は変更しません）';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '$labelを小さくする';
   }
@@ -2995,7 +3002,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryTypographySampleBody =>
-      '夕方には雨がやみ、マンションの下の金木犀がいつにも増して香っていた。\n帰り道に甘栗をひと袋買って、歩きながらむいた。手のひらはずっと温かかった。\n今日は特別なことは何もなかったけれど、どの瞬間も穏やかで、書き留めておきたくなった。';
+      '18時に雨がやみ、マンションの下の金木犀がいつにも増して香っていた。\n帰り道に甘栗を1袋買って、Lo-Fi音楽を聴きながら歩いた。手のひらはずっと温かかった。\n今日は特別なことは何もなかったけれど、どの瞬間も穏やかで、書き留めておきたくなった。';
 
   @override
   String diaryCardDateWithWeekday(String date, String weekday) {

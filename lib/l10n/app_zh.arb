@@ -21852,5 +21852,158 @@
   "diaryThumbnailMoveLater": "后移",
   "@diaryThumbnailMoveLater": {
     "description": "编辑页并排小图的读屏操作：把这张图片或视频在这一组里往后挪一位。"
+  },
+  "notebookContentsTransferToChild": "转移目录到子日记本",
+  "@notebookContentsTransferToChild": {
+    "description": "目录页顶栏按钮提示：把整份目录（全部章节与日记）转移到子日记本。"
+  },
+  "notebookChapterTransferToChild": "移到子日记本…",
+  "@notebookChapterTransferToChild": {
+    "description": "目录页章节标题行菜单项：把这一章连同里面的日记移到子日记本。"
+  },
+  "notebookContentsTransferSheetTitle": "将目录转移到哪个子日记本",
+  "@notebookContentsTransferSheetTitle": {
+    "description": "转移整份目录时挑选目标子日记本的底部面板标题。"
+  },
+  "notebookChapterTransferSheetTitle": "将「{title}」移到哪个子日记本",
+  "@notebookChapterTransferSheetTitle": {
+    "description": "转移单个章节时挑选目标子日记本的底部面板标题。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferEmptyHint": "还没有子日记本，可在上方新建后转移",
+  "@notebookContentsTransferEmptyHint": {
+    "description": "目标子日记本选择面板里还没有可选子本时的空态提示。"
+  },
+  "notebookContentsTransferConfirmTitle": "转移到子日记本",
+  "@notebookContentsTransferConfirmTitle": {
+    "description": "确认将目录或章节转移到子日记本的对话框标题。"
+  },
+  "notebookContentsTransferAction": "转移",
+  "@notebookContentsTransferAction": {
+    "description": "转移到子日记本确认框的确认按钮文案。"
+  },
+  "notebookContentsTransferConfirmAll": "将「{source}」的 {chapters} 个章节和 {entries} 篇日记转移到子日记本「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "@notebookContentsTransferConfirmAll": {
+    "description": "转移整份目录（包含章节与日记）到子日记本的确认说明。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmEntriesOnly": "将「{source}」的 {entries} 篇日记转移到子日记本「{target}」？原有顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "@notebookContentsTransferConfirmEntriesOnly": {
+    "description": "转移整份目录（仅有日记、没有章节）到子日记本的确认说明。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmChaptersOnly": "将「{source}」的 {chapters} 个章节转移到子日记本「{target}」？这些章节会从「{source}」移出。",
+  "@notebookContentsTransferConfirmChaptersOnly": {
+    "description": "转移整份目录（仅有空章节、没有日记）到子日记本的确认说明。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirm": "将章节「{chapter}」及其中 {entries} 篇日记转移到子日记本「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "@notebookChapterTransferConfirm": {
+    "description": "将含日记的单个章节转移到子日记本的确认说明。",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirmEmpty": "将空章节「{chapter}」转移到子日记本「{target}」？该章节会从「{source}」移出。",
+  "@notebookChapterTransferConfirmEmpty": {
+    "description": "将空章节转移到子日记本的确认说明。",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferPrivateNote": "「{target}」是私密日记本，转移后的日记将只在该日记本中显示，不再出现在全部日记里。",
+  "@notebookContentsTransferPrivateNote": {
+    "description": "从普通日记本把日记转移到私密子日记本时确认框里的补充提醒。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferred": "已将目录转移到「{target}」",
+  "@notebookContentsTransferred": {
+    "description": "整份目录转移到子日记本后的提示条。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferred": "已将「{chapter}」转移到「{target}」",
+  "@notebookChapterTransferred": {
+    "description": "单个章节转移到子日记本后的提示条。",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPrivate": "已转移到「{target}」，移入的日记只在该日记本中显示",
+  "@notebookContentsTransferredPrivate": {
+    "description": "从普通日记本将日记转移到私密子日记本后的提示条。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -22419,5 +22419,158 @@
   "diaryThumbnailMoveLater": "Переместить позже",
   "@diaryThumbnailMoveLater": {
     "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
+  },
+  "notebookContentsTransferToChild": "Перенести содержание во вложенный блокнот",
+  "@notebookContentsTransferToChild": {
+    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook."
+  },
+  "notebookChapterTransferToChild": "Перенести во вложенный блокнот…",
+  "@notebookChapterTransferToChild": {
+    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook."
+  },
+  "notebookContentsTransferSheetTitle": "В какой вложенный блокнот перенести содержание",
+  "@notebookContentsTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents."
+  },
+  "notebookChapterTransferSheetTitle": "В какой вложенный блокнот перенести «{title}»",
+  "@notebookChapterTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferEmptyHint": "Вложенных блокнотов пока нет. Создайте новый выше, чтобы перенести туда",
+  "@notebookContentsTransferEmptyHint": {
+    "description": "Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet."
+  },
+  "notebookContentsTransferConfirmTitle": "Перенос во вложенный блокнот",
+  "@notebookContentsTransferConfirmTitle": {
+    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferAction": "Перенести",
+  "@notebookContentsTransferAction": {
+    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferConfirmAll": "Перенести {chapters, plural, one{{chapters} главу} few{{chapters} главы} many{{chapters} глав} other{{chapters} главы}} и {entries, plural, one{{entries} запись} few{{entries} записи} many{{entries} записей} other{{entries} записи}} из «{source}» во вложенный блокнот «{target}»? Главы и порядок сохранятся, из «{source}» они будут убраны, а сами записи не удалятся.",
+  "@notebookContentsTransferConfirmAll": {
+    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmEntriesOnly": "Перенести {entries, plural, one{{entries} запись} few{{entries} записи} many{{entries} записей} other{{entries} записи}} из «{source}» во вложенный блокнот «{target}»? Порядок сохранится, из «{source}» они будут убраны, а сами записи не удалятся.",
+  "@notebookContentsTransferConfirmEntriesOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmChaptersOnly": "Перенести {chapters, plural, one{{chapters} главу} few{{chapters} главы} many{{chapters} глав} other{{chapters} главы}} из «{source}» во вложенный блокнот «{target}»? Они будут убраны из «{source}».",
+  "@notebookContentsTransferConfirmChaptersOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirm": "Перенести главу «{chapter}» и {entries, plural, one{{entries} её запись} few{{entries} её записи} many{{entries} её записей} other{{entries} её записи}} во вложенный блокнот «{target}»? Глава и порядок сохранятся, из «{source}» они будут убраны, а сами записи не удалятся.",
+  "@notebookChapterTransferConfirm": {
+    "description": "Confirmation message when moving a chapter with entries to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirmEmpty": "Перенести пустую главу «{chapter}» во вложенный блокнот «{target}»? Она будет убрана из «{source}».",
+  "@notebookChapterTransferConfirmEmpty": {
+    "description": "Confirmation message when moving an empty chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferPrivateNote": "«{target}» — приватный блокнот. Перенесённые записи будут видны только в нём и исчезнут из списка «Все записи».",
+  "@notebookContentsTransferPrivateNote": {
+    "description": "Additional warning in the transfer confirmation dialog when moving entries from a normal notebook into a hidden or locked sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferred": "Содержание перенесено в «{target}»",
+  "@notebookContentsTransferred": {
+    "description": "SnackBar shown after transferring a notebook's entire contents to a sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferred": "Глава «{chapter}» перенесена в «{target}»",
+  "@notebookChapterTransferred": {
+    "description": "SnackBar shown after moving a single chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPrivate": "Перенесено в «{target}». Перенесённые записи теперь видны только в этом блокноте",
+  "@notebookContentsTransferredPrivate": {
+    "description": "SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

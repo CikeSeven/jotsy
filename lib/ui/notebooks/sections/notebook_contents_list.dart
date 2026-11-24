@@ -38,6 +38,7 @@ class NotebookContentsListSliver extends StatelessWidget {
     required this.selected,
     required this.dateMeta,
     required this.now,
+    this.canTransferToChild = false,
     required this.onReorder,
     required this.onReorderStart,
     required this.onReorderEnd,
@@ -61,6 +62,7 @@ class NotebookContentsListSliver extends StatelessWidget {
   final Set<String> selected;
   final DiaryCardMetaStyle dateMeta;
   final DateTime now;
+  final bool canTransferToChild;
 
   /// onReorderItem 语义：[newIndex] 已按移除 [oldIndex] 后的列表修正。
   final void Function(int oldIndex, int newIndex) onReorder;
@@ -113,6 +115,7 @@ class NotebookContentsListSliver extends StatelessWidget {
               isFirst: chapterIndex == 0,
               isLast: chapterIndex == chapters.length - 1,
               collapsed: collapsed.contains(item.key),
+              canTransferToChild: canTransferToChild,
               onToggle: count == 0 ? null : () => onToggleChapter(item),
               onAction: chapter == null
                   ? null

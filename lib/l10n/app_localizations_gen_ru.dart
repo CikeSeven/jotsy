@@ -19834,4 +19834,139 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => 'Переместить позже';
+
+  @override
+  String get notebookContentsTransferToChild =>
+      'Перенести содержание во вложенный блокнот';
+
+  @override
+  String get notebookChapterTransferToChild =>
+      'Перенести во вложенный блокнот…';
+
+  @override
+  String get notebookContentsTransferSheetTitle =>
+      'В какой вложенный блокнот перенести содержание';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return 'В какой вложенный блокнот перенести «$title»';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint =>
+      'Вложенных блокнотов пока нет. Создайте новый выше, чтобы перенести туда';
+
+  @override
+  String get notebookContentsTransferConfirmTitle =>
+      'Перенос во вложенный блокнот';
+
+  @override
+  String get notebookContentsTransferAction => 'Перенести';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters главы',
+      many: '$chapters глав',
+      few: '$chapters главы',
+      one: '$chapters главу',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries записи',
+      many: '$entries записей',
+      few: '$entries записи',
+      one: '$entries запись',
+    );
+    return 'Перенести $_temp0 и $_temp1 из «$source» во вложенный блокнот «$target»? Главы и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries записи',
+      many: '$entries записей',
+      few: '$entries записи',
+      one: '$entries запись',
+    );
+    return 'Перенести $_temp0 из «$source» во вложенный блокнот «$target»? Порядок сохранится, из «$source» они будут убраны, а сами записи не удалятся.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters главы',
+      many: '$chapters глав',
+      few: '$chapters главы',
+      one: '$chapters главу',
+    );
+    return 'Перенести $_temp0 из «$source» во вложенный блокнот «$target»? Они будут убраны из «$source».';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries её записи',
+      many: '$entries её записей',
+      few: '$entries её записи',
+      one: '$entries её запись',
+    );
+    return 'Перенести главу «$chapter» и $_temp0 во вложенный блокнот «$target»? Глава и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return 'Перенести пустую главу «$chapter» во вложенный блокнот «$target»? Она будет убрана из «$source».';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '«$target» — приватный блокнот. Перенесённые записи будут видны только в нём и исчезнут из списка «Все записи».';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return 'Содержание перенесено в «$target»';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return 'Глава «$chapter» перенесена в «$target»';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return 'Перенесено в «$target». Перенесённые записи теперь видны только в этом блокноте';
+  }
 }

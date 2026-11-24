@@ -21852,5 +21852,158 @@
   "diaryThumbnailMoveLater": "Move later",
   "@diaryThumbnailMoveLater": {
     "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
+  },
+  "notebookContentsTransferToChild": "Transfer contents to sub-notebook",
+  "@notebookContentsTransferToChild": {
+    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook."
+  },
+  "notebookChapterTransferToChild": "Move to sub-notebook…",
+  "@notebookChapterTransferToChild": {
+    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook."
+  },
+  "notebookContentsTransferSheetTitle": "Transfer contents to which sub-notebook",
+  "@notebookContentsTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents."
+  },
+  "notebookChapterTransferSheetTitle": "Move \"{title}\" to which sub-notebook",
+  "@notebookChapterTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferEmptyHint": "No sub-notebooks yet. Create one above to transfer into it.",
+  "@notebookContentsTransferEmptyHint": {
+    "description": "Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet."
+  },
+  "notebookContentsTransferConfirmTitle": "Transfer to sub-notebook",
+  "@notebookContentsTransferConfirmTitle": {
+    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferAction": "Transfer",
+  "@notebookContentsTransferAction": {
+    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferConfirmAll": "Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} and {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Chapters and order are kept, and they are removed from \"{source}\". No entries are deleted.",
+  "@notebookContentsTransferConfirmAll": {
+    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmEntriesOnly": "Transfer {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Their order is kept, and they are removed from \"{source}\". No entries are deleted.",
+  "@notebookContentsTransferConfirmEntriesOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmChaptersOnly": "Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} from \"{source}\" to \"{target}\"? They will be removed from \"{source}\".",
+  "@notebookContentsTransferConfirmChaptersOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirm": "Move chapter \"{chapter}\" and its {entries, plural, =1{1 entry} other{{entries} entries}} to \"{target}\"? The chapter and order are kept, and they are removed from \"{source}\". No entries are deleted.",
+  "@notebookChapterTransferConfirm": {
+    "description": "Confirmation message when moving a chapter with entries to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirmEmpty": "Move empty chapter \"{chapter}\" to \"{target}\"? It will be removed from \"{source}\".",
+  "@notebookChapterTransferConfirmEmpty": {
+    "description": "Confirmation message when moving an empty chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferPrivateNote": "\"{target}\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.",
+  "@notebookContentsTransferPrivateNote": {
+    "description": "Additional warning in the transfer confirmation dialog when moving entries from a normal notebook into a hidden or locked sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferred": "Transferred contents to \"{target}\"",
+  "@notebookContentsTransferred": {
+    "description": "SnackBar shown after transferring a notebook's entire contents to a sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferred": "Moved \"{chapter}\" to \"{target}\"",
+  "@notebookChapterTransferred": {
+    "description": "SnackBar shown after moving a single chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPrivate": "Transferred to \"{target}\". Moved entries now only show in that notebook",
+  "@notebookContentsTransferredPrivate": {
+    "description": "SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

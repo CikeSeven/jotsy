@@ -16723,4 +16723,94 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => '后移';
+
+  @override
+  String get notebookContentsTransferToChild => '转移目录到子日记本';
+
+  @override
+  String get notebookChapterTransferToChild => '移到子日记本…';
+
+  @override
+  String get notebookContentsTransferSheetTitle => '将目录转移到哪个子日记本';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return '将「$title」移到哪个子日记本';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint => '还没有子日记本，可在上方新建后转移';
+
+  @override
+  String get notebookContentsTransferConfirmTitle => '转移到子日记本';
+
+  @override
+  String get notebookContentsTransferAction => '转移';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    return '将「$source」的 $chapters 个章节和 $entries 篇日记转移到子日记本「$target」？章节和顺序会一并保留，并从「$source」移出，日记不会被删除。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    return '将「$source」的 $entries 篇日记转移到子日记本「$target」？原有顺序会一并保留，并从「$source」移出，日记不会被删除。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    return '将「$source」的 $chapters 个章节转移到子日记本「$target」？这些章节会从「$source」移出。';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    return '将章节「$chapter」及其中 $entries 篇日记转移到子日记本「$target」？章节和顺序会一并保留，并从「$source」移出，日记不会被删除。';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return '将空章节「$chapter」转移到子日记本「$target」？该章节会从「$source」移出。';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '「$target」是私密日记本，转移后的日记将只在该日记本中显示，不再出现在全部日记里。';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return '已将目录转移到「$target」';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return '已将「$chapter」转移到「$target」';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return '已转移到「$target」，移入的日记只在该日记本中显示';
+  }
 }

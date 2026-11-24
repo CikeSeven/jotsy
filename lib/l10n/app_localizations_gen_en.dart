@@ -7745,6 +7745,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookChapterExpand => 'Expand chapter';
 
   @override
+  String notebookChapterSelectAll(String title) {
+    return 'Select all in \"$title\"';
+  }
+
+  @override
+  String notebookChapterDeselectAll(String title) {
+    return 'Deselect all in \"$title\"';
+  }
+
+  @override
   String get notebookChapterTitleLabel => 'Chapter name';
 
   @override

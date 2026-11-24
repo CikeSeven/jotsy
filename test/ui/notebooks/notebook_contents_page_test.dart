@@ -8,6 +8,7 @@ import 'package:node_diary/ui/notebooks/sections/notebook_contents_rows.dart';
 import 'package:node_diary/ui/widgets/reorder_handle.dart';
 
 import '../../support/diary_drafts_harness.dart';
+import '../../support/expressive_test_theme.dart';
 import 'notebook_test_support.dart';
 
 /// 目录页：按书序列出章节与日记，拖动换章并写回顺序，章节的改名 / 上下移 /
@@ -523,6 +524,212 @@ void main() {
     await tester.tap(find.byTooltip('多选'));
     await tester.pumpAndSettle();
     expect(handleIn('东京'), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('multi-select allows toggling all entries of a chapter via its '
+      'tristate header checkbox', (tester) async {
+    final (h, travel, ids) = await pumpContents(
+      tester,
+      chapters: <NotebookChapter>[tokyo, kyoto],
+      diaries: <String, String?>{'甲': 'c1', '乙': 'c1', '丙': 'c2', '丁': null},
+    );
+
+    Finder chapterCheckbox(String title) =>
+        find.descendant(of: header(title), matching: find.byType(Checkbox));
+    Finder entryCheckbox(String title) => find.descendant(
+      of: find.widgetWithText(NotebookContentsEntryTile, title),
+      matching: find.byType(Checkbox),
+    );
+
+    // 非多选模式不显示章节勾选框。
+    expect(chapterCheckbox('东京'), findsNothing);
+
+    await tester.tap(find.byTooltip('多选'));
+    await tester.pumpAndSettle();
+
+    // 章节勾选框与下方日记行的勾选框严格同列对齐。
+    expect(
+      tester.getCenter(chapterCheckbox('东京')).dx,
+      tester.getCenter(entryCheckbox('甲')).dx,
+    );
+    expect(
+      tester.getTopLeft(find.text('东京')).dx,
+      tester.getTopLeft(find.text('甲')).dx,
+    );
+
+    // 初始未选，点击“东京”勾选框一键选中本章全部 2 篇。
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isFalse);
+    await tester.tap(find.byTooltip('全选「东京」'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('甲')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('乙')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('丙')).value, isFalse);
+    expect(find.text('已选 2 篇'), findsOneWidget);
+
+    // 再单独勾选“京都”里的“丙”，再取消勾选“甲”：东京变为部分选中（null），
+    // 京都保持全选（true）。
+    await tester.tap(find.widgetWithText(NotebookContentsEntryTile, '丙'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(NotebookContentsEntryTile, '甲'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isNull);
+    expect(tester.widget<Checkbox>(chapterCheckbox('京都')).value, isTrue);
+    expect(find.text('已选 2 篇'), findsOneWidget);
+
+    // 部分选中时再点“东京”勾选框：一键补齐选中整章，不影响“京都”。
+    await tester.tap(find.byTooltip('全选「东京」'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('甲')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('丙')).value, isTrue);
+    expect(find.text('已选 3 篇'), findsOneWidget);
+
+    // 已全选时再点“东京”勾选框：仅取消选中“东京”，保留“丙”。
+    await tester.tap(find.byTooltip('取消全选「东京」'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isFalse);
+    expect(tester.widget<Checkbox>(entryCheckbox('甲')).value, isFalse);
+    expect(tester.widget<Checkbox>(entryCheckbox('乙')).value, isFalse);
+    expect(tester.widget<Checkbox>(entryCheckbox('丙')).value, isTrue);
+    expect(find.text('已选 1 篇'), findsOneWidget);
+
+    // “未分章”有日记时同样支持一键全选，并可批量移到目标章节。
+    await tester.tap(find.byTooltip('取消全选「京都」'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('全选「未分章」'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(chapterCheckbox('未分章')).value, isTrue);
+    expect(find.text('已选 1 篇'), findsOneWidget);
+
+    await tester.tap(find.text('移到章节…'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('notebook_chapter_pick_c1')),
+    );
+    await h.settleAll();
+    final rows = await contents(h, travel);
+    expect(rows.firstWhere((r) => r.diaryId == ids['丁']).chapterId, 'c1');
+    await h.unmount();
+  });
+
+  testWidgets('collapsed chapters can be selected without expanding and empty '
+      'chapters disable the header checkbox in dark theme', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final travel = await h.notebook(
+      '旅行',
+      payload: NotebookPayload(chapters: <NotebookChapter>[tokyo, kyoto]),
+    );
+    final d1 = await h.diary('甲', notebookIds: <String>[travel]);
+    final d2 = await h.diary('乙', notebookIds: <String>[travel]);
+    await tester.runAsync(
+      () =>
+          h.database.setNotebookEntriesChapter(travel, <String>[d1, d2], 'c1'),
+    );
+    await h.pump(
+      Theme(
+        data: expressiveTestTheme(Brightness.dark),
+        child: NotebookContentsPage(notebookId: travel),
+      ),
+    );
+    await h.settleAll();
+
+    // 先收起“东京”，再进入多选。
+    await tester.tap(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(shown(tester, '甲'), isFalse);
+
+    await tester.tap(find.byTooltip('多选'));
+    await tester.pumpAndSettle();
+
+    Finder chapterCheckbox(String title) =>
+        find.descendant(of: header(title), matching: find.byType(Checkbox));
+
+    // 收起状态下直接点勾选框：选中整章但不自动展开。
+    await tester.tap(find.byTooltip('全选「东京」'));
+    await tester.pumpAndSettle();
+    expect(find.text('已选 2 篇'), findsOneWidget);
+    expect(shown(tester, '甲'), isFalse);
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isTrue);
+
+    // 多选模式下点章节标题仍可照常展开，不改变已选状态。
+    await tester.tap(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(shown(tester, '甲'), isTrue);
+    expect(find.text('已选 2 篇'), findsOneWidget);
+
+    // 空章节（京都）与空的“未分章”勾选框处于禁用态且左缘对齐。
+    final emptyChapterBox = tester.widget<Checkbox>(chapterCheckbox('京都'));
+    final emptyUnassignedBox = tester.widget<Checkbox>(chapterCheckbox('未分章'));
+    expect(emptyChapterBox.onChanged, isNull);
+    expect(emptyUnassignedBox.onChanged, isNull);
+    expect(
+      tester.getCenter(chapterCheckbox('京都')).dx,
+      tester.getCenter(chapterCheckbox('东京')).dx,
+    );
+    await tester.tap(chapterCheckbox('京都'));
+    await tester.pumpAndSettle();
+    expect(find.text('已选 2 篇'), findsOneWidget);
+
+    await h.unmount();
+  });
+
+  testWidgets('long-pressing an entry or a non-empty chapter header enters '
+      'multi-select directly', (tester) async {
+    final (h, _, _) = await pumpContents(
+      tester,
+      chapters: <NotebookChapter>[tokyo, kyoto],
+      diaries: <String, String?>{'甲': 'c1', '乙': 'c1'},
+    );
+
+    Finder chapterCheckbox(String title) =>
+        find.descendant(of: header(title), matching: find.byType(Checkbox));
+    Finder entryCheckbox(String title) => find.descendant(
+      of: find.widgetWithText(NotebookContentsEntryTile, title),
+      matching: find.byType(Checkbox),
+    );
+
+    // 长按空章节（京都）不进入多选。
+    await tester.longPress(find.text('京都'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookContentsSelectionBar), findsNothing);
+
+    // 长按日记“甲”直接进入多选并选中“甲”，章节“东京”显示半选态。
+    await tester.longPress(find.widgetWithText(NotebookContentsEntryTile, '甲'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookContentsSelectionBar), findsOneWidget);
+    expect(find.byType(ReorderHandle), findsNothing);
+    expect(find.text('已选 1 篇'), findsOneWidget);
+    expect(tester.widget<Checkbox>(entryCheckbox('甲')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('乙')).value, isFalse);
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isNull);
+
+    // 多选模式下再长按“甲”切换取消勾选，仍留在多选模式。
+    await tester.longPress(find.widgetWithText(NotebookContentsEntryTile, '甲'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookContentsSelectionBar), findsOneWidget);
+    expect(find.text('已选 0 篇'), findsOneWidget);
+
+    // 退出多选后，长按有日记的章节标题“东京”直接进入多选并全选该章。
+    await tester.tap(find.byTooltip('退出多选'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookContentsSelectionBar), findsNothing);
+
+    await tester.longPress(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookContentsSelectionBar), findsOneWidget);
+    expect(find.text('已选 2 篇'), findsOneWidget);
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('甲')).value, isTrue);
+    expect(tester.widget<Checkbox>(entryCheckbox('乙')).value, isTrue);
+
+    // 多选模式下再长按“东京”标题取消选中整章，仍留在多选模式。
+    await tester.longPress(find.text('东京'));
+    await tester.pumpAndSettle();
+    expect(find.text('已选 0 篇'), findsOneWidget);
+    expect(tester.widget<Checkbox>(chapterCheckbox('东京')).value, isFalse);
+
     await h.unmount();
   });
 }

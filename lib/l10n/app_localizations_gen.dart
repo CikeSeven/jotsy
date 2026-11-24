@@ -12726,6 +12726,18 @@ abstract class AppLocalizations {
   /// **'Expand chapter'**
   String get notebookChapterExpand;
 
+  /// Tooltip and screen-reader label for the chapter checkbox in contents multi-select mode: select every entry in this chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all in \"{title}\"'**
+  String notebookChapterSelectAll(String title);
+
+  /// Tooltip and screen-reader label for the chapter checkbox in contents multi-select mode when every entry in this chapter is selected: deselect them all.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all in \"{title}\"'**
+  String notebookChapterDeselectAll(String title);
+
   /// Label of the chapter name field.
   ///
   /// In en, this message translates to:

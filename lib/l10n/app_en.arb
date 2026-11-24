@@ -9896,6 +9896,24 @@
   "@notebookChapterExpand": {
     "description": "Screen-reader hint for tapping a collapsed chapter title on the contents page: show the diaries of this chapter again."
   },
+  "notebookChapterSelectAll": "Select all in \"{title}\"",
+  "@notebookChapterSelectAll": {
+    "description": "Tooltip and screen-reader label for the chapter checkbox in contents multi-select mode: select every entry in this chapter.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterDeselectAll": "Deselect all in \"{title}\"",
+  "@notebookChapterDeselectAll": {
+    "description": "Tooltip and screen-reader label for the chapter checkbox in contents multi-select mode when every entry in this chapter is selected: deselect them all.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "notebookChapterTitleLabel": "Chapter name",
   "@notebookChapterTitleLabel": {
     "description": "Label of the chapter name field."

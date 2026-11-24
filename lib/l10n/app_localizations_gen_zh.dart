@@ -6959,6 +6959,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookChapterExpand => '展开本章';
 
   @override
+  String notebookChapterSelectAll(String title) {
+    return '全选「$title」';
+  }
+
+  @override
+  String notebookChapterDeselectAll(String title) {
+    return '取消全选「$title」';
+  }
+
+  @override
   String get notebookChapterTitleLabel => '章节名称';
 
   @override

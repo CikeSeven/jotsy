@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../../utils/tri_state_pick.dart';
 import '../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/viewmodels/diary_card_date_formatter.dart';
@@ -43,8 +44,11 @@ class NotebookContentsListSliver extends StatelessWidget {
     required this.onReorderStart,
     required this.onReorderEnd,
     required this.onToggleChapter,
+    required this.onToggleChapterSelection,
+    required this.onChapterLongPress,
     required this.onChapterAction,
     required this.onEntryTap,
+    required this.onEntryLongPress,
   });
 
   final List<NotebookContentsItem> items;
@@ -73,6 +77,12 @@ class NotebookContentsListSliver extends StatelessWidget {
   /// 松手，参数为未修正的插入位置（`SliverReorderableList.onReorderEnd`）。
   final ValueChanged<int> onReorderEnd;
   final ValueChanged<NotebookContentsHeader> onToggleChapter;
+
+  /// 多选模式下点按章节勾选框，参数为该章全部日记 id。
+  final ValueChanged<List<String>> onToggleChapterSelection;
+
+  /// 长按章节标题区（进入多选并选中整章，或在多选时切换整章勾选）。
+  final ValueChanged<List<String>> onChapterLongPress;
   final void Function(
     NotebookChapter chapter,
     int count,
@@ -83,6 +93,9 @@ class NotebookContentsListSliver extends StatelessWidget {
   /// 点按日记行（多选时为切换勾选），参数为日记 id。
   final ValueChanged<String> onEntryTap;
 
+  /// 长按日记行（进入多选并选中本篇，或在多选时切换勾选），参数为日记 id。
+  final ValueChanged<String> onEntryLongPress;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -91,6 +104,7 @@ class NotebookContentsListSliver extends StatelessWidget {
       context,
       ExpressiveMotion.medium,
     );
+    final diaryIdsByHeader = notebookContentsDiaryIdsByHeader(items);
     return SliverReorderableList(
       itemCount: items.length,
       onReorderItem: onReorder,
@@ -108,6 +122,11 @@ class NotebookContentsListSliver extends StatelessWidget {
             final chapterIndex = chapter == null
                 ? -1
                 : chapters.indexOf(chapter);
+            final chapterDiaryIds =
+                diaryIdsByHeader[item.key] ?? const <String>[];
+            final selectionState = selecting
+                ? notebookChapterSelectionState(chapterDiaryIds, selected)
+                : TriStatePick.none;
             return NotebookContentsChapterHeader(
               key: ValueKey<String>(item.key),
               chapter: chapter,
@@ -116,7 +135,15 @@ class NotebookContentsListSliver extends StatelessWidget {
               isLast: chapterIndex == chapters.length - 1,
               collapsed: collapsed.contains(item.key),
               canTransferToChild: canTransferToChild,
+              selecting: selecting,
+              selectionState: selectionState,
+              onSelectChapter: selecting && chapterDiaryIds.isNotEmpty
+                  ? () => onToggleChapterSelection(chapterDiaryIds)
+                  : null,
               onToggle: count == 0 ? null : () => onToggleChapter(item),
+              onLongPress: chapterDiaryIds.isNotEmpty
+                  ? () => onChapterLongPress(chapterDiaryIds)
+                  : null,
               onAction: chapter == null
                   ? null
                   : (action) => onChapterAction(chapter, count, action),
@@ -159,6 +186,7 @@ class NotebookContentsListSliver extends StatelessWidget {
                   selecting: selecting,
                   selected: selected.contains(entry.diaryId),
                   onTap: () => onEntryTap(entry.diaryId),
+                  onLongPress: () => onEntryLongPress(entry.diaryId),
                   dragHandle: ReorderHandle(index: index),
                 ),
               ),

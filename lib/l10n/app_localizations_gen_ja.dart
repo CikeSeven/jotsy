@@ -7084,6 +7084,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notebookChapterExpand => '章を展開';
 
   @override
+  String notebookChapterSelectAll(String title) {
+    return '「$title」をすべて選択';
+  }
+
+  @override
+  String notebookChapterDeselectAll(String title) {
+    return '「$title」の選択をすべて解除';
+  }
+
+  @override
   String get notebookChapterTitleLabel => '章の名前';
 
   @override

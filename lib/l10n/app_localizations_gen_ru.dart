@@ -7945,6 +7945,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notebookChapterExpand => 'Развернуть главу';
 
   @override
+  String notebookChapterSelectAll(String title) {
+    return 'Выбрать все в «$title»';
+  }
+
+  @override
+  String notebookChapterDeselectAll(String title) {
+    return 'Снять выделение в «$title»';
+  }
+
+  @override
   String get notebookChapterTitleLabel => 'Название главы';
 
   @override

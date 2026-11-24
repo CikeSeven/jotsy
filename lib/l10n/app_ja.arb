@@ -22460,21 +22460,21 @@
   "@diaryThumbnailMoveLater": {
     "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
   },
-  "notebookContentsTransferToChild": "目次をサブ日記帳へ移動",
-  "@notebookContentsTransferToChild": {
-    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook."
+  "notebookContentsTransfer": "目次を移動",
+  "@notebookContentsTransfer": {
+    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire contents (all chapters and entries) to a parent or sub-notebook."
   },
-  "notebookChapterTransferToChild": "サブ日記帳へ移動…",
-  "@notebookChapterTransferToChild": {
-    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook."
+  "notebookChapterTransfer": "章を移動…",
+  "@notebookChapterTransfer": {
+    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a parent or sub-notebook."
   },
-  "notebookContentsTransferSheetTitle": "目次をどのサブ日記帳へ移動しますか",
+  "notebookContentsTransferSheetTitle": "目次をどの日記帳へ移動しますか",
   "@notebookContentsTransferSheetTitle": {
-    "description": "Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents."
+    "description": "Title of the bottom sheet asking which parent or sub-notebook should receive the current notebook's entire contents."
   },
-  "notebookChapterTransferSheetTitle": "「{title}」をどのサブ日記帳へ移動しますか",
+  "notebookChapterTransferSheetTitle": "「{title}」をどの日記帳へ移動しますか",
   "@notebookChapterTransferSheetTitle": {
-    "description": "Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.",
+    "description": "Title of the bottom sheet asking which parent or sub-notebook should receive a single chapter and its entries.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -22483,19 +22483,19 @@
   },
   "notebookContentsTransferEmptyHint": "まだサブ日記帳がありません。上から新規作成して移動できます",
   "@notebookContentsTransferEmptyHint": {
-    "description": "Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet."
+    "description": "Empty state hint inside the transfer target picker when the current notebook has neither parent notebooks nor eligible sub-notebooks yet."
   },
-  "notebookContentsTransferConfirmTitle": "サブ日記帳へ移動",
+  "notebookContentsTransferConfirmTitle": "移動の確認",
   "@notebookContentsTransferConfirmTitle": {
-    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook."
+    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a parent or sub-notebook."
   },
   "notebookContentsTransferAction": "移動",
   "@notebookContentsTransferAction": {
-    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook."
+    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a parent or sub-notebook."
   },
-  "notebookContentsTransferConfirmAll": "「{source}」の章{chapters}件と日記{entries}件をサブ日記帳「{target}」へ移動しますか？章構成と並び順は維持され、「{source}」からは外れます。日記は削除されません。",
+  "notebookContentsTransferConfirmAll": "「{source}」の章{chapters}件と日記{entries}件を「{target}」へ移動しますか？章構成と並び順は維持され、「{source}」からは外れます。日記は削除されません。",
   "@notebookContentsTransferConfirmAll": {
-    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.",
+    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a parent or sub-notebook.",
     "placeholders": {
       "source": {
         "type": "String"
@@ -22511,9 +22511,9 @@
       }
     }
   },
-  "notebookContentsTransferConfirmEntriesOnly": "「{source}」の日記{entries}件をサブ日記帳「{target}」へ移動しますか？並び順は維持され、「{source}」からは外れます。日記は削除されません。",
+  "notebookContentsTransferConfirmEntriesOnly": "「{source}」の日記{entries}件を「{target}」へ移動しますか？並び順は維持され、「{source}」からは外れます。日記は削除されません。",
   "@notebookContentsTransferConfirmEntriesOnly": {
-    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.",
+    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a parent or sub-notebook.",
     "placeholders": {
       "source": {
         "type": "String"
@@ -22526,9 +22526,9 @@
       }
     }
   },
-  "notebookContentsTransferConfirmChaptersOnly": "「{source}」の章{chapters}件をサブ日記帳「{target}」へ移動しますか？これらの章は「{source}」から外れます。",
+  "notebookContentsTransferConfirmChaptersOnly": "「{source}」の章{chapters}件を「{target}」へ移動しますか？これらの章は「{source}」から外れます。",
   "@notebookContentsTransferConfirmChaptersOnly": {
-    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.",
+    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a parent or sub-notebook.",
     "placeholders": {
       "source": {
         "type": "String"
@@ -22541,9 +22541,9 @@
       }
     }
   },
-  "notebookChapterTransferConfirm": "章「{chapter}」と含まれる日記{entries}件をサブ日記帳「{target}」へ移動しますか？章と並び順は維持され、「{source}」からは外れます。日記は削除されません。",
+  "notebookChapterTransferConfirm": "章「{chapter}」と含まれる日記{entries}件を「{target}」へ移動しますか？章と並び順は維持され、「{source}」からは外れます。日記は削除されません。",
   "@notebookChapterTransferConfirm": {
-    "description": "Confirmation message when moving a chapter with entries to a sub-notebook.",
+    "description": "Confirmation message when transferring a chapter with entries to a parent or sub-notebook.",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22559,9 +22559,9 @@
       }
     }
   },
-  "notebookChapterTransferConfirmEmpty": "空の章「{chapter}」をサブ日記帳「{target}」へ移動しますか？この章は「{source}」から外れます。",
+  "notebookChapterTransferConfirmEmpty": "空の章「{chapter}」を「{target}」へ移動しますか？この章は「{source}」から外れます。",
   "@notebookChapterTransferConfirmEmpty": {
-    "description": "Confirmation message when moving an empty chapter to a sub-notebook.",
+    "description": "Confirmation message when transferring an empty chapter to a parent or sub-notebook.",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22583,9 +22583,27 @@
       }
     }
   },
+  "notebookContentsTransferPublicNote": "「{target}」は非公開の日記帳ではありません。移動した日記はすべての日記にも表示されます。",
+  "@notebookContentsTransferPublicNote": {
+    "description": "Additional warning in the transfer confirmation dialog when moving entries from a hidden or locked notebook into a normal parent notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPublic": "「{target}」へ移動しました。移動した日記はすべての日記にも表示されます",
+  "@notebookContentsTransferredPublic": {
+    "description": "SnackBar (with an Undo action) shown after transferring entries from a private notebook into a normal parent notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "notebookContentsTransferred": "目次を「{target}」へ移動しました",
   "@notebookContentsTransferred": {
-    "description": "SnackBar shown after transferring a notebook's entire contents to a sub-notebook.",
+    "description": "SnackBar (with an Undo action) shown after transferring a notebook's entire contents to a parent or sub-notebook.",
     "placeholders": {
       "target": {
         "type": "String"
@@ -22594,7 +22612,7 @@
   },
   "notebookChapterTransferred": "「{chapter}」を「{target}」へ移動しました",
   "@notebookChapterTransferred": {
-    "description": "SnackBar shown after moving a single chapter to a sub-notebook.",
+    "description": "SnackBar (with an Undo action) shown after transferring a single chapter to a parent or sub-notebook.",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22606,7 +22624,7 @@
   },
   "notebookContentsTransferredPrivate": "「{target}」へ移動しました。移動した日記はその日記帳の中でのみ表示されます",
   "@notebookContentsTransferredPrivate": {
-    "description": "SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.",
+    "description": "SnackBar (with an Undo action) shown after transferring entries from a normal notebook into a private sub-notebook.",
     "placeholders": {
       "target": {
         "type": "String"

@@ -19220,19 +19220,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryThumbnailMoveLater => 'Move later';
 
   @override
-  String get notebookContentsTransferToChild =>
-      'Transfer contents to sub-notebook';
+  String get notebookContentsTransfer => 'Transfer contents';
 
   @override
-  String get notebookChapterTransferToChild => 'Move to sub-notebook…';
+  String get notebookChapterTransfer => 'Transfer chapter…';
 
   @override
   String get notebookContentsTransferSheetTitle =>
-      'Transfer contents to which sub-notebook';
+      'Transfer contents to which notebook';
 
   @override
   String notebookChapterTransferSheetTitle(String title) {
-    return 'Move \"$title\" to which sub-notebook';
+    return 'Transfer \"$title\" to which notebook';
   }
 
   @override
@@ -19240,7 +19239,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No sub-notebooks yet. Create one above to transfer into it.';
 
   @override
-  String get notebookContentsTransferConfirmTitle => 'Transfer to sub-notebook';
+  String get notebookContentsTransferConfirmTitle => 'Confirm transfer';
 
   @override
   String get notebookContentsTransferAction => 'Transfer';
@@ -19325,6 +19324,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String notebookContentsTransferPrivateNote(String target) {
     return '\"$target\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.';
+  }
+
+  @override
+  String notebookContentsTransferPublicNote(String target) {
+    return '\"$target\" is not a private notebook. Moved entries will also appear in All Diaries.';
+  }
+
+  @override
+  String notebookContentsTransferredPublic(String target) {
+    return 'Transferred to \"$target\". Moved entries now also show in All Diaries';
   }
 
   @override

@@ -24,6 +24,7 @@ import '../sections/notebook_contents_list.dart';
 import '../sections/notebook_contents_rows.dart';
 import '../sections/notebook_contents_transfer_sheet.dart';
 import '../viewmodels/notebook_book_layout.dart';
+import '../viewmodels/notebook_transfer_targets.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
 import '../../widgets/form_width.dart';
@@ -108,8 +109,8 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     }
     final entries = entriesAsync.value;
     final hasEntries = entries != null && entries.isNotEmpty;
-    final canTransferToChild =
-        notebook != null && canTransferNotebookContentsToChild(notebook, tree);
+    final canTransfer =
+        notebook != null && canTransferNotebookContents(notebook, tree);
     final hasTransferable =
         notebook != null &&
         entries != null &&
@@ -118,12 +119,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     // 的 Builder（那会在 Builder 自己重建时才订阅，订阅随之反复关开）。
     final body = notebook == null || entries == null
         ? const DelayedLoadingIndicator()
-        : _buildBody(
-            context,
-            notebook,
-            entries,
-            canTransferToChild: canTransferToChild,
-          );
+        : _buildBody(context, notebook, entries, canTransfer: canTransfer);
     return PopScope(
       canPop: !_selecting,
       onPopInvokedWithResult: (bool didPop, Object? _) {
@@ -146,12 +142,12 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                   onPressed: notebook == null ? null : _addChapter,
                   icon: const FaIcon(FontAwesomeIcons.folderPlus, size: 16),
                 ),
-                if (canTransferToChild)
+                if (canTransfer)
                   IconButton(
-                    tooltip: l10n.notebookContentsTransferToChild,
+                    tooltip: l10n.notebookContentsTransfer,
                     onPressed: !_selecting && hasTransferable
                         ? () => unawaited(
-                            _transferToChild(
+                            _transfer(
                               notebook,
                               chapterCount: notebook.payload.chapters.length,
                               entryCount: entries.length,
@@ -197,7 +193,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     BuildContext context,
     NotebookView notebook,
     List<NotebookContentsEntry> entries, {
-    required bool canTransferToChild,
+    required bool canTransfer,
   }) {
     final chapters = _orderedChapters(notebook.payload.chapters);
     final items = buildNotebookContents(
@@ -253,7 +249,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                 selected: _selected,
                 dateMeta: dateMeta,
                 now: now,
-                canTransferToChild: canTransferToChild,
+                canTransfer: canTransfer,
                 onReorder: (int oldIndex, int newIndex) =>
                     _reorder(chapters, entries, items, oldIndex, newIndex),
                 onReorderStart: (int index) {
@@ -479,7 +475,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     await _run(() => _controller.addChapter(title));
   }
 
-  Future<void> _transferToChild(
+  Future<void> _transfer(
     NotebookView notebook, {
     required int chapterCount,
     required int entryCount,
@@ -515,8 +511,8 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
         await _run(() => _controller.moveChapter(chapter.id, -1));
       case NotebookChapterAction.moveDown:
         await _run(() => _controller.moveChapter(chapter.id, 1));
-      case NotebookChapterAction.transferToChild:
-        await _transferToChild(
+      case NotebookChapterAction.transfer:
+        await _transfer(
           notebook,
           chapterCount: 1,
           entryCount: count,

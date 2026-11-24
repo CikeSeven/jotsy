@@ -144,16 +144,21 @@ class NotebookContentsController {
   }
 
   /// 把整份目录（[chapterId] 为 null）或单个章节（[chapterId] 非空）整体转移
-  /// 到子孙手动日记本 [targetId]，在同一事务里保留章节结构与成书顺序。
-  Future<NotebookContentsTransferResult> transferToChild({
+  /// 到手动上级或手动子孙本 [targetId]，在同一事务里保留章节结构与成书顺序；
+  /// 返回的快照交给 [undoTransfer] 撤销。
+  Future<NotebookContentsTransfer> transfer({
     required String targetId,
     String? chapterId,
   }) {
-    return _database.transferNotebookContentsToChild(
+    return _database.transferNotebookContents(
       sourceId: notebookId,
       targetId: targetId,
       chapterId: chapterId,
     );
+  }
+
+  Future<void> undoTransfer(NotebookContentsTransfer transfer) {
+    return _database.undoNotebookContentsTransfer(transfer);
   }
 
   /// 从本日记本移出，返回被删的关联行供撤销。

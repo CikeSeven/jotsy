@@ -30056,49 +30056,49 @@ abstract class AppLocalizations {
   /// **'Move later'**
   String get diaryThumbnailMoveLater;
 
-  /// Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook.
+  /// Tooltip of the top bar button on the notebook contents page to transfer the entire contents (all chapters and entries) to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
-  /// **'Transfer contents to sub-notebook'**
-  String get notebookContentsTransferToChild;
+  /// **'Transfer contents'**
+  String get notebookContentsTransfer;
 
-  /// Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook.
+  /// Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
-  /// **'Move to sub-notebook…'**
-  String get notebookChapterTransferToChild;
+  /// **'Transfer chapter…'**
+  String get notebookChapterTransfer;
 
-  /// Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents.
+  /// Title of the bottom sheet asking which parent or sub-notebook should receive the current notebook's entire contents.
   ///
   /// In en, this message translates to:
-  /// **'Transfer contents to which sub-notebook'**
+  /// **'Transfer contents to which notebook'**
   String get notebookContentsTransferSheetTitle;
 
-  /// Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.
+  /// Title of the bottom sheet asking which parent or sub-notebook should receive a single chapter and its entries.
   ///
   /// In en, this message translates to:
-  /// **'Move \"{title}\" to which sub-notebook'**
+  /// **'Transfer \"{title}\" to which notebook'**
   String notebookChapterTransferSheetTitle(String title);
 
-  /// Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet.
+  /// Empty state hint inside the transfer target picker when the current notebook has neither parent notebooks nor eligible sub-notebooks yet.
   ///
   /// In en, this message translates to:
   /// **'No sub-notebooks yet. Create one above to transfer into it.'**
   String get notebookContentsTransferEmptyHint;
 
-  /// Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook.
+  /// Title of the confirmation dialog before transferring a notebook's contents or a chapter to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
-  /// **'Transfer to sub-notebook'**
+  /// **'Confirm transfer'**
   String get notebookContentsTransferConfirmTitle;
 
-  /// Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook.
+  /// Confirm button label in the dialog for transferring notebook contents or a chapter to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Transfer'**
   String get notebookContentsTransferAction;
 
-  /// Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.
+  /// Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} and {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Chapters and order are kept, and they are removed from \"{source}\". No entries are deleted.'**
@@ -30109,7 +30109,7 @@ abstract class AppLocalizations {
     String target,
   );
 
-  /// Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.
+  /// Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Transfer {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Their order is kept, and they are removed from \"{source}\". No entries are deleted.'**
@@ -30119,7 +30119,7 @@ abstract class AppLocalizations {
     String target,
   );
 
-  /// Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.
+  /// Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} from \"{source}\" to \"{target}\"? They will be removed from \"{source}\".'**
@@ -30129,7 +30129,7 @@ abstract class AppLocalizations {
     String target,
   );
 
-  /// Confirmation message when moving a chapter with entries to a sub-notebook.
+  /// Confirmation message when transferring a chapter with entries to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Move chapter \"{chapter}\" and its {entries, plural, =1{1 entry} other{{entries} entries}} to \"{target}\"? The chapter and order are kept, and they are removed from \"{source}\". No entries are deleted.'**
@@ -30140,7 +30140,7 @@ abstract class AppLocalizations {
     String target,
   );
 
-  /// Confirmation message when moving an empty chapter to a sub-notebook.
+  /// Confirmation message when transferring an empty chapter to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Move empty chapter \"{chapter}\" to \"{target}\"? It will be removed from \"{source}\".'**
@@ -30156,19 +30156,31 @@ abstract class AppLocalizations {
   /// **'\"{target}\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.'**
   String notebookContentsTransferPrivateNote(String target);
 
-  /// SnackBar shown after transferring a notebook's entire contents to a sub-notebook.
+  /// Additional warning in the transfer confirmation dialog when moving entries from a hidden or locked notebook into a normal parent notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{target}\" is not a private notebook. Moved entries will also appear in All Diaries.'**
+  String notebookContentsTransferPublicNote(String target);
+
+  /// SnackBar (with an Undo action) shown after transferring entries from a private notebook into a normal parent notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred to \"{target}\". Moved entries now also show in All Diaries'**
+  String notebookContentsTransferredPublic(String target);
+
+  /// SnackBar (with an Undo action) shown after transferring a notebook's entire contents to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Transferred contents to \"{target}\"'**
   String notebookContentsTransferred(String target);
 
-  /// SnackBar shown after moving a single chapter to a sub-notebook.
+  /// SnackBar (with an Undo action) shown after transferring a single chapter to a parent or sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Moved \"{chapter}\" to \"{target}\"'**
   String notebookChapterTransferred(String chapter, String target);
 
-  /// SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.
+  /// SnackBar (with an Undo action) shown after transferring entries from a normal notebook into a private sub-notebook.
   ///
   /// In en, this message translates to:
   /// **'Transferred to \"{target}\". Moved entries now only show in that notebook'**

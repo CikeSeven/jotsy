@@ -67,7 +67,7 @@ void main() {
       ], 'c1');
       await db.archiveDiary(dTokyo2);
 
-      final result = await db.transferNotebookContentsToChild(
+      final result = await db.transferNotebookContents(
         sourceId: parent,
         targetId: child,
       );
@@ -111,7 +111,7 @@ void main() {
     final d1 = await diary('笔记', notebookIds: <String>[root]);
     await db.setNotebookEntriesChapter(root, <String>[d1], 'c1');
 
-    final result = await db.transferNotebookContentsToChild(
+    final result = await db.transferNotebookContents(
       sourceId: root,
       targetId: grand,
     );
@@ -140,7 +140,7 @@ void main() {
     await db.setNotebookEntriesChapter(parent, <String>[d1], 'c1');
     await db.setNotebookEntriesChapter(parent, <String>[d2], 'c2');
 
-    final r1 = await db.transferNotebookContentsToChild(
+    final r1 = await db.transferNotebookContents(
       sourceId: parent,
       targetId: child,
       chapterId: 'c1',
@@ -158,7 +158,7 @@ void main() {
     expect(childEntries.single.chapterId, 'c1');
 
     // 空章节也能单独转移。
-    final r2 = await db.transferNotebookContentsToChild(
+    final r2 = await db.transferNotebookContents(
       sourceId: parent,
       targetId: child,
       chapterId: 'c3',
@@ -183,7 +183,7 @@ void main() {
       final d1 = await diary('一', notebookIds: <String>[parent]);
       final d2 = await diary('二', notebookIds: <String>[parent]);
 
-      final result = await db.transferNotebookContentsToChild(
+      final result = await db.transferNotebookContents(
         sourceId: parent,
         targetId: child,
       );
@@ -215,10 +215,7 @@ void main() {
       final dSource = await diary('迁入日记', notebookIds: <String>[parent]);
       await db.setNotebookEntriesChapter(parent, <String>[dSource], 'sameid01');
 
-      await db.transferNotebookContentsToChild(
-        sourceId: parent,
-        targetId: child,
-      );
+      await db.transferNotebookContents(sourceId: parent, targetId: child);
 
       final chapters = (await db.getNotebook(child))!.parsedPayload.chapters;
       expect(chapters, hasLength(2));
@@ -264,7 +261,7 @@ void main() {
     ], 's1');
     await db.setNotebookEntriesChapter(child, <String>[dAssigned], 't1');
 
-    final result = await db.transferNotebookContentsToChild(
+    final result = await db.transferNotebookContents(
       sourceId: parent,
       targetId: child,
     );
@@ -297,7 +294,7 @@ void main() {
     ], 'c1');
     await db.softDeleteDiary(dTrashed);
 
-    final result = await db.transferNotebookContentsToChild(
+    final result = await db.transferNotebookContents(
       sourceId: parent,
       targetId: child,
     );
@@ -331,7 +328,7 @@ void main() {
       final d1 = await diary('秘密一', notebookIds: <String>[parent]);
       await db.setNotebookEntriesChapter(parent, <String>[d1], 'c1');
 
-      final result = await db.transferNotebookContentsToChild(
+      final result = await db.transferNotebookContents(
         sourceId: parent,
         targetId: child,
       );
@@ -353,6 +350,7 @@ void main() {
         payload: NotebookPayload(chapters: <NotebookChapter>[ch]),
       );
       final child = await notebook('子本', parentId: parent);
+      final otherChild = await notebook('另一个子本', parentId: parent);
       final smartChild = await notebook(
         '智能子本',
         parentId: parent,
@@ -363,26 +361,24 @@ void main() {
       await db.setNotebookEntriesChapter(parent, <String>[d1], 'c1');
 
       await expectLater(
-        db.transferNotebookContentsToChild(sourceId: parent, targetId: parent),
+        db.transferNotebookContents(sourceId: parent, targetId: parent),
         throwsA(isA<ArgumentError>()),
       );
       await expectLater(
-        db.transferNotebookContentsToChild(sourceId: parent, targetId: sibling),
+        db.transferNotebookContents(sourceId: parent, targetId: sibling),
+        throwsA(isA<ArgumentError>()),
+      );
+      // 同一上级下的兄弟本既不是上级也不是子孙。
+      await expectLater(
+        db.transferNotebookContents(sourceId: child, targetId: otherChild),
         throwsA(isA<ArgumentError>()),
       );
       await expectLater(
-        db.transferNotebookContentsToChild(sourceId: child, targetId: parent),
+        db.transferNotebookContents(sourceId: parent, targetId: smartChild),
         throwsA(isA<ArgumentError>()),
       );
       await expectLater(
-        db.transferNotebookContentsToChild(
-          sourceId: parent,
-          targetId: smartChild,
-        ),
-        throwsA(isA<ArgumentError>()),
-      );
-      await expectLater(
-        db.transferNotebookContentsToChild(
+        db.transferNotebookContents(
           sourceId: parent,
           targetId: child,
           chapterId: 'missing',
@@ -397,6 +393,159 @@ void main() {
       );
       expect((await db.getNotebookContents(parent)).single.diaryId, d1);
       expect(await db.getNotebookContents(child), isEmpty);
+    },
+  );
+
+  Future<List<(String, String?)>> placements(String notebookId) async =>
+      <(String, String?)>[
+        for (final e in await db.getNotebookContents(notebookId))
+          (e.diaryId, e.chapterId),
+      ];
+
+  Future<List<String>> chapterTitles(String notebookId) async => <String>[
+    for (final c in (await db.getNotebook(notebookId))!.parsedPayload.chapters)
+      c.title,
+  ];
+
+  test('transfers contents moved into a child back to the parent and from a '
+      'grandchild up to the root', () async {
+    final tokyo = NotebookChapter(id: 'c1', title: '东京');
+    final kyoto = NotebookChapter(id: 'c2', title: '京都');
+    final root = await notebook(
+      '旅行',
+      payload: NotebookPayload(chapters: <NotebookChapter>[tokyo, kyoto]),
+    );
+    final child = await notebook('日本', parentId: root);
+    final grand = await notebook('关西', parentId: child);
+    final d1 = await diary('浅草', notebookIds: <String>[root]);
+    final d2 = await diary('岚山', notebookIds: <String>[root]);
+    final d3 = await diary('随笔', notebookIds: <String>[root]);
+    await db.setNotebookEntriesChapter(root, <String>[d1], 'c1');
+    await db.setNotebookEntriesChapter(root, <String>[d2], 'c2');
+
+    // 转到子本后再原路转回上级：章节与成书顺序都回来，子本清空。
+    await db.transferNotebookContents(sourceId: root, targetId: child);
+    expect(await placements(root), isEmpty);
+    final back = await db.transferNotebookContents(
+      sourceId: child,
+      targetId: root,
+    );
+    expect(back.chapterCount, 2);
+    expect(back.entryCount, 3);
+    expect(await chapterTitles(root), <String>['东京', '京都']);
+    expect(await placements(root), <(String, String?)>[
+      (d1, 'c1'),
+      (d2, 'c2'),
+      (d3, null),
+    ]);
+    expect(await placements(child), isEmpty);
+    expect(await chapterTitles(child), isEmpty);
+
+    // 孙子本可以直接转到顶层的祖本（单个章节）。
+    await db.transferNotebookContents(
+      sourceId: root,
+      targetId: grand,
+      chapterId: 'c2',
+    );
+    await db.transferNotebookContents(
+      sourceId: grand,
+      targetId: root,
+      chapterId: 'c2',
+    );
+    expect(await chapterTitles(root), <String>['东京', '京都']);
+    expect((await placements(root)).firstWhere((p) => p.$1 == d2).$2, 'c2');
+    expect(await placements(grand), isEmpty);
+  });
+
+  test('undo restores both notebooks exactly, including renamed chapter ids, '
+      'pre-existing target entries and cleared hidden entries', () async {
+    final srcCh = NotebookChapter(id: 'c1', title: '源章');
+    final dstCh = NotebookChapter(id: 'c1', title: '目标同 id 章');
+    final parent = await notebook(
+      '父本',
+      payload: NotebookPayload(chapters: <NotebookChapter>[srcCh]),
+    );
+    final child = await notebook(
+      '子本',
+      parentId: parent,
+      payload: NotebookPayload(chapters: <NotebookChapter>[dstCh]),
+    );
+    final dKept = await diary('子本原有', notebookIds: <String>[child]);
+    await db.setNotebookEntriesChapter(child, <String>[dKept], 'c1');
+    final dMoved = await diary('搬走', notebookIds: <String>[parent]);
+    final dLoose = await diary('未分章', notebookIds: <String>[parent]);
+    // 两本都在、子本里未分章：转移时会被归入搬来的章节。
+    final dBoth = await diary('双在', notebookIds: <String>[parent, child]);
+    final dTrashed = await diary('回收站', notebookIds: <String>[parent]);
+    await db.setNotebookEntriesChapter(parent, <String>[
+      dMoved,
+      dBoth,
+      dTrashed,
+    ], 'c1');
+    await db.softDeleteDiary(dTrashed);
+
+    final parentBefore = await placements(parent);
+    final childBefore = await placements(child);
+    final parentChaptersBefore = (await db.getNotebook(
+      parent,
+    ))!.parsedPayload.chapters;
+    final childChaptersBefore = (await db.getNotebook(
+      child,
+    ))!.parsedPayload.chapters;
+
+    final transfer = await db.transferNotebookContents(
+      sourceId: parent,
+      targetId: child,
+    );
+    expect(transfer.isEmpty, isFalse);
+    // 撞 id 的章节换了新 id，双在的日记归入它。
+    final moved = (await db.getNotebook(child))!.parsedPayload.chapters.last;
+    expect(moved.id, isNot('c1'));
+    expect(
+      (await placements(child)).firstWhere((p) => p.$1 == dBoth).$2,
+      moved.id,
+    );
+    expect((await placements(child)).last, (dLoose, null));
+
+    await db.undoNotebookContentsTransfer(transfer);
+
+    expect(await placements(parent), parentBefore);
+    expect(await placements(child), childBefore);
+    expect(
+      (await db.getNotebook(parent))!.parsedPayload.chapters,
+      parentChaptersBefore,
+    );
+    expect(
+      (await db.getNotebook(child))!.parsedPayload.chapters,
+      childChaptersBefore,
+    );
+    // 回收站里那篇的章节归属也回来了。
+    await db.restoreDiary(dTrashed);
+    expect(
+      (await placements(parent)).firstWhere((p) => p.$1 == dTrashed).$2,
+      'c1',
+    );
+  });
+
+  test(
+    'undo skips permanently deleted diaries instead of writing orphan rows',
+    () async {
+      final parent = await notebook('父本');
+      final child = await notebook('子本', parentId: parent);
+      final d1 = await diary('留下', notebookIds: <String>[parent]);
+      final d2 = await diary('彻底删除', notebookIds: <String>[parent]);
+
+      final transfer = await db.transferNotebookContents(
+        sourceId: parent,
+        targetId: child,
+      );
+      await db.hardDeleteDiary(d2);
+      await db.undoNotebookContentsTransfer(transfer);
+
+      expect(await placements(parent), <(String, String?)>[(d1, null)]);
+      expect(await placements(child), isEmpty);
+      final rows = await db.select(db.diaryNotebooks).get();
+      expect(rows, hasLength(1));
     },
   );
 }

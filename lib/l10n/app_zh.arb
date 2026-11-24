@@ -21911,21 +21911,21 @@
   "@diaryThumbnailMoveLater": {
     "description": "编辑页并排小图的读屏操作：把这张图片或视频在这一组里往后挪一位。"
   },
-  "notebookContentsTransferToChild": "转移目录到子日记本",
-  "@notebookContentsTransferToChild": {
-    "description": "目录页顶栏按钮提示：把整份目录（全部章节与日记）转移到子日记本。"
+  "notebookContentsTransfer": "转移目录",
+  "@notebookContentsTransfer": {
+    "description": "目录页顶栏按钮提示：把整份目录（全部章节与日记）转移到上级或子日记本。"
   },
-  "notebookChapterTransferToChild": "移到子日记本…",
-  "@notebookChapterTransferToChild": {
-    "description": "目录页章节标题行菜单项：把这一章连同里面的日记移到子日记本。"
+  "notebookChapterTransfer": "转移章节…",
+  "@notebookChapterTransfer": {
+    "description": "目录页章节标题行菜单项：把这一章连同章内日记转移到上级或子日记本。"
   },
-  "notebookContentsTransferSheetTitle": "将目录转移到哪个子日记本",
+  "notebookContentsTransferSheetTitle": "将目录转移到哪个日记本",
   "@notebookContentsTransferSheetTitle": {
-    "description": "转移整份目录时挑选目标子日记本的底部面板标题。"
+    "description": "选择接收整份目录的上级或子日记本的底部面板标题。"
   },
-  "notebookChapterTransferSheetTitle": "将「{title}」移到哪个子日记本",
+  "notebookChapterTransferSheetTitle": "将「{title}」转移到哪个日记本",
   "@notebookChapterTransferSheetTitle": {
-    "description": "转移单个章节时挑选目标子日记本的底部面板标题。",
+    "description": "选择接收单个章节及其日记的上级或子日记本的底部面板标题。",
     "placeholders": {
       "title": {
         "type": "String"
@@ -21934,19 +21934,19 @@
   },
   "notebookContentsTransferEmptyHint": "还没有子日记本，可在上方新建后转移",
   "@notebookContentsTransferEmptyHint": {
-    "description": "目标子日记本选择面板里还没有可选子本时的空态提示。"
+    "description": "转移目标面板的空状态：当前日记本既没有上级，也还没有可接收的子日记本。"
   },
-  "notebookContentsTransferConfirmTitle": "转移到子日记本",
+  "notebookContentsTransferConfirmTitle": "确认转移",
   "@notebookContentsTransferConfirmTitle": {
-    "description": "确认将目录或章节转移到子日记本的对话框标题。"
+    "description": "把目录或章节转移到上级或子日记本前的确认框标题。"
   },
   "notebookContentsTransferAction": "转移",
   "@notebookContentsTransferAction": {
-    "description": "转移到子日记本确认框的确认按钮文案。"
+    "description": "转移目录或章节确认框里的确认按钮。"
   },
-  "notebookContentsTransferConfirmAll": "将「{source}」的 {chapters} 个章节和 {entries} 篇日记转移到子日记本「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "notebookContentsTransferConfirmAll": "将「{source}」的 {chapters} 个章节和 {entries} 篇日记转移到「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
   "@notebookContentsTransferConfirmAll": {
-    "description": "转移整份目录（包含章节与日记）到子日记本的确认说明。",
+    "description": "整份目录（有章节也有日记）转移到上级或子日记本时的确认文案。",
     "placeholders": {
       "source": {
         "type": "String"
@@ -21962,9 +21962,9 @@
       }
     }
   },
-  "notebookContentsTransferConfirmEntriesOnly": "将「{source}」的 {entries} 篇日记转移到子日记本「{target}」？原有顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "notebookContentsTransferConfirmEntriesOnly": "将「{source}」的 {entries} 篇日记转移到「{target}」？原有顺序会一并保留，并从「{source}」移出，日记不会被删除。",
   "@notebookContentsTransferConfirmEntriesOnly": {
-    "description": "转移整份目录（仅有日记、没有章节）到子日记本的确认说明。",
+    "description": "整份目录（只有日记、没有章节）转移到上级或子日记本时的确认文案。",
     "placeholders": {
       "source": {
         "type": "String"
@@ -21977,9 +21977,9 @@
       }
     }
   },
-  "notebookContentsTransferConfirmChaptersOnly": "将「{source}」的 {chapters} 个章节转移到子日记本「{target}」？这些章节会从「{source}」移出。",
+  "notebookContentsTransferConfirmChaptersOnly": "将「{source}」的 {chapters} 个章节转移到「{target}」？这些章节会从「{source}」移出。",
   "@notebookContentsTransferConfirmChaptersOnly": {
-    "description": "转移整份目录（仅有空章节、没有日记）到子日记本的确认说明。",
+    "description": "整份目录（只有空章节、没有日记）转移到上级或子日记本时的确认文案。",
     "placeholders": {
       "source": {
         "type": "String"
@@ -21992,9 +21992,9 @@
       }
     }
   },
-  "notebookChapterTransferConfirm": "将章节「{chapter}」及其中 {entries} 篇日记转移到子日记本「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "notebookChapterTransferConfirm": "将章节「{chapter}」及其中 {entries} 篇日记转移到「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
   "@notebookChapterTransferConfirm": {
-    "description": "将含日记的单个章节转移到子日记本的确认说明。",
+    "description": "把带日记的章节转移到上级或子日记本时的确认文案。",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22010,9 +22010,9 @@
       }
     }
   },
-  "notebookChapterTransferConfirmEmpty": "将空章节「{chapter}」转移到子日记本「{target}」？该章节会从「{source}」移出。",
+  "notebookChapterTransferConfirmEmpty": "将空章节「{chapter}」转移到「{target}」？该章节会从「{source}」移出。",
   "@notebookChapterTransferConfirmEmpty": {
-    "description": "将空章节转移到子日记本的确认说明。",
+    "description": "把空章节转移到上级或子日记本时的确认文案。",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22034,9 +22034,27 @@
       }
     }
   },
+  "notebookContentsTransferPublicNote": "「{target}」不是私密日记本，转移后的日记会出现在全部日记里。",
+  "@notebookContentsTransferPublicNote": {
+    "description": "从隐藏或上锁的日记本把日记转回普通上级日记本时，确认框里的附加说明。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPublic": "已转移到「{target}」，移入的日记会出现在全部日记里",
+  "@notebookContentsTransferredPublic": {
+    "description": "从私密日记本把日记转回普通上级日记本后的提示条（带撤销）。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "notebookContentsTransferred": "已将目录转移到「{target}」",
   "@notebookContentsTransferred": {
-    "description": "整份目录转移到子日记本后的提示条。",
+    "description": "整份目录转移到上级或子日记本后的提示条（带撤销）。",
     "placeholders": {
       "target": {
         "type": "String"
@@ -22045,7 +22063,7 @@
   },
   "notebookChapterTransferred": "已将「{chapter}」转移到「{target}」",
   "@notebookChapterTransferred": {
-    "description": "单个章节转移到子日记本后的提示条。",
+    "description": "单个章节转移到上级或子日记本后的提示条（带撤销）。",
     "placeholders": {
       "chapter": {
         "type": "String"
@@ -22057,7 +22075,7 @@
   },
   "notebookContentsTransferredPrivate": "已转移到「{target}」，移入的日记只在该日记本中显示",
   "@notebookContentsTransferredPrivate": {
-    "description": "从普通日记本将日记转移到私密子日记本后的提示条。",
+    "description": "从普通日记本把日记转入私密子日记本后的提示条（带撤销）。",
     "placeholders": {
       "target": {
         "type": "String"

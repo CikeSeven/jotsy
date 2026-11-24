@@ -121,6 +121,26 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('the all chip counts sub-notebook entries like the list does, '
+      'chapter chips count only the notebook itself', (tester) async {
+    late String travel;
+    final h = await pumpHome(tester, (h) async {
+      travel = await chaptered(h);
+      final japan = await h.notebook('日本', parentId: travel);
+      final own = await h.diary('自己的', notebookIds: <String>[travel]);
+      await place(h, travel, own, 'c1');
+      // 目录整份转到子本后父本自己只剩一篇，列表“全部”仍连同子本列出。
+      await h.diary('子本一', notebookIds: <String>[japan]);
+      await h.diary('子本二', notebookIds: <String>[japan]);
+    });
+    await enter(h, travel);
+    expect(chipText('全部 · 3'), findsOneWidget);
+    expect(card('子本一'), findsOneWidget);
+    expect(chipText('东京 · 1'), findsOneWidget);
+    expect(chipText('京都 · 0'), findsOneWidget);
+    await h.unmount();
+  });
+
   testWidgets('the chip row scrolls edge to edge of the header card', (
     tester,
   ) async {

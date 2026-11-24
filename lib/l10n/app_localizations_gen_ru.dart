@@ -19962,20 +19962,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryThumbnailMoveLater => 'Переместить позже';
 
   @override
-  String get notebookContentsTransferToChild =>
-      'Перенести содержание во вложенный блокнот';
+  String get notebookContentsTransfer => 'Перенести содержание';
 
   @override
-  String get notebookChapterTransferToChild =>
-      'Перенести во вложенный блокнот…';
+  String get notebookChapterTransfer => 'Перенести главу…';
 
   @override
   String get notebookContentsTransferSheetTitle =>
-      'В какой вложенный блокнот перенести содержание';
+      'В какой блокнот перенести содержание';
 
   @override
   String notebookChapterTransferSheetTitle(String title) {
-    return 'В какой вложенный блокнот перенести «$title»';
+    return 'В какой блокнот перенести «$title»';
   }
 
   @override
@@ -19983,8 +19981,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Вложенных блокнотов пока нет. Создайте новый выше, чтобы перенести туда';
 
   @override
-  String get notebookContentsTransferConfirmTitle =>
-      'Перенос во вложенный блокнот';
+  String get notebookContentsTransferConfirmTitle => 'Подтвердите перенос';
 
   @override
   String get notebookContentsTransferAction => 'Перенести';
@@ -20012,7 +20009,7 @@ class AppLocalizationsRu extends AppLocalizations {
       few: '$entries записи',
       one: '$entries запись',
     );
-    return 'Перенести $_temp0 и $_temp1 из «$source» во вложенный блокнот «$target»? Главы и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
+    return 'Перенести $_temp0 и $_temp1 из «$source» в «$target»? Главы и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
   }
 
   @override
@@ -20029,7 +20026,7 @@ class AppLocalizationsRu extends AppLocalizations {
       few: '$entries записи',
       one: '$entries запись',
     );
-    return 'Перенести $_temp0 из «$source» во вложенный блокнот «$target»? Порядок сохранится, из «$source» они будут убраны, а сами записи не удалятся.';
+    return 'Перенести $_temp0 из «$source» в «$target»? Порядок сохранится, из «$source» они будут убраны, а сами записи не удалятся.';
   }
 
   @override
@@ -20046,7 +20043,7 @@ class AppLocalizationsRu extends AppLocalizations {
       few: '$chapters главы',
       one: '$chapters главу',
     );
-    return 'Перенести $_temp0 из «$source» во вложенный блокнот «$target»? Они будут убраны из «$source».';
+    return 'Перенести $_temp0 из «$source» в «$target»? Они будут убраны из «$source».';
   }
 
   @override
@@ -20064,7 +20061,7 @@ class AppLocalizationsRu extends AppLocalizations {
       few: '$entries её записи',
       one: '$entries её запись',
     );
-    return 'Перенести главу «$chapter» и $_temp0 во вложенный блокнот «$target»? Глава и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
+    return 'Перенести главу «$chapter» и $_temp0 в «$target»? Глава и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
   }
 
   @override
@@ -20073,12 +20070,22 @@ class AppLocalizationsRu extends AppLocalizations {
     String source,
     String target,
   ) {
-    return 'Перенести пустую главу «$chapter» во вложенный блокнот «$target»? Она будет убрана из «$source».';
+    return 'Перенести пустую главу «$chapter» в «$target»? Она будет убрана из «$source».';
   }
 
   @override
   String notebookContentsTransferPrivateNote(String target) {
     return '«$target» — приватный блокнот. Перенесённые записи будут видны только в нём и исчезнут из списка «Все записи».';
+  }
+
+  @override
+  String notebookContentsTransferPublicNote(String target) {
+    return '«$target» — не приватный блокнот. Перенесённые записи появятся в списке «Все записи».';
+  }
+
+  @override
+  String notebookContentsTransferredPublic(String target) {
+    return 'Перенесено в «$target». Перенесённые записи теперь видны и в списке «Все записи»';
   }
 
   @override

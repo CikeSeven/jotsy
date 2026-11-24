@@ -14,7 +14,8 @@ import '../../widgets/desktop_horizontal_scroll.dart';
 /// 首页日记本头部卡片里的章节胶囊行：全部 · 各章（按章节顺序）· 未分章。
 ///
 /// 只在有章节的普通日记本里出现（由调用方判断）。每个胶囊带篇数，口径与
-/// 首页列表一致（不算归档与回收站）；“未分章”只在有未分章的日记、或正选着
+/// 首页列表一致（不算归档与回收站；有子本时“全部”连同子本汇总，各章只算本子
+/// 自己的）；“未分章”只在有未分章的日记、或正选着
 /// 它时出现。点按经 [onSelect] 交给日记页切换章节筛选（列表走筛选过渡），
 /// 不改排序。放不下时横向滚动（首页这里没有左右翻页手势）。
 class NotebookChapterChips extends ConsumerWidget {
@@ -43,6 +44,12 @@ class NotebookChapterChips extends ConsumerWidget {
     final counts = entryChapters == null
         ? null
         : NotebookChapterCounts.from(chapters, entryChapters);
+    // 选“全部”时列表连同子本一起汇总（`resolveNotebookScope`），篇数也得按
+    // 同一范围算；各章与“未分章”只看本子自己的，沿用成员计数。否则内容转到
+    // 子本后这里显示 0，下面却列着子本里的日记。
+    final total = notebook.hasChildren
+        ? ref.watch(computedNotebookCountProvider(notebook.id)).value
+        : counts?.total;
     final isAll = selectedChapterId == null && !unassignedOnly;
     String label(String title, int? count) =>
         count == null ? title : l10n.notebookChapterChip(title, count);
@@ -61,7 +68,7 @@ class NotebookChapterChips extends ConsumerWidget {
             children: <Widget>[
               _ChapterChip(
                 key: const ValueKey<String>('notebook_chapter_chip_all'),
-                label: label(l10n.notebookChapterAll, counts?.total),
+                label: label(l10n.notebookChapterAll, total),
                 selected: isAll,
                 onTap: () => onSelect(),
               ),

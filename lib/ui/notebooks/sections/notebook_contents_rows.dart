@@ -12,7 +12,8 @@ import '../../widgets/reorder_handle.dart';
 /// `boxArchive` 小图标）、标题（`bodyLarge` w600；没写标题时为正文第一行，
 /// 见 `notebookContentsTitle`，用常规字重与 `onSurfaceVariant` 与真标题区分；
 /// 正文也没有文字时为“无标题”；未解封的胶囊只显示标题并带锁）。普通模式
-/// 右侧是拖动手柄（[dragHandle]），多选模式左侧是勾选框、点按切换勾选。
+/// 右侧是拖动手柄（[dragHandle]），长按直接进入多选并勾选本篇；多选模式左
+/// 侧是勾选框、点按切换勾选。
 class NotebookContentsEntryTile extends StatelessWidget {
   const NotebookContentsEntryTile({
     super.key,
@@ -23,6 +24,7 @@ class NotebookContentsEntryTile extends StatelessWidget {
     required this.selecting,
     required this.selected,
     required this.onTap,
+    this.onLongPress,
     this.titleFromContent = false,
     this.dragHandle,
   });
@@ -37,6 +39,9 @@ class NotebookContentsEntryTile extends StatelessWidget {
   final bool selecting;
   final bool selected;
   final VoidCallback onTap;
+
+  /// 长按日记行：普通模式直接进入多选并选中本篇，多选模式切换勾选。
+  final VoidCallback? onLongPress;
 
   /// 拖动手柄（[ReorderHandle]）；多选时不显示。
   final Widget? dragHandle;
@@ -55,6 +60,7 @@ class NotebookContentsEntryTile extends StatelessWidget {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Padding(
           padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
           child: ConstrainedBox(

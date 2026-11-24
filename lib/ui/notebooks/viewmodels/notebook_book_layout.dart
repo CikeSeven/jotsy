@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../utils/tri_state_pick.dart';
 
 /// 章节与成书顺序的纯数据换算：章节胶囊的篇数、首页书序分隔行的归属、目录页
 /// 的扁平列表与拖动落点。无副作用，便于单测。
@@ -308,4 +309,56 @@ bool sameNotebookPlacements(
     if (a[i] != b[i]) return false;
   }
   return true;
+}
+
+/// 按 [items] 里各章节标题行（含“未分章”）的 key 归组列出该章的日记 id。
+///
+/// 目录页多选模式用来判断每章是全选 / 部分选中 / 未选中，以及一键选中或
+/// 取消选中整章；一次遍历即可覆盖全部章节，避免为每个标题行重复扫描。
+Map<String, List<String>> notebookContentsDiaryIdsByHeader(
+  List<NotebookContentsItem> items,
+) {
+  final result = <String, List<String>>{};
+  List<String>? current;
+  for (final item in items) {
+    switch (item) {
+      case NotebookContentsHeader():
+        current = result[item.key] = <String>[];
+      case NotebookContentsRow(:final entry):
+        current?.add(entry.diaryId);
+    }
+  }
+  return result;
+}
+
+/// 某一章在当前多选集合 [selected] 里的勾选状态（全选 / 部分选中 / 未选中）。
+///
+/// 章节没有日记时恒为 [TriStatePick.none]。
+TriStatePick notebookChapterSelectionState(
+  Iterable<String> chapterDiaryIds,
+  Set<String> selected,
+) {
+  var total = 0;
+  var picked = 0;
+  for (final id in chapterDiaryIds) {
+    total++;
+    if (selected.contains(id)) picked++;
+  }
+  if (total == 0 || picked == 0) return TriStatePick.none;
+  return picked == total ? TriStatePick.all : TriStatePick.some;
+}
+
+/// 切换选中整章：已全选时取消选中该章全部日记，否则（未选中或部分选中）
+/// 选中该章全部日记；其他章节已勾选的日记不受影响。空章节不做改动。
+void toggleNotebookChapterSelection(
+  Set<String> selected,
+  Iterable<String> chapterDiaryIds,
+) {
+  final ids = chapterDiaryIds.toList(growable: false);
+  if (ids.isEmpty) return;
+  if (notebookChapterSelectionState(ids, selected) == TriStatePick.all) {
+    selected.removeAll(ids);
+  } else {
+    selected.addAll(ids);
+  }
 }

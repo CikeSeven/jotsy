@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -46,9 +47,10 @@ import 'package:node_diary/ui/app_surface/widgets/app_page_background.dart';
 /// 本次运行的内存）；收起的日记仍留在列表里、只收到 0 高度，拖动落点照旧
 /// 按整份书序换算。
 ///
-/// 章节的增删改与上下移经 [NotebookContentsController] 写回 payload；多选
-/// 可把日记移到某章，或从本日记本移出（4 秒撤销）。点日记打开预览页，可按
-/// 书序左右翻。
+/// 章节的增删改与上下移经 [NotebookContentsController] 写回 payload；多选可
+/// 从顶栏进入，或直接长按日记行 / 有日记的章节标题进入，支持单选或按章节
+/// （含“未分章”）一键全选 / 取消全选，并把日记移到某章或从本日记本移出
+/// （4 秒撤销）。点日记打开预览页，可按书序左右翻。
 ///
 /// 只从已解锁的首页范围进入；上锁本子在后台重新上锁时由应用级遮罩盖住，
 /// 首页范围被重置（“回到全部日记”）时首页会把它之上的页面全部关掉。日记本
@@ -109,6 +111,12 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     }
     final entries = entriesAsync.value;
     final hasEntries = entries != null && entries.isNotEmpty;
+    // 仅统计当前仍在目录中的已选日记，避免后台同步移除条目后计数漂移。
+    final activeSelected = entries == null
+        ? _selected
+        : _selected.intersection(<String>{
+            for (final entry in entries) entry.diaryId,
+          });
     final canTransfer =
         notebook != null && canTransferNotebookContents(notebook, tree);
     final hasTransferable =
@@ -119,7 +127,13 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     // 的 Builder（那会在 Builder 自己重建时才订阅，订阅随之反复关开）。
     final body = notebook == null || entries == null
         ? const DelayedLoadingIndicator()
-        : _buildBody(context, notebook, entries, canTransfer: canTransfer);
+        : _buildBody(
+            context,
+            notebook,
+            entries,
+            selected: activeSelected,
+            canTransfer: canTransfer,
+          );
     return PopScope(
       canPop: !_selecting,
       onPopInvokedWithResult: (bool didPop, Object? _) {
@@ -175,11 +189,14 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
             ),
             bottomNavigationBar: _selecting && notebook != null
                 ? NotebookContentsSelectionBar(
-                    count: _selected.length,
+                    count: activeSelected.length,
                     onMoveToChapter: notebook.payload.chapters.isEmpty
                         ? null
-                        : () => unawaited(_moveSelected(notebook)),
-                    onRemove: () => unawaited(_removeSelected(notebook)),
+                        : () => unawaited(
+                            _moveSelected(notebook, activeSelected),
+                          ),
+                    onRemove: () =>
+                        unawaited(_removeSelected(notebook, activeSelected)),
                   )
                 : null,
             body: body,
@@ -193,6 +210,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     BuildContext context,
     NotebookView notebook,
     List<NotebookContentsEntry> entries, {
+    required Set<String> selected,
     required bool canTransfer,
   }) {
     final chapters = _orderedChapters(notebook.payload.chapters);
@@ -246,7 +264,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                 hidden: hidden,
                 appearing: _appearing,
                 selecting: _selecting,
-                selected: _selected,
+                selected: selected,
                 dateMeta: dateMeta,
                 now: now,
                 canTransfer: canTransfer,
@@ -269,11 +287,14 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                       ).notifier,
                     )
                     .toggle(header.key),
+                onToggleChapterSelection: _toggleChapterSelection,
+                onChapterLongPress: _onChapterLongPress,
                 onChapterAction: (chapter, count, action) =>
                     unawaited(_chapterAction(notebook, chapter, count, action)),
                 onEntryTap: (String diaryId) => _selecting
                     ? _toggle(diaryId)
                     : unawaited(_openPreview(diaryId, items)),
+                onEntryLongPress: _onEntryLongPress,
               ),
               SliverToBoxAdapter(
                 child: SizedBox(
@@ -469,6 +490,46 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     });
   }
 
+  void _toggleChapterSelection(List<String> diaryIds) {
+    setState(() => toggleNotebookChapterSelection(_selected, diaryIds));
+  }
+
+  void _triggerLongPressHaptic() {
+    // Android 由 InkWell 的长按反馈负责，避免震两次。
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      unawaited(HapticFeedback.mediumImpact());
+    }
+  }
+
+  void _onEntryLongPress(String diaryId) {
+    if (_selecting) {
+      _toggle(diaryId);
+      return;
+    }
+    _triggerLongPressHaptic();
+    setState(() {
+      _selecting = true;
+      _selected
+        ..clear()
+        ..add(diaryId);
+    });
+  }
+
+  void _onChapterLongPress(List<String> diaryIds) {
+    if (diaryIds.isEmpty) return;
+    if (_selecting) {
+      _toggleChapterSelection(diaryIds);
+      return;
+    }
+    _triggerLongPressHaptic();
+    setState(() {
+      _selecting = true;
+      _selected
+        ..clear()
+        ..addAll(diaryIds);
+    });
+  }
+
   Future<void> _addChapter() async {
     final title = await showNotebookChapterTitleDialog(context);
     if (title == null || !mounted) return;
@@ -529,8 +590,11 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     }
   }
 
-  Future<void> _moveSelected(NotebookView notebook) async {
-    final ids = _selected.toList();
+  Future<void> _moveSelected(
+    NotebookView notebook,
+    Set<String> selected,
+  ) async {
+    final ids = selected.toList();
     if (ids.isEmpty) return;
     final chapters = notebook.payload.chapters;
     final target = await showNotebookChapterPickerSheet(
@@ -553,8 +617,11 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     );
   }
 
-  Future<void> _removeSelected(NotebookView notebook) async {
-    final ids = _selected.toList();
+  Future<void> _removeSelected(
+    NotebookView notebook,
+    Set<String> selected,
+  ) async {
+    final ids = selected.toList();
     if (ids.isEmpty) return;
     List<DiaryNotebookRow> removed = const <DiaryNotebookRow>[];
     final ok = await _run(() async => removed = await _controller.remove(ids));

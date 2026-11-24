@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_book_layout.dart';
+import 'package:node_diary/utils/tri_state_pick.dart';
 
 /// 章节与书序的纯换算：目录列表、拖动落点（含拖到最顶端时归第一章）与篇数。
 void main() {
@@ -211,6 +212,67 @@ void main() {
         <String>['c2', 'gone', 'c1'],
       );
       expect(shown.map((c) => c.id), <String>['c2', 'c1', 'c3']);
+    });
+  });
+
+  group('chapter selection', () {
+    final osaka = NotebookChapter(id: 'c3', title: '大阪');
+    final three = <NotebookChapter>[tokyo, kyoto, osaka];
+
+    test('groups diary ids by chapter header key including empty and '
+        'unassigned', () {
+      final items = buildNotebookContents(three, <NotebookContentsEntry>[
+        entry('a', 'c1'),
+        entry('b', 'c1'),
+        entry('c', 'c2'),
+        entry('d', null),
+      ]);
+      expect(notebookContentsDiaryIdsByHeader(items), <String, List<String>>{
+        'chapter_c1': <String>['a', 'b'],
+        'chapter_c2': <String>['c'],
+        'chapter_c3': <String>[],
+        'chapter__unassigned': <String>['d'],
+      });
+      // 没有章节时没有标题行，返回空映射。
+      expect(
+        notebookContentsDiaryIdsByHeader(
+          buildNotebookContents(const <NotebookChapter>[], [entry('a', null)]),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('derives tri-state selection and toggles whole chapter without '
+        'affecting other chapters', () {
+      final c1 = <String>['a', 'b'];
+      final selected = <String>{'other'};
+
+      expect(
+        notebookChapterSelectionState(const <String>[], selected),
+        TriStatePick.none,
+      );
+      expect(notebookChapterSelectionState(c1, selected), TriStatePick.none);
+
+      // 未选中 → 一键全选本章，保留其他章的勾选项。
+      toggleNotebookChapterSelection(selected, c1);
+      expect(selected, <String>{'other', 'a', 'b'});
+      expect(notebookChapterSelectionState(c1, selected), TriStatePick.all);
+
+      // 部分选中 → 再点一次补齐选中整章。
+      selected.remove('a');
+      expect(notebookChapterSelectionState(c1, selected), TriStatePick.some);
+      toggleNotebookChapterSelection(selected, c1);
+      expect(selected, <String>{'other', 'a', 'b'});
+      expect(notebookChapterSelectionState(c1, selected), TriStatePick.all);
+
+      // 已全选 → 再点一次取消选中整章，其他章不受影响。
+      toggleNotebookChapterSelection(selected, c1);
+      expect(selected, <String>{'other'});
+      expect(notebookChapterSelectionState(c1, selected), TriStatePick.none);
+
+      // 空章节不做任何改动。
+      toggleNotebookChapterSelection(selected, const <String>[]);
+      expect(selected, <String>{'other'});
     });
   });
 }

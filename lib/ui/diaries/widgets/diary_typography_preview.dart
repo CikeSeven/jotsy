@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/diary_editor_controller.dart';
 import 'diary_editor/diary_editor.dart';
+import 'diary_pangu_text.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
@@ -81,8 +82,9 @@ class _DiaryTypographyPreviewState extends State<DiaryTypographyPreview> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text(
+        DiaryPanguText(
           context.l10n.diaryTypographySampleTitle,
+          panguSpacing: widget.appearance.typography.panguSpacing,
           style: widget.appearance.titleStyle(
             theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,

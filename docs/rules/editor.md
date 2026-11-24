@@ -15,6 +15,7 @@
 - 必须：字体作用范围只经“用于整个界面”（默认关）与主题扩展 `AppFonts`；日记卡片只从 `AppFonts` 取正文字体。
 - 必须：导入字体文件不进备份，备份只带字体 id，缺失时回落内置字体。
 - 必须：首行缩进用等长占位实现，宽度只取 `firstLineIndentExtent`（Word 导出同口径）；禁止在文档里插空格缩进。
+- 必须：盘古之白只在渲染层实现（`DiaryTypography.panguSpacing`，默认关，随备份导出）：边界判定只经 `findPanguGapRanges`，正文只经 `diaryPanguSpanDecorator` 追加 `letterSpacing`（跳过代码块、行内代码尾部与上下标），日记标题与卡片经 `DiaryPanguText` / `DiaryPanguTextEditingController`（输入法组字期间跳过组字区间）；禁止改写文档原文或插入空格。
 - 必须：段落 `data.firstLineIndent` 三态（true 两字与全局取大 / false 不缩进 / 无键跟随全局），只经 `diaryParagraphIndentFor` 取值。
 - 必须：正文段落的缩进按钮只写该标记、按下后画面不变时停用（#253）；禁止改回嵌套缩进。
 

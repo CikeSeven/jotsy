@@ -20,7 +20,7 @@ const String kAppBundledFontFamily = 'HarmonyOSSansSC';
 /// 两项为 null 都表示内置字体：默认主题与改版前逐像素一致。
 @immutable
 class AppFonts extends ThemeExtension<AppFonts> {
-  const AppFonts({this.interface, this.diary});
+  const AppFonts({this.interface, this.diary, this.diaryPanguSpacing = false});
 
   /// 界面字族；null 为内置字体。只有开启“用于整个界面”时才非空。
   final String? interface;
@@ -28,17 +28,25 @@ class AppFonts extends ThemeExtension<AppFonts> {
   /// 日记内容（卡片标题与摘要）的字族；null 为内置字体。
   final String? diary;
 
+  /// 日记卡片（标题与摘要）是否启用盘古之白渲染间距；默认关。
+  final bool diaryPanguSpacing;
+
   /// 主题里没有这份扩展（测试里直接装配的主题）时按内置字体处理。
   static AppFonts of(ThemeData theme) =>
       theme.extension<AppFonts>() ?? const AppFonts();
 
   @override
-  AppFonts copyWith({String? interface, String? diary}) => AppFonts(
+  AppFonts copyWith({
+    String? interface,
+    String? diary,
+    bool? diaryPanguSpacing,
+  }) => AppFonts(
     interface: interface ?? this.interface,
     diary: diary ?? this.diary,
+    diaryPanguSpacing: diaryPanguSpacing ?? this.diaryPanguSpacing,
   );
 
-  /// 字族不能插值：主题过渡动画过半时整体换成新字体（与 TextStyle 的
+  /// 字族与盘古之白开关不能插值：主题过渡动画过半时整体切换（与 TextStyle 的
   /// fontFamily 插值同一时机）。
   @override
   AppFonts lerp(covariant AppFonts? other, double t) {
@@ -50,11 +58,16 @@ class AppFonts extends ThemeExtension<AppFonts> {
 
   @override
   bool operator ==(Object other) =>
-      other is AppFonts && other.interface == interface && other.diary == diary;
+      other is AppFonts &&
+      other.interface == interface &&
+      other.diary == diary &&
+      other.diaryPanguSpacing == diaryPanguSpacing;
 
   @override
-  int get hashCode => Object.hash(interface, diary);
+  int get hashCode => Object.hash(interface, diary, diaryPanguSpacing);
 
   @override
-  String toString() => 'AppFonts(interface: $interface, diary: $diary)';
+  String toString() =>
+      'AppFonts(interface: $interface, diary: $diary, '
+      'diaryPanguSpacing: $diaryPanguSpacing)';
 }

@@ -3410,6 +3410,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get diaryTypographyFirstLineIndentOff => 'Нет';
 
   @override
+  String get diaryTypographyPanguSpacing => 'Автоотступы CJK и латиницы';
+
+  @override
+  String get diaryTypographyPanguSpacingHint =>
+      'Добавлять визуальные отступы между иероглифами и латиницей или цифрами без изменения текста';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '$label: уменьшить';
   }

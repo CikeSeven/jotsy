@@ -192,6 +192,7 @@ List<pw.Widget> buildDiaryPdfTableRows(
   required pw.TextStyle base,
   required DiaryPdfTextEffects effects,
   required pw.TextDirection textDirection,
+  bool panguSpacing = false,
 }) {
   final rows = block.tableRows;
   if (rows.isEmpty || rows.first.isEmpty) return const <pw.Widget>[];
@@ -232,13 +233,13 @@ List<pw.Widget> buildDiaryPdfTableRows(
                     lineSplitter: diaryPdfLineSplitter,
                     text: pw.TextSpan(
                       children: <pw.InlineSpan>[
-                        for (final run in cell)
-                          buildDiaryPdfInline(
-                            run,
-                            block.tableHeaderRow && index == 0 ? bold : base,
-                            effects: effects,
-                            bodyFontSize: fontSize,
-                          ),
+                        ...buildDiaryPdfInlines(
+                          cell,
+                          block.tableHeaderRow && index == 0 ? bold : base,
+                          effects: effects,
+                          bodyFontSize: fontSize,
+                          panguSpacing: panguSpacing,
+                        ),
                         // 空格子也要撑出一行高，整行不会塌下去。
                         if (cell.isEmpty) pw.TextSpan(text: ' ', style: base),
                       ],

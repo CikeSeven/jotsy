@@ -9,6 +9,7 @@ import '../../viewmodels/search_highlight.dart';
 import '../../../../core/database/mind_map/mind_map_text.dart';
 import '../../../mind_maps/widgets/mind_map_card_outline.dart';
 import '../diary_item_tag_row.dart';
+import '../diary_pangu_text.dart';
 import 'diary_card_badges.dart';
 import 'diary_card_lines.dart';
 import 'diary_card_selection_mark.dart';
@@ -313,30 +314,25 @@ class DiaryCardBlocks extends StatelessWidget {
     );
   }
 
-  /// 有搜索词时标出命中处，否则就是普通 `Text`。
+  /// 有搜索词时标出命中处，开启盘古之白时叠加渲染间距；两者都未触发时
+  /// 返回普通 `Text`，与改版前逐项相同。
   Widget _maybeHighlighted(
     String text, {
     required int maxLines,
     required TextStyle? style,
   }) {
     final align = resolved.centered ? TextAlign.center : null;
-    if (highlightTerms.isEmpty) {
-      return Text(
-        text,
-        maxLines: maxLines,
-        overflow: TextOverflow.ellipsis,
-        textAlign: align,
-        style: style,
-      );
-    }
-    return Text.rich(
-      TextSpan(
-        children: searchHighlightSpans(
-          text,
-          highlightTerms,
-          searchHighlightStyle(resolved.colorScheme),
-        ),
-      ),
+    final spans = highlightTerms.isEmpty
+        ? null
+        : searchHighlightSpans(
+            text,
+            highlightTerms,
+            searchHighlightStyle(resolved.colorScheme),
+          );
+    return DiaryPanguText(
+      text,
+      panguSpacing: resolved.panguSpacing,
+      spans: spans,
       maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
       textAlign: align,

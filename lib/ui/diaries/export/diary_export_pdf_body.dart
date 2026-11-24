@@ -44,6 +44,7 @@ List<pw.Widget> buildDiaryPdfBody(
   DiaryExportCodeTheme? code,
   double firstLineIndent = 0,
   double markedFirstLineIndent = 0,
+  bool panguSpacing = false,
 }) {
   final result = <pw.Widget>[];
   final rtl = textDirection == TextDirection.rtl;
@@ -97,14 +98,15 @@ List<pw.Widget> buildDiaryPdfBody(
         pw.WidgetSpan(
           child: pw.SizedBox(width: indentChars * (base.fontSize ?? 12)),
         ),
-      for (final run in runs)
-        buildDiaryPdfInline(
-          checked ? run.copyWith(strike: true) : run,
-          style,
-          effects: effects,
-          bodyFontSize: base.fontSize ?? 12,
-          isCodeBlock: isCode,
-        ),
+      ...buildDiaryPdfInlines(
+        runs,
+        style,
+        effects: effects,
+        bodyFontSize: base.fontSize ?? 12,
+        isCodeBlock: isCode,
+        panguSpacing: panguSpacing,
+        strike: checked,
+      ),
       if (runs.isEmpty) pw.TextSpan(text: ' ', style: base),
     ];
     final align = switch (block.align) {
@@ -234,6 +236,7 @@ List<pw.Widget> buildDiaryPdfBody(
         base: theme.defaultTextStyle,
         effects: effects,
         textDirection: direction,
+        panguSpacing: panguSpacing,
       );
       for (final (index, row) in rows.indexed) {
         result.add(
@@ -257,6 +260,7 @@ List<pw.Widget> buildDiaryPdfBody(
         textDirection: direction,
         aligned: block.align != ExportAlign.start,
         effects: effects,
+        panguSpacing: panguSpacing,
       );
     } else {
       // 软换行（[ExportInline.lineBreak]）：段落、引用与代码行的组件能跨页，

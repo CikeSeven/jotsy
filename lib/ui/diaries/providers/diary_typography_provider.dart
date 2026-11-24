@@ -83,6 +83,7 @@ final appFontsProvider = Provider<AppFonts>((Ref ref) {
   return AppFonts(
     interface: appearance.typography.applyFontToApp ? family : null,
     diary: family,
+    diaryPanguSpacing: appearance.typography.panguSpacing,
   );
 });
 

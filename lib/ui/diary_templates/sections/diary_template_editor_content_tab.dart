@@ -145,6 +145,8 @@ class _DiaryTemplateEditorContentTabState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appearance = ref.watch(diaryTextAppearanceProvider);
+    widget.controller.titlePattern.panguSpacing =
+        appearance.typography.panguSpacing;
     final titleStyle = appearance.titleStyle(theme.textTheme.headlineSmall);
     final settings = ref.watch(settingsServiceProvider).asData?.value;
     final order = _toolbarOrder(settings);

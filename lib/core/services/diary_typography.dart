@@ -3,12 +3,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
-/// 日记正文排版偏好：字体来源 + 字号 / 行距 / 字间距 / 段间距 / 首行缩进，
-/// 以及字体是否用于整个界面（[applyFontToApp]）。
+/// 日记正文排版偏好：字体来源 + 字号 / 行距 / 字间距 / 段间距 / 首行缩进 /
+/// 盘古之白，以及字体是否用于整个界面（[applyFontToApp]）。
 ///
 /// 编辑页、预览页与发布页共用同一份偏好（单个 JSON 设置键，随备份导出）。
 /// 字体始终用于日记标题、正文与日记卡片；[applyFontToApp] 只扩大字体的
-/// 作用范围，排版数值始终只作用于日记页面。
+/// 作用范围；盘古之白作用于日记正文、标题、日记卡片与导出；其余排版数值
+/// 始终只作用于日记页面。
 /// 本类只描述“用户选了什么”，不关心字体是否已加载：导入字体按 [fontId]
 /// 记录，文件缺失或加载失败时由界面层回落到内置字体，偏好原样保留，
 /// 重新导入或换回已有字体后即恢复。
@@ -24,6 +25,7 @@ class DiaryTypography {
     this.letterSpacing = defaultLetterSpacing,
     this.paragraphSpacing = defaultParagraphSpacing,
     this.firstLineIndent = defaultFirstLineIndent,
+    this.panguSpacing = defaultPanguSpacing,
     this.applyFontToApp = false,
   });
 
@@ -41,6 +43,9 @@ class DiaryTypography {
 
   /// 默认不缩进：升级后已有日记的观感不变。
   static const double defaultFirstLineIndent = 0;
+
+  /// 默认不开启盘古之白：升级后已有日记观感不变。
+  static const bool defaultPanguSpacing = false;
 
   static const double minFontSize = 10;
   static const double maxFontSize = 32;
@@ -78,6 +83,9 @@ class DiaryTypography {
   /// 普通段落首行缩进的字数，0 为不缩进；宽度见 [firstLineIndentExtent]。
   final double firstLineIndent;
 
+  /// 中西文与数字相邻时是否呈现盘古之白渲染间距；不改写文档原文。默认关。
+  final bool panguSpacing;
+
   /// 所选字体是否也用于整个界面（菜单、按钮、设置等）。默认关：只用于
   /// 日记标题、正文与日记卡片，界面保持内置字体，升级后观感不变。
   final bool applyFontToApp;
@@ -107,6 +115,7 @@ class DiaryTypography {
     double? letterSpacing,
     double? paragraphSpacing,
     double? firstLineIndent,
+    bool? panguSpacing,
     bool? applyFontToApp,
   }) {
     return DiaryTypography(
@@ -122,16 +131,17 @@ class DiaryTypography {
       firstLineIndent: normalizeFirstLineIndent(
         firstLineIndent ?? this.firstLineIndent,
       ),
+      panguSpacing: panguSpacing ?? this.panguSpacing,
       applyFontToApp: applyFontToApp ?? this.applyFontToApp,
     );
   }
 
-  /// 只把排版数值恢复默认，保留字体选择与字体的作用范围：用户换了字体后
-  /// 多半只想重调数值。
+  /// 只把排版数值与盘古之白恢复默认，保留字体选择与字体的作用范围：用户换了
+  /// 字体后多半只想重调排版。
   DiaryTypography withDefaultMetrics() =>
       DiaryTypography(fontId: fontId, applyFontToApp: applyFontToApp);
 
-  /// 排版数值是否都是默认值（不看字体），决定“恢复默认排版”是否可点。
+  /// 排版数值与盘古之白是否都是默认值（不看字体），决定“恢复默认排版”是否可点。
   bool get hasDefaultMetrics => this == withDefaultMetrics();
 
   Map<String, Object?> toJson() => <String, Object?>{
@@ -141,6 +151,7 @@ class DiaryTypography {
     'letterSpacing': letterSpacing,
     'paragraphSpacing': paragraphSpacing,
     'firstLineIndent': firstLineIndent,
+    'panguSpacing': panguSpacing,
     'applyFontToApp': applyFontToApp,
   };
 
@@ -154,6 +165,7 @@ class DiaryTypography {
       _ => fallback,
     };
     final fontIdRaw = json['fontId'];
+    final panguSpacingRaw = json['panguSpacing'];
     final applyFontToAppRaw = json['applyFontToApp'];
     return const DiaryTypography().copyWith(
       fontId: fontIdRaw is String ? fontIdRaw : bundledFontId,
@@ -162,6 +174,10 @@ class DiaryTypography {
       letterSpacing: read('letterSpacing', defaultLetterSpacing),
       paragraphSpacing: read('paragraphSpacing', defaultParagraphSpacing),
       firstLineIndent: read('firstLineIndent', defaultFirstLineIndent),
+      // 旧版本没有这一项：缺省为关，与升级前观感一致。
+      panguSpacing: panguSpacingRaw is bool
+          ? panguSpacingRaw
+          : defaultPanguSpacing,
       // 旧版本没有这一项：缺省为关，与升级前一样只作用于日记。
       applyFontToApp: applyFontToAppRaw is bool ? applyFontToAppRaw : false,
     );
@@ -269,6 +285,7 @@ class DiaryTypography {
         other.letterSpacing == letterSpacing &&
         other.paragraphSpacing == paragraphSpacing &&
         other.firstLineIndent == firstLineIndent &&
+        other.panguSpacing == panguSpacing &&
         other.applyFontToApp == applyFontToApp;
   }
 
@@ -280,6 +297,7 @@ class DiaryTypography {
     letterSpacing,
     paragraphSpacing,
     firstLineIndent,
+    panguSpacing,
     applyFontToApp,
   );
 

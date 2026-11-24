@@ -634,6 +634,15 @@ class DiaryDocxWriter {
     final after = (typography.paragraphSpacing * 15).round();
     final line = (typography.lineHeight * 240).round();
     final headingTracking = '<w:spacing w:val="$tracking"/>';
+    // 盘古之白：开启时启用 Word 原生中西文 / 中数字自动间距，代码块显式关闭。
+    // CT_PPr 顺序：keepNext / pBdr / shd / tabs → autoSpaceDE → autoSpaceDN →
+    // spacing → ind → jc → outlineLvl。
+    final autoSpace = typography.panguSpacing
+        ? '<w:autoSpaceDE/><w:autoSpaceDN/>'
+        : '';
+    final codeNoAutoSpace = typography.panguSpacing
+        ? '<w:autoSpaceDE w:val="0"/><w:autoSpaceDN w:val="0"/>'
+        : '';
     // 与底色同色的边框只用来留内边距：相邻代码段落的边框相同，Word 把它们
     // 合成一个框，整块代码四周留白，文字不贴着底色边缘。CT_PPr 顺序：
     // pBdr → shd → spacing。
@@ -672,17 +681,17 @@ class DiaryDocxWriter {
         // 正文只在 Normal 上写排版数值；抬头、扉页、目录与代码块不继承
         // Normal，继续使用各自的文档规格，避免放大正文时它们也被拉开。
         '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/>'
-        '<w:pPr><w:spacing w:after="$after" w:line="$line" w:lineRule="auto"/></w:pPr>'
+        '<w:pPr>$autoSpace<w:spacing w:after="$after" w:line="$line" w:lineRule="auto"/></w:pPr>'
         '<w:rPr>$headingTracking<w:sz w:val="$size"/><w:szCs w:val="$size"/></w:rPr></w:style>'
-        '${style('Title', 'Title', pPr: '<w:keepNext/><w:spacing w:after="60"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}'
+        '${style('Title', 'Title', pPr: '<w:keepNext/>$autoSpace<w:spacing w:after="60"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}'
         '${style('DiaryMeta', 'Diary Meta', pPr: '<w:spacing w:after="60"/>', rPr: '<w:color w:val="6B7280"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
-        '${style('Heading1', 'heading 1', pPr: '<w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${0 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="32"/><w:szCs w:val="32"/>')}'
-        '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="${1 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="28"/><w:szCs w:val="28"/>')}'
-        '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="24"/><w:szCs w:val="24"/>')}'
+        '${style('Heading1', 'heading 1', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${0 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="32"/><w:szCs w:val="32"/>')}'
+        '${style('Heading2', 'heading 2', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="${1 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="28"/><w:szCs w:val="28"/>')}'
+        '${style('Heading3', 'heading 3', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="24"/><w:szCs w:val="24"/>')}'
         // 四到六级沿用同一写法，字号逐级再小一档，大纲级别同样顺延。
-        '${style('Heading4', 'heading 4', pPr: '<w:keepNext/><w:spacing w:before="140" w:after="70"/><w:outlineLvl w:val="${3 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="22"/><w:szCs w:val="22"/>')}'
-        '${style('Heading5', 'heading 5', pPr: '<w:keepNext/><w:spacing w:before="120" w:after="60"/><w:outlineLvl w:val="${4 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="21"/><w:szCs w:val="21"/>')}'
-        '${style('Heading6', 'heading 6', pPr: '<w:keepNext/><w:spacing w:before="120" w:after="60"/><w:outlineLvl w:val="${5 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
+        '${style('Heading4', 'heading 4', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="140" w:after="70"/><w:outlineLvl w:val="${3 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="22"/><w:szCs w:val="22"/>')}'
+        '${style('Heading5', 'heading 5', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="120" w:after="60"/><w:outlineLvl w:val="${4 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="21"/><w:szCs w:val="21"/>')}'
+        '${style('Heading6', 'heading 6', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="120" w:after="60"/><w:outlineLvl w:val="${5 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         // 列表与引用跟随正文字号、行距、字距，但不追加段间距（与编辑器一致）。
         '${style('DiaryList', 'Diary List', basedOnNormal: true, pPr: '<w:spacing w:after="120"/>')}'
         '${style('Quote', 'Quote', basedOnNormal: true, pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:spacing w:after="120"/><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
@@ -692,26 +701,27 @@ class DiaryDocxWriter {
         '${style('TableText', 'Table Text', basedOnNormal: true, pPr: '<w:spacing w:after="0"/>')}'
         '${style('TableAfter', 'Table After', pPr: '<w:spacing w:after="0" w:line="120" w:lineRule="exact"/>', rPr: '<w:sz w:val="12"/><w:szCs w:val="12"/>')}'
         '${style('Divider', 'Divider', pPr: '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="C7CCD1"/></w:pBdr>')}'
-        '${style('CodeBlock', 'Code Block', pPr: '$codeBorder<w:shd w:val="clear" w:color="auto" w:fill="$codeFill"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>$codeColor<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
+        '${style('CodeBlock', 'Code Block', pPr: '$codeBorder<w:shd w:val="clear" w:color="auto" w:fill="$codeFill"/>$codeNoAutoSpace<w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>$codeColor<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:spacing w:val="0"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
         '${style('Hyperlink', 'Hyperlink', type: 'character', rPr: '<w:color w:val="1E6586"/><w:u w:val="single"/>')}'
-        '${book == null ? '' : _bookStyles(style, entryLevel: entryLevel)}'
+        '${book == null ? '' : _bookStyles(style, entryLevel: entryLevel, autoSpace: autoSpace)}'
         '</w:styles>';
   }
 
   static String _bookStyles(
     String Function(String id, String name, {String pPr, String rPr}) style, {
     required int entryLevel,
+    String autoSpace = '',
   }) {
     return '${style('BookSpacer', 'Book Spacer', pPr: '<w:spacing w:before="2400" w:after="0"/>')}'
-        '${style('BookTitle', 'Book Title', pPr: '<w:spacing w:before="480" w:after="240"/><w:jc w:val="center"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="56"/><w:szCs w:val="56"/>')}'
-        '${style('BookDescription', 'Book Description', pPr: '<w:spacing w:after="240"/><w:jc w:val="center"/>', rPr: '<w:color w:val="5F6368"/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
+        '${style('BookTitle', 'Book Title', pPr: '$autoSpace<w:spacing w:before="480" w:after="240"/><w:jc w:val="center"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="56"/><w:szCs w:val="56"/>')}'
+        '${style('BookDescription', 'Book Description', pPr: '$autoSpace<w:spacing w:after="240"/><w:jc w:val="center"/>', rPr: '<w:color w:val="5F6368"/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
         '${style('BookMeta', 'Book Meta', pPr: '<w:spacing w:after="60"/><w:jc w:val="center"/>', rPr: '<w:color w:val="6B7280"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
-        '${style('TocHeading', 'Book Contents Heading', pPr: '<w:keepNext/><w:spacing w:after="240"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="36"/><w:szCs w:val="36"/>')}'
-        '${style('TocChapter', 'Book Contents Chapter', pPr: '<w:keepNext/><w:spacing w:before="120" w:after="60"/>', rPr: '<w:b/><w:bCs/>')}'
-        '${style('TocEntry', 'Book Contents Entry', pPr: '<w:tabs><w:tab w:val="left" w:pos="2400"/></w:tabs><w:spacing w:after="40"/>')}'
-        '${style('BookChapter', 'Book Chapter', pPr: '<w:keepNext/><w:spacing w:before="1200" w:after="480"/><w:outlineLvl w:val="0"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="52"/><w:szCs w:val="52"/>')}'
-        '${style('BookEntry', 'Book Entry', pPr: '<w:keepNext/><w:spacing w:after="60"/><w:outlineLvl w:val="$entryLevel"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}';
+        '${style('TocHeading', 'Book Contents Heading', pPr: '<w:keepNext/>$autoSpace<w:spacing w:after="240"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="36"/><w:szCs w:val="36"/>')}'
+        '${style('TocChapter', 'Book Contents Chapter', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="120" w:after="60"/>', rPr: '<w:b/><w:bCs/>')}'
+        '${style('TocEntry', 'Book Contents Entry', pPr: '<w:tabs><w:tab w:val="left" w:pos="2400"/></w:tabs>$autoSpace<w:spacing w:after="40"/>')}'
+        '${style('BookChapter', 'Book Chapter', pPr: '<w:keepNext/>$autoSpace<w:spacing w:before="1200" w:after="480"/><w:outlineLvl w:val="0"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="52"/><w:szCs w:val="52"/>')}'
+        '${style('BookEntry', 'Book Entry', pPr: '<w:keepNext/>$autoSpace<w:spacing w:after="60"/><w:outlineLvl w:val="$entryLevel"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}';
   }
 }
 

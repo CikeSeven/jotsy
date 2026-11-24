@@ -4173,6 +4173,14 @@
   "@diaryTypographyFirstLineIndentOff": {
     "description": "Body layout: value shown when the first-line indent is 0."
   },
+  "diaryTypographyPanguSpacing": "CJK–Latin auto spacing",
+  "@diaryTypographyPanguSpacing": {
+    "description": "Body layout: switch label for Pangu spacing (automatic visual spacing between CJK characters and Latin letters or numbers)."
+  },
+  "diaryTypographyPanguSpacingHint": "Add visual spacing between CJK characters and Latin letters or numbers without editing text",
+  "@diaryTypographyPanguSpacingHint": {
+    "description": "Body layout: subtitle explaining that Pangu spacing only affects rendering and does not modify stored text."
+  },
   "diaryTypographyDecrease": "{label}: decrease",
   "@diaryTypographyDecrease": {
     "description": "Body layout: tooltip of the decrease button; label is the value name.",

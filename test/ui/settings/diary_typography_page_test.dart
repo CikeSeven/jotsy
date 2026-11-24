@@ -186,6 +186,48 @@ void main() {
     expect(find.byType(DiaryParagraphBlock), findsNothing);
   });
 
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'pangu spacing switch updates preview and resets with layout in '
+      '${brightness.name}',
+      (tester) async {
+        await pumpDiaryTypographyHarness(
+          tester,
+          settings: settings,
+          storage: storage,
+          home: const DiaryTypographyPage(),
+          brightness: brightness,
+        );
+        final l10n = tester.element(find.byType(DiaryTypographyPage)).l10n;
+        final toggle = find.widgetWithText(
+          SwitchListTile,
+          l10n.diaryTypographyPanguSpacing,
+        );
+        await tester.ensureVisible(toggle);
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.diaryTypographyPanguSpacingHint), findsOneWidget);
+        expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+        expect(settings.diaryTypography.panguSpacing, isTrue);
+        expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+        final editor = tester.widget<DiaryEditor>(
+          find.byType(DiaryEditor).first,
+        );
+        expect(editor.appearance.typography.panguSpacing, isTrue);
+
+        final reset = find.text(l10n.diaryTypographyReset);
+        await tester.ensureVisible(reset);
+        await tester.pumpAndSettle();
+        await tester.tap(reset);
+        await tester.pumpAndSettle();
+        expect(settings.diaryTypography.panguSpacing, isFalse);
+      },
+    );
+  }
+
   testWidgets('deleting the font in use falls back to the bundled font', (
     tester,
   ) async {

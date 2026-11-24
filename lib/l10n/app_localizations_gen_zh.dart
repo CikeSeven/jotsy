@@ -2921,6 +2921,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTypographyFirstLineIndentOff => '不缩进';
 
   @override
+  String get diaryTypographyPanguSpacing => '盘古之白';
+
+  @override
+  String get diaryTypographyPanguSpacingHint => '在中西文与数字之间自动留出渲染间距，不修改原文';
+
+  @override
   String diaryTypographyDecrease(String label) {
     return '减小$label';
   }
@@ -2941,7 +2947,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTypographySampleBody =>
-      '傍晚雨停了，楼下的桂花被洗得格外香。\n回家路上买了一袋糖炒栗子，边走边剥，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。';
+      '傍晚6点雨停了，楼下的桂花被洗得格外香。\n回家路上买了1袋糖炒栗子，边走边听Lo-Fi音乐，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。';
 
   @override
   String diaryCardDateWithWeekday(String date, String weekday) {

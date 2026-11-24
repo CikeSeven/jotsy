@@ -5310,6 +5310,18 @@ abstract class AppLocalizations {
   /// **'None'**
   String get diaryTypographyFirstLineIndentOff;
 
+  /// Body layout: switch label for Pangu spacing (automatic visual spacing between CJK characters and Latin letters or numbers).
+  ///
+  /// In en, this message translates to:
+  /// **'CJK–Latin auto spacing'**
+  String get diaryTypographyPanguSpacing;
+
+  /// Body layout: subtitle explaining that Pangu spacing only affects rendering and does not modify stored text.
+  ///
+  /// In en, this message translates to:
+  /// **'Add visual spacing between CJK characters and Latin letters or numbers without editing text'**
+  String get diaryTypographyPanguSpacingHint;
+
   /// Body layout: tooltip of the decrease button; label is the value name.
   ///
   /// In en, this message translates to:

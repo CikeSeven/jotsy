@@ -5,6 +5,7 @@ import '../../diaries/controllers/diary_editor_controller.dart' as editor;
 import '../../diaries/models/diary_meta_draft.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/viewmodels/diary_meta_draft_controller.dart';
+import '../../diaries/widgets/diary_pangu_text.dart';
 import '../models/diary_template.dart';
 import '../models/diary_template_json.dart';
 import '../models/diary_template_recommend.dart';
@@ -29,7 +30,9 @@ class DiaryTemplateEditorController extends ChangeNotifier {
     : _id = template?.id ?? '',
       name = TextEditingController(text: template?.name ?? ''),
       description = TextEditingController(text: template?.description ?? ''),
-      titlePattern = TextEditingController(text: template?.titlePattern ?? ''),
+      titlePattern = DiaryPanguTextEditingController(
+        text: template?.titlePattern ?? '',
+      ),
       body = editor.DiaryEditorController(
         document: editor.diaryEditorDocument(
           template?.bodyJson ?? DiaryTemplate.emptyBodyJson,
@@ -68,7 +71,7 @@ class DiaryTemplateEditorController extends ChangeNotifier {
   final EditingLease _editingLease;
   final TextEditingController name;
   final TextEditingController description;
-  final TextEditingController titlePattern;
+  final DiaryPanguTextEditingController titlePattern;
   final editor.DiaryEditorController body;
   final DiaryMetaDraftController meta;
   late DiaryTemplate _baseline;

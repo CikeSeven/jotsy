@@ -4173,6 +4173,14 @@
   "@diaryTypographyFirstLineIndentOff": {
     "description": "正文排版：首行缩进为 0 时显示的当前值。"
   },
+  "diaryTypographyPanguSpacing": "盘古之白",
+  "@diaryTypographyPanguSpacing": {
+    "description": "正文排版：中西文与数字自动渲染间距开关名称。"
+  },
+  "diaryTypographyPanguSpacingHint": "在中西文与数字之间自动留出渲染间距，不修改原文",
+  "@diaryTypographyPanguSpacingHint": {
+    "description": "正文排版：盘古之白开关说明，强调仅在渲染时生效、不改动正文内容。"
+  },
   "diaryTypographyDecrease": "减小{label}",
   "@diaryTypographyDecrease": {
     "description": "正文排版：数值减小按钮的提示，label 为数值名称。",
@@ -4199,9 +4207,9 @@
   "@diaryTypographySampleTitle": {
     "description": "正文排版预览：示例标题。"
   },
-  "diaryTypographySampleBody": "傍晚雨停了，楼下的桂花被洗得格外香。\n回家路上买了一袋糖炒栗子，边走边剥，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。",
+  "diaryTypographySampleBody": "傍晚6点雨停了，楼下的桂花被洗得格外香。\n回家路上买了1袋糖炒栗子，边走边听Lo-Fi音乐，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。",
   "@diaryTypographySampleBody": {
-    "description": "正文排版预览：示例正文，用换行分段以展示段间距。"
+    "description": "正文排版预览：示例正文，含换行分段与中西文数字混排，以展示段间距与盘古之白。"
   },
   "diaryCardDateWithWeekday": "{date} · {weekday}",
   "@diaryCardDateWithWeekday": {

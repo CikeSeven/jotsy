@@ -240,7 +240,11 @@ class DiaryEpubWriter {
         DiaryExportBundleFile.bytes(
           '$root/style.css',
           encode(
-            DiaryEpubStyle.css(code: codeTheme, fontFamilies: fontFamilies),
+            DiaryEpubStyle.css(
+              code: codeTheme,
+              fontFamilies: fontFamilies,
+              panguSpacing: typography.panguSpacing,
+            ),
           ),
         ),
         for (final page in pages)

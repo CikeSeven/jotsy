@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/diary_editor_controller.dart';
 import 'diary_editor/diary_editor.dart';
+import 'diary_pangu_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
@@ -51,8 +52,9 @@ class _PublishDiaryPreviewState extends ConsumerState<PublishDiaryPreview> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
+          DiaryPanguText(
             title.isEmpty ? context.l10n.autoT0095 : title,
+            panguSpacing: appearance.typography.panguSpacing,
             style: appearance.titleStyle(
               theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w800,

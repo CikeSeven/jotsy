@@ -27,9 +27,8 @@ import 'package:flutter/widgets.dart';
 ///
 /// 输入：开关 [ContainerTransformBelowSnapshotController]；输出：开启后的第
 /// 一次绘制拍下子树并改画位图，关闭后释放位图、恢复实时绘制。布局、点按与
-/// 读屏始终是子树自己的（返回时量卡片位置只靠布局）。拍下的快照也经控制器
-/// 交给转场：卡片的样子直接从里面裁（见 `ContainerTransformTransition`），
-/// 不必另截卡片。
+/// 读屏始终是子树自己的（返回时量卡片位置只靠布局）。卡片转场先隐藏原卡片
+/// 再开启本快照，快照里原卡片的位置留空（只画背景）、其余玻璃卡片照常保留。
 class ContainerTransformBelowSnapshotController extends ChangeNotifier {
   bool _enabled = false;
 
@@ -40,27 +39,6 @@ class ContainerTransformBelowSnapshotController extends ChangeNotifier {
     _enabled = value;
     notifyListeners();
   }
-
-  ui.Image? _image;
-  Rect? _imageRect;
-
-  /// 此刻的快照；没拍（或已释放）时为 null。归渲染对象所有，只在当帧绘制
-  /// 时读取，不要留着。
-  ui.Image? get image => _image;
-
-  /// 快照在全局坐标里铺的位置（逻辑像素），与 [image] 同时有值。
-  Rect? get imageRect => _imageRect;
-
-  /// 不通知监听者：渲染对象在绘制途中更新它，转场在动画的每一帧都重画，
-  /// 读到的总是当帧的值。
-  void _publish(ui.Image? image, Rect? rect) {
-    _image = image;
-    _imageRect = image == null ? null : rect;
-  }
-
-  /// 测试用：直接给出一张快照（所有权仍归调用方）。
-  @visibleForTesting
-  void debugSetSnapshot(ui.Image? image, Rect? rect) => _publish(image, rect);
 }
 
 /// 见 [ContainerTransformBelowSnapshotController]。
@@ -148,9 +126,6 @@ class RenderContainerTransformBelowSnapshot extends RenderProxyBox {
   void _releaseImage() {
     final image = _image;
     if (image == null) return;
-    if (identical(_controller.image, image)) {
-      _controller._publish(null, null);
-    }
     image.dispose();
     _image = null;
     _imageSize = null;
@@ -232,10 +207,6 @@ class RenderContainerTransformBelowSnapshot extends RenderProxyBox {
       );
       _image = image;
       _imageSize = size;
-      _controller._publish(
-        image,
-        MatrixUtils.transformRect(getTransformTo(null), Offset.zero & size),
-      );
       return image;
     } catch (error) {
       debugPrint('Snapshotting the page below the transition failed: $error');

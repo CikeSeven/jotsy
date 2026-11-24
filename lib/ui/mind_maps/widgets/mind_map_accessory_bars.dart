@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/database/mind_map/mind_map_document.dart';
 import '../../../core/database/mind_map/mind_map_ops.dart';
+import '../../../core/database/mind_map/mind_map_schema.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
 import '../controllers/mind_map_editing_controller.dart';
@@ -11,7 +12,8 @@ import 'mind_map_format_bar.dart';
 /// 手机上编辑主题文字时键盘上方的附件条（画布与大纲各一种），同一块浮动
 /// 卡片里两行：上行是格式条 [MindMapFormatBar]，下行是操作。
 ///
-/// - 画布：子主题、同级、换行、删除、完成；
+/// - 画布：子主题、同级、换行、删除、完成（平衡结构里编辑中心主题时，
+///   子主题与同级换成向左 / 向右添加，同工具坞）；
 /// - 大纲：取消缩进、缩进、上移、下移、删除、完成。
 ///
 /// 删除与工具坞的删除一致（`deleteSelected`，选中相邻的主题，可撤销），但
@@ -99,19 +101,35 @@ class MindMapEditingAccessoryBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final editing = controller.editingId ?? controller.selectedId;
+    final sides =
+        editing == controller.document.root.id && controller.canChooseSide;
     return _AccessoryCard(
       controller: controller,
       actions: <Widget>[
-        _AccessoryAction(
-          icon: FontAwesomeIcons.diagramSuccessor,
-          label: l10n.mindMapAddChild,
-          onTap: () => controller.addChild(),
-        ),
-        _AccessoryAction(
-          icon: FontAwesomeIcons.diagramNext,
-          label: l10n.mindMapAddSibling,
-          onTap: () => controller.addSibling(),
-        ),
+        if (sides) ...<Widget>[
+          _AccessoryAction(
+            icon: FontAwesomeIcons.arrowLeftLong,
+            label: l10n.mindMapAddLeft,
+            onTap: () => controller.addBranch(kMindMapSideLeft),
+          ),
+          _AccessoryAction(
+            icon: FontAwesomeIcons.arrowRightLong,
+            label: l10n.mindMapAddRight,
+            onTap: () => controller.addBranch(kMindMapSideRight),
+          ),
+        ] else ...<Widget>[
+          _AccessoryAction(
+            icon: FontAwesomeIcons.diagramSuccessor,
+            label: l10n.mindMapAddChild,
+            onTap: () => controller.addChild(),
+          ),
+          _AccessoryAction(
+            icon: FontAwesomeIcons.diagramNext,
+            label: l10n.mindMapAddSibling,
+            onTap: () => controller.addSibling(),
+          ),
+        ],
         _AccessoryAction(
           icon: FontAwesomeIcons.turnDown,
           label: l10n.mindMapNewLine,

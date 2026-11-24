@@ -18399,6 +18399,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mindMapAddSibling => 'Sibling';
 
   @override
+  String get mindMapAddLeft => 'Add left';
+
+  @override
+  String get mindMapAddRight => 'Add right';
+
+  @override
   String get mindMapEditText => 'Edit';
 
   @override

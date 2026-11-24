@@ -20916,6 +20916,14 @@
   "@mindMapAddSibling": {
     "description": "思维导图：在选中主题旁添加同级主题（工具坞按钮与菜单项）。"
   },
+  "mindMapAddLeft": "向左添加",
+  "@mindMapAddLeft": {
+    "description": "Mind map (balanced layout, central topic selected): add a main topic on the left side of the central topic (dock button, keyboard accessory and menu item)."
+  },
+  "mindMapAddRight": "向右添加",
+  "@mindMapAddRight": {
+    "description": "Mind map (balanced layout, central topic selected): add a main topic on the right side of the central topic (dock button, keyboard accessory and menu item)."
+  },
   "mindMapEditText": "编辑",
   "@mindMapEditText": {
     "description": "思维导图：编辑选中主题的文字。"

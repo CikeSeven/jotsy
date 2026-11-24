@@ -15704,6 +15704,99 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => 'Duplicate files';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets of identical files, merging frees $size',
+      one: '1 set of identical files, merging frees $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMerge => 'Merge';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      'These files have exactly the same content. Merging keeps one copy and every place that used another copy uses it instead, so your entries look the same.';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets · $size can be freed',
+      one: '1 set · $size can be freed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return 'Merge all · frees $size';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    return '$count identical copies · $size each · frees $saved';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => 'Kept';
+
+  @override
+  String get storageMgmtDuplicateRetained => 'Can\'t merge';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => 'No duplicate files';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Merge $count duplicate files?',
+      one: 'Merge 1 duplicate file?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return 'Each set keeps one copy and the others are removed, freeing $size. Entries, covers and comments look the same as before.';
+  }
+
+  @override
+  String get storageMgmtMergeNote =>
+      'Afterwards, deleting the kept file here removes it from every place that uses it.';
+
+  @override
+  String get storageMgmtMerging => 'Merging…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Merged $count duplicate files, freed $size',
+      one: 'Merged 1 duplicate file, freed $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMergeNothing =>
+      'Nothing was merged: these files have changed. Rescan and try again.';
+
+  @override
   String get storageMgmtClear => 'Clear';
 
   @override
@@ -19125,4 +19218,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => 'Move later';
+
+  @override
+  String get notebookContentsTransferToChild =>
+      'Transfer contents to sub-notebook';
+
+  @override
+  String get notebookChapterTransferToChild => 'Move to sub-notebook…';
+
+  @override
+  String get notebookContentsTransferSheetTitle =>
+      'Transfer contents to which sub-notebook';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return 'Move \"$title\" to which sub-notebook';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint =>
+      'No sub-notebooks yet. Create one above to transfer into it.';
+
+  @override
+  String get notebookContentsTransferConfirmTitle => 'Transfer to sub-notebook';
+
+  @override
+  String get notebookContentsTransferAction => 'Transfer';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters chapters',
+      one: '1 chapter',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return 'Transfer $_temp0 and $_temp1 from \"$source\" to \"$target\"? Chapters and order are kept, and they are removed from \"$source\". No entries are deleted.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return 'Transfer $_temp0 from \"$source\" to \"$target\"? Their order is kept, and they are removed from \"$source\". No entries are deleted.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters chapters',
+      one: '1 chapter',
+    );
+    return 'Transfer $_temp0 from \"$source\" to \"$target\"? They will be removed from \"$source\".';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return 'Move chapter \"$chapter\" and its $_temp0 to \"$target\"? The chapter and order are kept, and they are removed from \"$source\". No entries are deleted.';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return 'Move empty chapter \"$chapter\" to \"$target\"? It will be removed from \"$source\".';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '\"$target\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return 'Transferred contents to \"$target\"';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return 'Moved \"$chapter\" to \"$target\"';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return 'Transferred to \"$target\". Moved entries now only show in that notebook';
+  }
 }

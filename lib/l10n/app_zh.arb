@@ -18933,6 +18933,38 @@
   "@storageMgmtSuggestDatabase": {"description": "整理数据库的建议行。"},
   "storageMgmtSuggestDatabaseSubtitle": "可释放已删除内容留下的 {size}",
   "@storageMgmtSuggestDatabaseSubtitle": {"description": "整理数据库建议的副标题。", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtSuggestDuplicates": "重复的文件",
+  "@storageMgmtSuggestDuplicates": {"description": "内容相同的文件：建议行与页面标题。"},
+  "storageMgmtSuggestDuplicatesSubtitle": "{count} 组内容相同的文件，合并可释放 {size}",
+  "@storageMgmtSuggestDuplicatesSubtitle": {"description": "重复文件建议的副标题；count 为组数，size 为合并可释放的大小。", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMerge": "合并",
+  "@storageMgmtMerge": {"description": "合并重复文件的按钮。"},
+  "storageMgmtDuplicatesIntro": "这些文件的内容完全相同。合并后只保留一份，原来用到其他副本的地方都改用它，日记里看到的不变。",
+  "@storageMgmtDuplicatesIntro": {"description": "重复文件页顶部的说明。"},
+  "storageMgmtDuplicatesSummary": "{count} 组 · 可释放 {size}",
+  "@storageMgmtDuplicatesSummary": {"description": "重复文件页的汇总；count 为组数。", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMergeAll": "全部合并 · 释放 {size}",
+  "@storageMgmtMergeAll": {"description": "合并全部重复文件的整宽按钮；size 为可释放的大小。", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtDuplicateGroupSubtitle": "{count} 份相同 · 每份 {size} · 可释放 {saved}",
+  "@storageMgmtDuplicateGroupSubtitle": {"description": "一组重复文件的副标题：相同的份数、每份大小与合并可释放的大小。", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}, "saved": {"type": "String"}}},
+  "storageMgmtDuplicateKept": "保留",
+  "@storageMgmtDuplicateKept": {"description": "标签：合并后保留的那份。"},
+  "storageMgmtDuplicateRetained": "不能合并",
+  "@storageMgmtDuplicateRetained": {"description": "标签：内容相同但不能合并的那份（引用不能改指到保留的那份）。"},
+  "storageMgmtDuplicatesEmpty": "没有重复的文件",
+  "@storageMgmtDuplicatesEmpty": {"description": "重复文件页的空状态。"},
+  "storageMgmtMergeTitle": "合并 {count} 个重复文件？",
+  "@storageMgmtMergeTitle": {"description": "合并确认的标题；count 为要删掉的副本数。", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtMergeBody": "每组只保留一份，其余副本删除，释放 {size}。日记、封面与留言看到的都和原来一样。",
+  "@storageMgmtMergeBody": {"description": "合并确认的正文；size 为可释放的大小。", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtMergeNote": "之后在这里删除保留的那份，会从所有用到它的地方一起移除。",
+  "@storageMgmtMergeNote": {"description": "合并确认里关于之后删除共用文件的提示。"},
+  "storageMgmtMerging": "正在合并…",
+  "@storageMgmtMerging": {"description": "合并中的遮罩文案。"},
+  "storageMgmtMerged": "已合并 {count} 个重复文件，释放 {size}",
+  "@storageMgmtMerged": {"description": "合并重复文件后的提示。", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMergeNothing": "没有合并：这些文件已经变了，重新统计后再试。",
+  "@storageMgmtMergeNothing": {"description": "文件已经变了、什么都没合并时的提示。"},
   "storageMgmtClear": "清理",
   "@storageMgmtClear": {"description": "建议行的“清理”按钮。"},
   "storageMgmtCompact": "整理",
@@ -21860,5 +21892,158 @@
   "diaryThumbnailMoveLater": "后移",
   "@diaryThumbnailMoveLater": {
     "description": "编辑页并排小图的读屏操作：把这张图片或视频在这一组里往后挪一位。"
+  },
+  "notebookContentsTransferToChild": "转移目录到子日记本",
+  "@notebookContentsTransferToChild": {
+    "description": "目录页顶栏按钮提示：把整份目录（全部章节与日记）转移到子日记本。"
+  },
+  "notebookChapterTransferToChild": "移到子日记本…",
+  "@notebookChapterTransferToChild": {
+    "description": "目录页章节标题行菜单项：把这一章连同里面的日记移到子日记本。"
+  },
+  "notebookContentsTransferSheetTitle": "将目录转移到哪个子日记本",
+  "@notebookContentsTransferSheetTitle": {
+    "description": "转移整份目录时挑选目标子日记本的底部面板标题。"
+  },
+  "notebookChapterTransferSheetTitle": "将「{title}」移到哪个子日记本",
+  "@notebookChapterTransferSheetTitle": {
+    "description": "转移单个章节时挑选目标子日记本的底部面板标题。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferEmptyHint": "还没有子日记本，可在上方新建后转移",
+  "@notebookContentsTransferEmptyHint": {
+    "description": "目标子日记本选择面板里还没有可选子本时的空态提示。"
+  },
+  "notebookContentsTransferConfirmTitle": "转移到子日记本",
+  "@notebookContentsTransferConfirmTitle": {
+    "description": "确认将目录或章节转移到子日记本的对话框标题。"
+  },
+  "notebookContentsTransferAction": "转移",
+  "@notebookContentsTransferAction": {
+    "description": "转移到子日记本确认框的确认按钮文案。"
+  },
+  "notebookContentsTransferConfirmAll": "将「{source}」的 {chapters} 个章节和 {entries} 篇日记转移到子日记本「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "@notebookContentsTransferConfirmAll": {
+    "description": "转移整份目录（包含章节与日记）到子日记本的确认说明。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmEntriesOnly": "将「{source}」的 {entries} 篇日记转移到子日记本「{target}」？原有顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "@notebookContentsTransferConfirmEntriesOnly": {
+    "description": "转移整份目录（仅有日记、没有章节）到子日记本的确认说明。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmChaptersOnly": "将「{source}」的 {chapters} 个章节转移到子日记本「{target}」？这些章节会从「{source}」移出。",
+  "@notebookContentsTransferConfirmChaptersOnly": {
+    "description": "转移整份目录（仅有空章节、没有日记）到子日记本的确认说明。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirm": "将章节「{chapter}」及其中 {entries} 篇日记转移到子日记本「{target}」？章节和顺序会一并保留，并从「{source}」移出，日记不会被删除。",
+  "@notebookChapterTransferConfirm": {
+    "description": "将含日记的单个章节转移到子日记本的确认说明。",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirmEmpty": "将空章节「{chapter}」转移到子日记本「{target}」？该章节会从「{source}」移出。",
+  "@notebookChapterTransferConfirmEmpty": {
+    "description": "将空章节转移到子日记本的确认说明。",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferPrivateNote": "「{target}」是私密日记本，转移后的日记将只在该日记本中显示，不再出现在全部日记里。",
+  "@notebookContentsTransferPrivateNote": {
+    "description": "从普通日记本把日记转移到私密子日记本时确认框里的补充提醒。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferred": "已将目录转移到「{target}」",
+  "@notebookContentsTransferred": {
+    "description": "整份目录转移到子日记本后的提示条。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferred": "已将「{chapter}」转移到「{target}」",
+  "@notebookChapterTransferred": {
+    "description": "单个章节转移到子日记本后的提示条。",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPrivate": "已转移到「{target}」，移入的日记只在该日记本中显示",
+  "@notebookContentsTransferredPrivate": {
+    "description": "从普通日记本将日记转移到私密子日记本后的提示条。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

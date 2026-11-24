@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../core/services/storage/storage_duplicates.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_nav_tile.dart';
@@ -10,14 +11,18 @@ import '../viewmodels/storage_overview_view.dart';
 
 /// 总览页“可释放空间”分组：每条建议写明能省多少，就地清理或跳到要处理的
 /// 地方。为 0 的建议不出现；全部为 0 时只留一行“已经很整洁了”。“未使用的
-/// 文件”两样都有：行尾“清理”一次清完，点按这一行进列表逐个查看、删除。
+/// 文件”两样都有：行尾“清理”一次清完，点按这一行进列表逐个查看、删除；
+/// “重复的文件”同理：行尾“合并”（先确认）全部合并，点按进重复文件页。
 class StorageSuggestionsGroup extends StatelessWidget {
   const StorageSuggestionsGroup({
     super.key,
     required this.view,
+    required this.duplicates,
     required this.onClearCache,
     required this.onClearUnused,
     required this.onOpenUnused,
+    required this.onMergeDuplicates,
+    required this.onOpenDuplicates,
     required this.onCompactDatabase,
     required this.onOpenTrash,
     required this.onOpenCompressible,
@@ -25,10 +30,15 @@ class StorageSuggestionsGroup extends StatelessWidget {
 
   final StorageOverviewView view;
 
+  /// 重复文件；还在算（或算失败）时为 null，这一行先不出现。
+  final StorageDuplicates? duplicates;
+
   /// 为 null 时按钮停用（正在执行）。
   final VoidCallback? onClearCache;
   final VoidCallback? onClearUnused;
   final VoidCallback onOpenUnused;
+  final VoidCallback? onMergeDuplicates;
+  final VoidCallback onOpenDuplicates;
   final VoidCallback? onCompactDatabase;
   final VoidCallback onOpenTrash;
 
@@ -62,6 +72,18 @@ class StorageSuggestionsGroup extends StatelessWidget {
           actionLabel: l10n.storageMgmtClear,
           onAction: onClearUnused,
           onTap: onOpenUnused,
+        ),
+      if (duplicates case final found? when !found.isEmpty)
+        _SuggestionTile(
+          icon: FontAwesomeIcons.clone,
+          title: l10n.storageMgmtSuggestDuplicates,
+          subtitle: l10n.storageMgmtSuggestDuplicatesSubtitle(
+            found.groups.length,
+            size(found.savedBytes),
+          ),
+          actionLabel: l10n.storageMgmtMerge,
+          onAction: onMergeDuplicates,
+          onTap: onOpenDuplicates,
         ),
       if (view.trash.count > 0)
         _SuggestionTile(

@@ -18933,6 +18933,38 @@
   "@storageMgmtSuggestDatabase": {"description": "Suggestion row that compacts the database."},
   "storageMgmtSuggestDatabaseSubtitle": "Frees {size} left behind by deleted content",
   "@storageMgmtSuggestDatabaseSubtitle": {"description": "Subtitle of the database suggestion.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtSuggestDuplicates": "Duplicate files",
+  "@storageMgmtSuggestDuplicates": {"description": "Suggestion row and page title for files with identical content."},
+  "storageMgmtSuggestDuplicatesSubtitle": "{count, plural, =1{1 set of identical files, merging frees {size}} other{{count} sets of identical files, merging frees {size}}}",
+  "@storageMgmtSuggestDuplicatesSubtitle": {"description": "Subtitle of the duplicate files suggestion; count is the number of sets, size is what merging frees.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMerge": "Merge",
+  "@storageMgmtMerge": {"description": "Button that merges duplicate files."},
+  "storageMgmtDuplicatesIntro": "These files have exactly the same content. Merging keeps one copy and every place that used another copy uses it instead, so your entries look the same.",
+  "@storageMgmtDuplicatesIntro": {"description": "Explanation at the top of the duplicate files page."},
+  "storageMgmtDuplicatesSummary": "{count, plural, =1{1 set · {size} can be freed} other{{count} sets · {size} can be freed}}",
+  "@storageMgmtDuplicatesSummary": {"description": "Summary on the duplicate files page; count is the number of sets.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMergeAll": "Merge all · frees {size}",
+  "@storageMgmtMergeAll": {"description": "Full-width button that merges every set of duplicates; size is what it frees.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtDuplicateGroupSubtitle": "{count} identical copies · {size} each · frees {saved}",
+  "@storageMgmtDuplicateGroupSubtitle": {"description": "Subtitle of one set of duplicates: number of identical copies, size of each, and what merging frees.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}, "saved": {"type": "String"}}},
+  "storageMgmtDuplicateKept": "Kept",
+  "@storageMgmtDuplicateKept": {"description": "Badge on the copy that stays after merging."},
+  "storageMgmtDuplicateRetained": "Can't merge",
+  "@storageMgmtDuplicateRetained": {"description": "Badge on an identical copy that cannot be merged (its references cannot point to the kept copy)."},
+  "storageMgmtDuplicatesEmpty": "No duplicate files",
+  "@storageMgmtDuplicatesEmpty": {"description": "Empty state of the duplicate files page."},
+  "storageMgmtMergeTitle": "{count, plural, =1{Merge 1 duplicate file?} other{Merge {count} duplicate files?}}",
+  "@storageMgmtMergeTitle": {"description": "Title of the merge confirmation; count is the number of copies removed.", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtMergeBody": "Each set keeps one copy and the others are removed, freeing {size}. Entries, covers and comments look the same as before.",
+  "@storageMgmtMergeBody": {"description": "Body of the merge confirmation; size is what merging frees.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtMergeNote": "Afterwards, deleting the kept file here removes it from every place that uses it.",
+  "@storageMgmtMergeNote": {"description": "Note in the merge confirmation about deleting a shared file later."},
+  "storageMgmtMerging": "Merging…",
+  "@storageMgmtMerging": {"description": "Busy overlay while merging duplicates."},
+  "storageMgmtMerged": "{count, plural, =1{Merged 1 duplicate file, freed {size}} other{Merged {count} duplicate files, freed {size}}}",
+  "@storageMgmtMerged": {"description": "Shown after merging duplicates.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMergeNothing": "Nothing was merged: these files have changed. Rescan and try again.",
+  "@storageMgmtMergeNothing": {"description": "Shown when nothing could be merged because the files changed."},
   "storageMgmtClear": "Clear",
   "@storageMgmtClear": {"description": "Button on a suggestion row that clears it."},
   "storageMgmtCompact": "Tidy up",
@@ -21860,5 +21892,158 @@
   "diaryThumbnailMoveLater": "Move later",
   "@diaryThumbnailMoveLater": {
     "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
+  },
+  "notebookContentsTransferToChild": "Transfer contents to sub-notebook",
+  "@notebookContentsTransferToChild": {
+    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook."
+  },
+  "notebookChapterTransferToChild": "Move to sub-notebook…",
+  "@notebookChapterTransferToChild": {
+    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook."
+  },
+  "notebookContentsTransferSheetTitle": "Transfer contents to which sub-notebook",
+  "@notebookContentsTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents."
+  },
+  "notebookChapterTransferSheetTitle": "Move \"{title}\" to which sub-notebook",
+  "@notebookChapterTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferEmptyHint": "No sub-notebooks yet. Create one above to transfer into it.",
+  "@notebookContentsTransferEmptyHint": {
+    "description": "Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet."
+  },
+  "notebookContentsTransferConfirmTitle": "Transfer to sub-notebook",
+  "@notebookContentsTransferConfirmTitle": {
+    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferAction": "Transfer",
+  "@notebookContentsTransferAction": {
+    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferConfirmAll": "Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} and {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Chapters and order are kept, and they are removed from \"{source}\". No entries are deleted.",
+  "@notebookContentsTransferConfirmAll": {
+    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmEntriesOnly": "Transfer {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Their order is kept, and they are removed from \"{source}\". No entries are deleted.",
+  "@notebookContentsTransferConfirmEntriesOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmChaptersOnly": "Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} from \"{source}\" to \"{target}\"? They will be removed from \"{source}\".",
+  "@notebookContentsTransferConfirmChaptersOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirm": "Move chapter \"{chapter}\" and its {entries, plural, =1{1 entry} other{{entries} entries}} to \"{target}\"? The chapter and order are kept, and they are removed from \"{source}\". No entries are deleted.",
+  "@notebookChapterTransferConfirm": {
+    "description": "Confirmation message when moving a chapter with entries to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirmEmpty": "Move empty chapter \"{chapter}\" to \"{target}\"? It will be removed from \"{source}\".",
+  "@notebookChapterTransferConfirmEmpty": {
+    "description": "Confirmation message when moving an empty chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferPrivateNote": "\"{target}\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.",
+  "@notebookContentsTransferPrivateNote": {
+    "description": "Additional warning in the transfer confirmation dialog when moving entries from a normal notebook into a hidden or locked sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferred": "Transferred contents to \"{target}\"",
+  "@notebookContentsTransferred": {
+    "description": "SnackBar shown after transferring a notebook's entire contents to a sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferred": "Moved \"{chapter}\" to \"{target}\"",
+  "@notebookChapterTransferred": {
+    "description": "SnackBar shown after moving a single chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPrivate": "Transferred to \"{target}\". Moved entries now only show in that notebook",
+  "@notebookContentsTransferredPrivate": {
+    "description": "SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

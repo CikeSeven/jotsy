@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../core/services/storage/storage_duplicates.dart';
 import '../../../core/services/storage/storage_media_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../app_lock/controllers/identity_verifier.dart';
 import '../providers/storage_providers.dart';
 import '../sections/storage_compress_sheet.dart';
 import '../sections/storage_delete_dialog.dart';
+import '../sections/storage_merge_dialog.dart';
 import '../sections/storage_progress_sheet.dart';
 import 'storage_busy_messages.dart';
 
@@ -93,6 +95,42 @@ class StorageFlows {
         ].join(' '),
       );
       return true;
+    } on StorageBusyException catch (error) {
+      _host.showSnack(storageBusyMessage(l10n, error.reason));
+      return false;
+    } finally {
+      _host.setBusy(false);
+      refreshStorageViews(_ref);
+    }
+  }
+
+  /// 确认后合并 [groups]（重复文件：每组只留一份，其余副本的引用改指向它
+  /// 再删掉）；删掉了副本返回 true。
+  Future<bool> mergeDuplicates(
+    BuildContext context,
+    List<StorageDuplicateGroup> groups,
+  ) async {
+    final l10n = context.l10n;
+    if (groups.isEmpty) return false;
+    if (!await confirmStorageMerge(context, groups) || !context.mounted) {
+      return false;
+    }
+    _host.setBusy(true, l10n.storageMgmtMerging);
+    try {
+      final result = await _service.mergeDuplicates(groups);
+      _host.showSnack(
+        result.mergedFiles == 0
+            ? l10n.storageMgmtMergeNothing
+            : [
+                l10n.storageMgmtMerged(
+                  result.mergedFiles,
+                  l10n.formatByteSize(result.freedBytes),
+                ),
+                if (result.skippedRows > 0)
+                  l10n.storageMgmtSkippedRows(result.skippedRows),
+              ].join(' '),
+      );
+      return result.mergedFiles > 0;
     } on StorageBusyException catch (error) {
       _host.showSnack(storageBusyMessage(l10n, error.reason));
       return false;

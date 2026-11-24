@@ -418,10 +418,49 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
         'char(32, 9, 10, 13)), 1, ${NotebookContentsEntry.leadingTextLength})',
       );
 
+  /// 目录页口径下的成员行（含归档、不含回收站，遵守私密规则），按成书位置排好；
+  /// [chapterId] 非空时只取该章的成员。供目录整体转移到子日记本复用，保证搬运
+  /// 集合与目录页展示完全一致。
+  Future<List<DiaryNotebookRow>> _visibleContentsEntriesInOrder(
+    String notebookId, {
+    String? chapterId,
+  }) async {
+    final query =
+        _notebookEntryColumnsQuery(
+            notebookId,
+            includeArchived: true,
+            chapterId: chapterId,
+          )
+          ..addColumns(<Expression<Object>>[
+            diaryNotebooks.diaryId,
+            diaryNotebooks.notebookId,
+            diaryNotebooks.chapterId,
+            diaryNotebooks.position,
+            diaryNotebooks.addedAt,
+          ])
+          ..orderBy(<OrderingTerm>[
+            OrderingTerm.asc(diaryNotebooks.position),
+            OrderingTerm.asc(diaryNotebooks.addedAt),
+            OrderingTerm.asc(diaryNotebooks.diaryId),
+          ]);
+    final rows = await query.get();
+    return <DiaryNotebookRow>[
+      for (final row in rows)
+        DiaryNotebookRow(
+          diaryId: row.read(diaryNotebooks.diaryId)!,
+          notebookId: row.read(diaryNotebooks.notebookId)!,
+          chapterId: row.read(diaryNotebooks.chapterId),
+          position: row.read(diaryNotebooks.position)!,
+          addedAt: row.read(diaryNotebooks.addedAt)!,
+        ),
+    ];
+  }
+
   /// 本子成员 × 日记 × 日记本的只取列查询（调用方再加列与排序）。
   JoinedSelectStatement<HasResultSet, dynamic> _notebookEntryColumnsQuery(
     String notebookId, {
     required bool includeArchived,
+    String? chapterId,
   }) {
     final query = selectOnly(diaryNotebooks).join(<Join>[
       innerJoin(diaries, diaries.id.equalsExp(diaryNotebooks.diaryId)),
@@ -438,6 +477,9 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
             ));
     if (!includeArchived) {
       filter = filter & diaries.isArchived.equals(false);
+    }
+    if (chapterId != null) {
+      filter = filter & diaryNotebooks.chapterId.equals(chapterId);
     }
     query.where(filter);
     return query;

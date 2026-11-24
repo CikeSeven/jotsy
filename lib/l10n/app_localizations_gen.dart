@@ -24990,6 +24990,106 @@ abstract class AppLocalizations {
   /// **'Frees {size} left behind by deleted content'**
   String storageMgmtSuggestDatabaseSubtitle(String size);
 
+  /// Suggestion row and page title for files with identical content.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate files'**
+  String get storageMgmtSuggestDuplicates;
+
+  /// Subtitle of the duplicate files suggestion; count is the number of sets, size is what merging frees.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set of identical files, merging frees {size}} other{{count} sets of identical files, merging frees {size}}}'**
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size);
+
+  /// Button that merges duplicate files.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge'**
+  String get storageMgmtMerge;
+
+  /// Explanation at the top of the duplicate files page.
+  ///
+  /// In en, this message translates to:
+  /// **'These files have exactly the same content. Merging keeps one copy and every place that used another copy uses it instead, so your entries look the same.'**
+  String get storageMgmtDuplicatesIntro;
+
+  /// Summary on the duplicate files page; count is the number of sets.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set · {size} can be freed} other{{count} sets · {size} can be freed}}'**
+  String storageMgmtDuplicatesSummary(int count, String size);
+
+  /// Full-width button that merges every set of duplicates; size is what it frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge all · frees {size}'**
+  String storageMgmtMergeAll(String size);
+
+  /// Subtitle of one set of duplicates: number of identical copies, size of each, and what merging frees.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} identical copies · {size} each · frees {saved}'**
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  );
+
+  /// Badge on the copy that stays after merging.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get storageMgmtDuplicateKept;
+
+  /// Badge on an identical copy that cannot be merged (its references cannot point to the kept copy).
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t merge'**
+  String get storageMgmtDuplicateRetained;
+
+  /// Empty state of the duplicate files page.
+  ///
+  /// In en, this message translates to:
+  /// **'No duplicate files'**
+  String get storageMgmtDuplicatesEmpty;
+
+  /// Title of the merge confirmation; count is the number of copies removed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Merge 1 duplicate file?} other{Merge {count} duplicate files?}}'**
+  String storageMgmtMergeTitle(int count);
+
+  /// Body of the merge confirmation; size is what merging frees.
+  ///
+  /// In en, this message translates to:
+  /// **'Each set keeps one copy and the others are removed, freeing {size}. Entries, covers and comments look the same as before.'**
+  String storageMgmtMergeBody(String size);
+
+  /// Note in the merge confirmation about deleting a shared file later.
+  ///
+  /// In en, this message translates to:
+  /// **'Afterwards, deleting the kept file here removes it from every place that uses it.'**
+  String get storageMgmtMergeNote;
+
+  /// Busy overlay while merging duplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'Merging…'**
+  String get storageMgmtMerging;
+
+  /// Shown after merging duplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Merged 1 duplicate file, freed {size}} other{Merged {count} duplicate files, freed {size}}}'**
+  String storageMgmtMerged(int count, String size);
+
+  /// Shown when nothing could be merged because the files changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was merged: these files have changed. Rescan and try again.'**
+  String get storageMgmtMergeNothing;
+
   /// Button on a suggestion row that clears it.
   ///
   /// In en, this message translates to:
@@ -29955,6 +30055,124 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move later'**
   String get diaryThumbnailMoveLater;
+
+  /// Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer contents to sub-notebook'**
+  String get notebookContentsTransferToChild;
+
+  /// Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to sub-notebook…'**
+  String get notebookChapterTransferToChild;
+
+  /// Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer contents to which sub-notebook'**
+  String get notebookContentsTransferSheetTitle;
+
+  /// Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Move \"{title}\" to which sub-notebook'**
+  String notebookChapterTransferSheetTitle(String title);
+
+  /// Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No sub-notebooks yet. Create one above to transfer into it.'**
+  String get notebookContentsTransferEmptyHint;
+
+  /// Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer to sub-notebook'**
+  String get notebookContentsTransferConfirmTitle;
+
+  /// Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get notebookContentsTransferAction;
+
+  /// Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} and {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Chapters and order are kept, and they are removed from \"{source}\". No entries are deleted.'**
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  );
+
+  /// Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer {entries, plural, =1{1 entry} other{{entries} entries}} from \"{source}\" to \"{target}\"? Their order is kept, and they are removed from \"{source}\". No entries are deleted.'**
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  );
+
+  /// Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer {chapters, plural, =1{1 chapter} other{{chapters} chapters}} from \"{source}\" to \"{target}\"? They will be removed from \"{source}\".'**
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  );
+
+  /// Confirmation message when moving a chapter with entries to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move chapter \"{chapter}\" and its {entries, plural, =1{1 entry} other{{entries} entries}} to \"{target}\"? The chapter and order are kept, and they are removed from \"{source}\". No entries are deleted.'**
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  );
+
+  /// Confirmation message when moving an empty chapter to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move empty chapter \"{chapter}\" to \"{target}\"? It will be removed from \"{source}\".'**
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  );
+
+  /// Additional warning in the transfer confirmation dialog when moving entries from a normal notebook into a hidden or locked sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{target}\" is a private notebook. Moved entries will only appear in that notebook and no longer in All Diaries.'**
+  String notebookContentsTransferPrivateNote(String target);
+
+  /// SnackBar shown after transferring a notebook's entire contents to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred contents to \"{target}\"'**
+  String notebookContentsTransferred(String target);
+
+  /// SnackBar shown after moving a single chapter to a sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved \"{chapter}\" to \"{target}\"'**
+  String notebookChapterTransferred(String chapter, String target);
+
+  /// SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred to \"{target}\". Moved entries now only show in that notebook'**
+  String notebookContentsTransferredPrivate(String target);
 }
 
 class _AppLocalizationsDelegate

@@ -19500,6 +19500,38 @@
   "@storageMgmtSuggestDatabase": {"description": "Suggestion row that compacts the database."},
   "storageMgmtSuggestDatabaseSubtitle": "Освободит {size}, оставшиеся от удалённого",
   "@storageMgmtSuggestDatabaseSubtitle": {"description": "Subtitle of the database suggestion.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtSuggestDuplicates": "Одинаковые файлы",
+  "@storageMgmtSuggestDuplicates": {"description": "Suggestion row and page title for files with identical content."},
+  "storageMgmtSuggestDuplicatesSubtitle": "{count, plural, one{{count} группа одинаковых файлов, объединение освободит {size}} few{{count} группы одинаковых файлов, объединение освободит {size}} many{{count} групп одинаковых файлов, объединение освободит {size}} other{{count} группы одинаковых файлов, объединение освободит {size}}}",
+  "@storageMgmtSuggestDuplicatesSubtitle": {"description": "Subtitle of the duplicate files suggestion; count is the number of sets, size is what merging frees.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMerge": "Объединить",
+  "@storageMgmtMerge": {"description": "Button that merges duplicate files."},
+  "storageMgmtDuplicatesIntro": "Содержимое этих файлов полностью совпадает. При объединении остаётся одна копия, и все места, где использовались другие копии, переходят на неё — записи выглядят как прежде.",
+  "@storageMgmtDuplicatesIntro": {"description": "Explanation at the top of the duplicate files page."},
+  "storageMgmtDuplicatesSummary": "{count, plural, one{{count} группа · можно освободить {size}} few{{count} группы · можно освободить {size}} many{{count} групп · можно освободить {size}} other{{count} группы · можно освободить {size}}}",
+  "@storageMgmtDuplicatesSummary": {"description": "Summary on the duplicate files page; count is the number of sets.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMergeAll": "Объединить все · освободится {size}",
+  "@storageMgmtMergeAll": {"description": "Full-width button that merges every set of duplicates; size is what it frees.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtDuplicateGroupSubtitle": "{count, plural, one{{count} одинаковая копия · по {size} · освободится {saved}} few{{count} одинаковые копии · по {size} · освободится {saved}} many{{count} одинаковых копий · по {size} · освободится {saved}} other{{count} одинаковой копии · по {size} · освободится {saved}}}",
+  "@storageMgmtDuplicateGroupSubtitle": {"description": "Subtitle of one set of duplicates: number of identical copies, size of each, and what merging frees.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}, "saved": {"type": "String"}}},
+  "storageMgmtDuplicateKept": "Остаётся",
+  "@storageMgmtDuplicateKept": {"description": "Badge on the copy that stays after merging."},
+  "storageMgmtDuplicateRetained": "Нельзя объединить",
+  "@storageMgmtDuplicateRetained": {"description": "Badge on an identical copy that cannot be merged (its references cannot point to the kept copy)."},
+  "storageMgmtDuplicatesEmpty": "Одинаковых файлов нет",
+  "@storageMgmtDuplicatesEmpty": {"description": "Empty state of the duplicate files page."},
+  "storageMgmtMergeTitle": "{count, plural, one{Объединить {count} одинаковый файл?} few{Объединить {count} одинаковых файла?} many{Объединить {count} одинаковых файлов?} other{Объединить {count} одинакового файла?}}",
+  "@storageMgmtMergeTitle": {"description": "Title of the merge confirmation; count is the number of copies removed.", "placeholders": {"count": {"type": "int"}}},
+  "storageMgmtMergeBody": "В каждой группе остаётся одна копия, остальные удаляются — освободится {size}. Записи, обложки и комментарии выглядят как прежде.",
+  "@storageMgmtMergeBody": {"description": "Body of the merge confirmation; size is what merging frees.", "placeholders": {"size": {"type": "String"}}},
+  "storageMgmtMergeNote": "Если потом удалить оставшийся файл здесь, он исчезнет из всех мест, где используется.",
+  "@storageMgmtMergeNote": {"description": "Note in the merge confirmation about deleting a shared file later."},
+  "storageMgmtMerging": "Объединение…",
+  "@storageMgmtMerging": {"description": "Busy overlay while merging duplicates."},
+  "storageMgmtMerged": "{count, plural, one{Объединён {count} одинаковый файл, освобождено {size}} few{Объединено {count} одинаковых файла, освобождено {size}} many{Объединено {count} одинаковых файлов, освобождено {size}} other{Объединено {count} одинакового файла, освобождено {size}}}",
+  "@storageMgmtMerged": {"description": "Shown after merging duplicates.", "placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageMgmtMergeNothing": "Ничего не объединено: файлы изменились. Пересчитайте и попробуйте снова.",
+  "@storageMgmtMergeNothing": {"description": "Shown when nothing could be merged because the files changed."},
   "storageMgmtClear": "Очистить",
   "@storageMgmtClear": {"description": "Button on a suggestion row that clears it."},
   "storageMgmtCompact": "Упорядочить",
@@ -22427,5 +22459,158 @@
   "diaryThumbnailMoveLater": "Переместить позже",
   "@diaryThumbnailMoveLater": {
     "description": "Screen reader action on a side-by-side thumbnail in the editor: move this photo or video one place later in its group."
+  },
+  "notebookContentsTransferToChild": "Перенести содержание во вложенный блокнот",
+  "@notebookContentsTransferToChild": {
+    "description": "Tooltip of the top bar button on the notebook contents page to transfer the entire directory (all chapters and entries) to a sub-notebook."
+  },
+  "notebookChapterTransferToChild": "Перенести во вложенный блокнот…",
+  "@notebookChapterTransferToChild": {
+    "description": "Menu item on a chapter header in the notebook contents page to transfer that chapter and its entries to a sub-notebook."
+  },
+  "notebookContentsTransferSheetTitle": "В какой вложенный блокнот перенести содержание",
+  "@notebookContentsTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive the current notebook's entire contents."
+  },
+  "notebookChapterTransferSheetTitle": "В какой вложенный блокнот перенести «{title}»",
+  "@notebookChapterTransferSheetTitle": {
+    "description": "Title of the bottom sheet asking which sub-notebook should receive a single chapter and its entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferEmptyHint": "Вложенных блокнотов пока нет. Создайте новый выше, чтобы перенести туда",
+  "@notebookContentsTransferEmptyHint": {
+    "description": "Empty state hint inside the target sub-notebook picker when the current notebook has no eligible sub-notebooks yet."
+  },
+  "notebookContentsTransferConfirmTitle": "Перенос во вложенный блокнот",
+  "@notebookContentsTransferConfirmTitle": {
+    "description": "Title of the confirmation dialog before transferring a notebook's contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferAction": "Перенести",
+  "@notebookContentsTransferAction": {
+    "description": "Confirm button label in the dialog for transferring notebook contents or a chapter to a sub-notebook."
+  },
+  "notebookContentsTransferConfirmAll": "Перенести {chapters, plural, one{{chapters} главу} few{{chapters} главы} many{{chapters} глав} other{{chapters} главы}} и {entries, plural, one{{entries} запись} few{{entries} записи} many{{entries} записей} other{{entries} записи}} из «{source}» во вложенный блокнот «{target}»? Главы и порядок сохранятся, из «{source}» они будут убраны, а сами записи не удалятся.",
+  "@notebookContentsTransferConfirmAll": {
+    "description": "Confirmation message when transferring a notebook's entire contents (both chapters and entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmEntriesOnly": "Перенести {entries, plural, one{{entries} запись} few{{entries} записи} many{{entries} записей} other{{entries} записи}} из «{source}» во вложенный блокнот «{target}»? Порядок сохранится, из «{source}» они будут убраны, а сами записи не удалятся.",
+  "@notebookContentsTransferConfirmEntriesOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (entries only, no chapters) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferConfirmChaptersOnly": "Перенести {chapters, plural, one{{chapters} главу} few{{chapters} главы} many{{chapters} глав} other{{chapters} главы}} из «{source}» во вложенный блокнот «{target}»? Они будут убраны из «{source}».",
+  "@notebookContentsTransferConfirmChaptersOnly": {
+    "description": "Confirmation message when transferring a notebook's entire contents (empty chapters only, no entries) to a sub-notebook.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "chapters": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirm": "Перенести главу «{chapter}» и {entries, plural, one{{entries} её запись} few{{entries} её записи} many{{entries} её записей} other{{entries} её записи}} во вложенный блокнот «{target}»? Глава и порядок сохранятся, из «{source}» они будут убраны, а сами записи не удалятся.",
+  "@notebookChapterTransferConfirm": {
+    "description": "Confirmation message when moving a chapter with entries to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferConfirmEmpty": "Перенести пустую главу «{chapter}» во вложенный блокнот «{target}»? Она будет убрана из «{source}».",
+  "@notebookChapterTransferConfirmEmpty": {
+    "description": "Confirmation message when moving an empty chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferPrivateNote": "«{target}» — приватный блокнот. Перенесённые записи будут видны только в нём и исчезнут из списка «Все записи».",
+  "@notebookContentsTransferPrivateNote": {
+    "description": "Additional warning in the transfer confirmation dialog when moving entries from a normal notebook into a hidden or locked sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferred": "Содержание перенесено в «{target}»",
+  "@notebookContentsTransferred": {
+    "description": "SnackBar shown after transferring a notebook's entire contents to a sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookChapterTransferred": "Глава «{chapter}» перенесена в «{target}»",
+  "@notebookChapterTransferred": {
+    "description": "SnackBar shown after moving a single chapter to a sub-notebook.",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookContentsTransferredPrivate": "Перенесено в «{target}». Перенесённые записи теперь видны только в этом блокноте",
+  "@notebookContentsTransferredPrivate": {
+    "description": "SnackBar shown after transferring entries from a normal notebook into a private sub-notebook.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

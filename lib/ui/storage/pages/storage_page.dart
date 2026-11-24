@@ -35,6 +35,7 @@ import '../sections/storage_overview_groups.dart';
 import '../sections/storage_top_files_card.dart';
 import '../viewmodels/storage_media_view.dart';
 import '../viewmodels/storage_overview_view.dart';
+import 'storage_duplicates_page.dart';
 import 'storage_media_page.dart';
 
 /// 存储管理（设置 → 数据与安全）：占用总览、可释放空间的建议、各类媒体与
@@ -207,6 +208,9 @@ class _StoragePageState extends ConsumerState<StoragePage>
       if (!_busy) unawaited(action());
     }
 
+    // 重复文件在扫描之后再算（要读大小相同的文件），算出来之前这一行不出现。
+    final duplicates = ref.watch(storageDuplicatesProvider).value;
+
     return WidthLayoutBuilder(
       builder: (BuildContext context, double width) {
         final side = FormWidth.extra(width);
@@ -239,6 +243,14 @@ class _StoragePageState extends ConsumerState<StoragePage>
             const SizedBox(height: AppSpacing.l),
             StorageSuggestionsGroup(
               view: view,
+              duplicates: duplicates,
+              onMergeDuplicates: _busy || duplicates == null
+                  ? null
+                  : () => run(
+                      () => _flows.mergeDuplicates(context, duplicates.groups),
+                    ),
+              onOpenDuplicates: () =>
+                  unawaited(_push(const StorageDuplicatesPage())),
               onClearCache: _busy
                   ? null
                   : () => run(

@@ -194,10 +194,12 @@ class NotebookPickRow extends StatelessWidget {
 }
 
 /// 选择器顶部的“＋ 新建日记本”行，与 [NotebookPickRow] 同一表面。
+/// [label] 缺省时使用“新建日记本”（转移到子日记本面板传入“新建子日记本”）。
 class NotebookPickCreateRow extends StatelessWidget {
-  const NotebookPickCreateRow({super.key, required this.onTap});
+  const NotebookPickCreateRow({super.key, required this.onTap, this.label});
 
   final VoidCallback onTap;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +222,7 @@ class NotebookPickCreateRow extends StatelessWidget {
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    context.l10n.notebookNew,
+                    label ?? context.l10n.notebookNew,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(

@@ -14103,6 +14103,75 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => '重複したファイル';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    return '内容が同じファイル $count 組、統合すると $size を解放';
+  }
+
+  @override
+  String get storageMgmtMerge => '統合';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      'これらのファイルは中身がまったく同じです。統合すると 1 つだけ残し、ほかのコピーを使っていた箇所はすべてそれを使うようになります。日記の見た目は変わりません。';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    return '$count 組 · $size を解放できます';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return 'すべて統合 · $size を解放';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    return '同じ内容 $count 個 · 1 個 $size · $saved を解放';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => '残す';
+
+  @override
+  String get storageMgmtDuplicateRetained => '統合できません';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => '重複したファイルはありません';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    return '重複ファイル $count 個を統合しますか？';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return '各組で 1 つだけ残してほかのコピーを削除し、$size を解放します。日記・カバー・コメントの見た目は変わりません。';
+  }
+
+  @override
+  String get storageMgmtMergeNote =>
+      '統合後にここで残したファイルを削除すると、それを使っているすべての箇所から取り除かれます。';
+
+  @override
+  String get storageMgmtMerging => '統合しています…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    return '重複ファイル $count 個を統合し、$size を解放しました';
+  }
+
+  @override
+  String get storageMgmtMergeNothing =>
+      '統合されませんでした。ファイルが変わっています。再集計してからもう一度お試しください。';
+
+  @override
   String get storageMgmtClear => '削除';
 
   @override
@@ -17001,4 +17070,95 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => '後ろへ移動';
+
+  @override
+  String get notebookContentsTransferToChild => '目次をサブ日記帳へ移動';
+
+  @override
+  String get notebookChapterTransferToChild => 'サブ日記帳へ移動…';
+
+  @override
+  String get notebookContentsTransferSheetTitle => '目次をどのサブ日記帳へ移動しますか';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return '「$title」をどのサブ日記帳へ移動しますか';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint =>
+      'まだサブ日記帳がありません。上から新規作成して移動できます';
+
+  @override
+  String get notebookContentsTransferConfirmTitle => 'サブ日記帳へ移動';
+
+  @override
+  String get notebookContentsTransferAction => '移動';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    return '「$source」の章$chapters件と日記$entries件をサブ日記帳「$target」へ移動しますか？章構成と並び順は維持され、「$source」からは外れます。日記は削除されません。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    return '「$source」の日記$entries件をサブ日記帳「$target」へ移動しますか？並び順は維持され、「$source」からは外れます。日記は削除されません。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    return '「$source」の章$chapters件をサブ日記帳「$target」へ移動しますか？これらの章は「$source」から外れます。';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    return '章「$chapter」と含まれる日記$entries件をサブ日記帳「$target」へ移動しますか？章と並び順は維持され、「$source」からは外れます。日記は削除されません。';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return '空の章「$chapter」をサブ日記帳「$target」へ移動しますか？この章は「$source」から外れます。';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '「$target」は非公開の日記帳です。移動した日記はその日記帳の中でのみ表示され、すべての日記には表示されなくなります。';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return '目次を「$target」へ移動しました';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return '「$chapter」を「$target」へ移動しました';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return '「$target」へ移動しました。移動した日記はその日記帳の中でのみ表示されます';
+  }
 }

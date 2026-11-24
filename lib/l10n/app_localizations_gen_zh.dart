@@ -13852,6 +13852,73 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => '重复的文件';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    return '$count 组内容相同的文件，合并可释放 $size';
+  }
+
+  @override
+  String get storageMgmtMerge => '合并';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      '这些文件的内容完全相同。合并后只保留一份，原来用到其他副本的地方都改用它，日记里看到的不变。';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    return '$count 组 · 可释放 $size';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return '全部合并 · 释放 $size';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    return '$count 份相同 · 每份 $size · 可释放 $saved';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => '保留';
+
+  @override
+  String get storageMgmtDuplicateRetained => '不能合并';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => '没有重复的文件';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    return '合并 $count 个重复文件？';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return '每组只保留一份，其余副本删除，释放 $size。日记、封面与留言看到的都和原来一样。';
+  }
+
+  @override
+  String get storageMgmtMergeNote => '之后在这里删除保留的那份，会从所有用到它的地方一起移除。';
+
+  @override
+  String get storageMgmtMerging => '正在合并…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    return '已合并 $count 个重复文件，释放 $size';
+  }
+
+  @override
+  String get storageMgmtMergeNothing => '没有合并：这些文件已经变了，重新统计后再试。';
+
+  @override
   String get storageMgmtClear => '清理';
 
   @override
@@ -16729,4 +16796,94 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => '后移';
+
+  @override
+  String get notebookContentsTransferToChild => '转移目录到子日记本';
+
+  @override
+  String get notebookChapterTransferToChild => '移到子日记本…';
+
+  @override
+  String get notebookContentsTransferSheetTitle => '将目录转移到哪个子日记本';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return '将「$title」移到哪个子日记本';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint => '还没有子日记本，可在上方新建后转移';
+
+  @override
+  String get notebookContentsTransferConfirmTitle => '转移到子日记本';
+
+  @override
+  String get notebookContentsTransferAction => '转移';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    return '将「$source」的 $chapters 个章节和 $entries 篇日记转移到子日记本「$target」？章节和顺序会一并保留，并从「$source」移出，日记不会被删除。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    return '将「$source」的 $entries 篇日记转移到子日记本「$target」？原有顺序会一并保留，并从「$source」移出，日记不会被删除。';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    return '将「$source」的 $chapters 个章节转移到子日记本「$target」？这些章节会从「$source」移出。';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    return '将章节「$chapter」及其中 $entries 篇日记转移到子日记本「$target」？章节和顺序会一并保留，并从「$source」移出，日记不会被删除。';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return '将空章节「$chapter」转移到子日记本「$target」？该章节会从「$source」移出。';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '「$target」是私密日记本，转移后的日记将只在该日记本中显示，不再出现在全部日记里。';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return '已将目录转移到「$target」';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return '已将「$chapter」转移到「$target」';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return '已转移到「$target」，移入的日记只在该日记本中显示';
+  }
 }

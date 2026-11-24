@@ -22,6 +22,7 @@ import '../sections/notebook_chapter_dialogs.dart';
 import '../sections/notebook_contents_chapter_header.dart';
 import '../sections/notebook_contents_list.dart';
 import '../sections/notebook_contents_rows.dart';
+import '../sections/notebook_contents_transfer_sheet.dart';
 import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
@@ -100,17 +101,29 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     final l10n = context.l10n;
     final notebookAsync = ref.watch(notebookProvider(widget.notebookId));
     final entriesAsync = ref.watch(notebookContentsProvider(widget.notebookId));
+    final tree = ref.watch(notebookTreeProvider);
     final notebook = notebookAsync.value;
     if (notebookAsync.hasValue && notebook == null) {
       _popWhenGone();
     }
     final entries = entriesAsync.value;
     final hasEntries = entries != null && entries.isNotEmpty;
+    final canTransferToChild =
+        notebook != null && canTransferNotebookContentsToChild(notebook, tree);
+    final hasTransferable =
+        notebook != null &&
+        entries != null &&
+        (notebook.payload.chapters.isNotEmpty || entries.isNotEmpty);
     // 正文在这里先建好：_buildBody 里有 ref.watch，不能挪进下面读页面底色
     // 的 Builder（那会在 Builder 自己重建时才订阅，订阅随之反复关开）。
     final body = notebook == null || entries == null
         ? const DelayedLoadingIndicator()
-        : _buildBody(context, notebook, entries);
+        : _buildBody(
+            context,
+            notebook,
+            entries,
+            canTransferToChild: canTransferToChild,
+          );
     return PopScope(
       canPop: !_selecting,
       onPopInvokedWithResult: (bool didPop, Object? _) {
@@ -133,6 +146,20 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                   onPressed: notebook == null ? null : _addChapter,
                   icon: const FaIcon(FontAwesomeIcons.folderPlus, size: 16),
                 ),
+                if (canTransferToChild)
+                  IconButton(
+                    tooltip: l10n.notebookContentsTransferToChild,
+                    onPressed: !_selecting && hasTransferable
+                        ? () => unawaited(
+                            _transferToChild(
+                              notebook,
+                              chapterCount: notebook.payload.chapters.length,
+                              entryCount: entries.length,
+                            ),
+                          )
+                        : null,
+                    icon: const FaIcon(FontAwesomeIcons.folderTree, size: 16),
+                  ),
                 IconButton(
                   tooltip: _selecting
                       ? l10n.notebookContentsSelectDone
@@ -169,8 +196,9 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
   Widget _buildBody(
     BuildContext context,
     NotebookView notebook,
-    List<NotebookContentsEntry> entries,
-  ) {
+    List<NotebookContentsEntry> entries, {
+    required bool canTransferToChild,
+  }) {
     final chapters = _orderedChapters(notebook.payload.chapters);
     final items = buildNotebookContents(
       chapters,
@@ -225,6 +253,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                 selected: _selected,
                 dateMeta: dateMeta,
                 now: now,
+                canTransferToChild: canTransferToChild,
                 onReorder: (int oldIndex, int newIndex) =>
                     _reorder(chapters, entries, items, oldIndex, newIndex),
                 onReorderStart: (int index) {
@@ -245,7 +274,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
                     )
                     .toggle(header.key),
                 onChapterAction: (chapter, count, action) =>
-                    unawaited(_chapterAction(chapter, count, action)),
+                    unawaited(_chapterAction(notebook, chapter, count, action)),
                 onEntryTap: (String diaryId) => _selecting
                     ? _toggle(diaryId)
                     : unawaited(_openPreview(diaryId, items)),
@@ -450,7 +479,26 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
     await _run(() => _controller.addChapter(title));
   }
 
+  Future<void> _transferToChild(
+    NotebookView notebook, {
+    required int chapterCount,
+    required int entryCount,
+    NotebookChapter? chapter,
+  }) async {
+    if (_selecting) _setSelecting(false);
+    await runNotebookContentsTransferFlow(
+      context,
+      ref,
+      source: notebook,
+      controller: _controller,
+      chapterCount: chapterCount,
+      entryCount: entryCount,
+      chapter: chapter,
+    );
+  }
+
   Future<void> _chapterAction(
+    NotebookView notebook,
     NotebookChapter chapter,
     int count,
     NotebookChapterAction action,
@@ -467,6 +515,13 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
         await _run(() => _controller.moveChapter(chapter.id, -1));
       case NotebookChapterAction.moveDown:
         await _run(() => _controller.moveChapter(chapter.id, 1));
+      case NotebookChapterAction.transferToChild:
+        await _transferToChild(
+          notebook,
+          chapterCount: 1,
+          entryCount: count,
+          chapter: chapter,
+        );
       case NotebookChapterAction.delete:
         final confirmed = await showNotebookChapterDeleteDialog(
           context,

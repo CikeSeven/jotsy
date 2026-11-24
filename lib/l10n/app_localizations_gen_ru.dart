@@ -16271,6 +16271,115 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get storageMgmtSuggestDuplicates => 'Одинаковые файлы';
+
+  @override
+  String storageMgmtSuggestDuplicatesSubtitle(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count группы одинаковых файлов, объединение освободит $size',
+      many: '$count групп одинаковых файлов, объединение освободит $size',
+      few: '$count группы одинаковых файлов, объединение освободит $size',
+      one: '$count группа одинаковых файлов, объединение освободит $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMerge => 'Объединить';
+
+  @override
+  String get storageMgmtDuplicatesIntro =>
+      'Содержимое этих файлов полностью совпадает. При объединении остаётся одна копия, и все места, где использовались другие копии, переходят на неё — записи выглядят как прежде.';
+
+  @override
+  String storageMgmtDuplicatesSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count группы · можно освободить $size',
+      many: '$count групп · можно освободить $size',
+      few: '$count группы · можно освободить $size',
+      one: '$count группа · можно освободить $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeAll(String size) {
+    return 'Объединить все · освободится $size';
+  }
+
+  @override
+  String storageMgmtDuplicateGroupSubtitle(
+    int count,
+    String size,
+    String saved,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count одинаковой копии · по $size · освободится $saved',
+      many: '$count одинаковых копий · по $size · освободится $saved',
+      few: '$count одинаковые копии · по $size · освободится $saved',
+      one: '$count одинаковая копия · по $size · освободится $saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtDuplicateKept => 'Остаётся';
+
+  @override
+  String get storageMgmtDuplicateRetained => 'Нельзя объединить';
+
+  @override
+  String get storageMgmtDuplicatesEmpty => 'Одинаковых файлов нет';
+
+  @override
+  String storageMgmtMergeTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Объединить $count одинакового файла?',
+      many: 'Объединить $count одинаковых файлов?',
+      few: 'Объединить $count одинаковых файла?',
+      one: 'Объединить $count одинаковый файл?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String storageMgmtMergeBody(String size) {
+    return 'В каждой группе остаётся одна копия, остальные удаляются — освободится $size. Записи, обложки и комментарии выглядят как прежде.';
+  }
+
+  @override
+  String get storageMgmtMergeNote =>
+      'Если потом удалить оставшийся файл здесь, он исчезнет из всех мест, где используется.';
+
+  @override
+  String get storageMgmtMerging => 'Объединение…';
+
+  @override
+  String storageMgmtMerged(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Объединено $count одинакового файла, освобождено $size',
+      many: 'Объединено $count одинаковых файлов, освобождено $size',
+      few: 'Объединено $count одинаковых файла, освобождено $size',
+      one: 'Объединён $count одинаковый файл, освобождено $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get storageMgmtMergeNothing =>
+      'Ничего не объединено: файлы изменились. Пересчитайте и попробуйте снова.';
+
+  @override
   String get storageMgmtClear => 'Очистить';
 
   @override
@@ -19841,4 +19950,139 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diaryThumbnailMoveLater => 'Переместить позже';
+
+  @override
+  String get notebookContentsTransferToChild =>
+      'Перенести содержание во вложенный блокнот';
+
+  @override
+  String get notebookChapterTransferToChild =>
+      'Перенести во вложенный блокнот…';
+
+  @override
+  String get notebookContentsTransferSheetTitle =>
+      'В какой вложенный блокнот перенести содержание';
+
+  @override
+  String notebookChapterTransferSheetTitle(String title) {
+    return 'В какой вложенный блокнот перенести «$title»';
+  }
+
+  @override
+  String get notebookContentsTransferEmptyHint =>
+      'Вложенных блокнотов пока нет. Создайте новый выше, чтобы перенести туда';
+
+  @override
+  String get notebookContentsTransferConfirmTitle =>
+      'Перенос во вложенный блокнот';
+
+  @override
+  String get notebookContentsTransferAction => 'Перенести';
+
+  @override
+  String notebookContentsTransferConfirmAll(
+    String source,
+    int chapters,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters главы',
+      many: '$chapters глав',
+      few: '$chapters главы',
+      one: '$chapters главу',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries записи',
+      many: '$entries записей',
+      few: '$entries записи',
+      one: '$entries запись',
+    );
+    return 'Перенести $_temp0 и $_temp1 из «$source» во вложенный блокнот «$target»? Главы и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmEntriesOnly(
+    String source,
+    int entries,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries записи',
+      many: '$entries записей',
+      few: '$entries записи',
+      one: '$entries запись',
+    );
+    return 'Перенести $_temp0 из «$source» во вложенный блокнот «$target»? Порядок сохранится, из «$source» они будут убраны, а сами записи не удалятся.';
+  }
+
+  @override
+  String notebookContentsTransferConfirmChaptersOnly(
+    String source,
+    int chapters,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters главы',
+      many: '$chapters глав',
+      few: '$chapters главы',
+      one: '$chapters главу',
+    );
+    return 'Перенести $_temp0 из «$source» во вложенный блокнот «$target»? Они будут убраны из «$source».';
+  }
+
+  @override
+  String notebookChapterTransferConfirm(
+    String chapter,
+    int entries,
+    String source,
+    String target,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries её записи',
+      many: '$entries её записей',
+      few: '$entries её записи',
+      one: '$entries её запись',
+    );
+    return 'Перенести главу «$chapter» и $_temp0 во вложенный блокнот «$target»? Глава и порядок сохранятся, из «$source» они будут убраны, а сами записи не удалятся.';
+  }
+
+  @override
+  String notebookChapterTransferConfirmEmpty(
+    String chapter,
+    String source,
+    String target,
+  ) {
+    return 'Перенести пустую главу «$chapter» во вложенный блокнот «$target»? Она будет убрана из «$source».';
+  }
+
+  @override
+  String notebookContentsTransferPrivateNote(String target) {
+    return '«$target» — приватный блокнот. Перенесённые записи будут видны только в нём и исчезнут из списка «Все записи».';
+  }
+
+  @override
+  String notebookContentsTransferred(String target) {
+    return 'Содержание перенесено в «$target»';
+  }
+
+  @override
+  String notebookChapterTransferred(String chapter, String target) {
+    return 'Глава «$chapter» перенесена в «$target»';
+  }
+
+  @override
+  String notebookContentsTransferredPrivate(String target) {
+    return 'Перенесено в «$target». Перенесённые записи теперь видны только в этом блокноте';
+  }
 }

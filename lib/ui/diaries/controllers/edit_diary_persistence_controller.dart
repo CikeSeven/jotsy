@@ -72,6 +72,9 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
       notebookIds: _state._notebookIdsDirty
           ? _state._meta.value.notebookIds.toList(growable: false)
           : null,
+      notebookChapterIds: _state._notebookIdsDirty
+          ? _state._meta.value.notebookChapterIds
+          : null,
     );
   }
 
@@ -94,6 +97,9 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
           createdAt: snapshot.createdAt,
           // null：用户没改过日记本，不动关联（仍在的本子保留章节与位置）。
           notebookIds: snapshot.notebookIds,
+          notebookChapterIds:
+              snapshot.notebookChapterIds ?? const <String, String>{},
+          updateExistingNotebookChapters: snapshot.notebookIds != null,
         );
     // 阅读式页头页尾按写下的内容刷新（借用的首图、字数、最后编辑于），并记下
     // 库里这一版的更新时间（回到前台时据此判断别处有没有改过）。

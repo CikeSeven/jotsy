@@ -273,6 +273,25 @@ final List<AiSettingSpec> aiSettingSpecs = <AiSettingSpec>[
     ),
   ),
   AiSettingSpec(
+    key: 'expand_publish_panel',
+    page: AiSettingPage.editor,
+    schema: const AiBooleanSchema(
+      description:
+          'Automatically expand the details panel when opening the publish '
+          'page for a new entry.',
+    ),
+    name: (l10n) => l10n.settingsExpandPublishPanel,
+    read: (settings) => DiaryCreatePrefs.decode(
+      settings.diaryCreatePrefsRawNotifier.value,
+    ).expandPublishPanel,
+    write: (settings, value) => saveDiaryCreatePrefs(
+      settings,
+      DiaryCreatePrefs.decode(
+        settings.diaryCreatePrefsRawNotifier.value,
+      ).copyWith(expandPublishPanel: value == true),
+    ),
+  ),
+  AiSettingSpec(
     key: 'manual_save',
     page: AiSettingPage.editor,
     schema: const AiBooleanSchema(
@@ -291,6 +310,24 @@ final List<AiSettingSpec> aiSettingSpecs = <AiSettingSpec>[
             ? DiaryEditSaveMode.manual
             : DiaryEditSaveMode.auto,
       ),
+    ),
+  ),
+  AiSettingSpec(
+    key: 'default_media_thumbnail',
+    page: AiSettingPage.editor,
+    schema: const AiBooleanSchema(
+      description:
+          'Insert images and videos as compact square thumbnails by default.',
+    ),
+    name: (l10n) => l10n.settingsDefaultMediaThumbnail,
+    read: (settings) => DiaryEditPrefs.decode(
+      settings.diaryEditPrefsRawNotifier.value,
+    ).defaultMediaThumbnail,
+    write: (settings, value) => saveDiaryEditPrefs(
+      settings,
+      DiaryEditPrefs.decode(
+        settings.diaryEditPrefsRawNotifier.value,
+      ).copyWith(defaultMediaThumbnail: value == true),
     ),
   ),
   _editorBool(

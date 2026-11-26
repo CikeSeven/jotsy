@@ -22861,5 +22861,21 @@
   "storageLocationRetryMigration": "再試行",
   "@storageLocationRetryMigration": {
     "description": "Button to retry pending startup migration."
+  },
+  "settingsExpandPublishPanel": "投稿画面で詳細パネルを自動で開く",
+  "@settingsExpandPublishPanel": {
+    "description": "Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary."
+  },
+  "settingsExpandPublishPanelSubtitle": "新しい日記の投稿画面を開いたとき、下の詳細編集パネルを自動で展開します",
+  "@settingsExpandPublishPanelSubtitle": {
+    "description": "Subtitle of the \"Expand details on publish page\" switch."
+  },
+  "settingsDefaultMediaThumbnail": "画像・動画をデフォルトでサムネイル表示",
+  "@settingsDefaultMediaThumbnail": {
+    "description": "Editor settings switch: newly inserted images and videos default to square thumbnail display."
+  },
+  "settingsDefaultMediaThumbnailSubtitle": "新しく挿入する画像と動画を最初から小さいサムネイルサイズで表示します",
+  "@settingsDefaultMediaThumbnailSubtitle": {
+    "description": "Subtitle of the \"Insert images & videos as thumbnails\" switch."
   }
 }

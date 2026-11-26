@@ -15,6 +15,7 @@ void insertDiaryImages({
     selection: selection,
     replaceSelection: true,
     followThumbnails: true,
+    followDefaultThumbnail: true,
     nodes: [
       for (final path in imagePaths)
         if (path.trim().isNotEmpty)

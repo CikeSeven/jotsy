@@ -19,7 +19,7 @@ The body can hold images, videos, attachments and recordings. They're copied int
 ## Images
 
 - While editing, tap an image in the body for a menu: View, Show as thumbnail, Resize, Copy, Save to gallery (Save as… on desktop) and Delete, plus Describe with AI when the AI assistant is on.
-- **Thumbnails**: Show as thumbnail shrinks the image to a square; consecutive thumbnails sit three to a row. Tap a thumbnail and choose Show at normal size to restore its earlier size.
+- **Thumbnails**: Show as thumbnail shrinks the image to a square; consecutive thumbnails sit three to a row. Tap a thumbnail and choose Show at normal size to restore its earlier size. Turn on "Insert images & videos as thumbnails" in Settings → Editor to insert newly added images and videos as thumbnails by default.
 - **Viewing**: while reading, tap an image to open the image viewer. Pinch or double-tap to zoom, swipe to page through, pull down to close. Long-press the image or tap ⋮ at the top right to share it or save it to the gallery.
 - **Long images**: images at least three times as tall as they are wide (such as long screenshots) fold in the body, showing the top with a "Long image" badge. Tap to read the whole image at screen width. To show them in full on the preview page, go to Settings → Appearance → Diary preview page → Text → Long images and choose Full (the editor always folds them).
 - On Android, HEIC photos are converted to JPEG when inserted, so the desktop app can show them too.

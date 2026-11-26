@@ -54,7 +54,10 @@ class PublishDiaryController {
     Duration autoSaveDebounce = const Duration(milliseconds: 500),
   }) : _timeCapsulesEnabled = timeCapsulesEnabled ?? _alwaysEnabled,
        _notebooksEnabled = notebooksEnabled ?? _alwaysEnabled,
-       _clock = clock ?? DateTime.now {
+       _clock = clock ?? DateTime.now,
+       _metaChaptersInitialized =
+           meta.value.notebookChapterIds.isNotEmpty ||
+           initialDraft.notebookChapterIds.isEmpty {
     _autoSave = DebouncedAutoSaveController<PublishedDiarySnapshot>(
       debounce: autoSaveDebounce,
       readSnapshot: _captureSnapshot,
@@ -89,6 +92,7 @@ class PublishDiaryController {
   // 写库时读取的功能开关（见类注释）；写库前为 null，校验时现读。
   bool? _capsulesOn;
   bool? _notebooksOn;
+  bool _metaChaptersInitialized;
 
   // 写库之后才有：自动保存改写的日记与所用的数据库。
   AppDatabase? _database;
@@ -145,16 +149,34 @@ class PublishDiaryController {
       draft = draft.copyWith(capsule: null);
     }
     if (!(_notebooksOn ?? _notebooksEnabled()) &&
-        draft.notebookIds.isNotEmpty) {
-      draft = draft.copyWith(notebookIds: const <String>{});
+        (draft.notebookIds.isNotEmpty || draft.notebookChapterIds.isNotEmpty)) {
+      draft = draft.copyWith(
+        notebookIds: const <String>{},
+        notebookChapterIds: const <String, String>{},
+      );
     }
     return draft;
   }
 
-  /// 按日记本新建时的章节；日记本功能关闭时不带。
-  Map<String, String> get _chapterIds => (_notebooksOn ?? _notebooksEnabled())
-      ? initialDraft.notebookChapterIds
-      : const <String, String>{};
+  /// 按日记本与章节选择写入的章节（日记本功能关闭时不带）。
+  /// 优先采用面板草稿实时选中的章节；仅当构造时调用方只把章节放进
+  /// `initialDraft` 且面板草稿尚未改动章节时，回退使用 `initialDraft`。
+  Map<String, String> _chapterIdsFor(DiaryMetaDraft draft) {
+    if (!(_notebooksOn ?? _notebooksEnabled())) {
+      return const <String, String>{};
+    }
+    if (draft.notebookChapterIds.isNotEmpty) {
+      _metaChaptersInitialized = true;
+    }
+    if (!_metaChaptersInitialized &&
+        initialDraft.notebookChapterIds.isNotEmpty) {
+      return <String, String>{
+        for (final entry in initialDraft.notebookChapterIds.entries)
+          if (draft.notebookIds.contains(entry.key)) entry.key: entry.value,
+      };
+    }
+    return draft.notebookChapterIds;
+  }
 
   PublishedDiarySnapshot _captureSnapshot() =>
       (meta: _publishedMeta, publishAt: effectivePublishAt);
@@ -206,9 +228,9 @@ class PublishDiaryController {
         ),
         capsuleUnlockAt: schedule?.normalizedUnlockAt,
         capsuleLockedAt: sealedAt,
-        // 同一事务里收进所选日记本；在日记本里按章节新建时带上章节。
+        // 同一事务里收进所选日记本；同时写入所选章节。
         notebookIds: draft.notebookIds.toList(),
-        notebookChapterIds: _chapterIds,
+        notebookChapterIds: _chapterIdsFor(draft),
       );
       _sealedAt = sealedAt;
     } catch (_) {
@@ -231,7 +253,12 @@ class PublishDiaryController {
     return diaryId;
   }
 
-  void _onInputChanged() => _autoSave.schedule();
+  void _onInputChanged() {
+    if (meta.value.notebookChapterIds.isNotEmpty) {
+      _metaChaptersInitialized = true;
+    }
+    _autoSave.schedule();
+  }
 
   /// 把快照写回这篇日记。标题与正文就是发表时的那份，本页改不了。
   ///
@@ -260,7 +287,8 @@ class PublishDiaryController {
         fallbackPublishAt: snapshot.publishAt,
       ),
       notebookIds: draft.notebookIds.toList(),
-      notebookChapterIds: _chapterIds,
+      notebookChapterIds: _chapterIdsFor(draft),
+      updateExistingNotebookChapters: true,
       capsule: (unlockAt: schedule?.normalizedUnlockAt, lockedAt: sealedAt),
     );
   }

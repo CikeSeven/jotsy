@@ -22294,5 +22294,21 @@
   "storageLocationRetryMigration": "Retry",
   "@storageLocationRetryMigration": {
     "description": "Button to retry pending startup migration."
+  },
+  "settingsExpandPublishPanel": "Expand details on publish page",
+  "@settingsExpandPublishPanel": {
+    "description": "Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary."
+  },
+  "settingsExpandPublishPanelSubtitle": "Open the details panel automatically after tapping Publish on a new diary",
+  "@settingsExpandPublishPanelSubtitle": {
+    "description": "Subtitle of the \"Expand details on publish page\" switch."
+  },
+  "settingsDefaultMediaThumbnail": "Insert images & videos as thumbnails",
+  "@settingsDefaultMediaThumbnail": {
+    "description": "Editor settings switch: newly inserted images and videos default to square thumbnail display."
+  },
+  "settingsDefaultMediaThumbnailSubtitle": "Newly added images and videos use compact thumbnail size by default",
+  "@settingsDefaultMediaThumbnailSubtitle": {
+    "description": "Subtitle of the \"Insert images & videos as thumbnails\" switch."
   }
 }

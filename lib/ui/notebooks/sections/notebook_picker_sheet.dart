@@ -11,6 +11,7 @@ import '../../widgets/app_modal/app_modal_bottom_sheet.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../models/notebook_pick_selection.dart';
 import '../providers/notebook_providers.dart';
+import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_tree.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
@@ -41,21 +42,58 @@ List<NotebookTreeRow> notebookPickCandidates(
       !excludedIds.contains(notebook.id),
 );
 
-/// 打开收录选择器（底部面板）。
-///
-/// [initial] 为各本对这批日记的三态（见 [notebookPickStatesFor]），没列出的
-/// 按“都不在”。返回只含变化的 [NotebookPickerResult]；关掉面板或没有任何
-/// 改动时为 null。单选模式下结果的 `add` 恰好一本。
-///
-/// 面板只负责挑选，写库与提示由调用方完成（见 `NotebookMembershipOps`）。
+/// 收录选择器（含章节）的返回结果：[result] 为日记本增减，[chapterIds] 为
+/// 本次指定或改动过的章节（日记本业务 id → 目标章节 id，null 表示未分章）。
+@immutable
+class NotebookMembershipPick {
+  const NotebookMembershipPick({
+    required this.result,
+    this.chapterIds = const <String, String?>{},
+  });
+
+  final NotebookPickerResult result;
+  final Map<String, String?> chapterIds;
+
+  bool get isEmpty => result.isEmpty && chapterIds.isEmpty;
+}
+
+/// 打开收录选择器（底部面板，仅返回日记本增减结果）。
 Future<NotebookPickerResult?> showNotebookPickerSheet(
   BuildContext context, {
   NotebookPickerMode mode = NotebookPickerMode.multi,
   Map<String, NotebookPickState> initial = const <String, NotebookPickState>{},
   String? title,
   Set<String> excludedIds = const <String>{},
+}) async {
+  final pick = await showNotebookMembershipPickerSheet(
+    context,
+    mode: mode,
+    initial: initial,
+    title: title,
+    excludedIds: excludedIds,
+  );
+  if (pick == null || pick.result.isEmpty) return null;
+  return pick.result;
+}
+
+/// 打开收录选择器（底部面板，支持同时挑选或更改章节）。
+///
+/// [initial] 为各本对这批日记的三态（见 [notebookPickStatesFor]），没列出的
+/// 按“都不在”。[initialChapters] 为已知的初始章节（日记本业务 id → 章节 id，
+/// 仅对 [initial] 为 `all` 的本子生效）。返回只含变化的
+/// [NotebookMembershipPick]；关掉面板或没有任何改动时为 null。单选模式下
+/// 结果的 `result.add` 恰好一本，选定有章节的本子时同时带上所选章节。
+///
+/// 面板只负责挑选，写库与提示由调用方完成（见 `NotebookMembershipOps`）。
+Future<NotebookMembershipPick?> showNotebookMembershipPickerSheet(
+  BuildContext context, {
+  NotebookPickerMode mode = NotebookPickerMode.multi,
+  Map<String, NotebookPickState> initial = const <String, NotebookPickState>{},
+  Map<String, String?> initialChapters = const <String, String?>{},
+  String? title,
+  Set<String> excludedIds = const <String>{},
 }) {
-  return showAppModalBottomSheet<NotebookPickerResult>(
+  return showAppModalBottomSheet<NotebookMembershipPick>(
     context: context,
     useSafeArea: true,
     showDragHandle: true,
@@ -67,6 +105,7 @@ Future<NotebookPickerResult?> showNotebookPickerSheet(
     builder: (BuildContext sheetContext) => NotebookPickerSheet(
       mode: mode,
       initial: initial,
+      initialChapters: initialChapters,
       title: title,
       excludedIds: excludedIds,
     ),
@@ -101,12 +140,14 @@ class NotebookPickerSheet extends ConsumerStatefulWidget {
     super.key,
     required this.mode,
     this.initial = const <String, NotebookPickState>{},
+    this.initialChapters = const <String, String?>{},
     this.title,
     this.excludedIds = const <String>{},
   });
 
   final NotebookPickerMode mode;
   final Map<String, NotebookPickState> initial;
+  final Map<String, String?> initialChapters;
   final String? title;
   final Set<String> excludedIds;
 
@@ -119,6 +160,13 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
   late final NotebookPickSelection _selection = NotebookPickSelection(
     widget.initial,
   );
+  late final Map<String, String?> _chapterSelections = <String, String?>{
+    for (final entry in widget.initialChapters.entries)
+      if (widget.initial[entry.key] == NotebookPickState.all)
+        entry.key: entry.value,
+  };
+  final Set<String> _chapterDirty = <String>{};
+  String? _singleExpandedNotebookId;
 
   /// 要露出来的本子：打开时已（部分）收进的，与在面板里新建后勾上的。
   late final Set<String> _reveal = <String>{
@@ -128,14 +176,65 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
 
   bool get _single => widget.mode == NotebookPickerMode.single;
 
-  void _tap(String notebookId) {
+  void _tap(NotebookView notebook) {
+    final notebookId = notebook.id;
     if (_single) {
-      Navigator.of(
-        context,
-      ).pop(NotebookPickerResult(add: <String>{notebookId}));
+      if (notebook.payload.chapters.isEmpty) {
+        Navigator.of(context).pop(
+          NotebookMembershipPick(
+            result: NotebookPickerResult(add: <String>{notebookId}),
+          ),
+        );
+        return;
+      }
+      setState(() {
+        _singleExpandedNotebookId = _singleExpandedNotebookId == notebookId
+            ? null
+            : notebookId;
+      });
       return;
     }
-    setState(() => _selection.toggle(notebookId));
+    setState(() {
+      _selection.toggle(notebookId);
+      final next = _selection.stateOf(notebookId);
+      if (next != NotebookPickState.all) {
+        _chapterSelections.remove(notebookId);
+        _chapterDirty.remove(notebookId);
+      } else if (widget.initial[notebookId] == NotebookPickState.all &&
+          widget.initialChapters.containsKey(notebookId)) {
+        _chapterSelections[notebookId] = widget.initialChapters[notebookId];
+        _chapterDirty.remove(notebookId);
+      }
+    });
+  }
+
+  void _selectChapter(String notebookId, String? chapterId) {
+    if (_single) {
+      Navigator.of(context).pop(
+        NotebookMembershipPick(
+          result: NotebookPickerResult(add: <String>{notebookId}),
+          chapterIds: chapterId == null
+              ? const <String, String?>{}
+              : <String, String?>{notebookId: chapterId},
+        ),
+      );
+      return;
+    }
+    setState(() {
+      _chapterSelections[notebookId] = chapterId;
+      final initialState = widget.initial[notebookId] ?? NotebookPickState.none;
+      final unchangedExisting =
+          initialState == NotebookPickState.all &&
+          widget.initialChapters.containsKey(notebookId) &&
+          widget.initialChapters[notebookId] == chapterId;
+      final defaultNewUnassigned =
+          initialState == NotebookPickState.none && chapterId == null;
+      if (unchangedExisting || defaultNewUnassigned) {
+        _chapterDirty.remove(notebookId);
+      } else {
+        _chapterDirty.add(notebookId);
+      }
+    });
   }
 
   /// 新建后直接选中：多选时勾上（列表随数据库流出现这一行），单选时就是
@@ -144,7 +243,9 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
     final id = await showQuickCreateNotebookDialog(context);
     if (id == null || !mounted) return;
     if (_single) {
-      Navigator.of(context).pop(NotebookPickerResult(add: <String>{id}));
+      Navigator.of(context).pop(
+        NotebookMembershipPick(result: NotebookPickerResult(add: <String>{id})),
+      );
       return;
     }
     setState(() {
@@ -155,7 +256,17 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
 
   void _done() {
     final result = _selection.result;
-    Navigator.of(context).pop(result.isEmpty ? null : result);
+    final chapterChanges = <String, String?>{
+      for (final id in _chapterDirty)
+        if (!result.remove.contains(id) &&
+            _selection.stateOf(id) == NotebookPickState.all)
+          id: _chapterSelections[id],
+    };
+    final pick = NotebookMembershipPick(
+      result: result,
+      chapterIds: chapterChanges,
+    );
+    Navigator.of(context).pop(pick.isEmpty ? null : pick);
   }
 
   @override
@@ -202,16 +313,37 @@ class _NotebookPickerSheetState extends ConsumerState<NotebookPickerSheet> {
           NotebookFoldableRows(
             rows: candidates,
             reveal: _reveal,
-            itemBuilder: (context, row, toggle) => NotebookPickRow(
-              key: ValueKey<String>('notebook_pick_${row.notebook.id}'),
-              notebook: row.notebook,
-              indent: row.indent,
-              count: counts[row.notebook.id] ?? 0,
-              state: _selection.stateOf(row.notebook.id),
-              showCheck: !_single,
-              toggle: toggle,
-              onTap: () => _tap(row.notebook.id),
-            ),
+            itemBuilder: (context, row, toggle) {
+              final notebook = row.notebook;
+              final id = notebook.id;
+              final chapters = notebook.payload.chapters;
+              final state = _selection.stateOf(id);
+              final showChapters =
+                  chapters.isNotEmpty &&
+                  (_single
+                      ? _singleExpandedNotebookId == id
+                      : state == NotebookPickState.all);
+              final rawSelectedChapter = _chapterSelections.containsKey(id)
+                  ? _chapterSelections[id]
+                  : widget.initialChapters[id];
+              return NotebookPickRow(
+                key: ValueKey<String>('notebook_pick_$id'),
+                notebook: notebook,
+                indent: row.indent,
+                count: counts[id] ?? 0,
+                state: state,
+                showCheck: !_single,
+                toggle: toggle,
+                chapters: chapters,
+                selectedChapterId: _single
+                    ? null
+                    : validNotebookChapterId(chapters, rawSelectedChapter),
+                showChapters: showChapters,
+                allowNoChapterHighlight: _single,
+                onSelectChapter: (chapterId) => _selectChapter(id, chapterId),
+                onTap: () => _tap(notebook),
+              );
+            },
           ),
         ],
       );

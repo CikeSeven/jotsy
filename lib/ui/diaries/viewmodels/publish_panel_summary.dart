@@ -1,5 +1,6 @@
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_book_layout.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 
 /// 面板收起栏上的一项摘要。
@@ -33,12 +34,17 @@ final class PublishSummaryTag extends PublishSummaryItem {
   final int more;
 }
 
-/// 第一本所在的日记本；[more] 为其余日记本数。
+/// 第一本所在的日记本（可选带章节名）；[more] 为其余日记本数。
 final class PublishSummaryNotebook extends PublishSummaryItem {
-  const PublishSummaryNotebook({required this.notebook, required this.more});
+  const PublishSummaryNotebook({
+    required this.notebook,
+    required this.more,
+    this.chapterTitle,
+  });
 
   final NotebookView notebook;
   final int more;
+  final String? chapterTitle;
 }
 
 final class PublishSummaryPlace extends PublishSummaryItem {
@@ -78,6 +84,10 @@ List<PublishSummaryItem> publishPanelSummary(
       PublishSummaryNotebook(
         notebook: selectedNotebooks.first,
         more: selectedNotebooks.length - 1,
+        chapterTitle: _chapterTitleOf(
+          selectedNotebooks.first,
+          draft.notebookChapterIds[selectedNotebooks.first.id],
+        ),
       ),
     if (location != null) PublishSummaryPlace(shortPlace(location)),
   ];
@@ -93,6 +103,15 @@ List<NotebookView> publishSelectedNotebooks(
     for (final notebook in notebooks) notebook.id: notebook,
   };
   return <NotebookView>[for (final id in draft.notebookIds) ?byId[id]];
+}
+
+String? _chapterTitleOf(NotebookView notebook, String? chapterId) {
+  final valid = validNotebookChapterId(notebook.payload.chapters, chapterId);
+  if (valid == null) return null;
+  for (final chapter in notebook.payload.chapters) {
+    if (chapter.id == valid) return chapter.title;
+  }
+  return null;
 }
 
 /// 地点的短写：自动定位的文案按层级用“ · ”连接（如“北京市 · 望京街道”），

@@ -67,15 +67,67 @@ class DiaryMetaDraftController extends ChangeNotifier
   }
 
   /// 勾选或取消一本日记本；新勾选的排在最后（摘要按勾选先后显示）。
-  void setNotebookSelected(String notebookId, bool selected) {
-    if (_value.notebookIds.contains(notebookId) == selected) return;
-    final notebookIds = selected
-        ? <String>{..._value.notebookIds, notebookId}
-        : <String>{
-            for (final id in _value.notebookIds)
-              if (id != notebookId) id,
-          };
-    _set(_value.copyWith(notebookIds: Set<String>.unmodifiable(notebookIds)));
+  /// 取消勾选时会一并清掉这本的指定章节；勾选时可顺带指定 [chapterId]。
+  void setNotebookSelected(
+    String notebookId,
+    bool selected, {
+    String? chapterId,
+  }) {
+    final normalizedChapter = normalizeOptionalText(chapterId);
+    final chapters = <String, String>{..._value.notebookChapterIds};
+    if (selected) {
+      if (normalizedChapter != null) {
+        chapters[notebookId] = normalizedChapter;
+      }
+      final notebookIds = _value.notebookIds.contains(notebookId)
+          ? _value.notebookIds
+          : Set<String>.unmodifiable(<String>{
+              ..._value.notebookIds,
+              notebookId,
+            });
+      _set(
+        _value.copyWith(
+          notebookIds: notebookIds,
+          notebookChapterIds: Map<String, String>.unmodifiable(chapters),
+        ),
+      );
+      return;
+    }
+    if (!_value.notebookIds.contains(notebookId) &&
+        !chapters.containsKey(notebookId)) {
+      return;
+    }
+    chapters.remove(notebookId);
+    _set(
+      _value.copyWith(
+        notebookIds: Set<String>.unmodifiable(<String>{
+          for (final id in _value.notebookIds)
+            if (id != notebookId) id,
+        }),
+        notebookChapterIds: Map<String, String>.unmodifiable(chapters),
+      ),
+    );
+  }
+
+  /// 指定某本日记本中的目标章节（[chapterId] 为空表示“未分章”）。
+  /// 如果这本日记本尚未选中，会同时勾上它。
+  void setNotebookChapter(String notebookId, String? chapterId) {
+    final normalizedChapter = normalizeOptionalText(chapterId);
+    final notebookIds = _value.notebookIds.contains(notebookId)
+        ? _value.notebookIds
+        : Set<String>.unmodifiable(<String>{..._value.notebookIds, notebookId});
+    final chapters = <String, String>{..._value.notebookChapterIds};
+    if (normalizedChapter == null) {
+      chapters.remove(notebookId);
+    } else {
+      chapters[notebookId] = normalizedChapter;
+    }
+    _set(
+      _value.copyWith(
+        notebookIds: notebookIds,
+        notebookChapterIds: Map<String, String>.unmodifiable(chapters),
+      ),
+    );
   }
 
   void setMood(String? mood) =>

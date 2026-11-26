@@ -120,10 +120,17 @@ class _SummaryLine extends StatelessWidget {
               ),
             );
           }
-        case PublishSummaryNotebook(:final notebook, :final more):
+        case PublishSummaryNotebook(
+          :final notebook,
+          :final more,
+          :final chapterTitle,
+        ):
+          final label = chapterTitle == null || chapterTitle.trim().isEmpty
+              ? notebook.name
+              : '${notebook.name} · ${chapterTitle.trim()}';
           spans
             ..add(icon(FaIcon(notebook.icon.data, size: 11, color: mutedColor)))
-            ..add(TextSpan(text: ' ${notebook.name}'));
+            ..add(TextSpan(text: ' $label'));
           if (more > 0) {
             spans.add(
               TextSpan(

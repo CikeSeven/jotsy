@@ -11,10 +11,12 @@ import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/core/services/image_dimensions.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_image_embed_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 import 'package:node_diary/ui/diaries/models/diary_thumbnail_rows.dart';
 import 'package:node_diary/ui/diaries/models/image_insertion.dart';
+import 'package:node_diary/ui/diaries/models/media_insertion.dart';
 import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_drop_targets.dart';
@@ -554,6 +556,43 @@ void main() {
       expect(_outline(controller), 'image:1\nimage:2');
       expect(controller.state.selection, _caret([1], 1));
     });
+
+    test(
+      'defaultMediaThumbnail inserts images and videos as thumbnails while keeping attachments normal',
+      () {
+        final controller = _document([_p('')])..defaultMediaThumbnail = true;
+        controller.state.selection = _caret([0]);
+
+        insertDiaryImages(
+          controller: controller,
+          imagePaths: ['/missing/1.jpg', '/missing/2.jpg'],
+        );
+        insertDiaryMediaBlocks(
+          controller: controller,
+          embeds: [
+            af.Node(type: 'video', attributes: {'url': '/missing/clip.mp4'}),
+            af.Node(
+              type: 'attachment',
+              attributes: {'path': '/missing/doc.pdf', 'name': 'doc.pdf'},
+            ),
+          ],
+        );
+
+        expect(diaryImageIsThumbnail(_block(controller, 0)), isTrue);
+        expect(diaryImageIsThumbnail(_block(controller, 1)), isTrue);
+        expect(diaryImageIsThumbnail(_block(controller, 2)), isTrue);
+        expect(_block(controller, 3).type, 'attachment');
+        expect(diaryImageIsThumbnail(_block(controller, 3)), isFalse);
+
+        // 已插入的小图仍可手动恢复正常显示，不受默认小图开关阻碍。
+        DiaryImageEmbedActions.setThumbnail(
+          controller,
+          node: _block(controller, 0),
+          enabled: false,
+        );
+        expect(diaryImageIsThumbnail(_block(controller, 0)), isFalse);
+      },
+    );
   });
 }
 

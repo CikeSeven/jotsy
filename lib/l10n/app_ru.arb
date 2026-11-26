@@ -22861,5 +22861,21 @@
   "storageLocationRetryMigration": "Повторить",
   "@storageLocationRetryMigration": {
     "description": "Button to retry pending startup migration."
+  },
+  "settingsExpandPublishPanel": "Раскрывать детали при публикации",
+  "@settingsExpandPublishPanel": {
+    "description": "Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary."
+  },
+  "settingsExpandPublishPanelSubtitle": "Автоматически открывать нижнюю панель деталей на странице публикации новой записи",
+  "@settingsExpandPublishPanelSubtitle": {
+    "description": "Subtitle of the \"Expand details on publish page\" switch."
+  },
+  "settingsDefaultMediaThumbnail": "Вставлять фото и видео миниатюрами",
+  "@settingsDefaultMediaThumbnail": {
+    "description": "Editor settings switch: newly inserted images and videos default to square thumbnail display."
+  },
+  "settingsDefaultMediaThumbnailSubtitle": "Новые изображения и видео по умолчанию вставляются в виде компактных миниатюр",
+  "@settingsDefaultMediaThumbnailSubtitle": {
+    "description": "Subtitle of the \"Insert images & videos as thumbnails\" switch."
   }
 }

@@ -14,4 +14,5 @@ void insertDiaryMediaBlocks({
   nodes: embeds,
   selection: selection,
   followThumbnails: true,
+  followDefaultThumbnail: true,
 );

@@ -334,8 +334,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   bool _restoringNotebookIds = false;
   // 上一次通知时的面板草稿：区分“只改了日记本”（不重组 metadata）与其他修改。
   late DiaryMetaDraft _lastMeta;
-  // 新建模式按章节新建时的章节（日记本 id → 章节 id），随草稿保存与发布。
-  Map<String, String> _createNotebookChapters = const <String, String>{};
   // 元数据面板拖拽进度逐帧变化，只用于正文底部占位的连续插值；放进
   // ValueNotifier 让占位局部刷新，页面仅在跨越展开阈值时 setState。
   final ValueNotifier<double> _editPanelExpandProgress = ValueNotifier<double>(
@@ -460,16 +458,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         ? widget.createNotebookId
         : null;
     final presetChapterId = widget.createNotebookChapterId;
-    if (presetNotebookId != null && presetChapterId != null) {
-      _createNotebookChapters = <String, String>{
-        presetNotebookId: presetChapterId,
-      };
-    }
     _meta = DiaryMetaDraftController(
       DiaryMetaDraft(
         notebookIds: presetNotebookId == null
             ? const <String>{}
             : <String>{presetNotebookId},
+        notebookChapterIds: presetNotebookId != null && presetChapterId != null
+            ? <String, String>{presetNotebookId: presetChapterId}
+            : const <String, String>{},
         capsule: presetCapsule == null
             ? null
             : TimeCapsuleSchedule(
@@ -729,15 +725,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     }
     // 阅读式版式：信息栏与配色基调读面板草稿的当前值，改了立刻重建。
     _rebuildReading();
-    final notebooksChanged = !setEquals(
-      previous.notebookIds,
-      current.notebookIds,
-    );
+    final notebooksChanged =
+        !setEquals(previous.notebookIds, current.notebookIds) ||
+        !mapEquals(previous.notebookChapterIds, current.notebookChapterIds);
     if (notebooksChanged && !_restoringNotebookIds) {
       _notebookIdsDirty = true;
     }
     final othersChanged =
-        previous.copyWith(notebookIds: current.notebookIds) != current;
+        previous.copyWith(
+          notebookIds: current.notebookIds,
+          notebookChapterIds: current.notebookChapterIds,
+        ) !=
+        current;
     if (othersChanged) {
       _markEditPanelDirty();
     } else if (notebooksChanged && _notebookIdsDirty) {
@@ -773,12 +772,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   /// 已经在面板里改过日记本时以用户的选择为准。用一次性查询而不是订阅：
   /// 编辑期间别处的收录变化不改面板（保存时也不写回，见 [_notebookIdsDirty]）。
   Future<void> _loadEditNotebooks(String diaryId) async {
-    final ids = await _database.getDiaryNotebookIds(diaryId);
+    final memberships = await _database.getDiaryNotebookMemberships(diaryId);
     if (!mounted || _notebookIdsDirty) return;
     _restoringNotebookIds = true;
     try {
       _meta.restore(
-        _meta.value.copyWith(notebookIds: Set<String>.unmodifiable(ids)),
+        _meta.value.copyWith(
+          notebookIds: Set<String>.unmodifiable(memberships.keys),
+          notebookChapterIds: Map<String, String>.unmodifiable(<String, String>{
+            for (final entry in memberships.entries)
+              if (entry.value != null && entry.value!.isNotEmpty)
+                entry.key: entry.value!,
+          }),
+        ),
       );
     } finally {
       _restoringNotebookIds = false;
@@ -836,7 +842,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       contentText: _currentContentText,
       createdAtOverride: _createDateOverride,
       metadataJson: _metadataJson,
-      notebookChapterIds: _createNotebookChapters,
     ),
   );
 
@@ -1280,6 +1285,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         ref.watch(aiModuleAvailableProvider(AiModule.vision))
         ? _controller.describeImageWithAi
         : null;
+    _contentController.defaultMediaThumbnail = ref.watch(
+      diaryEditPrefsProvider.select((prefs) => prefs.defaultMediaThumbnail),
+    );
     // 新建页“返回时直接发表”（#196）：打开时 PopScope 拦下返回，交给
     // attemptExit → leaveCreateEntryPublishing 写库后退场。
     final publishOnLeave =

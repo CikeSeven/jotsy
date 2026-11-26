@@ -356,6 +356,7 @@ abstract final class DiaryEditorClipboard {
       insertDiaryEditorNodes(
         controller: controller,
         replaceSelection: true,
+        followDefaultThumbnail: !(sameImage && _imageData != null),
         nodes: [
           af.Node(
             type: 'image',

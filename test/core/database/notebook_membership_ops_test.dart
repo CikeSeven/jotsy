@@ -175,4 +175,109 @@ void main() {
       expect(await entries(food), <(String, String?)>[('A 改', null)]);
     },
   );
+
+  test(
+    'updateDiary with updateExistingNotebookChapters updates chapter and keeps position',
+    () async {
+      final twoChapters = NotebookPayload(
+        chapters: <NotebookChapter>[
+          NotebookChapter(id: 'c1', title: '第一章'),
+          NotebookChapter(id: 'c2', title: '第二章'),
+        ],
+      );
+      final travel = await notebook('旅行', payload: twoChapters);
+      await diary('先来的', notebookIds: <String>[travel]);
+      final a = await diary('A', notebookIds: <String>[travel]);
+      await diary('后来的', notebookIds: <String>[travel]);
+      await db.setNotebookEntriesChapter(travel, <String>[a], 'c1');
+
+      await db.updateDiary(
+        diaryId: a,
+        title: 'A 换章',
+        contentDocJson: '[{"insert":"正文\\n"}]',
+        contentText: '正文',
+        metadataJson: '{}',
+        notebookIds: <String>[travel],
+        notebookChapterIds: <String, String>{travel: 'c2'},
+        updateExistingNotebookChapters: true,
+      );
+      expect(await entries(travel), <(String, String?)>[
+        ('先来的', null),
+        ('A 换章', 'c2'),
+        ('后来的', null),
+      ]);
+
+      // 传空 chapterIds 且开启更新章节时回到未分章，仍保留原位置。
+      await db.updateDiary(
+        diaryId: a,
+        title: 'A 移出章',
+        contentDocJson: '[{"insert":"正文\\n"}]',
+        contentText: '正文',
+        metadataJson: '{}',
+        notebookIds: <String>[travel],
+        notebookChapterIds: const <String, String>{},
+        updateExistingNotebookChapters: true,
+      );
+      expect(await entries(travel), <(String, String?)>[
+        ('先来的', null),
+        ('A 移出章', null),
+        ('后来的', null),
+      ]);
+    },
+  );
+
+  test(
+    'apply and move write specified chapters and undo restores previous ones',
+    () async {
+      final twoChapters = NotebookPayload(
+        chapters: <NotebookChapter>[
+          NotebookChapter(id: 'c1', title: '第一章'),
+          NotebookChapter(id: 'c2', title: '第二章'),
+        ],
+      );
+      final travel = await notebook('旅行', payload: twoChapters);
+      final food = await notebook('美食', payload: twoChapters);
+      final a = await diary('A', notebookIds: <String>[travel]);
+      final b = await diary('B');
+      await db.setNotebookEntriesChapter(travel, <String>[a], 'c1');
+
+      // apply：新增 b 进 travel 的 c2，并把已在 travel 的 a 从 c1 改到 c2。
+      final applyUndo = await ops.apply(
+        NotebookPickerResult(add: <String>{travel}),
+        <String>[a, b],
+        chapterIds: <String, String?>{travel: 'c2'},
+      );
+      expect(await entries(travel), <(String, String?)>[
+        ('A', 'c2'),
+        ('B', 'c2'),
+      ]);
+
+      await ops.undo(applyUndo);
+      expect(await entries(travel), <(String, String?)>[('A', 'c1')]);
+
+      // 仅改动已有本子的章节（result 为空）也支持写入和撤销。
+      final chapterOnlyUndo = await ops.apply(
+        const NotebookPickerResult(),
+        <String>[a],
+        chapterIds: <String, String?>{travel: null},
+      );
+      expect(await entries(travel), <(String, String?)>[('A', null)]);
+      await ops.undo(chapterOnlyUndo);
+      expect(await entries(travel), <(String, String?)>[('A', 'c1')]);
+
+      // move：从 travel 移动到 food 的 c2，撤销后还原。
+      final moveUndo = await ops.move(
+        fromId: travel,
+        toId: food,
+        diaryIds: <String>[a],
+        chapterId: 'c2',
+      );
+      expect(await entries(travel), isEmpty);
+      expect(await entries(food), <(String, String?)>[('A', 'c2')]);
+
+      await ops.undo(moveUndo);
+      expect(await entries(travel), <(String, String?)>[('A', 'c1')]);
+      expect(await entries(food), isEmpty);
+    },
+  );
 }

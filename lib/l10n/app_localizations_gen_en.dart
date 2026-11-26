@@ -19518,4 +19518,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storageLocationRetryMigration => 'Retry';
+
+  @override
+  String get settingsExpandPublishPanel => 'Expand details on publish page';
+
+  @override
+  String get settingsExpandPublishPanelSubtitle =>
+      'Open the details panel automatically after tapping Publish on a new diary';
+
+  @override
+  String get settingsDefaultMediaThumbnail =>
+      'Insert images & videos as thumbnails';
+
+  @override
+  String get settingsDefaultMediaThumbnailSubtitle =>
+      'Newly added images and videos use compact thumbnail size by default';
 }

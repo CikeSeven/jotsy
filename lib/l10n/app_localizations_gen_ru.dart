@@ -20262,4 +20262,19 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get storageLocationRetryMigration => 'Повторить';
+
+  @override
+  String get settingsExpandPublishPanel => 'Раскрывать детали при публикации';
+
+  @override
+  String get settingsExpandPublishPanelSubtitle =>
+      'Автоматически открывать нижнюю панель деталей на странице публикации новой записи';
+
+  @override
+  String get settingsDefaultMediaThumbnail =>
+      'Вставлять фото и видео миниатюрами';
+
+  @override
+  String get settingsDefaultMediaThumbnailSubtitle =>
+      'Новые изображения и видео по умолчанию вставляются в виде компактных миниатюр';
 }

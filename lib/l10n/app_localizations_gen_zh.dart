@@ -14918,9 +14918,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarAddTodo => '添加待办';
 
   @override
-  String get calendarTodoSectionTitle => '这天的待办';
-
-  @override
   String get calendarTodoRepeatHint => '重复待办的这一次，到时候再勾选';
 
   @override

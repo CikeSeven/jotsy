@@ -297,113 +297,6 @@ extension _CalendarPageSections on _CalendarPageState {
     );
   }
 
-  List<Widget> _buildDayDiaryContentSlivers(
-    _CalendarDayContent day,
-    CalendarDisplayOptions options,
-  ) {
-    final l10n = context.l10n;
-    if (day.diaries.isEmpty) {
-      final today = DateUtils.dateOnly(DateTime.now());
-      final isFutureDay = _selectedDay.isAfter(today);
-      // 时间胶囊功能关闭时隐藏入口，数据保留：未来日期只留文案、不放按钮。
-      final capsulesEnabled = ref.watch(
-        appFeaturesProvider.select((features) => features.timeCapsules),
-      );
-      return <Widget>[
-        SliverToBoxAdapter(
-          child: _buildDayContentTransition(
-            loading: day.loading,
-            errorMessage: day.errorMessage,
-            child: CalendarDayEmptyState(
-              key: ValueKey<String>(
-                'empty_${_selectedDay.millisecondsSinceEpoch}_$isFutureDay',
-              ),
-              // 未来日期：写一封在这天解封的时间胶囊；回到今天在页头。
-              onAction: !isFutureDay
-                  ? _openCreateForSelectedDay
-                  : capsulesEnabled
-                  ? () => unawaited(
-                      _controller.openCreateEditorWithDraftPrompt(
-                        capsuleUnlockAt: _selectedDay,
-                      ),
-                    )
-                  : null,
-              message: isFutureDay ? l10n.autoT0211 : l10n.autoT0182,
-              actionLabel: isFutureDay
-                  ? l10n.calendarFutureCapsuleAction
-                  : l10n.autoT0181,
-            ),
-          ),
-        ),
-      ];
-    }
-
-    void openDiary(
-      DiaryWithTags diary,
-      ImageViewerHero? coverHero,
-      ContainerTransformOrigin? origin,
-    ) {
-      _controller.openPreview(
-        diary.diary.diaryId,
-        initialDetail: diary,
-        coverHero: coverHero,
-        sequence: DiaryPreviewSequence.fromItems(day.diaries),
-        origin: origin,
-      );
-    }
-
-    if (options.dayContentStyle == CalendarDayContentStyle.cards) {
-      final errorMessage = day.errorMessage;
-      return <Widget>[
-        if (errorMessage != null)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.m,
-                0,
-                AppSpacing.m,
-                AppSpacing.s,
-              ),
-              child: Text(
-                l10n.autoT0210(errorMessage),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ),
-          ),
-        CalendarDayCardsSliver(
-          day: day.day,
-          diaries: day.diaries,
-          maxVisibleTags:
-              ref.watch(diaryCardTagLimitProvider).asData?.value ??
-              SettingsService.defaultDiaryCardTagLimit,
-          cardStyle: ref.watch(diaryCardStyleProvider),
-          moodPalette: ref.watch(diaryMoodPaletteProvider),
-          commentCounts:
-              ref.watch(diaryCommentCountsProvider).value ??
-              const <String, int>{},
-          onOpenDiary: openDiary,
-        ),
-      ];
-    }
-
-    return <Widget>[
-      SliverToBoxAdapter(
-        child: _buildDayContentTransition(
-          loading: day.loading,
-          errorMessage: day.errorMessage,
-          child: CalendarTimelineSection(
-            key: ValueKey<String>('timeline_${day.day.millisecondsSinceEpoch}'),
-            selectedDay: day.day,
-            diaries: day.diaries,
-            onOpenDiary: openDiary,
-          ),
-        ),
-      ),
-    ];
-  }
-
   /// 那年今日：没有其他年份的记录时整块收起；换日时沿用上一份直到新结果
   /// 返回，再交叉淡入，高度经 AnimatedSize 过渡。未解封的胶囊不出现。
   Widget _buildOnThisDaySliver(DateTime now) {
@@ -461,20 +354,6 @@ extension _CalendarPageSections on _CalendarPageState {
                 ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDayContentTransition({
-    required bool loading,
-    required String? errorMessage,
-    required Widget child,
-  }) {
-    return CalendarDayContentSwitcher(
-      loading: loading,
-      errorMessage: errorMessage == null
-          ? null
-          : context.l10n.autoT0210(errorMessage),
-      child: child,
     );
   }
 }

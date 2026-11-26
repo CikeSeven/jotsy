@@ -5,19 +5,24 @@ import '../../../app/theme/app_spacing.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 
-/// 选中日期无日记时的空态引导区。[onAction] 为 null 时只显示文案，不留
-/// 按钮与它上方的间距。
+/// 选中日期无日记（也没有待办）时的空态引导区。[onAction] 为 null 时只
+/// 显示文案，不留按钮与它上方的间距；[onSecondaryAction]（待办开启时的
+/// “添加待办”）是主按钮旁的文字按钮，窄屏放不下时换到下一行。
 class CalendarDayEmptyState extends StatelessWidget {
   const CalendarDayEmptyState({
     super.key,
     this.onAction,
     this.message,
     this.actionLabel,
+    this.onSecondaryAction,
+    this.secondaryActionLabel,
   });
 
   final VoidCallback? onAction;
   final String? message;
   final String? actionLabel;
+  final VoidCallback? onSecondaryAction;
+  final String? secondaryActionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +72,26 @@ class CalendarDayEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            if (onAction != null) ...<Widget>[
+            if (onAction != null || onSecondaryAction != null) ...<Widget>[
               const SizedBox(height: AppSpacing.l),
-              FilledButton.tonal(
-                style: AppGlassField.tonalButtonStyle(context),
-                onPressed: onAction,
-                child: Text(displayActionLabel),
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.xs,
+                children: <Widget>[
+                  if (onAction != null)
+                    FilledButton.tonal(
+                      style: AppGlassField.tonalButtonStyle(context),
+                      onPressed: onAction,
+                      child: Text(displayActionLabel),
+                    ),
+                  if (onSecondaryAction != null)
+                    TextButton(
+                      onPressed: onSecondaryAction,
+                      child: Text(secondaryActionLabel ?? ''),
+                    ),
+                ],
               ),
             ],
           ],

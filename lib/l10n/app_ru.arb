@@ -20106,8 +20106,6 @@
   "@calendarShowTodosDescription": {"description": "Calendar display options: description of the show to-dos switch."},
   "calendarAddTodo": "Добавить задачу",
   "@calendarAddTodo": {"description": "Calendar day long-press sheet: add a to-do due on this day."},
-  "calendarTodoSectionTitle": "Задачи на этот день",
-  "@calendarTodoSectionTitle": {"description": "Title of the to-do card below the selected calendar day."},
   "calendarTodoRepeatHint": "Будущий повтор задачи; отметите, когда наступит",
   "@calendarTodoRepeatHint": {"description": "Screen reader hint on an upcoming repeat occurrence in the calendar that can't be ticked yet."},
   "diaryPreviewAddTodo": "Добавить задачу",

@@ -19539,8 +19539,6 @@
   "@calendarShowTodosDescription": {"description": "日历显示选项：显示待办开关的说明。"},
   "calendarAddTodo": "添加待办",
   "@calendarAddTodo": {"description": "日历长按日期面板：以这一天为截止日添加待办。"},
-  "calendarTodoSectionTitle": "这天的待办",
-  "@calendarTodoSectionTitle": {"description": "日历选中日下方待办卡片的标题。"},
   "calendarTodoRepeatHint": "重复待办的这一次，到时候再勾选",
   "@calendarTodoRepeatHint": {"description": "日历上重复待办以后某一次的方框不可勾选时的读屏说明。"},
   "diaryPreviewAddTodo": "添加待办",

@@ -218,7 +218,8 @@ void main() {
     final result = await sync(a, b);
     a.service.state.removeListener(kill);
     expect(result.failure, LanSyncFailure.connectionLost);
-    await waitUntil(() => b.peerState(a)?.session == null);
+    // 等响应方跑完 _finishSession（写完 history 并发出结束事件），只等 session == null 会与收尾记账竞态。
+    await b.event<LanSyncSessionEnded>();
     expect(await diaryIds(b.data), isEmpty);
     expect(leftoverStaging(b.data), isEmpty);
     final retry = await sync(a, b);
@@ -239,8 +240,9 @@ void main() {
     b.service.state.addListener(kill);
     final result = await sync(a, b);
     expect(result.failure, LanSyncFailure.connectionLost);
-    await waitUntil(() => b.peerState(a)?.session == null);
     b.service.state.removeListener(kill);
+    // 响应方在 session 置空后才写 history，必须等到结束事件后再断言 history 与发起重试。
+    await b.event<LanSyncSessionEnded>();
     expect(await diaryIds(b.data), {'a1', 'b1'});
     expect(await diaryIds(a.data), {'a1'});
     expect(b.peerState(a)!.history.single.failure, isNotNull);

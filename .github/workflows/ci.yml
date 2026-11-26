@@ -314,6 +314,26 @@ jobs:
       - name: Build Windows release
         run: flutter build windows --release
 
+      # 验证 Inno Setup 脚本可编译，避免只在发布工作流才暴露语法或节头解析问题。
+      - name: Compile Windows installer script
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) {
+            Write-Output '::warning::Inno Setup is not on this runner image; installing it with Chocolatey'
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "choco install innosetup failed with exit code $LASTEXITCODE" }
+          }
+          $out = Join-Path $env:RUNNER_TEMP 'ci-installer-check'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          try {
+            & $iscc '/DAppVersion=0.0.0' '/DVersionInfo=0.0.0' '/DOutputBaseFilename=jotsy-ci-check' "/O$out" 'windows\packaging\jotsy.iss'
+            if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          } finally {
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $out
+          }
+
       - name: Report build size
         shell: bash
         run: |

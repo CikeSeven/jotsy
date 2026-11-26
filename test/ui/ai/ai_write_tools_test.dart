@@ -868,7 +868,9 @@ void main() {
           'calendar_lunar': 'hide',
           'open_diary_in_editor': true,
           'publish_on_leave': true,
+          'expand_publish_panel': true,
           'manual_save': true,
+          'default_media_thumbnail': true,
         });
         TodoSettings todos() =>
             TodoSettings.decode(settings.todoSettingsRawNotifier.value);
@@ -894,9 +896,21 @@ void main() {
           isTrue,
         );
         expect(
+          DiaryCreatePrefs.decode(
+            settings.diaryCreatePrefsRawNotifier.value,
+          ).expandPublishPanel,
+          isTrue,
+        );
+        expect(
           DiaryEditPrefs.decode(
             settings.diaryEditPrefsRawNotifier.value,
           ).manualSave,
+          isTrue,
+        );
+        expect(
+          DiaryEditPrefs.decode(
+            settings.diaryEditPrefsRawNotifier.value,
+          ).defaultMediaThumbnail,
           isTrue,
         );
 
@@ -915,12 +929,7 @@ void main() {
           ).behavior.openInEditor,
           isFalse,
         );
-        expect(
-          DiaryCreatePrefs.decode(
-            settings.diaryCreatePrefsRawNotifier.value,
-          ).publishOnLeave,
-          isFalse,
-        );
+        expect(settings.diaryCreatePrefsRaw, isNull);
         expect(settings.diaryEditPrefsRaw, isNull);
       },
     );

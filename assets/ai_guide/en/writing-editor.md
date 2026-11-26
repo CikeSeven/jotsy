@@ -52,7 +52,7 @@ Edit on the preview page, double-tapping the preview text on a phone, Edit in th
 
 ## Editor settings
 
-In Settings → Editor: Toolbar order (drag to reorder, untick a tool to hide it), Toolbar size (Small, Standard, Large, Extra large) and Always show toolbar (phones only). Under Behavior: Open diaries in the editor (skip the preview page), Publish new diaries when going back, Save edits manually, and Show that day's photos automatically. See "Body text layout and editor settings" for details.
+In Settings → Editor: Toolbar order (drag to reorder, untick a tool to hide it), Toolbar size (Small, Standard, Large, Extra large) and Always show toolbar (phones only). Under Behavior: Open diaries in the editor (skip the preview page), Publish new diaries when going back, Expand details on publish page, Save edits manually, Insert images & videos as thumbnails, and Show that day's photos automatically. See "Body text layout and editor settings" for details.
 
 ## Good to know
 

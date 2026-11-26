@@ -58,13 +58,18 @@ class DiariesNotebookMembershipController {
     if (targetIds.isEmpty) return;
     final database = _state.ref.read(appDatabaseProvider);
     final membership = await database.getNotebookIdsForDiaries(targetIds);
+    final initialChapters = targetIds.length == 1
+        ? await database.getDiaryNotebookMemberships(targetIds.single)
+        : const <String, String?>{};
     if (!_state.mounted) return;
-    final result = await showNotebookPickerSheet(
+    final pick = await showNotebookMembershipPickerSheet(
       _state.context,
       initial: notebookPickStatesFor(membership),
+      initialChapters: initialChapters,
     );
-    if (result == null || !_state.mounted) return;
+    if (pick == null || !_state.mounted) return;
 
+    final result = pick.result;
     final l10n = _state.context.l10n;
     final notebooks = _notebooks;
     final privateHint = notebookPrivateAddedHint(l10n, result.add, notebooks);
@@ -81,10 +86,10 @@ class DiariesNotebookMembershipController {
       targetIds,
       fromSelection: fromSelection,
       animateOut: leaves,
-      write: () => _ops.apply(result, targetIds),
+      write: () => _ops.apply(result, targetIds, chapterIds: pick.chapterIds),
       message:
           privateHint ??
-          (result.remove.isEmpty
+          (result.remove.isEmpty && result.add.isNotEmpty
               ? l10n.notebookAddedToCount(result.add.length)
               : l10n.notebookMembershipUpdated),
     );
@@ -118,22 +123,26 @@ class DiariesNotebookMembershipController {
     final current = currentManualNotebook;
     if (current == null || targetIds.isEmpty) return;
     final l10n = _state.context.l10n;
-    final result = await showNotebookPickerSheet(
+    final pick = await showNotebookMembershipPickerSheet(
       _state.context,
       mode: NotebookPickerMode.single,
       title: l10n.notebookMoveTo,
       excludedIds: <String>{current.id},
     );
-    if (result == null || result.add.isEmpty || !_state.mounted) return;
-    final targetId = result.add.first;
+    if (pick == null || pick.result.add.isEmpty || !_state.mounted) return;
+    final targetId = pick.result.add.first;
     final notebooks = _notebooks;
     final target = notebooks.where((n) => n.id == targetId).firstOrNull;
     await _run(
       targetIds,
       fromSelection: fromSelection,
       animateOut: true,
-      write: () =>
-          _ops.move(fromId: current.id, toId: targetId, diaryIds: targetIds),
+      write: () => _ops.move(
+        fromId: current.id,
+        toId: targetId,
+        diaryIds: targetIds,
+        chapterId: pick.chapterIds[targetId],
+      ),
       message:
           notebookPrivateAddedHint(l10n, <String>{targetId}, notebooks) ??
           l10n.notebookMovedTo(target?.name ?? '', targetIds.length),

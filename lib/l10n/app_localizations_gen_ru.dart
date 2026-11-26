@@ -20099,4 +20099,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String notebookContentsTransferredPrivate(String target) {
     return 'Перенесено в «$target». Перенесённые записи теперь видны только в этом блокноте';
   }
+
+  @override
+  String get settingsExpandPublishPanel => 'Раскрывать детали при публикации';
+
+  @override
+  String get settingsExpandPublishPanelSubtitle =>
+      'Автоматически открывать нижнюю панель деталей на странице публикации новой записи';
+
+  @override
+  String get settingsDefaultMediaThumbnail =>
+      'Вставлять фото и видео миниатюрами';
+
+  @override
+  String get settingsDefaultMediaThumbnailSubtitle =>
+      'Новые изображения и видео по умолчанию вставляются в виде компактных миниатюр';
 }

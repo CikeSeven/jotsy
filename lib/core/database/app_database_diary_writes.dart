@@ -68,8 +68,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   /// 事务内先更新主表，再重建关联表数据。[createdAt] 是发表时间，传 null
   /// 时保持原值：只改正文的路径（如预览页勾选待办）不应触碰发表时间。
   /// [notebookIds] 为 null 时不动所在日记本；否则改为恰好在这些本子里，仍在的
-  /// 本子保留章节与成书位置（见 `_replaceDiaryNotebooks`），新加入的本子按
-  /// [notebookChapterIds] 落进章节（同 [createDiary]）。
+  /// 本子默认保留章节与成书位置（[updateExistingNotebookChapters] 为 true 时
+  /// 按 [notebookChapterIds] 更新仍在的本子的章节，成书位置仍不变），新加入的
+  /// 本子按 [notebookChapterIds] 落进章节（同 [createDiary]）。
   /// [capsule] 为 null 时不动时间胶囊两列（编辑页不管胶囊）；否则两列改写为
   /// 给定值，两者都为 null 即取消胶囊。只有刚发表、仍停在发布页的新日记会
   /// 传它：发布页面板里的胶囊与其他信息一样随改随存。
@@ -84,6 +85,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
     DateTime? createdAt,
     List<String>? notebookIds,
     Map<String, String> notebookChapterIds = const <String, String>{},
+    bool updateExistingNotebookChapters = false,
     DiaryCapsuleColumns? capsule,
   }) async {
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
@@ -128,6 +130,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
           diary.id,
           notebookIds.toSet(),
           chapterIds: notebookChapterIds,
+          updateExistingChapters: updateExistingNotebookChapters,
         );
       }
       // 返回库里实际存下的更新时间（按库的精度，不是内存里的 DateTime.now()）：

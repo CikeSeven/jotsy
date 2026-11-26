@@ -22079,5 +22079,21 @@
         "type": "String"
       }
     }
+  },
+  "settingsExpandPublishPanel": "发布时自动展开详细信息",
+  "@settingsExpandPublishPanel": {
+    "description": "编辑器设置开关：写新日记进入发布页后自动展开下方的详细信息面板。"
+  },
+  "settingsExpandPublishPanelSubtitle": "新日记点发布进入发布页时，自动弹出下方的信息编辑面板",
+  "@settingsExpandPublishPanelSubtitle": {
+    "description": "“发布时自动展开详细信息”开关的说明。"
+  },
+  "settingsDefaultMediaThumbnail": "插入图片和视频时默认小图",
+  "@settingsDefaultMediaThumbnail": {
+    "description": "编辑器设置开关：新插入或粘贴的图片和视频默认以方形小图显示。"
+  },
+  "settingsDefaultMediaThumbnailSubtitle": "新插入的图片和视频默认显示为小图，仍可手动恢复正常大小",
+  "@settingsDefaultMediaThumbnailSubtitle": {
+    "description": "“插入图片和视频时默认小图”开关的说明。"
   }
 }

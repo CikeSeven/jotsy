@@ -30191,6 +30191,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transferred to \"{target}\". Moved entries now only show in that notebook'**
   String notebookContentsTransferredPrivate(String target);
+
+  /// Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand details on publish page'**
+  String get settingsExpandPublishPanel;
+
+  /// Subtitle of the "Expand details on publish page" switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the details panel automatically after tapping Publish on a new diary'**
+  String get settingsExpandPublishPanelSubtitle;
+
+  /// Editor settings switch: newly inserted images and videos default to square thumbnail display.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert images & videos as thumbnails'**
+  String get settingsDefaultMediaThumbnail;
+
+  /// Subtitle of the "Insert images & videos as thumbnails" switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Newly added images and videos use compact thumbnail size by default'**
+  String get settingsDefaultMediaThumbnailSubtitle;
 }
 
 class _AppLocalizationsDelegate

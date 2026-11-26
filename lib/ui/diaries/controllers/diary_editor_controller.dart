@@ -109,6 +109,9 @@ class DiaryEditorController extends ChangeNotifier {
   /// 同一份排版；工具栏「缩进 / 取消缩进」据此判断按下后段落会不会变、取消
   /// 时该删掉标记还是写成“这段不缩进”（见 `diary_paragraph_indent_editing`）。
   double globalFirstLineIndent = 0;
+
+  /// 插入图片与视频时是否默认以小图显示（同步自 `DiaryEditPrefs`）。
+  bool defaultMediaThumbnail = false;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
 

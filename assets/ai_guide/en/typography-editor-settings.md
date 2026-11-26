@@ -10,7 +10,7 @@ keywords: [editor settings, body font, font, import font, missing font, font siz
 Settings for writing live under Editor: body font and layout, code block style, the toolbar, and a few editing behaviors.
 
 ## Where
-- Settings → Editor (in the **Writing** group of the Settings home page). The page has three groups: **Body text** (Body font & layout, Code block style), **Toolbar** (Toolbar order, Toolbar size, Always show toolbar) and **Behavior** (Open diaries in the editor, Publish new diaries when going back, Save edits manually, Show that day's photos automatically).
+- Settings → Editor (in the **Writing** group of the Settings home page). The page has three groups: **Body text** (Body font & layout, Code block style), **Toolbar** (Toolbar order, Toolbar size, Always show toolbar) and **Behavior** (Open diaries in the editor, Publish new diaries when going back, Expand details on publish page, Save edits manually, Insert images & videos as thumbnails, Show that day's photos automatically).
 - While reading or editing an entry, tap the "Font & layout" button in the top bar to adjust as you read; "More settings" in that panel opens the full settings page.
 
 ## Body font & layout
@@ -34,7 +34,9 @@ Settings → Editor → Code block style, with a preview at the top and three ta
 ## Behavior
 - **Open diaries in the editor** (off by default): tapping a diary skips the preview page and opens it for editing, laid out just like the preview. Time capsules that haven't opened yet still show their sealed page first.
 - **Publish new diaries when going back** (off by default): when off, going back from a new diary saves it to Drafts; when on, going back publishes it as a diary (entries with a time capsule still go through the publish page).
+- **Expand details on publish page** (off by default): when on, opening the publish page for a new entry automatically expands the details panel at the bottom.
 - **Save edits manually** (off by default): when off, edits to existing entries save automatically; when on, they're saved only when you tap the save button in the editor's top bar (the floppy-disk icon, available once something changed; Ctrl / ⌘ + S on a computer), which briefly turns into a check mark. Going back with unsaved edits asks first: Cancel stays in the editor, Exit discards the edits, Save and exit saves and leaves. Nothing is saved for you when the app goes to the background, when you open another page, or when you share or export (those use the last saved version). New entries aren't affected and still save to Drafts as you write.
+- **Insert images & videos as thumbnails** (off by default): when on, newly inserted or pasted external images and videos default to compact square thumbnails; you can still switch any item back to normal size from its menu.
 - **Show that day's photos automatically** (on by default): when backfilling a past day, list that day's photos under the title. When off, open them from the editor's top-right menu. That day's photos are only available on phones.
 
 ## Notes

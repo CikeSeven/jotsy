@@ -17178,4 +17178,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String notebookContentsTransferredPrivate(String target) {
     return '「$target」へ移動しました。移動した日記はその日記帳の中でのみ表示されます';
   }
+
+  @override
+  String get settingsExpandPublishPanel => '投稿画面で詳細パネルを自動で開く';
+
+  @override
+  String get settingsExpandPublishPanelSubtitle =>
+      '新しい日記の投稿画面を開いたとき、下の詳細編集パネルを自動で展開します';
+
+  @override
+  String get settingsDefaultMediaThumbnail => '画像・動画をデフォルトでサムネイル表示';
+
+  @override
+  String get settingsDefaultMediaThumbnailSubtitle =>
+      '新しく挿入する画像と動画を最初から小さいサムネイルサイズで表示します';
 }

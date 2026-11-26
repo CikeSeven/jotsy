@@ -135,6 +135,94 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets(
+    'the expand-publish-panel switch is off by default and persists',
+    (tester) async {
+      final h = await DiaryDraftsHarness.create(tester);
+      await h.pump(
+        Scaffold(
+          body: ListView(
+            children: <Widget>[
+              SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final tile = find.widgetWithText(
+        SwitchListTile,
+        h.l10n.settingsExpandPublishPanel,
+      );
+      await tester.scrollUntilVisible(tile, 200);
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+      expect(
+        find.text(h.l10n.settingsExpandPublishPanelSubtitle),
+        findsOneWidget,
+      );
+      expect(h.settings.diaryCreatePrefsRaw, isNull);
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+      expect(h.settings.diaryCreatePrefsRaw, '{"expand_publish_panel":true}');
+      expect(
+        BackupSettings.capture(h.settings)['diaryCreatePrefsRaw'],
+        '{"expand_publish_panel":true}',
+      );
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+      expect(h.settings.diaryCreatePrefsRaw, isNull);
+      await h.unmount();
+    },
+  );
+
+  testWidgets(
+    'the default-media-thumbnail switch is off by default and persists',
+    (tester) async {
+      final h = await DiaryDraftsHarness.create(tester);
+      await h.pump(
+        Scaffold(
+          body: ListView(
+            children: <Widget>[
+              SettingsEditorSection(settingsAsync: AsyncData(h.settings)),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final tile = find.widgetWithText(
+        SwitchListTile,
+        h.l10n.settingsDefaultMediaThumbnail,
+      );
+      await tester.scrollUntilVisible(tile, 200);
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+      expect(
+        find.text(h.l10n.settingsDefaultMediaThumbnailSubtitle),
+        findsOneWidget,
+      );
+      expect(h.settings.diaryEditPrefsRaw, isNull);
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+      expect(h.settings.diaryEditPrefsRaw, '{"default_media_thumbnail":true}');
+      expect(
+        BackupSettings.capture(h.settings)['diaryEditPrefsRaw'],
+        '{"default_media_thumbnail":true}',
+      );
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+      expect(h.settings.diaryEditPrefsRaw, isNull);
+      await h.unmount();
+    },
+  );
+
   testWidgets('the always-show toolbar switch is off by default and persists', (
     tester,
   ) async {

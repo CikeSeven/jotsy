@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
@@ -32,17 +34,62 @@ final todoListProgressProvider = StreamProvider<Map<String?, TodoListProgress>>(
   },
 );
 
+/// 取当前时刻的函数（测试替换它来模拟跨过零点）。
+final todoNowProvider = Provider<DateTime Function()>(
+  (Ref ref) => DateTime.now,
+);
+
+/// 本地零点的“今天”：分组、逾期、相对日期与概览卡都以它为准。
+///
+/// 为什么不在 build 里直接取 `DateTime.now()`：页面只在数据或状态变化时
+/// 重建，应用开着跨过零点后，“今天”视图仍停在昨天、昨天的待办也不算逾期，
+/// 直到碰巧有别的变化。这里在下一个零点换到新的一天；计时器在后台可能被
+/// 系统推迟或冻结，回到前台时由页面调用 [TodoTodayNotifier.refresh] 校正。
+final todoTodayProvider = NotifierProvider<TodoTodayNotifier, DateTime>(
+  TodoTodayNotifier.new,
+);
+
+class TodoTodayNotifier extends Notifier<DateTime> {
+  Timer? _midnight;
+
+  @override
+  DateTime build() {
+    final now = ref.watch(todoNowProvider)();
+    ref.onDispose(() => _midnight?.cancel());
+    _scheduleAfter(now);
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  /// 按此刻的时间重算“今天”（日期没变时不通知），并重排下一次零点。
+  void refresh() {
+    final now = ref.read(todoNowProvider)();
+    final today = DateTime(now.year, now.month, now.day);
+    if (today != state) state = today;
+    _scheduleAfter(now);
+  }
+
+  void _scheduleAfter(DateTime now) {
+    _midnight?.cancel();
+    final next = DateTime(now.year, now.month, now.day + 1);
+    // 多等一秒：计时器可能比墙钟早几毫秒触发，落在零点之前就白跑一次。
+    // 用日历分量算下一个零点，跨夏令时切换的那天也落在当地零点。
+    _midnight = Timer(
+      next.difference(now) + const Duration(seconds: 1),
+      refresh,
+    );
+  }
+}
+
 /// 日历用的按日索引。重新加载期间沿用上一份数据，日期格上的角标不会闪
 /// 一下消失；还没有数据时为空索引。只在待办功能开启、日历显示待办时订阅。
 final todoCalendarIndexProvider = Provider<TodoCalendarIndex>((Ref ref) {
   final open = ref.watch(openTodosProvider).value;
   final completed = ref.watch(completedTodosProvider).value;
   if (open == null && completed == null) return TodoCalendarIndex.empty;
-  final now = DateTime.now();
   return TodoCalendarIndex.build(
     open: open ?? const <TodoRow>[],
     completed: completed ?? const <TodoRow>[],
-    today: DateTime(now.year, now.month, now.day),
+    today: ref.watch(todoTodayProvider),
   );
 });
 

@@ -181,8 +181,7 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
               message: l10n.todoNotFound,
             );
     }
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = ref.watch(todoTodayProvider);
     final steps = decodeTodoSteps(row.steps);
     return ListView(
       controller: widget.scrollController,

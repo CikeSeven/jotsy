@@ -64,8 +64,7 @@ class _TodoSearchPageState extends ConsumerState<TodoSearchPage> {
     final results = _keyword.isEmpty
         ? null
         : ref.watch(todoSearchProvider(_keyword)).value;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = ref.watch(todoTodayProvider);
 
     return AppPageBackground(
       area: AppBackgroundArea.other,

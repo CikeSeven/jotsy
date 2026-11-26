@@ -56,11 +56,7 @@ class _TodoViewSheet extends ConsumerWidget {
     final progress =
         ref.watch(todoListProgressProvider).value ??
         const <String?, TodoListProgress>{};
-    final now = DateTime.now();
-    final counts = todoSmartViewCounts(
-      open,
-      DateTime(now.year, now.month, now.day),
-    );
+    final counts = todoSmartViewCounts(open, ref.watch(todoTodayProvider));
     void pop(TodoViewSheetResult result) => Navigator.of(context).pop(result);
     return TodoSheetBody(
       title: l10n.todoViewSheetTitle,

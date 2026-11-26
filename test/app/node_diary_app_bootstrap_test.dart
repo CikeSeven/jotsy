@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/app/launch_brand_mark.dart';
+import 'package:node_diary/app/launch_splash_theme.dart';
 import 'package:node_diary/app/node_diary_app.dart';
+import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -22,8 +24,10 @@ Future<void> _pumpApp(
   WidgetTester tester, {
   Duration? diariesDelay,
   bool launchBrandMark = false,
+  Color? launchSeedColor,
+  Map<String, Object> preferences = const <String, Object>{},
 }) async {
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  SharedPreferences.setMockInitialValues(preferences);
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
   final settings = await SettingsService.create();
@@ -46,7 +50,10 @@ Future<void> _pumpApp(
             ),
           ),
       ],
-      child: NodeDiaryApp(launchBrandMark: launchBrandMark),
+      child: NodeDiaryApp(
+        launchBrandMark: launchBrandMark,
+        launchSeedColor: launchSeedColor,
+      ),
     ),
   );
 }
@@ -81,9 +88,13 @@ List<double> _revealOpacities(WidgetTester tester) => <double>[
 ];
 
 /// 原生启动资源里的颜色（亮色取 values，暗色取 values-night）。
-Color _nativeColor(String name, {required bool night}) {
+Color _nativeColor(
+  String name, {
+  required bool night,
+  String file = 'colors.xml',
+}) {
   final xml = File(
-    'android/app/src/main/res/${night ? 'values-night' : 'values'}/colors.xml',
+    'android/app/src/main/res/${night ? 'values-night' : 'values'}/$file',
   ).readAsStringSync();
   final hex = RegExp(
     '<color name="$name">#([0-9A-Fa-f]{6})</color>',
@@ -149,6 +160,59 @@ void main() {
           _nativeColor('launch_brand_mark', night: night),
         );
         await tester.pumpAndSettle();
+        await _unmount(tester);
+      },
+    );
+  }
+
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'a theme-colored splash continues in its colors in ${brightness.name} mode',
+      (tester) async {
+        tester.platformDispatcher.platformBrightnessTestValue = brightness;
+        addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+        // 主题色为粉色（HCT 色相约 6°）：系统闪屏按 6° 那一档画
+        // （launch_splash_themes.xml），原生把档位经入口参数传来。
+        const pink = Color(0xFFD81B60);
+        const slot = LaunchSplashTheme.firstHueIndex + 2;
+        expect(LaunchSplashTheme.indexFor(pink), slot);
+        await _pumpApp(
+          tester,
+          launchBrandMark: true,
+          launchSeedColor: LaunchSplashTheme.seedFor(slot),
+          preferences: <String, Object>{
+            'app.settings.theme_seed_color_value': pink.toARGB32(),
+          },
+        );
+
+        // 首帧尚未读到设置：底色与图形颜色等于该档的原生闪屏主题。
+        final night = brightness == Brightness.dark;
+        final blank = find.byKey(const ValueKey<String>('bootstrap_blank'));
+        expect(
+          tester.widget<ColoredBox>(blank).color,
+          _nativeColor(
+            'launch_splash_hue006_background',
+            night: night,
+            file: 'launch_splash_themes.xml',
+          ),
+        );
+        final mark = find.byType(LaunchBrandMark);
+        expect(
+          Theme.of(tester.element(mark)).colorScheme.primary,
+          _nativeColor(
+            'launch_splash_hue006_mark',
+            night: night,
+            file: 'launch_splash_themes.xml',
+          ),
+        );
+
+        // 读到设置后落在真正的主题色上。
+        await _pumpUntilHome(tester);
+        await tester.pumpAndSettle();
+        expect(
+          Theme.of(tester.element(find.byType(HomePage))).colorScheme.primary,
+          buildSeededAppTheme(pink, brightness).colorScheme.primary,
+        );
         await _unmount(tester);
       },
     );

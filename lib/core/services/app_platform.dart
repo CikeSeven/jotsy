@@ -148,6 +148,11 @@ abstract final class AppPlatform {
   /// 展开的整页终点圆角取它。其他平台没有这个通道，终点为直角。
   static bool get supportsDisplayCorners => isAndroid;
 
+  /// 系统闪屏跟随主题色（`LaunchSplashTheme`）：只有 Android 有可换配色的系统
+  /// 闪屏，且要 13+（`setSplashScreenTheme`，更早的版本由原生端忽略）。其他
+  /// 平台的启动层只铺底色、不画品牌图形，没什么可同步的。
+  static bool get supportsLaunchSplashTheme => isAndroid;
+
   /// 桌面小组件（Jetpack Glance + home_widget）：只做了 Android；iOS 需要另写
   /// WidgetKit 扩展，桌面系统没有桌面小组件。不支持时设置里不出现入口，也
   /// 不同步快照（docs/rules/home_widgets.md）。

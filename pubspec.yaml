@@ -64,6 +64,9 @@ dependencies:
   markdown: ^7.3.1
   sqlite3: ^3.2.0
   tyme: ^1.5.0
+  # 启动闪屏按主题色的 HCT 色相分档（lib/app/launch_splash_theme.dart）。
+  # 版本由 Flutter SDK 固定，跟随 SDK，不另设约束。
+  material_color_utilities: any
   # 从手机厂商与 WPS 云端导入笔记：在官方网页中登录，登录状态（Cookie）只用
   # 于本次读取笔记。
   webview_flutter: ^4.14.1

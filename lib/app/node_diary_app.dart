@@ -7,6 +7,7 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
+import 'package:node_diary/app/launch_splash_theme_sync.dart';
 import 'package:node_diary/app/synced_data_refresh.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/app_fonts.dart';
@@ -60,12 +61,17 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
   const NodeDiaryApp({
     super.key,
     this.launchBrandMark = false,
+    this.launchSeedColor,
     this.initialStartupNoticeBuilder,
   });
 
   /// 原生启动页是否在屏幕中央画了品牌图形（见 `launchBrandMarkEntrypointArg`）；
   /// 是则启动层首帧在同一位置接着画，否则只铺底色。
   final bool launchBrandMark;
+
+  /// 系统闪屏所用档位的代表种子色（见 `LaunchSplashTheme`）：设置读到之前按它
+  /// 建主题，启动层的底色与品牌图形才与系统闪屏一致。为 null 时用默认主题色。
+  final Color? launchSeedColor;
 
   /// 冷启动数据迁移或跨容器切换后在首页展示的一次性提示。
   final String Function(AppLocalizations l10n)? initialStartupNoticeBuilder;
@@ -141,6 +147,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     ref.listenManual(appLockOptionsProvider, (_, AppLockOptions next) {
       _appLock?.options = next;
     });
+    // 主题色交给原生，下次启动时系统闪屏按主题色画（Android 13+）。
+    ref.listenManual(launchSplashThemeSyncProvider, (_, _) {});
     // 屏幕自带的圆角：从卡片展开日记时整页落在这个圆角上，点开前就要读好。
     DisplayCorners.start();
   }
@@ -299,7 +307,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       );
     }
 
-    return _buildAppShell(home: home);
+    // 设置读到之前：主题色先取系统闪屏画的那一档，读到后补间到真正的主题色。
+    return _buildAppShell(
+      home: home,
+      themeSeedColor:
+          widget.launchSeedColor ??
+          const Color(SettingsService.defaultThemeSeedColorValue),
+    );
   }
 
   /// 按种子色与字体缓存明暗 ThemeData。

@@ -342,10 +342,8 @@ begin
     ExistingDataLabel.Width := DataDirPage.SurfaceWidth;
     ExistingDataLabel.Left := DataDirPage.Edits[0].Left;
     ExistingDataLabel.Top := ResetDataDirButton.Top + ResetDataDirButton.Height + ScaleY(12);
-    ExistingDataLabel.Caption := FmtMessage(
-      CustomMessage('DataDirExistingNote'),
-      [OriginalDataDir]
-    );
+    // Keep `[OriginalDataDir]` off its own line so Inno Setup's section scanner doesn't treat it as an INI section header.
+    ExistingDataLabel.Caption := FmtMessage(CustomMessage('DataDirExistingNote'), [OriginalDataDir]);
   end;
 end;
 

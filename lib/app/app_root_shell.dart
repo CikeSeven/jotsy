@@ -54,9 +54,16 @@ final appDataRelocationHostProvider = Provider<AppDataRelocationHost?>(
 /// `LanSyncService` 与全部状态 provider，等 SQLite 文件锁释放后再跨卷复制与重绑，
 /// 最后再挂载全新的 `ProviderScope` 从新目录重新读取。
 class AppRootShell extends StatefulWidget {
-  const AppRootShell({super.key, this.launchBrandMark = false});
+  const AppRootShell({
+    super.key,
+    this.launchBrandMark = false,
+    this.launchSeedColor,
+  });
 
   final bool launchBrandMark;
+
+  /// 系统闪屏所用档位的代表种子色，只交给首个容器（见 [NodeDiaryApp.launchSeedColor]）。
+  final Color? launchSeedColor;
 
   @override
   State<AppRootShell> createState() => _AppRootShellState();
@@ -248,6 +255,7 @@ class _AppRootShellState extends State<AppRootShell>
       overrides: [appDataRelocationHostProvider.overrideWithValue(this)],
       child: NodeDiaryApp(
         launchBrandMark: _epoch == 0 && widget.launchBrandMark,
+        launchSeedColor: _epoch == 0 ? widget.launchSeedColor : null,
         initialStartupNoticeBuilder: noticeBuilder,
       ),
     );

@@ -37,8 +37,11 @@ class MainActivity : FlutterFragmentActivity() {
   private var recordingServiceChannel: RecordingServiceChannel? = null
   private var todoNotificationsChannel: TodoNotificationsChannel? = null
   private var widgetPreviewFactory: WidgetPreviewFactory? = null
+  private var launchSplashThemeChannel: LaunchSplashThemeChannel? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
+  // Must match launchSplashThemeArgPrefix in lib/app/launch_splash_theme.dart.
+  private val launchSplashThemeArg = "--launch-splash-theme="
 
   override fun onCreate(savedInstanceState: Bundle?) {
     handOffSplashScreenToFlutter()
@@ -104,9 +107,18 @@ class MainActivity : FlutterFragmentActivity() {
     }
   }
 
-  /** Tells Dart the native launch screen shows the brand mark, so its first frame continues it. */
-  private fun launchEntrypointArgs(): List<String> =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) listOf(launchBrandMarkArg) else emptyList()
+  /**
+   * Tells Dart what the native launch screen shows, so its first frame continues the same picture:
+   * the brand mark on Android 12+, and on 13+ also the theme-colour slot the splash was drawn with
+   * when it is not the default one (see [LaunchSplashThemeChannel]).
+   */
+  private fun launchEntrypointArgs(): List<String> {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+      return emptyList()
+    }
+    val slot = LaunchSplashThemeChannel.recordedSlot(this) ?: return listOf(launchBrandMarkArg)
+    return listOf(launchBrandMarkArg, "$launchSplashThemeArg$slot")
+  }
 
   /**
    * Appends the launch-screen flag to whatever entrypoint arguments the intent carries; the
@@ -141,6 +153,10 @@ class MainActivity : FlutterFragmentActivity() {
     displayCornersChannel?.dispose()
     displayCornersChannel =
       DisplayCornersChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+    // 系统闪屏跟随主题色（lib/app/launch_splash_theme.dart）。
+    launchSplashThemeChannel?.dispose()
+    launchSplashThemeChannel =
+      LaunchSplashThemeChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     // 熄屏 / 切到后台继续录音的前台服务（RecordingForegroundService.kt）。
     recordingServiceChannel?.dispose()
     recordingServiceChannel =
@@ -363,6 +379,8 @@ class MainActivity : FlutterFragmentActivity() {
     appLockChannel = null
     displayCornersChannel?.dispose()
     displayCornersChannel = null
+    launchSplashThemeChannel?.dispose()
+    launchSplashThemeChannel = null
     recordingServiceChannel?.dispose()
     recordingServiceChannel = null
     todoNotificationsChannel?.dispose()

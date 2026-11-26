@@ -10,9 +10,10 @@ const String launchBrandMarkEntrypointArg = '--launch-brand-mark';
 /// 品牌图形：一本带装订环的笔记本（取自应用图标）。
 ///
 /// 与原生闪屏图标 `android/app/src/main/res/drawable/launch_brand_mark.xml`
-/// 同源：几何、尺寸（[height] dp 高、屏幕居中）、颜色（默认种子色的
-/// `primary`，即启动首帧尚未读到设置时的主题色）三者必须一致，Flutter 首帧
-/// 才能与系统闪屏无缝接力。改动任一端都要同步另一端，
+/// 同源：几何、尺寸（[height] dp 高、屏幕居中）、颜色（主题的 `primary`）三者
+/// 必须一致，Flutter 首帧才能与系统闪屏无缝接力。启动首帧尚未读到设置时，
+/// 主题按系统闪屏所画的那一档主题色建（`LaunchSplashTheme`，默认主题色时为
+/// 清单里的启动主题）。改动任一端都要同步另一端，
 /// `test/app/launch_brand_mark_test.dart` 会校验两端一致。
 class LaunchBrandMark extends StatelessWidget {
   const LaunchBrandMark({super.key});

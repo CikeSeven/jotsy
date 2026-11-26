@@ -118,7 +118,7 @@
 - 例外：用户自定义的卡片 / 预览页颜色属于用户数据，但必须有暗色值并做对比度兜底。
 - 禁止：应用界面与默认样式使用任何渐变；同一区域叠加多层重模糊。
 - 例外：用户主动开启的卡片两色渐变；代码块配色、提示块底色与取色面板色谱（见 `editor.md`）。
-- 必须：启动品牌图形原生端与 Flutter 端同源，改一端同步另一端；首页首屏新增区块经 `LaunchReveal` 编排（DESIGN.md §4.3）。
+- 必须：启动品牌图形原生端与 Flutter 端同源，改一端同步另一端；闪屏随主题色的分档主题由 `launch_splash_theme_test.dart` 生成，禁止手改；首页首屏新增区块经 `LaunchReveal` 编排（DESIGN.md §4.3）。
 
 ### 背景与玻璃
 - 必须：有 Scaffold 的新页面经 `AppPageBackground(area:)` 画背景，底色只取 `AppPageBackdrop`，禁止写死主题 surface。

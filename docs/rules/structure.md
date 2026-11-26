@@ -6,7 +6,7 @@
 
 ## lib/app
 - `lib/main.dart`：应用入口。
-- `lib/app/`：App 装配 `node_diary_app.dart`（`NodeDiaryApp`）、启动引导、启动品牌图形 `launch_brand_mark.dart`、同步后失效清单 `synced_data_refresh.dart`（`syncedDataRefreshProvider`）。
+- `lib/app/`：App 装配 `node_diary_app.dart`（`NodeDiaryApp`）、启动引导、启动品牌图形 `launch_brand_mark.dart`、闪屏随主题色的分档 `launch_splash_theme.dart`（同步给原生：`launch_splash_theme_sync.dart`，原生端 `LaunchSplashThemeChannel.kt`）、同步后失效清单 `synced_data_refresh.dart`（`syncedDataRefreshProvider`）。
 - `lib/app/theme/`：主题与 token：`theme.dart`（`MaterialTheme`）、`expressive_motion.dart`（`ExpressiveMotion`）、`app_breakpoints.dart`（`AppBreakpoints` / `AppContentWidth`）、种子色换算、字体、`derived_theme_cache.dart`。
 
 ## lib/core/database

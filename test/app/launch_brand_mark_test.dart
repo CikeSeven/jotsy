@@ -91,4 +91,23 @@ void main() {
       1,
     );
   });
+
+  test('the native splash mark takes its color from the splash theme', () {
+    // 颜色不写死：默认的 LaunchTheme 与按主题色分档的闪屏主题
+    // （launch_splash_themes.xml）各自给 launchBrandMarkColor 赋值。
+    final xml = File(_nativeVectorPath).readAsStringSync();
+    final fills = RegExp(
+      r'android:fillColor="([^"]+)"',
+    ).allMatches(xml).map((match) => match.group(1)).toSet();
+    expect(fills, <String>{'?attr/launchBrandMarkColor'});
+    for (final dir in <String>['values-v31', 'values-night-v31']) {
+      expect(
+        File('android/app/src/main/res/$dir/styles.xml').readAsStringSync(),
+        contains(
+          '<item name="launchBrandMarkColor">@color/launch_brand_mark</item>',
+        ),
+        reason: dir,
+      );
+    }
+  });
 }

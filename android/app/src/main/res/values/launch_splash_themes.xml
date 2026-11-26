@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  按主题色分档的系统闪屏主题，档位见 lib/app/launch_splash_theme.dart；
+  Android 13+ 经 SplashScreen.setSplashScreenTheme 选用（LaunchSplashThemeChannel.kt）。
+  每档的底色与品牌图形颜色是该档代表种子色的页面底色与主色，与 Flutter
+  启动首帧一致；暗色在 values-night 的同名文件。
+
+  由 test/app/launch_splash_theme_test.dart 生成，勿手改。改了档位或配色算法后
+  按该文件顶部的命令（dart-define UPDATE_LAUNCH_SPLASH_THEMES=true）重新生成。
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 下标即档位序号（LaunchSplashTheme.indexFor），顺序不能改。 -->
+    <array name="launch_splash_themes">
+        <item>@style/LaunchSplashTheme.Mono</item>
+        <item>@style/LaunchSplashTheme.Gray</item>
+        <item>@style/LaunchSplashTheme.Hue000</item>
+        <item>@style/LaunchSplashTheme.Hue003</item>
+        <item>@style/LaunchSplashTheme.Hue006</item>
+        <item>@style/LaunchSplashTheme.Hue009</item>
+        <item>@style/LaunchSplashTheme.Hue012</item>
+        <item>@style/LaunchSplashTheme.Hue015</item>
+        <item>@style/LaunchSplashTheme.Hue018</item>
+        <item>@style/LaunchSplashTheme.Hue021</item>
+        <item>@style/LaunchSplashTheme.Hue024</item>
+        <item>@style/LaunchSplashTheme.Hue027</item>
+        <item>@style/LaunchSplashTheme.Hue030</item>
+        <item>@style/LaunchSplashTheme.Hue033</item>
+        <item>@style/LaunchSplashTheme.Hue036</item>
+        <item>@style/LaunchSplashTheme.Hue039</item>
+        <item>@style/LaunchSplashTheme.Hue042</item>
+        <item>@style/LaunchSplashTheme.Hue045</item>
+        <item>@style/LaunchSplashTheme.Hue048</item>
+        <item>@style/LaunchSplashTheme.Hue051</item>
+        <item>@style/LaunchSplashTheme.Hue054</item>
+        <item>@style/LaunchSplashTheme.Hue057</item>
+        <item>@style/LaunchSplashTheme.Hue060</item>
+        <item>@style/LaunchSplashTheme.Hue063</item>
+        <item>@style/LaunchSplashTheme.Hue066</item>
+        <item>@style/LaunchSplashTheme.Hue069</item>
+        <item>@style/LaunchSplashTheme.Hue072</item>
+        <item>@style/LaunchSplashTheme.Hue075</item>
+        <item>@style/LaunchSplashTheme.Hue078</item>
+        <item>@style/LaunchSplashTheme.Hue081</item>
+        <item>@style/LaunchSplashTheme.Hue084</item>
+        <item>@style/LaunchSplashTheme.Hue087</item>
+        <item>@style/LaunchSplashTheme.Hue090</item>
+        <item>@style/LaunchSplashTheme.Hue093</item>
+        <item>@style/LaunchSplashTheme.Hue096</item>
+        <item>@style/LaunchSplashTheme.Hue099</item>
+        <item>@style/LaunchSplashTheme.Hue102</item>
+        <item>@style/LaunchSplashTheme.Hue105</item>
+        <item>@style/LaunchSplashTheme.Hue108</item>
+        <item>@style/LaunchSplashTheme.Hue111</item>
+        <item>@style/LaunchSplashTheme.Hue114</item>
+        <item>@style/LaunchSplashTheme.Hue117</item>
+        <item>@style/LaunchSplashTheme.Hue120</item>
+        <item>@style/LaunchSplashTheme.Hue123</item>
+        <item>@style/LaunchSplashTheme.Hue126</item>
+        <item>@style/LaunchSplashTheme.Hue129</item>
+        <item>@style/LaunchSplashTheme.Hue132</item>
+        <item>@style/LaunchSplashTheme.Hue135</item>
+        <item>@style/LaunchSplashTheme.Hue138</item>
+        <item>@style/LaunchSplashTheme.Hue141</item>
+        <item>@style/LaunchSplashTheme.Hue144</item>
+        <item>@style/LaunchSplashTheme.Hue147</item>
+        <item>@style/LaunchSplashTheme.Hue150</item>
+        <item>@style/LaunchSplashTheme.Hue153</item>
+        <item>@style/LaunchSplashTheme.Hue156</item>
+        <item>@style/LaunchSplashTheme.Hue159</item>
+        <item>@style/LaunchSplashTheme.Hue162</item>
+        <item>@style/LaunchSplashTheme.Hue165</item>
+        <item>@style/LaunchSplashTheme.Hue168</item>
+        <item>@style/LaunchSplashTheme.Hue171</item>
+        <item>@style/LaunchSplashTheme.Hue174</item>
+        <item>@style/LaunchSplashTheme.Hue177</item>
+        <item>@style/LaunchSplashTheme.Hue180</item>
+        <item>@style/LaunchSplashTheme.Hue183</item>
+        <item>@style/LaunchSplashTheme.Hue186</item>
+        <item>@style/LaunchSplashTheme.Hue189</item>
+        <item>@style/LaunchSplashTheme.Hue192</item>
+        <item>@style/LaunchSplashTheme.Hue195</item>
+        <item>@style/LaunchSplashTheme.Hue198</item>
+        <item>@style/LaunchSplashTheme.Hue201</item>
+        <item>@style/LaunchSplashTheme.Hue204</item>
+        <item>@style/LaunchSplashTheme.Hue207</item>
+        <item>@style/LaunchSplashTheme.Hue210</item>
+        <item>@style/LaunchSplashTheme.Hue213</item>
+        <item>@style/LaunchSplashTheme.Hue216</item>
+        <item>@style/LaunchSplashTheme.Hue219</item>
+        <item>@style/LaunchSplashTheme.Hue222</item>
+        <item>@style/LaunchSplashTheme.Hue225</item>
+        <item>@style/LaunchSplashTheme.Hue228</item>
+        <item>@style/LaunchSplashTheme.Hue231</item>
+        <item>@style/LaunchSplashTheme.Hue234</item>
+        <item>@style/LaunchSplashTheme.Hue237</item>
+        <item>@style/LaunchSplashTheme.Hue240</item>
+        <item>@style/LaunchSplashTheme.Hue243</item>
+        <item>@style/LaunchSplashTheme.Hue246</item>
+        <item>@style/LaunchSplashTheme.Hue249</item>
+        <item>@style/LaunchSplashTheme.Hue252</item>
+        <item>@style/LaunchSplashTheme.Hue255</item>
+        <item>@style/LaunchSplashTheme.Hue258</item>
+        <item>@style/LaunchSplashTheme.Hue261</item>
+        <item>@style/LaunchSplashTheme.Hue264</item>
+        <item>@style/LaunchSplashTheme.Hue267</item>
+        <item>@style/LaunchSplashTheme.Hue270</item>
+        <item>@style/LaunchSplashTheme.Hue273</item>
+        <item>@style/LaunchSplashTheme.Hue276</item>
+        <item>@style/LaunchSplashTheme.Hue279</item>
+        <item>@style/LaunchSplashTheme.Hue282</item>
+        <item>@style/LaunchSplashTheme.Hue285</item>
+        <item>@style/LaunchSplashTheme.Hue288</item>
+        <item>@style/LaunchSplashTheme.Hue291</item>
+        <item>@style/LaunchSplashTheme.Hue294</item>
+        <item>@style/LaunchSplashTheme.Hue297</item>
+        <item>@style/LaunchSplashTheme.Hue300</item>
+        <item>@style/LaunchSplashTheme.Hue303</item>
+        <item>@style/LaunchSplashTheme.Hue306</item>
+        <item>@style/LaunchSplashTheme.Hue309</item>
+        <item>@style/LaunchSplashTheme.Hue312</item>
+        <item>@style/LaunchSplashTheme.Hue315</item>
+        <item>@style/LaunchSplashTheme.Hue318</item>
+        <item>@style/LaunchSplashTheme.Hue321</item>
+        <item>@style/LaunchSplashTheme.Hue324</item>
+        <item>@style/LaunchSplashTheme.Hue327</item>
+        <item>@style/LaunchSplashTheme.Hue330</item>
+        <item>@style/LaunchSplashTheme.Hue333</item>
+        <item>@style/LaunchSplashTheme.Hue336</item>
+        <item>@style/LaunchSplashTheme.Hue339</item>
+        <item>@style/LaunchSplashTheme.Hue342</item>
+        <item>@style/LaunchSplashTheme.Hue345</item>
+        <item>@style/LaunchSplashTheme.Hue348</item>
+        <item>@style/LaunchSplashTheme.Hue351</item>
+        <item>@style/LaunchSplashTheme.Hue354</item>
+        <item>@style/LaunchSplashTheme.Hue357</item>
+    </array>
+    <style name="LaunchSplashTheme.Mono" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_mono_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_mono_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Gray" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_gray_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_gray_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue000" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue000_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue000_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue003" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue003_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue003_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue006" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue006_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue006_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue009" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue009_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue009_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue012" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue012_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue012_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue015" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue015_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue015_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue018" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue018_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue018_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue021" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue021_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue021_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue024" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue024_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue024_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue027" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue027_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue027_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue030" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue030_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue030_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue033" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue033_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue033_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue036" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue036_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue036_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue039" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue039_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue039_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue042" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue042_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue042_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue045" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue045_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue045_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue048" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue048_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue048_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue051" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue051_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue051_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue054" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue054_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue054_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue057" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue057_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue057_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue060" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue060_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue060_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue063" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue063_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue063_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue066" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue066_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue066_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue069" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue069_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue069_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue072" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue072_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue072_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue075" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue075_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue075_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue078" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue078_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue078_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue081" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue081_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue081_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue084" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue084_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue084_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue087" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue087_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue087_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue090" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue090_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue090_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue093" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue093_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue093_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue096" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue096_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue096_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue099" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue099_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue099_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue102" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue102_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue102_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue105" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue105_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue105_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue108" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue108_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue108_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue111" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue111_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue111_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue114" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue114_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue114_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue117" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue117_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue117_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue120" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue120_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue120_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue123" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue123_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue123_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue126" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue126_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue126_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue129" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue129_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue129_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue132" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue132_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue132_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue135" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue135_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue135_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue138" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue138_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue138_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue141" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue141_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue141_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue144" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue144_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue144_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue147" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue147_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue147_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue150" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue150_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue150_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue153" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue153_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue153_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue156" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue156_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue156_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue159" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue159_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue159_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue162" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue162_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue162_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue165" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue165_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue165_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue168" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue168_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue168_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue171" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue171_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue171_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue174" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue174_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue174_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue177" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue177_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue177_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue180" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue180_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue180_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue183" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue183_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue183_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue186" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue186_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue186_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue189" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue189_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue189_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue192" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue192_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue192_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue195" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue195_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue195_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue198" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue198_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue198_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue201" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue201_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue201_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue204" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue204_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue204_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue207" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue207_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue207_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue210" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue210_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue210_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue213" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue213_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue213_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue216" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue216_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue216_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue219" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue219_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue219_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue222" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue222_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue222_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue225" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue225_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue225_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue228" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue228_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue228_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue231" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue231_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue231_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue234" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue234_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue234_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue237" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue237_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue237_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue240" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue240_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue240_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue243" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue243_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue243_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue246" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue246_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue246_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue249" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue249_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue249_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue252" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue252_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue252_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue255" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue255_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue255_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue258" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue258_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue258_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue261" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue261_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue261_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue264" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue264_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue264_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue267" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue267_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue267_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue270" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue270_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue270_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue273" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue273_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue273_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue276" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue276_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue276_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue279" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue279_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue279_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue282" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue282_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue282_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue285" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue285_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue285_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue288" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue288_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue288_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue291" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue291_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue291_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue294" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue294_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue294_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue297" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue297_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue297_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue300" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue300_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue300_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue303" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue303_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue303_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue306" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue306_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue306_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue309" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue309_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue309_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue312" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue312_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue312_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue315" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue315_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue315_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue318" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue318_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue318_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue321" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue321_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue321_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue324" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue324_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue324_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue327" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue327_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue327_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue330" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue330_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue330_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue333" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue333_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue333_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue336" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue336_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue336_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue339" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue339_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue339_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue342" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue342_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue342_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue345" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue345_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue345_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue348" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue348_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue348_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue351" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue351_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue351_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue354" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue354_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue354_mark</item>
+    </style>
+    <style name="LaunchSplashTheme.Hue357" parent="LaunchTheme" tools:targetApi="31">
+        <item name="android:windowSplashScreenBackground">@color/launch_splash_hue357_background</item>
+        <item name="launchBrandMarkColor">@color/launch_splash_hue357_mark</item>
+    </style>
+    <color name="launch_splash_mono_background">#F9F9F9</color>
+    <color name="launch_splash_mono_mark">#000000</color>
+    <color name="launch_splash_gray_background">#F9F9F9</color>
+    <color name="launch_splash_gray_mark">#5E5E5E</color>
+    <color name="launch_splash_hue000_background">#FFF8F8</color>
+    <color name="launch_splash_hue000_mark">#8C4A60</color>
+    <color name="launch_splash_hue003_background">#FFF8F8</color>
+    <color name="launch_splash_hue003_mark">#8D4A5D</color>
+    <color name="launch_splash_hue006_background">#FFF8F7</color>
+    <color name="launch_splash_hue006_mark">#8D4959</color>
+    <color name="launch_splash_hue009_background">#FFF8F7</color>
+    <color name="launch_splash_hue009_mark">#8E4956</color>
+    <color name="launch_splash_hue012_background">#FFF8F7</color>
+    <color name="launch_splash_hue012_mark">#8F4952</color>
+    <color name="launch_splash_hue015_background">#FFF8F7</color>
+    <color name="launch_splash_hue015_mark">#8F4A4F</color>
+    <color name="launch_splash_hue018_background">#FFF8F7</color>
+    <color name="launch_splash_hue018_mark">#904A4B</color>
+    <color name="launch_splash_hue021_background">#FFF8F7</color>
+    <color name="launch_splash_hue021_mark">#904A48</color>
+    <color name="launch_splash_hue024_background">#FFF8F7</color>
+    <color name="launch_splash_hue024_mark">#904A44</color>
+    <color name="launch_splash_hue027_background">#FFF8F6</color>
+    <color name="launch_splash_hue027_mark">#904A41</color>
+    <color name="launch_splash_hue030_background">#FFF8F6</color>
+    <color name="launch_splash_hue030_mark">#904B3D</color>
+    <color name="launch_splash_hue033_background">#FFF8F6</color>
+    <color name="launch_splash_hue033_mark">#8F4B39</color>
+    <color name="launch_splash_hue036_background">#FFF8F6</color>
+    <color name="launch_splash_hue036_mark">#8F4C36</color>
+    <color name="launch_splash_hue039_background">#FFF8F6</color>
+    <color name="launch_splash_hue039_mark">#8F4C33</color>
+    <color name="launch_splash_hue042_background">#FFF8F6</color>
+    <color name="launch_splash_hue042_mark">#8E4D2F</color>
+    <color name="launch_splash_hue045_background">#FFF8F6</color>
+    <color name="launch_splash_hue045_mark">#8D4E2B</color>
+    <color name="launch_splash_hue048_background">#FFF8F6</color>
+    <color name="launch_splash_hue048_mark">#8C4E28</color>
+    <color name="launch_splash_hue051_background">#FFF8F5</color>
+    <color name="launch_splash_hue051_mark">#8B4F25</color>
+    <color name="launch_splash_hue054_background">#FFF8F5</color>
+    <color name="launch_splash_hue054_mark">#8A5022</color>
+    <color name="launch_splash_hue057_background">#FFF8F5</color>
+    <color name="launch_splash_hue057_mark">#89511F</color>
+    <color name="launch_splash_hue060_background">#FFF8F5</color>
+    <color name="launch_splash_hue060_mark">#87521C</color>
+    <color name="launch_splash_hue063_background">#FFF8F5</color>
+    <color name="launch_splash_hue063_mark">#86521A</color>
+    <color name="launch_splash_hue066_background">#FFF8F5</color>
+    <color name="launch_splash_hue066_mark">#855317</color>
+    <color name="launch_splash_hue069_background">#FFF8F4</color>
+    <color name="launch_splash_hue069_mark">#835414</color>
+    <color name="launch_splash_hue072_background">#FFF8F4</color>
+    <color name="launch_splash_hue072_mark">#815512</color>
+    <color name="launch_splash_hue075_background">#FFF8F4</color>
+    <color name="launch_splash_hue075_mark">#7F5610</color>
+    <color name="launch_splash_hue078_background">#FFF8F3</color>
+    <color name="launch_splash_hue078_mark">#7D570E</color>
+    <color name="launch_splash_hue081_background">#FFF8F3</color>
+    <color name="launch_splash_hue081_mark">#7B580D</color>
+    <color name="launch_splash_hue084_background">#FFF8F2</color>
+    <color name="launch_splash_hue084_mark">#79590C</color>
+    <color name="launch_splash_hue087_background">#FFF8F2</color>
+    <color name="launch_splash_hue087_mark">#775A0B</color>
+    <color name="launch_splash_hue090_background">#FFF8F1</color>
+    <color name="launch_splash_hue090_mark">#745B0C</color>
+    <color name="launch_splash_hue093_background">#FFF8F0</color>
+    <color name="launch_splash_hue093_mark">#725C0C</color>
+    <color name="launch_splash_hue096_background">#FFF8EF</color>
+    <color name="launch_splash_hue096_mark">#6F5D0E</color>
+    <color name="launch_splash_hue099_background">#FFF9ED</color>
+    <color name="launch_splash_hue099_mark">#6D5E0F</color>
+    <color name="launch_splash_hue102_background">#FFF9EB</color>
+    <color name="launch_splash_hue102_mark">#6A5F11</color>
+    <color name="launch_splash_hue105_background">#FEF9EB</color>
+    <color name="launch_splash_hue105_mark">#676013</color>
+    <color name="launch_splash_hue108_background">#FEF9EC</color>
+    <color name="launch_splash_hue108_mark">#646116</color>
+    <color name="launch_splash_hue111_background">#FDF9EC</color>
+    <color name="launch_splash_hue111_mark">#616118</color>
+    <color name="launch_splash_hue114_background">#FDF9EC</color>
+    <color name="launch_splash_hue114_mark">#5F621A</color>
+    <color name="launch_splash_hue117_background">#FCFAED</color>
+    <color name="launch_splash_hue117_mark">#5B631E</color>
+    <color name="launch_splash_hue120_background">#FBFAED</color>
+    <color name="launch_splash_hue120_mark">#586420</color>
+    <color name="launch_splash_hue123_background">#FBFAED</color>
+    <color name="launch_splash_hue123_mark">#556423</color>
+    <color name="launch_splash_hue126_background">#FAFAEE</color>
+    <color name="launch_splash_hue126_mark">#526526</color>
+    <color name="launch_splash_hue129_background">#FAFAEE</color>
+    <color name="launch_splash_hue129_mark">#4F6629</color>
+    <color name="launch_splash_hue132_background">#F9FAEF</color>
+    <color name="launch_splash_hue132_mark">#4B662C</color>
+    <color name="launch_splash_hue135_background">#F9FAEF</color>
+    <color name="launch_splash_hue135_mark">#48672F</color>
+    <color name="launch_splash_hue138_background">#F8FAF0</color>
+    <color name="launch_splash_hue138_mark">#456731</color>
+    <color name="launch_splash_hue141_background">#F8FAF0</color>
+    <color name="launch_splash_hue141_mark">#416835</color>
+    <color name="launch_splash_hue144_background">#F7FBF1</color>
+    <color name="launch_splash_hue144_mark">#3D6838</color>
+    <color name="launch_splash_hue147_background">#F7FBF1</color>
+    <color name="launch_splash_hue147_mark">#3A693B</color>
+    <color name="launch_splash_hue150_background">#F7FBF2</color>
+    <color name="launch_splash_hue150_mark">#36693E</color>
+    <color name="launch_splash_hue153_background">#F6FBF3</color>
+    <color name="launch_splash_hue153_mark">#326941</color>
+    <color name="launch_splash_hue156_background">#F6FBF3</color>
+    <color name="launch_splash_hue156_mark">#2E6A44</color>
+    <color name="launch_splash_hue159_background">#F6FBF4</color>
+    <color name="launch_splash_hue159_mark">#2A6A47</color>
+    <color name="launch_splash_hue162_background">#F6FBF4</color>
+    <color name="launch_splash_hue162_mark">#266A4A</color>
+    <color name="launch_splash_hue165_background">#F5FBF5</color>
+    <color name="launch_splash_hue165_mark">#216A4D</color>
+    <color name="launch_splash_hue168_background">#F5FBF5</color>
+    <color name="launch_splash_hue168_mark">#1D6B50</color>
+    <color name="launch_splash_hue171_background">#F5FBF6</color>
+    <color name="launch_splash_hue171_mark">#196B52</color>
+    <color name="launch_splash_hue174_background">#F5FBF6</color>
+    <color name="launch_splash_hue174_mark">#146B55</color>
+    <color name="launch_splash_hue177_background">#F5FBF7</color>
+    <color name="launch_splash_hue177_mark">#0E6B58</color>
+    <color name="launch_splash_hue180_background">#F5FBF7</color>
+    <color name="launch_splash_hue180_mark">#076B5B</color>
+    <color name="launch_splash_hue183_background">#F4FBF8</color>
+    <color name="launch_splash_hue183_mark">#006B5E</color>
+    <color name="launch_splash_hue186_background">#F4FBF8</color>
+    <color name="launch_splash_hue186_mark">#006A61</color>
+    <color name="launch_splash_hue189_background">#F4FBF9</color>
+    <color name="launch_splash_hue189_mark">#006A63</color>
+    <color name="launch_splash_hue192_background">#F4FBF9</color>
+    <color name="launch_splash_hue192_mark">#006A66</color>
+    <color name="launch_splash_hue195_background">#F4FBF9</color>
+    <color name="launch_splash_hue195_mark">#006A68</color>
+    <color name="launch_splash_hue198_background">#F4FBFA</color>
+    <color name="launch_splash_hue198_mark">#00696B</color>
+    <color name="launch_splash_hue201_background">#F4FBFA</color>
+    <color name="launch_splash_hue201_mark">#00696D</color>
+    <color name="launch_splash_hue204_background">#F4FAFB</color>
+    <color name="launch_splash_hue204_mark">#00696F</color>
+    <color name="launch_splash_hue207_background">#F5FAFB</color>
+    <color name="launch_splash_hue207_mark">#006972</color>
+    <color name="launch_splash_hue210_background">#F5FAFB</color>
+    <color name="launch_splash_hue210_mark">#006874</color>
+    <color name="launch_splash_hue213_background">#F5FAFC</color>
+    <color name="launch_splash_hue213_mark">#006877</color>
+    <color name="launch_splash_hue216_background">#F5FAFC</color>
+    <color name="launch_splash_hue216_mark">#006879</color>
+    <color name="launch_splash_hue219_background">#F5FAFC</color>
+    <color name="launch_splash_hue219_mark">#00687B</color>
+    <color name="launch_splash_hue222_background">#F5FAFD</color>
+    <color name="launch_splash_hue222_mark">#04677E</color>
+    <color name="launch_splash_hue225_background">#F5FAFD</color>
+    <color name="launch_splash_hue225_mark">#0A6780</color>
+    <color name="launch_splash_hue228_background">#F6FAFD</color>
+    <color name="launch_splash_hue228_mark">#126682</color>
+    <color name="launch_splash_hue231_background">#F6FAFE</color>
+    <color name="launch_splash_hue231_mark">#156683</color>
+    <color name="launch_splash_hue234_background">#F6FAFE</color>
+    <color name="launch_splash_hue234_mark">#1B6585</color>
+    <color name="launch_splash_hue237_background">#F6FAFE</color>
+    <color name="launch_splash_hue237_mark">#216487</color>
+    <color name="launch_splash_hue240_background">#F6FAFE</color>
+    <color name="launch_splash_hue240_mark">#236488</color>
+    <color name="launch_splash_hue243_background">#F7F9FF</color>
+    <color name="launch_splash_hue243_mark">#29638A</color>
+    <color name="launch_splash_hue246_background">#F7F9FF</color>
+    <color name="launch_splash_hue246_mark">#2B638B</color>
+    <color name="launch_splash_hue249_background">#F7F9FF</color>
+    <color name="launch_splash_hue249_mark">#30628C</color>
+    <color name="launch_splash_hue252_background">#F8F9FF</color>
+    <color name="launch_splash_hue252_mark">#34618D</color>
+    <color name="launch_splash_hue255_background">#F8F9FF</color>
+    <color name="launch_splash_hue255_mark">#36618E</color>
+    <color name="launch_splash_hue258_background">#F8F9FF</color>
+    <color name="launch_splash_hue258_mark">#3B608F</color>
+    <color name="launch_splash_hue261_background">#F9F9FF</color>
+    <color name="launch_splash_hue261_mark">#3E5F90</color>
+    <color name="launch_splash_hue264_background">#F9F9FF</color>
+    <color name="launch_splash_hue264_mark">#425E91</color>
+    <color name="launch_splash_hue267_background">#F9F9FF</color>
+    <color name="launch_splash_hue267_mark">#445E91</color>
+    <color name="launch_splash_hue270_background">#FAF8FF</color>
+    <color name="launch_splash_hue270_mark">#485D92</color>
+    <color name="launch_splash_hue273_background">#FAF8FF</color>
+    <color name="launch_splash_hue273_mark">#4B5C92</color>
+    <color name="launch_splash_hue276_background">#FBF8FF</color>
+    <color name="launch_splash_hue276_mark">#4F5B92</color>
+    <color name="launch_splash_hue279_background">#FBF8FF</color>
+    <color name="launch_splash_hue279_mark">#525A92</color>
+    <color name="launch_splash_hue282_background">#FBF8FF</color>
+    <color name="launch_splash_hue282_mark">#555A92</color>
+    <color name="launch_splash_hue285_background">#FCF8FF</color>
+    <color name="launch_splash_hue285_mark">#585992</color>
+    <color name="launch_splash_hue288_background">#FCF8FF</color>
+    <color name="launch_splash_hue288_mark">#5B5891</color>
+    <color name="launch_splash_hue291_background">#FCF8FF</color>
+    <color name="launch_splash_hue291_mark">#5D5791</color>
+    <color name="launch_splash_hue294_background">#FDF8FF</color>
+    <color name="launch_splash_hue294_mark">#605690</color>
+    <color name="launch_splash_hue297_background">#FDF7FF</color>
+    <color name="launch_splash_hue297_mark">#63568F</color>
+    <color name="launch_splash_hue300_background">#FEF7FF</color>
+    <color name="launch_splash_hue300_mark">#66558E</color>
+    <color name="launch_splash_hue303_background">#FEF7FF</color>
+    <color name="launch_splash_hue303_mark">#68548D</color>
+    <color name="launch_splash_hue306_background">#FFF7FF</color>
+    <color name="launch_splash_hue306_mark">#6B538C</color>
+    <color name="launch_splash_hue309_background">#FFF7FF</color>
+    <color name="launch_splash_hue309_mark">#6D538B</color>
+    <color name="launch_splash_hue312_background">#FFF7FD</color>
+    <color name="launch_splash_hue312_mark">#705289</color>
+    <color name="launch_splash_hue315_background">#FFF7FD</color>
+    <color name="launch_splash_hue315_mark">#725188</color>
+    <color name="launch_splash_hue318_background">#FFF7FC</color>
+    <color name="launch_splash_hue318_mark">#745086</color>
+    <color name="launch_splash_hue321_background">#FFF7FB</color>
+    <color name="launch_splash_hue321_mark">#775084</color>
+    <color name="launch_splash_hue324_background">#FFF7FB</color>
+    <color name="launch_splash_hue324_mark">#794F82</color>
+    <color name="launch_splash_hue327_background">#FFF7FA</color>
+    <color name="launch_splash_hue327_mark">#7B4E80</color>
+    <color name="launch_splash_hue330_background">#FFF7FA</color>
+    <color name="launch_splash_hue330_mark">#7D4E7D</color>
+    <color name="launch_splash_hue333_background">#FFF7F9</color>
+    <color name="launch_splash_hue333_mark">#7F4D7B</color>
+    <color name="launch_splash_hue336_background">#FFF7F9</color>
+    <color name="launch_splash_hue336_mark">#814D78</color>
+    <color name="launch_splash_hue339_background">#FFF7F9</color>
+    <color name="launch_splash_hue339_mark">#824C76</color>
+    <color name="launch_splash_hue342_background">#FFF8F9</color>
+    <color name="launch_splash_hue342_mark">#844C73</color>
+    <color name="launch_splash_hue345_background">#FFF8F9</color>
+    <color name="launch_splash_hue345_mark">#854B70</color>
+    <color name="launch_splash_hue348_background">#FFF8F8</color>
+    <color name="launch_splash_hue348_mark">#874B6D</color>
+    <color name="launch_splash_hue351_background">#FFF8F8</color>
+    <color name="launch_splash_hue351_mark">#884B6A</color>
+    <color name="launch_splash_hue354_background">#FFF8F8</color>
+    <color name="launch_splash_hue354_mark">#894A67</color>
+    <color name="launch_splash_hue357_background">#FFF8F8</color>
+    <color name="launch_splash_hue357_mark">#8B4A63</color>
+</resources>

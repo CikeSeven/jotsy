@@ -8,6 +8,7 @@
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">@color/launch_background</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/launch_brand_mark_splash</item>
+        <item name="launchBrandMarkColor">@color/launch_brand_mark</item>
         <!-- Show the icon for every launch source (the default may be a plain colour, e.g. for
              am start), so the first Flutter frame always has a mark to continue. -->
         <item name="android:windowSplashScreenBehavior" tools:targetApi="33">icon_preferred</item>

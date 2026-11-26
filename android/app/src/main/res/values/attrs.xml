@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 系统闪屏品牌图形（drawable/launch_brand_mark.xml）的颜色：LaunchTheme 取默认主题色，
+         launch_splash_themes.xml 里的各档闪屏主题取对应主题色。 -->
+    <attr name="launchBrandMarkColor" format="color" />
+</resources>

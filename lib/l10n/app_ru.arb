@@ -22647,6 +22647,221 @@
       }
     }
   },
+  "storageLocationTitle": "Расположение данных",
+  "@storageLocationTitle": {
+    "description": "Storage page (desktop): heading of the card showing where app data is stored."
+  },
+  "storageLocationDefaultBadge": "По умолчанию",
+  "@storageLocationDefaultBadge": {
+    "description": "Storage location badge when using the system default app support folder."
+  },
+  "storageLocationCustomBadge": "Своя папка",
+  "@storageLocationCustomBadge": {
+    "description": "Storage location badge when using a user-selected custom folder."
+  },
+  "storageLocationPortableBadge": "Портативный режим",
+  "@storageLocationPortableBadge": {
+    "description": "Storage location badge when configured via portable config alongside the executable."
+  },
+  "storageLocationDescription": "Здесь хранятся база дневников, фото, видео, аудиозаписи, вложения, фоны, импортированные шрифты и состояние синхронизации. Настройки и код-пароль остаются в системной папке конфигурации.",
+  "@storageLocationDescription": {
+    "description": "Storage location card: explains what data lives in the data root directory."
+  },
+  "storageLocationOpenFolder": "Открыть папку",
+  "@storageLocationOpenFolder": {
+    "description": "Button to open the current data directory in the system file manager."
+  },
+  "storageLocationChangeButton": "Изменить папку",
+  "@storageLocationChangeButton": {
+    "description": "Button to pick a new data storage folder and migrate data."
+  },
+  "storageLocationResetDefault": "По умолчанию",
+  "@storageLocationResetDefault": {
+    "description": "Button to migrate data back to the default system support directory."
+  },
+  "storageLocationOpenFailed": "Не удалось открыть папку данных",
+  "@storageLocationOpenFailed": {
+    "description": "SnackBar shown when launching the system file manager fails."
+  },
+  "storageLocationPickTitle": "Выберите папку для хранения данных",
+  "@storageLocationPickTitle": {
+    "description": "Title of the desktop directory picker dialog for choosing data storage location."
+  },
+  "storageLocationErrorSamePath": "Эта папка уже используется",
+  "@storageLocationErrorSamePath": {
+    "description": "SnackBar shown when the user selects the folder currently in use."
+  },
+  "storageLocationErrorInvalidPath": "Выберите корректный полный путь к папке.",
+  "@storageLocationErrorInvalidPath": {
+    "description": "Dialog message when the chosen path is empty or relative."
+  },
+  "storageLocationErrorDriveRoot": "Не выбирайте корневой каталог диска. Создайте или выберите отдельную подпапку.",
+  "@storageLocationErrorDriveRoot": {
+    "description": "Dialog message when the user selects a drive root or filesystem root."
+  },
+  "storageLocationErrorNested": "Новая папка не может находиться внутри текущей папки данных или содержать её.",
+  "@storageLocationErrorNested": {
+    "description": "Dialog message when the target directory overlaps with the current data directory."
+  },
+  "storageLocationErrorInsideApp": "Папка данных не может находиться внутри каталога установки программы, так как при обновлении файлы заменяются.",
+  "@storageLocationErrorInsideApp": {
+    "description": "Dialog message when the target directory is inside the app bundle or installation directory."
+  },
+  "storageLocationErrorNotWritable": "Нет прав на запись в выбранную папку.",
+  "@storageLocationErrorNotWritable": {
+    "description": "Dialog message when a write probe fails in the target folder."
+  },
+  "storageLocationErrorNotEmpty": "Выберите пустую папку или папку с существующими данными Jotsy, чтобы не смешивать файлы.",
+  "@storageLocationErrorNotEmpty": {
+    "description": "Dialog message when the selected folder contains non-Jotsy files."
+  },
+  "storageLocationInvalidTitle": "Нельзя использовать эту папку",
+  "@storageLocationInvalidTitle": {
+    "description": "Title of the alert dialog shown when the chosen data folder is invalid."
+  },
+  "storageLocationConfirmMigrateTitle": "Изменить папку хранения данных?",
+  "@storageLocationConfirmMigrateTitle": {
+    "description": "Confirmation dialog title before migrating data to a new custom folder."
+  },
+  "storageLocationConfirmMigrateBody": "База данных, медиафайлы, фоны, шрифты и состояние синхронизации будут скопированы и перепривязаны к новой папке, после чего перенесённые файлы в старой папке будут удалены. Не закрывайте Jotsy во время переноса.",
+  "@storageLocationConfirmMigrateBody": {
+    "description": "Confirmation dialog explanation before migrating data to a new folder."
+  },
+  "storageLocationConfirmMigrateAction": "Перенести",
+  "@storageLocationConfirmMigrateAction": {
+    "description": "Confirm button label to start migrating data to a new folder."
+  },
+  "storageLocationConfirmResetTitle": "Вернуть расположение по умолчанию?",
+  "@storageLocationConfirmResetTitle": {
+    "description": "Confirmation dialog title before moving data back to the default system support folder."
+  },
+  "storageLocationConfirmSwitchTitle": "Переключиться на существующие данные?",
+  "@storageLocationConfirmSwitchTitle": {
+    "description": "Confirmation dialog title when the selected folder already contains a Jotsy database."
+  },
+  "storageLocationConfirmSwitchBody": "В выбранной папке уже есть данные Jotsy. Приложение переключится на работу с ними без удаления файлов в текущей папке.",
+  "@storageLocationConfirmSwitchBody": {
+    "description": "Confirmation dialog explanation when switching to an existing Jotsy data folder."
+  },
+  "storageLocationConfirmSwitchAction": "Переключиться",
+  "@storageLocationConfirmSwitchAction": {
+    "description": "Confirm button label to switch to an existing Jotsy data folder."
+  },
+  "storageLocationCurrentLabel": "Текущая папка",
+  "@storageLocationCurrentLabel": {
+    "description": "Label above the current data directory path in confirmation dialogs."
+  },
+  "storageLocationTargetLabel": "Новая папка",
+  "@storageLocationTargetLabel": {
+    "description": "Label above the target data directory path in confirmation dialogs."
+  },
+  "storageLocationPreparing": "Подготовка к переносу данных…",
+  "@storageLocationPreparing": {
+    "description": "Busy overlay label while flushing pending writes and closing the database before migration."
+  },
+  "storageLocationMigratingTitle": "Перенос расположения данных",
+  "@storageLocationMigratingTitle": {
+    "description": "Heading on the full-screen migration progress screen."
+  },
+  "storageLocationMigratingHint": "Не закрывайте Jotsy до завершения переноса. Исходные файлы сохраняются до проверки новой папки.",
+  "@storageLocationMigratingHint": {
+    "description": "Subtitle on the migration progress screen."
+  },
+  "storageLocationPhasePreparing": "Подготовка файлов…",
+  "@storageLocationPhasePreparing": {
+    "description": "Migration phase label while scanning files to copy."
+  },
+  "storageLocationPhaseCopying": "Копирование дневников и медиа…",
+  "@storageLocationPhaseCopying": {
+    "description": "Migration phase label while copying files."
+  },
+  "storageLocationPhaseRebinding": "Обновление путей к медиа…",
+  "@storageLocationPhaseRebinding": {
+    "description": "Migration phase label while rebinding SQLite media paths."
+  },
+  "storageLocationPhaseFinalizing": "Сохранение параметров…",
+  "@storageLocationPhaseFinalizing": {
+    "description": "Migration phase label while committing configuration."
+  },
+  "storageLocationPhaseCleaningUp": "Очистка старой папки…",
+  "@storageLocationPhaseCleaningUp": {
+    "description": "Migration phase label while removing migrated files from the old location."
+  },
+  "storageLocationMigrationCounts": "{copied} / {total} файлов · {copiedSize} / {totalSize}",
+  "@storageLocationMigrationCounts": {
+    "description": "Migration progress counter showing files and bytes copied.",
+    "placeholders": {
+      "copied": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "copiedSize": {
+        "type": "String"
+      },
+      "totalSize": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedNotice": "Данные перенесены в {path}",
+  "@storageLocationMigratedNotice": {
+    "description": "SnackBar shown after migrating data to a new location.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedCleanupPartial": "Данные перенесены в {path}. Некоторые старые файлы были заняты и остались на месте.",
+  "@storageLocationMigratedCleanupPartial": {
+    "description": "SnackBar shown when migration succeeded but some files in the old directory were locked.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationSwitchedNotice": "Папка данных переключена на {path}",
+  "@storageLocationSwitchedNotice": {
+    "description": "SnackBar shown after switching to an existing data folder.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigrationFailed": "Не удалось изменить папку данных; сохранена исходная папка ({error})",
+  "@storageLocationMigrationFailed": {
+    "description": "SnackBar shown when relocation fails and rolls back to the original location.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationStartupFailedTitle": "Не удалось перенести данные при запуске",
+  "@storageLocationStartupFailedTitle": {
+    "description": "Error screen heading when a pending startup migration fails."
+  },
+  "storageLocationStartupFailedBody": "Исходные данные в безопасности. Вы можете повторить перенос или открыть Jotsy из прежней папки.\n\n{error}",
+  "@storageLocationStartupFailedBody": {
+    "description": "Error screen explanation when a pending startup migration fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationUseOldLocation": "Открыть прежнюю папку",
+  "@storageLocationUseOldLocation": {
+    "description": "Button to cancel pending startup migration and open using the old directory."
+  },
+  "storageLocationRetryMigration": "Повторить",
+  "@storageLocationRetryMigration": {
+    "description": "Button to retry pending startup migration."
+  },
   "settingsExpandPublishPanel": "Раскрывать детали при публикации",
   "@settingsExpandPublishPanel": {
     "description": "Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary."

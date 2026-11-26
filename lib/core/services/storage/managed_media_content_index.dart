@@ -27,6 +27,9 @@ abstract final class ManagedMediaContentIndex {
     ),
   );
 
+  /// 清空进程内索引实例缓存（数据位置迁移或测试复位时调用）。
+  static void clearCache() => _byRoot.clear();
+
   @visibleForTesting
-  static void debugReset() => _byRoot.clear();
+  static void debugReset() => clearCache();
 }

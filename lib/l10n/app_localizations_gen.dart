@@ -30192,6 +30192,275 @@ abstract class AppLocalizations {
   /// **'Transferred to \"{target}\". Moved entries now only show in that notebook'**
   String notebookContentsTransferredPrivate(String target);
 
+  /// Storage page (desktop): heading of the card showing where app data is stored.
+  ///
+  /// In en, this message translates to:
+  /// **'Data storage location'**
+  String get storageLocationTitle;
+
+  /// Storage location badge when using the system default app support folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get storageLocationDefaultBadge;
+
+  /// Storage location badge when using a user-selected custom folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get storageLocationCustomBadge;
+
+  /// Storage location badge when configured via portable config alongside the executable.
+  ///
+  /// In en, this message translates to:
+  /// **'Portable'**
+  String get storageLocationPortableBadge;
+
+  /// Storage location card: explains what data lives in the data root directory.
+  ///
+  /// In en, this message translates to:
+  /// **'Stores your diary database, images, videos, recordings, attachments, backgrounds, imported fonts, and sync/backup state. Preferences and passcodes stay in the system config directory.'**
+  String get storageLocationDescription;
+
+  /// Button to open the current data directory in the system file manager.
+  ///
+  /// In en, this message translates to:
+  /// **'Open folder'**
+  String get storageLocationOpenFolder;
+
+  /// Button to pick a new data storage folder and migrate data.
+  ///
+  /// In en, this message translates to:
+  /// **'Change location'**
+  String get storageLocationChangeButton;
+
+  /// Button to migrate data back to the default system support directory.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get storageLocationResetDefault;
+
+  /// SnackBar shown when launching the system file manager fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the data folder'**
+  String get storageLocationOpenFailed;
+
+  /// Title of the desktop directory picker dialog for choosing data storage location.
+  ///
+  /// In en, this message translates to:
+  /// **'Select data storage folder'**
+  String get storageLocationPickTitle;
+
+  /// SnackBar shown when the user selects the folder currently in use.
+  ///
+  /// In en, this message translates to:
+  /// **'Already using this folder'**
+  String get storageLocationErrorSamePath;
+
+  /// Dialog message when the chosen path is empty or relative.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose a valid absolute folder path.'**
+  String get storageLocationErrorInvalidPath;
+
+  /// Dialog message when the user selects a drive root or filesystem root.
+  ///
+  /// In en, this message translates to:
+  /// **'Please don\'t select a drive root directly. Choose or create a dedicated subfolder instead.'**
+  String get storageLocationErrorDriveRoot;
+
+  /// Dialog message when the target directory overlaps with the current data directory.
+  ///
+  /// In en, this message translates to:
+  /// **'The new folder cannot be inside or contain the current data folder.'**
+  String get storageLocationErrorNested;
+
+  /// Dialog message when the target directory is inside the app bundle or installation directory.
+  ///
+  /// In en, this message translates to:
+  /// **'The data folder cannot be inside the program installation folder, as updates replace files there.'**
+  String get storageLocationErrorInsideApp;
+
+  /// Dialog message when a write probe fails in the target folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Jotsy doesn\'t have write permission for the selected folder.'**
+  String get storageLocationErrorNotWritable;
+
+  /// Dialog message when the selected folder contains non-Jotsy files.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose an empty folder or an existing Jotsy data folder so your diaries stay separate from other files.'**
+  String get storageLocationErrorNotEmpty;
+
+  /// Title of the alert dialog shown when the chosen data folder is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot use this folder'**
+  String get storageLocationInvalidTitle;
+
+  /// Confirmation dialog title before migrating data to a new custom folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Change data storage location?'**
+  String get storageLocationConfirmMigrateTitle;
+
+  /// Confirmation dialog explanation before migrating data to a new folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Your database, media files, backgrounds, imported fonts, and sync state will be copied and rebound to the new folder, then the migrated files in the old folder will be cleaned up. Please don\'t close Jotsy during migration.'**
+  String get storageLocationConfirmMigrateBody;
+
+  /// Confirm button label to start migrating data to a new folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Move data'**
+  String get storageLocationConfirmMigrateAction;
+
+  /// Confirmation dialog title before moving data back to the default system support folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default location?'**
+  String get storageLocationConfirmResetTitle;
+
+  /// Confirmation dialog title when the selected folder already contains a Jotsy database.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to existing data?'**
+  String get storageLocationConfirmSwitchTitle;
+
+  /// Confirmation dialog explanation when switching to an existing Jotsy data folder.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected folder already contains Jotsy diary data. Switching will open the data in that folder instead (files in your current folder will remain untouched).'**
+  String get storageLocationConfirmSwitchBody;
+
+  /// Confirm button label to switch to an existing Jotsy data folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get storageLocationConfirmSwitchAction;
+
+  /// Label above the current data directory path in confirmation dialogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Current location'**
+  String get storageLocationCurrentLabel;
+
+  /// Label above the target data directory path in confirmation dialogs.
+  ///
+  /// In en, this message translates to:
+  /// **'New location'**
+  String get storageLocationTargetLabel;
+
+  /// Busy overlay label while flushing pending writes and closing the database before migration.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing to move data...'**
+  String get storageLocationPreparing;
+
+  /// Heading on the full-screen migration progress screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving data storage location'**
+  String get storageLocationMigratingTitle;
+
+  /// Subtitle on the migration progress screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Please keep Jotsy open until the transfer finishes. Original files stay safe until the new location is verified.'**
+  String get storageLocationMigratingHint;
+
+  /// Migration phase label while scanning files to copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing files...'**
+  String get storageLocationPhasePreparing;
+
+  /// Migration phase label while copying files.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying diaries and media...'**
+  String get storageLocationPhaseCopying;
+
+  /// Migration phase label while rebinding SQLite media paths.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating media paths...'**
+  String get storageLocationPhaseRebinding;
+
+  /// Migration phase label while committing configuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving location settings...'**
+  String get storageLocationPhaseFinalizing;
+
+  /// Migration phase label while removing migrated files from the old location.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning up old location...'**
+  String get storageLocationPhaseCleaningUp;
+
+  /// Migration progress counter showing files and bytes copied.
+  ///
+  /// In en, this message translates to:
+  /// **'{copied} / {total} files · {copiedSize} / {totalSize}'**
+  String storageLocationMigrationCounts(
+    int copied,
+    int total,
+    String copiedSize,
+    String totalSize,
+  );
+
+  /// SnackBar shown after migrating data to a new location.
+  ///
+  /// In en, this message translates to:
+  /// **'Data storage moved to {path}'**
+  String storageLocationMigratedNotice(String path);
+
+  /// SnackBar shown when migration succeeded but some files in the old directory were locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Data moved to {path}. Some old files could not be removed automatically and can be deleted manually.'**
+  String storageLocationMigratedCleanupPartial(String path);
+
+  /// SnackBar shown after switching to an existing data folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched data storage to {path}'**
+  String storageLocationSwitchedNotice(String path);
+
+  /// SnackBar shown when relocation fails and rolls back to the original location.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change data location; kept original data ({error})'**
+  String storageLocationMigrationFailed(String error);
+
+  /// Error screen heading when a pending startup migration fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not move data on startup'**
+  String get storageLocationStartupFailedTitle;
+
+  /// Error screen explanation when a pending startup migration fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Your original data is safe. You can retry moving it or open Jotsy using the previous location.\n\n{error}'**
+  String storageLocationStartupFailedBody(String error);
+
+  /// Button to cancel pending startup migration and open using the old directory.
+  ///
+  /// In en, this message translates to:
+  /// **'Use previous location'**
+  String get storageLocationUseOldLocation;
+
+  /// Button to retry pending startup migration.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get storageLocationRetryMigration;
+
   /// Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary.
   ///
   /// In en, this message translates to:

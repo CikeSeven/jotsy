@@ -91,7 +91,7 @@ class StorageMediaService {
   final Duration mediaWritesTimeout;
 
   static Future<String?> _defaultFontsPath() async => p.join(
-    (await getApplicationSupportDirectory()).path,
+    (await appFontsBaseDirectory()).path,
     DiaryFontStorageService.directoryName,
   );
 

@@ -187,11 +187,14 @@ class DiaryCardViewData {
   static String? firstImageInContent(String contentJson) =>
       extractDiaryImageSources(contentJson).firstOrNull;
 
-  /// 测试用：清空缓存，避免用例之间相互影响。
-  static void debugClearCache() {
+  /// 清空派生数据缓存（数据位置迁移后调用）。
+  static void clearCache() {
     _cache.clear();
     _cachedTextUnits = 0;
   }
+
+  /// 测试用：清空缓存，避免用例之间相互影响。
+  static void debugClearCache() => clearCache();
 
   static Map<String, Object?> _decodeContext(String raw) {
     try {

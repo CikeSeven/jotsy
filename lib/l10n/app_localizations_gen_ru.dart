@@ -20101,6 +20101,169 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get storageLocationTitle => 'Расположение данных';
+
+  @override
+  String get storageLocationDefaultBadge => 'По умолчанию';
+
+  @override
+  String get storageLocationCustomBadge => 'Своя папка';
+
+  @override
+  String get storageLocationPortableBadge => 'Портативный режим';
+
+  @override
+  String get storageLocationDescription =>
+      'Здесь хранятся база дневников, фото, видео, аудиозаписи, вложения, фоны, импортированные шрифты и состояние синхронизации. Настройки и код-пароль остаются в системной папке конфигурации.';
+
+  @override
+  String get storageLocationOpenFolder => 'Открыть папку';
+
+  @override
+  String get storageLocationChangeButton => 'Изменить папку';
+
+  @override
+  String get storageLocationResetDefault => 'По умолчанию';
+
+  @override
+  String get storageLocationOpenFailed => 'Не удалось открыть папку данных';
+
+  @override
+  String get storageLocationPickTitle => 'Выберите папку для хранения данных';
+
+  @override
+  String get storageLocationErrorSamePath => 'Эта папка уже используется';
+
+  @override
+  String get storageLocationErrorInvalidPath =>
+      'Выберите корректный полный путь к папке.';
+
+  @override
+  String get storageLocationErrorDriveRoot =>
+      'Не выбирайте корневой каталог диска. Создайте или выберите отдельную подпапку.';
+
+  @override
+  String get storageLocationErrorNested =>
+      'Новая папка не может находиться внутри текущей папки данных или содержать её.';
+
+  @override
+  String get storageLocationErrorInsideApp =>
+      'Папка данных не может находиться внутри каталога установки программы, так как при обновлении файлы заменяются.';
+
+  @override
+  String get storageLocationErrorNotWritable =>
+      'Нет прав на запись в выбранную папку.';
+
+  @override
+  String get storageLocationErrorNotEmpty =>
+      'Выберите пустую папку или папку с существующими данными Jotsy, чтобы не смешивать файлы.';
+
+  @override
+  String get storageLocationInvalidTitle => 'Нельзя использовать эту папку';
+
+  @override
+  String get storageLocationConfirmMigrateTitle =>
+      'Изменить папку хранения данных?';
+
+  @override
+  String get storageLocationConfirmMigrateBody =>
+      'База данных, медиафайлы, фоны, шрифты и состояние синхронизации будут скопированы и перепривязаны к новой папке, после чего перенесённые файлы в старой папке будут удалены. Не закрывайте Jotsy во время переноса.';
+
+  @override
+  String get storageLocationConfirmMigrateAction => 'Перенести';
+
+  @override
+  String get storageLocationConfirmResetTitle =>
+      'Вернуть расположение по умолчанию?';
+
+  @override
+  String get storageLocationConfirmSwitchTitle =>
+      'Переключиться на существующие данные?';
+
+  @override
+  String get storageLocationConfirmSwitchBody =>
+      'В выбранной папке уже есть данные Jotsy. Приложение переключится на работу с ними без удаления файлов в текущей папке.';
+
+  @override
+  String get storageLocationConfirmSwitchAction => 'Переключиться';
+
+  @override
+  String get storageLocationCurrentLabel => 'Текущая папка';
+
+  @override
+  String get storageLocationTargetLabel => 'Новая папка';
+
+  @override
+  String get storageLocationPreparing => 'Подготовка к переносу данных…';
+
+  @override
+  String get storageLocationMigratingTitle => 'Перенос расположения данных';
+
+  @override
+  String get storageLocationMigratingHint =>
+      'Не закрывайте Jotsy до завершения переноса. Исходные файлы сохраняются до проверки новой папки.';
+
+  @override
+  String get storageLocationPhasePreparing => 'Подготовка файлов…';
+
+  @override
+  String get storageLocationPhaseCopying => 'Копирование дневников и медиа…';
+
+  @override
+  String get storageLocationPhaseRebinding => 'Обновление путей к медиа…';
+
+  @override
+  String get storageLocationPhaseFinalizing => 'Сохранение параметров…';
+
+  @override
+  String get storageLocationPhaseCleaningUp => 'Очистка старой папки…';
+
+  @override
+  String storageLocationMigrationCounts(
+    int copied,
+    int total,
+    String copiedSize,
+    String totalSize,
+  ) {
+    return '$copied / $total файлов · $copiedSize / $totalSize';
+  }
+
+  @override
+  String storageLocationMigratedNotice(String path) {
+    return 'Данные перенесены в $path';
+  }
+
+  @override
+  String storageLocationMigratedCleanupPartial(String path) {
+    return 'Данные перенесены в $path. Некоторые старые файлы были заняты и остались на месте.';
+  }
+
+  @override
+  String storageLocationSwitchedNotice(String path) {
+    return 'Папка данных переключена на $path';
+  }
+
+  @override
+  String storageLocationMigrationFailed(String error) {
+    return 'Не удалось изменить папку данных; сохранена исходная папка ($error)';
+  }
+
+  @override
+  String get storageLocationStartupFailedTitle =>
+      'Не удалось перенести данные при запуске';
+
+  @override
+  String storageLocationStartupFailedBody(String error) {
+    return 'Исходные данные в безопасности. Вы можете повторить перенос или открыть Jotsy из прежней папки.\n\n$error';
+  }
+
+  @override
+  String get storageLocationUseOldLocation => 'Открыть прежнюю папку';
+
+  @override
+  String get storageLocationRetryMigration => 'Повторить';
+
+  @override
   String get settingsExpandPublishPanel => 'Раскрывать детали при публикации';
 
   @override

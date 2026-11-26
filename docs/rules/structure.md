@@ -17,7 +17,7 @@
 
 ## lib/core/services
 平铺文件按前缀分组：
-- 平台与目录：`app_platform.dart`（`AppPlatform`）、`app_data_directory.dart`（`appDataRootDirectory`）、数据库 provider `app_service.dart`。
+- 平台与目录：`app_platform.dart`（`AppPlatform`）、`app_data_directory.dart`（`appDataRootDirectory`、`appFontsBaseDirectory`）、`app_data_location.dart`（`AppDataLocationStore` 与目录校验/UTF-8 BOM 指针）、`app_data_media_rebind.dart`（本地迁移媒体路径重绑）、`app_data_location_migrator.dart`（迁移与切换）、`app_data_location_bootstrapper.dart`（启动期待迁移恢复）、数据库 provider `app_service.dart`。
 - 设置与开关：`settings_service*.dart`、`app_features.dart`（`AppFeatures`）。
 - 编辑会话：`editing_session_registry.dart`（`EditingSessionRegistry`）。
 - 备份与恢复：编排 `data_archive_service.dart`（导出、预检、合并或覆盖恢复）、`backup_*.dart`。
@@ -53,7 +53,7 @@
 - `ai/`：AI 助手界面（`docs/ai_assistant.md`）：入口 `controllers/ai_assistant_entry.dart`（`openAiAssistant`）、对话 / 写作 / 回顾 / 回应流程、设置页 `pages/settings/`、对话页分区 `sections/chat/`；`tools/` 为智能体工具，清单只在 `ai_tool_registry.dart`，撤销在 `controllers/ai_agent_undo_flow.dart`；日记正文的读写写法在 `ai_diary_markdown.dart`（写出）与 `ai_diary_markdown_edit.dart`（按替换改写），复用模板 Markdown 的 `ai_template_markdown*.dart`。
 - `app_lock/`：应用锁与应用密码界面：统一验证 `controllers/identity_verifier.dart`（`IdentityVerifier`）、运行时上锁 `app_lock_controller.dart`、密码设置 / 验证页与锁屏遮罩。
 - `lan_sync/`：局域网同步界面（同步页、设备详情页、扫码页）；界面控制器包着 `LanSyncService`，生产装配 `providers/lan_sync_engine_assembly.dart`。
-- `storage/`：存储管理界面（总览、媒体页、重复文件页），操作流程 `controllers/storage_flows.dart`。
+- `storage/`：存储管理界面（总览、媒体页、重复文件页、`sections/storage_location_card.dart` 桌面数据位置卡），操作流程 `controllers/storage_flows.dart`、`controllers/storage_location_flow.dart`。
 - `home_widgets/`：桌面小组件界面：小组件页与工作室、快照构建 `viewmodels/`、常驻同步与点按路由 `controllers/home_widget_launch_router.dart`。
 - `home/`：首页壳 `pages/home_page.dart`（切页、快捷键）；`models/home_tab.dart`（`HomeTab`）、导航栏样式 `models/home_bar_style/`、底栏与宽窗口侧栏 `widgets/home_bar/`；提示条入口 `widgets/home_hint_visibility_scope.dart`（`showTrackedSnackBar`）。
 - `calendar/`：日历 Tab（三档宽度布局、范围统计、纪念日与待办联动）。

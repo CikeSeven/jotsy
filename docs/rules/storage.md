@@ -37,3 +37,9 @@
 ## 隐私
 - 必须：只出现在私密日记或私密本子封面里的媒体默认打码，“显示”只在本页生效，涉及上锁日记本先经 `IdentityVerifier`。
 - 必须：只在未解封胶囊里的媒体永远打码；在任一公开处出现过的不打码；打码项仍可删除与压缩。
+
+## 桌面端数据目录与迁移
+- 必须：桌面端（`AppPlatform.supportsCustomDataDirectory`）活动数据根目录只经 `appDataRootDirectory()` / `AppDataLocationStore` 解析，字体目录只经 `appFontsBaseDirectory()`，禁止在服务或 UI 中绕过它们自拼默认应用支持目录路径；`shared_preferences.json` 与用户指针 `data_location.json` 始终保留在系统默认 `getApplicationSupportDirectory()`。
+- 必须：解析优先级严格为“用户显式配置（`data_location.json`）> 默认目录已存在 `node_diary.sqlite` 兼容保护 > 可执行文件旁 `jotsy_data_location.json` 预设/便携配置 > 系统默认目录”；不得覆盖已存在的默认目录老库。
+- 必须：目标目录不可选在应用安装目录及其 `data/` 运行时子目录内（与 Windows 安装包 `[InstallDelete]` 互斥），也不得与当前目录相同或互为嵌套父子目录。
+- 必须：跨卷/跨目录迁移采用“预检可写 → 整库拷贝与逐文件流式校验 → 无 `updatedAt`/`editedAt` 副作用地重绑 SQLite 与草稿绝对媒体路径 → 原子写入 `.jotsy_data_root.json` 与 `data_location.json` → 校验失败回滚目标”的四段事务；待迁移或未完成迁移通过 `AppDataLocationBootstrapper` 在启动时兜底完成并清缓存重载作用域。

@@ -152,4 +152,8 @@ abstract final class AppPlatform {
   /// WidgetKit 扩展，桌面系统没有桌面小组件。不支持时设置里不出现入口，也
   /// 不同步快照（docs/rules/home_widgets.md）。
   static bool get supportsHomeWidgets => isAndroid;
+
+  /// 自定义数据存储位置（桌面端）：桌面应用支持将数据库、媒体与本机状态迁移
+  /// 到用户指定的文件夹；手机版固定使用系统分配的沙盒文档目录。
+  static bool get supportsCustomDataDirectory => isDesktop;
 }

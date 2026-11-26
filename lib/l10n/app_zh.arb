@@ -22080,6 +22080,221 @@
       }
     }
   },
+  "storageLocationTitle": "数据存储位置",
+  "@storageLocationTitle": {
+    "description": "桌面端存储管理页“数据存储位置”卡片标题。"
+  },
+  "storageLocationDefaultBadge": "默认位置",
+  "@storageLocationDefaultBadge": {
+    "description": "使用系统默认应用支持目录时的状态标签。"
+  },
+  "storageLocationCustomBadge": "自定义位置",
+  "@storageLocationCustomBadge": {
+    "description": "使用用户自定义数据文件夹时的状态标签。"
+  },
+  "storageLocationPortableBadge": "便携模式",
+  "@storageLocationPortableBadge": {
+    "description": "通过程序同级目录便携配置指定位置时的状态标签。"
+  },
+  "storageLocationDescription": "存放日记数据库、图片、视频、录音、附件、背景图、导入字体与同步/备份状态；应用偏好与密码仍留在系统配置目录。",
+  "@storageLocationDescription": {
+    "description": "数据存储位置卡片的说明文字。"
+  },
+  "storageLocationOpenFolder": "打开文件夹",
+  "@storageLocationOpenFolder": {
+    "description": "在系统文件管理器中打开当前数据文件夹的按钮。"
+  },
+  "storageLocationChangeButton": "更改位置",
+  "@storageLocationChangeButton": {
+    "description": "选择新文件夹并迁移数据的按钮。"
+  },
+  "storageLocationResetDefault": "恢复默认",
+  "@storageLocationResetDefault": {
+    "description": "将数据迁回系统默认支持目录的按钮。"
+  },
+  "storageLocationOpenFailed": "无法打开数据文件夹",
+  "@storageLocationOpenFailed": {
+    "description": "调用系统文件管理器打开目录失败时的提示。"
+  },
+  "storageLocationPickTitle": "选择数据存储文件夹",
+  "@storageLocationPickTitle": {
+    "description": "桌面端选择数据存储目录对话框的标题。"
+  },
+  "storageLocationErrorSamePath": "当前已经使用该文件夹",
+  "@storageLocationErrorSamePath": {
+    "description": "选择的目录与当前数据目录相同时的提示。"
+  },
+  "storageLocationErrorInvalidPath": "请选择有效的完整目录路径。",
+  "@storageLocationErrorInvalidPath": {
+    "description": "目标路径为空或不是绝对路径时的提示。"
+  },
+  "storageLocationErrorDriveRoot": "请勿直接选择磁盘根目录，请新建或选择单独的子文件夹。",
+  "@storageLocationErrorDriveRoot": {
+    "description": "用户直接选择盘符或文件系统根目录时的提示。"
+  },
+  "storageLocationErrorNested": "新位置不能是当前数据目录的子文件夹或上级目录。",
+  "@storageLocationErrorNested": {
+    "description": "目标目录与当前数据目录存在包含关系时的提示。"
+  },
+  "storageLocationErrorInsideApp": "数据目录不能放在程序安装目录内，以免更新或卸载时被替换。",
+  "@storageLocationErrorInsideApp": {
+    "description": "目标目录位于应用安装目录或资源目录内时的提示。"
+  },
+  "storageLocationErrorNotWritable": "没有该文件夹的写入权限，请换一个位置。",
+  "@storageLocationErrorNotWritable": {
+    "description": "目标文件夹写入测试失败时的提示。"
+  },
+  "storageLocationErrorNotEmpty": "请选择空文件夹，或者已包含 Jotsy 数据的文件夹，避免与其他文件混放。",
+  "@storageLocationErrorNotEmpty": {
+    "description": "目标文件夹非空且不含 Jotsy 数据库时的提示。"
+  },
+  "storageLocationInvalidTitle": "无法使用该文件夹",
+  "@storageLocationInvalidTitle": {
+    "description": "目标目录校验失败时的对话框标题。"
+  },
+  "storageLocationConfirmMigrateTitle": "更改数据存储位置？",
+  "@storageLocationConfirmMigrateTitle": {
+    "description": "确认将数据迁移到自定义文件夹的对话框标题。"
+  },
+  "storageLocationConfirmMigrateBody": "将复制日记数据库、媒体文件、背景图、导入字体与同步状态到新文件夹并更新路径引用，验证通过后清理原位置的已迁移文件。迁移期间请勿关闭应用。",
+  "@storageLocationConfirmMigrateBody": {
+    "description": "迁移数据前确认对话框的正文说明。"
+  },
+  "storageLocationConfirmMigrateAction": "开始迁移",
+  "@storageLocationConfirmMigrateAction": {
+    "description": "确认开始迁移数据的按钮。"
+  },
+  "storageLocationConfirmResetTitle": "恢复默认存储位置？",
+  "@storageLocationConfirmResetTitle": {
+    "description": "确认将数据迁回系统默认支持目录的对话框标题。"
+  },
+  "storageLocationConfirmSwitchTitle": "切换到已有数据？",
+  "@storageLocationConfirmSwitchTitle": {
+    "description": "所选文件夹中已有 Jotsy 数据库时的确认对话框标题。"
+  },
+  "storageLocationConfirmSwitchBody": "所选文件夹中已经存在 Jotsy 日记数据。继续后将直接切换到该文件夹并读取其中的数据（当前位置的文件不会被删除）。",
+  "@storageLocationConfirmSwitchBody": {
+    "description": "切换到已有 Jotsy 数据目录时的说明。"
+  },
+  "storageLocationConfirmSwitchAction": "切换使用",
+  "@storageLocationConfirmSwitchAction": {
+    "description": "确认切换到已有数据目录的按钮。"
+  },
+  "storageLocationCurrentLabel": "当前位置",
+  "@storageLocationCurrentLabel": {
+    "description": "确认对话框中当前位置路径的标签。"
+  },
+  "storageLocationTargetLabel": "新位置",
+  "@storageLocationTargetLabel": {
+    "description": "确认对话框中新位置路径的标签。"
+  },
+  "storageLocationPreparing": "正在准备迁移数据…",
+  "@storageLocationPreparing": {
+    "description": "迁移前停稳同步、备份并关闭数据库时的等待提示。"
+  },
+  "storageLocationMigratingTitle": "正在迁移数据存储位置",
+  "@storageLocationMigratingTitle": {
+    "description": "全屏迁移进度页的标题。"
+  },
+  "storageLocationMigratingHint": "迁移过程中请保持应用开启；验证完成前，原位置的数据会完整保留。",
+  "@storageLocationMigratingHint": {
+    "description": "全屏迁移进度页的副标题说明。"
+  },
+  "storageLocationPhasePreparing": "正在扫描待迁移文件…",
+  "@storageLocationPhasePreparing": {
+    "description": "迁移阶段：扫描准备中。"
+  },
+  "storageLocationPhaseCopying": "正在复制日记与媒体文件…",
+  "@storageLocationPhaseCopying": {
+    "description": "迁移阶段：复制文件中。"
+  },
+  "storageLocationPhaseRebinding": "正在更新媒体路径引用…",
+  "@storageLocationPhaseRebinding": {
+    "description": "迁移阶段：重绑库内媒体路径中。"
+  },
+  "storageLocationPhaseFinalizing": "正在保存存储位置设置…",
+  "@storageLocationPhaseFinalizing": {
+    "description": "迁移阶段：保存配置指针中。"
+  },
+  "storageLocationPhaseCleaningUp": "正在清理原位置文件…",
+  "@storageLocationPhaseCleaningUp": {
+    "description": "迁移阶段：清理原目录中。"
+  },
+  "storageLocationMigrationCounts": "已复制 {copied} / {total} 个文件 · {copiedSize} / {totalSize}",
+  "@storageLocationMigrationCounts": {
+    "description": "迁移复制阶段的文件数与字节数进度。",
+    "placeholders": {
+      "copied": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "copiedSize": {
+        "type": "String"
+      },
+      "totalSize": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedNotice": "数据存储位置已迁移至 {path}",
+  "@storageLocationMigratedNotice": {
+    "description": "数据成功迁移到新位置后的首页提示条。",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedCleanupPartial": "数据已迁移至 {path}，原位置有少量文件被占用未能自动删除，可稍后手动清理。",
+  "@storageLocationMigratedCleanupPartial": {
+    "description": "迁移成功但原位置部分文件未能自动删除时的提示。",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationSwitchedNotice": "已切换数据存储位置至 {path}",
+  "@storageLocationSwitchedNotice": {
+    "description": "成功切换到已有数据位置后的首页提示条。",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigrationFailed": "更改存储位置失败，已保留原位置数据（{error}）",
+  "@storageLocationMigrationFailed": {
+    "description": "迁移失败并回滚到原位置后的提示条。",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationStartupFailedTitle": "启动时迁移数据失败",
+  "@storageLocationStartupFailedTitle": {
+    "description": "启动时处理安装程序待迁移任务失败的标题。"
+  },
+  "storageLocationStartupFailedBody": "原位置的数据完好无损。你可以重试迁移，或暂按原位置打开应用。\n\n{error}",
+  "@storageLocationStartupFailedBody": {
+    "description": "启动时待迁移任务失败的说明文字。",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationUseOldLocation": "使用原位置打开",
+  "@storageLocationUseOldLocation": {
+    "description": "放弃待迁移任务、使用原位置继续启动的按钮。"
+  },
+  "storageLocationRetryMigration": "重试",
+  "@storageLocationRetryMigration": {
+    "description": "重试启动迁移的按钮。"
+  },
   "settingsExpandPublishPanel": "发布时自动展开详细信息",
   "@settingsExpandPublishPanel": {
     "description": "编辑器设置开关：写新日记进入发布页后自动展开下方的详细信息面板。"

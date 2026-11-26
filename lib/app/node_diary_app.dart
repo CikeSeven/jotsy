@@ -57,11 +57,18 @@ import '../l10n/app_localizations.dart';
 /// 8. 启动时建好局域网同步控制器（[lanSyncControllerProvider]），引擎随应用
 ///    启动、跟随前后台。
 class NodeDiaryApp extends ConsumerStatefulWidget {
-  const NodeDiaryApp({super.key, this.launchBrandMark = false});
+  const NodeDiaryApp({
+    super.key,
+    this.launchBrandMark = false,
+    this.initialStartupNoticeBuilder,
+  });
 
   /// 原生启动页是否在屏幕中央画了品牌图形（见 `launchBrandMarkEntrypointArg`）；
   /// 是则启动层首帧在同一位置接着画，否则只铺底色。
   final bool launchBrandMark;
+
+  /// 冷启动数据迁移或跨容器切换后在首页展示的一次性提示。
+  final String Function(AppLocalizations l10n)? initialStartupNoticeBuilder;
 
   @override
   ConsumerState<NodeDiaryApp> createState() => _NodeDiaryAppState();
@@ -207,9 +214,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         diariesSettled &&
         _startupFontsReady &&
         !_loaderHolding;
-    final startupNotice = bootstrapReady && diariesBootstrapFailed
+    final startupNotice = !bootstrapReady
+        ? null
+        : diariesBootstrapFailed
         ? _bootstrapL10n(settingsService).startupPreloadFailedNotice
-        : null;
+        : widget.initialStartupNoticeBuilder?.call(
+            _bootstrapL10n(settingsService),
+          );
 
     if (settingsError != null && !_loaderHolding) {
       return _buildAppShell(

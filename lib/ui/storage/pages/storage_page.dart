@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
 import '../../app_surface/models/app_surface_enums.dart';
@@ -24,12 +25,14 @@ import '../../widgets/empty_hint.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/width_layout_builder.dart';
 import '../controllers/storage_flows.dart';
+import '../controllers/storage_location_flow.dart';
 import '../models/storage_media_filter.dart';
 import '../providers/storage_providers.dart';
 import '../sections/storage_app_card.dart';
 import '../sections/storage_category_tiles.dart';
 import '../sections/storage_device_card.dart';
 import '../sections/storage_growth_card.dart';
+import '../sections/storage_location_card.dart';
 import '../sections/storage_media_detail_sheet.dart';
 import '../sections/storage_overview_groups.dart';
 import '../sections/storage_top_files_card.dart';
@@ -54,6 +57,7 @@ class StoragePage extends ConsumerStatefulWidget {
 class _StoragePageState extends ConsumerState<StoragePage>
     implements StorageFlowHost {
   late final StorageFlows _flows = StorageFlows(ref, this);
+  late final StorageLocationFlow _locationFlow = StorageLocationFlow(ref, this);
   bool _busy = false;
   String _busyText = '';
 
@@ -210,6 +214,7 @@ class _StoragePageState extends ConsumerState<StoragePage>
 
     // 重复文件在扫描之后再算（要读大小相同的文件），算出来之前这一行不出现。
     final duplicates = ref.watch(storageDuplicatesProvider).value;
+    final location = ref.watch(storageLocationProvider).value;
 
     return WidthLayoutBuilder(
       builder: (BuildContext context, double width) {
@@ -240,6 +245,25 @@ class _StoragePageState extends ConsumerState<StoragePage>
                 onCategoryTap: _openCategory,
               ),
             ),
+            if (AppPlatform.supportsCustomDataDirectory &&
+                location != null) ...<Widget>[
+              const SizedBox(height: AppSpacing.m),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: StorageLocationCard(
+                  resolution: location,
+                  busy: _busy,
+                  onOpenFolder: () => unawaited(
+                    _locationFlow.openFolder(context, location.activeRoot.path),
+                  ),
+                  onChangeLocation: () =>
+                      run(() => _locationFlow.changeLocation(context)),
+                  onResetDefault: location.isCustomLocation
+                      ? () => run(() => _locationFlow.resetToDefault(context))
+                      : null,
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.l),
             StorageSuggestionsGroup(
               view: view,

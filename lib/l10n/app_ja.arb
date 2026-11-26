@@ -22647,6 +22647,221 @@
       }
     }
   },
+  "storageLocationTitle": "データ保存先",
+  "@storageLocationTitle": {
+    "description": "Storage page (desktop): heading of the card showing where app data is stored."
+  },
+  "storageLocationDefaultBadge": "デフォルト",
+  "@storageLocationDefaultBadge": {
+    "description": "Storage location badge when using the system default app support folder."
+  },
+  "storageLocationCustomBadge": "カスタム",
+  "@storageLocationCustomBadge": {
+    "description": "Storage location badge when using a user-selected custom folder."
+  },
+  "storageLocationPortableBadge": "ポータブル",
+  "@storageLocationPortableBadge": {
+    "description": "Storage location badge when configured via portable config alongside the executable."
+  },
+  "storageLocationDescription": "日記データベース、画像、動画、録音、添付ファイル、背景画像、取り込んだフォント、同期・バックアップ状態を保存します。設定とパスコードはシステム設定フォルダーに残ります。",
+  "@storageLocationDescription": {
+    "description": "Storage location card: explains what data lives in the data root directory."
+  },
+  "storageLocationOpenFolder": "フォルダーを開く",
+  "@storageLocationOpenFolder": {
+    "description": "Button to open the current data directory in the system file manager."
+  },
+  "storageLocationChangeButton": "保存先を変更",
+  "@storageLocationChangeButton": {
+    "description": "Button to pick a new data storage folder and migrate data."
+  },
+  "storageLocationResetDefault": "デフォルトに戻す",
+  "@storageLocationResetDefault": {
+    "description": "Button to migrate data back to the default system support directory."
+  },
+  "storageLocationOpenFailed": "データフォルダーを開けませんでした",
+  "@storageLocationOpenFailed": {
+    "description": "SnackBar shown when launching the system file manager fails."
+  },
+  "storageLocationPickTitle": "データ保存フォルダーを選択",
+  "@storageLocationPickTitle": {
+    "description": "Title of the desktop directory picker dialog for choosing data storage location."
+  },
+  "storageLocationErrorSamePath": "すでにこのフォルダーを使用しています",
+  "@storageLocationErrorSamePath": {
+    "description": "SnackBar shown when the user selects the folder currently in use."
+  },
+  "storageLocationErrorInvalidPath": "有効な絶対パスのフォルダーを指定してください。",
+  "@storageLocationErrorInvalidPath": {
+    "description": "Dialog message when the chosen path is empty or relative."
+  },
+  "storageLocationErrorDriveRoot": "ドライブのルート直下は指定できません。専用のサブフォルダーを作成または選択してください。",
+  "@storageLocationErrorDriveRoot": {
+    "description": "Dialog message when the user selects a drive root or filesystem root."
+  },
+  "storageLocationErrorNested": "現在のデータフォルダーの内部または親フォルダーは指定できません。",
+  "@storageLocationErrorNested": {
+    "description": "Dialog message when the target directory overlaps with the current data directory."
+  },
+  "storageLocationErrorInsideApp": "アプリのインストールフォルダー内は更新時に上書きされるため指定できません。",
+  "@storageLocationErrorInsideApp": {
+    "description": "Dialog message when the target directory is inside the app bundle or installation directory."
+  },
+  "storageLocationErrorNotWritable": "選択したフォルダーへの書き込み権限がありません。",
+  "@storageLocationErrorNotWritable": {
+    "description": "Dialog message when a write probe fails in the target folder."
+  },
+  "storageLocationErrorNotEmpty": "他のファイルと混ざらないよう、空のフォルダーまたは既存の Jotsy データフォルダーを選択してください。",
+  "@storageLocationErrorNotEmpty": {
+    "description": "Dialog message when the selected folder contains non-Jotsy files."
+  },
+  "storageLocationInvalidTitle": "このフォルダーは使用できません",
+  "@storageLocationInvalidTitle": {
+    "description": "Title of the alert dialog shown when the chosen data folder is invalid."
+  },
+  "storageLocationConfirmMigrateTitle": "データ保存先を変更しますか？",
+  "@storageLocationConfirmMigrateTitle": {
+    "description": "Confirmation dialog title before migrating data to a new custom folder."
+  },
+  "storageLocationConfirmMigrateBody": "データベース、メディア、背景画像、取り込んだフォント、同期状態を新しいフォルダーへコピーしてパスを更新し、確認後に元の場所の移行済みファイルを削除します。移行中はアプリを閉じないでください。",
+  "@storageLocationConfirmMigrateBody": {
+    "description": "Confirmation dialog explanation before migrating data to a new folder."
+  },
+  "storageLocationConfirmMigrateAction": "移動する",
+  "@storageLocationConfirmMigrateAction": {
+    "description": "Confirm button label to start migrating data to a new folder."
+  },
+  "storageLocationConfirmResetTitle": "デフォルトの保存先に戻しますか？",
+  "@storageLocationConfirmResetTitle": {
+    "description": "Confirmation dialog title before moving data back to the default system support folder."
+  },
+  "storageLocationConfirmSwitchTitle": "既存のデータに切り替えますか？",
+  "@storageLocationConfirmSwitchTitle": {
+    "description": "Confirmation dialog title when the selected folder already contains a Jotsy database."
+  },
+  "storageLocationConfirmSwitchBody": "選択したフォルダーにはすでに Jotsy の日記データがあります。切り替えると、そのフォルダーのデータをそのまま使用します（現在のフォルダーのファイルは削除されません）。",
+  "@storageLocationConfirmSwitchBody": {
+    "description": "Confirmation dialog explanation when switching to an existing Jotsy data folder."
+  },
+  "storageLocationConfirmSwitchAction": "切り替える",
+  "@storageLocationConfirmSwitchAction": {
+    "description": "Confirm button label to switch to an existing Jotsy data folder."
+  },
+  "storageLocationCurrentLabel": "現在の保存先",
+  "@storageLocationCurrentLabel": {
+    "description": "Label above the current data directory path in confirmation dialogs."
+  },
+  "storageLocationTargetLabel": "新しい保存先",
+  "@storageLocationTargetLabel": {
+    "description": "Label above the target data directory path in confirmation dialogs."
+  },
+  "storageLocationPreparing": "データ移行を準備しています…",
+  "@storageLocationPreparing": {
+    "description": "Busy overlay label while flushing pending writes and closing the database before migration."
+  },
+  "storageLocationMigratingTitle": "データ保存先を移動しています",
+  "@storageLocationMigratingTitle": {
+    "description": "Heading on the full-screen migration progress screen."
+  },
+  "storageLocationMigratingHint": "移行が完了するまで Jotsy を閉じないでください。検証が終わるまで元のデータは保持されます。",
+  "@storageLocationMigratingHint": {
+    "description": "Subtitle on the migration progress screen."
+  },
+  "storageLocationPhasePreparing": "ファイルを準備しています…",
+  "@storageLocationPhasePreparing": {
+    "description": "Migration phase label while scanning files to copy."
+  },
+  "storageLocationPhaseCopying": "日記とメディアをコピーしています…",
+  "@storageLocationPhaseCopying": {
+    "description": "Migration phase label while copying files."
+  },
+  "storageLocationPhaseRebinding": "メディアパスを更新しています…",
+  "@storageLocationPhaseRebinding": {
+    "description": "Migration phase label while rebinding SQLite media paths."
+  },
+  "storageLocationPhaseFinalizing": "保存先の設定を保存しています…",
+  "@storageLocationPhaseFinalizing": {
+    "description": "Migration phase label while committing configuration."
+  },
+  "storageLocationPhaseCleaningUp": "元の場所を整理しています…",
+  "@storageLocationPhaseCleaningUp": {
+    "description": "Migration phase label while removing migrated files from the old location."
+  },
+  "storageLocationMigrationCounts": "{copied} / {total} ファイル · {copiedSize} / {totalSize}",
+  "@storageLocationMigrationCounts": {
+    "description": "Migration progress counter showing files and bytes copied.",
+    "placeholders": {
+      "copied": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "copiedSize": {
+        "type": "String"
+      },
+      "totalSize": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedNotice": "データ保存先を {path} に移動しました",
+  "@storageLocationMigratedNotice": {
+    "description": "SnackBar shown after migrating data to a new location.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedCleanupPartial": "データを {path} に移動しました。一部の古いファイルは使用中のため削除できませんでした。",
+  "@storageLocationMigratedCleanupPartial": {
+    "description": "SnackBar shown when migration succeeded but some files in the old directory were locked.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationSwitchedNotice": "データ保存先を {path} に切り替えました",
+  "@storageLocationSwitchedNotice": {
+    "description": "SnackBar shown after switching to an existing data folder.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigrationFailed": "保存先を変更できませんでした（元のデータを保持：{error}）",
+  "@storageLocationMigrationFailed": {
+    "description": "SnackBar shown when relocation fails and rolls back to the original location.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationStartupFailedTitle": "起動時のデータ移行に失敗しました",
+  "@storageLocationStartupFailedTitle": {
+    "description": "Error screen heading when a pending startup migration fails."
+  },
+  "storageLocationStartupFailedBody": "元のデータは安全に保持されています。移行を再試行するか、元の保存先で起動できます。\n\n{error}",
+  "@storageLocationStartupFailedBody": {
+    "description": "Error screen explanation when a pending startup migration fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationUseOldLocation": "元の保存先で開く",
+  "@storageLocationUseOldLocation": {
+    "description": "Button to cancel pending startup migration and open using the old directory."
+  },
+  "storageLocationRetryMigration": "再試行",
+  "@storageLocationRetryMigration": {
+    "description": "Button to retry pending startup migration."
+  },
   "settingsExpandPublishPanel": "投稿画面で詳細パネルを自動で開く",
   "@settingsExpandPublishPanel": {
     "description": "Editor settings switch: automatically expand the bottom details panel when opening the publish page for a new diary."

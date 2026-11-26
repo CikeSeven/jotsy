@@ -17180,6 +17180,162 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get storageLocationTitle => 'データ保存先';
+
+  @override
+  String get storageLocationDefaultBadge => 'デフォルト';
+
+  @override
+  String get storageLocationCustomBadge => 'カスタム';
+
+  @override
+  String get storageLocationPortableBadge => 'ポータブル';
+
+  @override
+  String get storageLocationDescription =>
+      '日記データベース、画像、動画、録音、添付ファイル、背景画像、取り込んだフォント、同期・バックアップ状態を保存します。設定とパスコードはシステム設定フォルダーに残ります。';
+
+  @override
+  String get storageLocationOpenFolder => 'フォルダーを開く';
+
+  @override
+  String get storageLocationChangeButton => '保存先を変更';
+
+  @override
+  String get storageLocationResetDefault => 'デフォルトに戻す';
+
+  @override
+  String get storageLocationOpenFailed => 'データフォルダーを開けませんでした';
+
+  @override
+  String get storageLocationPickTitle => 'データ保存フォルダーを選択';
+
+  @override
+  String get storageLocationErrorSamePath => 'すでにこのフォルダーを使用しています';
+
+  @override
+  String get storageLocationErrorInvalidPath => '有効な絶対パスのフォルダーを指定してください。';
+
+  @override
+  String get storageLocationErrorDriveRoot =>
+      'ドライブのルート直下は指定できません。専用のサブフォルダーを作成または選択してください。';
+
+  @override
+  String get storageLocationErrorNested => '現在のデータフォルダーの内部または親フォルダーは指定できません。';
+
+  @override
+  String get storageLocationErrorInsideApp =>
+      'アプリのインストールフォルダー内は更新時に上書きされるため指定できません。';
+
+  @override
+  String get storageLocationErrorNotWritable => '選択したフォルダーへの書き込み権限がありません。';
+
+  @override
+  String get storageLocationErrorNotEmpty =>
+      '他のファイルと混ざらないよう、空のフォルダーまたは既存の Jotsy データフォルダーを選択してください。';
+
+  @override
+  String get storageLocationInvalidTitle => 'このフォルダーは使用できません';
+
+  @override
+  String get storageLocationConfirmMigrateTitle => 'データ保存先を変更しますか？';
+
+  @override
+  String get storageLocationConfirmMigrateBody =>
+      'データベース、メディア、背景画像、取り込んだフォント、同期状態を新しいフォルダーへコピーしてパスを更新し、確認後に元の場所の移行済みファイルを削除します。移行中はアプリを閉じないでください。';
+
+  @override
+  String get storageLocationConfirmMigrateAction => '移動する';
+
+  @override
+  String get storageLocationConfirmResetTitle => 'デフォルトの保存先に戻しますか？';
+
+  @override
+  String get storageLocationConfirmSwitchTitle => '既存のデータに切り替えますか？';
+
+  @override
+  String get storageLocationConfirmSwitchBody =>
+      '選択したフォルダーにはすでに Jotsy の日記データがあります。切り替えると、そのフォルダーのデータをそのまま使用します（現在のフォルダーのファイルは削除されません）。';
+
+  @override
+  String get storageLocationConfirmSwitchAction => '切り替える';
+
+  @override
+  String get storageLocationCurrentLabel => '現在の保存先';
+
+  @override
+  String get storageLocationTargetLabel => '新しい保存先';
+
+  @override
+  String get storageLocationPreparing => 'データ移行を準備しています…';
+
+  @override
+  String get storageLocationMigratingTitle => 'データ保存先を移動しています';
+
+  @override
+  String get storageLocationMigratingHint =>
+      '移行が完了するまで Jotsy を閉じないでください。検証が終わるまで元のデータは保持されます。';
+
+  @override
+  String get storageLocationPhasePreparing => 'ファイルを準備しています…';
+
+  @override
+  String get storageLocationPhaseCopying => '日記とメディアをコピーしています…';
+
+  @override
+  String get storageLocationPhaseRebinding => 'メディアパスを更新しています…';
+
+  @override
+  String get storageLocationPhaseFinalizing => '保存先の設定を保存しています…';
+
+  @override
+  String get storageLocationPhaseCleaningUp => '元の場所を整理しています…';
+
+  @override
+  String storageLocationMigrationCounts(
+    int copied,
+    int total,
+    String copiedSize,
+    String totalSize,
+  ) {
+    return '$copied / $total ファイル · $copiedSize / $totalSize';
+  }
+
+  @override
+  String storageLocationMigratedNotice(String path) {
+    return 'データ保存先を $path に移動しました';
+  }
+
+  @override
+  String storageLocationMigratedCleanupPartial(String path) {
+    return 'データを $path に移動しました。一部の古いファイルは使用中のため削除できませんでした。';
+  }
+
+  @override
+  String storageLocationSwitchedNotice(String path) {
+    return 'データ保存先を $path に切り替えました';
+  }
+
+  @override
+  String storageLocationMigrationFailed(String error) {
+    return '保存先を変更できませんでした（元のデータを保持：$error）';
+  }
+
+  @override
+  String get storageLocationStartupFailedTitle => '起動時のデータ移行に失敗しました';
+
+  @override
+  String storageLocationStartupFailedBody(String error) {
+    return '元のデータは安全に保持されています。移行を再試行するか、元の保存先で起動できます。\n\n$error';
+  }
+
+  @override
+  String get storageLocationUseOldLocation => '元の保存先で開く';
+
+  @override
+  String get storageLocationRetryMigration => '再試行';
+
+  @override
   String get settingsExpandPublishPanel => '投稿画面で詳細パネルを自動で開く';
 
   @override

@@ -151,8 +151,7 @@ void main() {
     await pumpCalendarPage(tester);
     final l10n = _l10n(tester);
 
-    await tester.tap(find.byTooltip(l10n.autoT0185));
-    await tester.pumpAndSettle();
+    await swipeCalendarPage(tester);
     await tester.tap(_gridDay(15));
     await tester.pumpAndSettle();
 
@@ -166,8 +165,7 @@ void main() {
     final now = DateTime.now();
     final nextMonth15 = DateTime(now.year, now.month + 1, 15);
 
-    await tester.tap(find.byTooltip(l10n.autoT0185));
-    await tester.pumpAndSettle();
+    await swipeCalendarPage(tester);
     await tester.longPress(_gridDay(15));
     await tester.pumpAndSettle();
 
@@ -184,10 +182,8 @@ void main() {
     );
 
     // 过去的日期没有“时间胶囊”一项。
-    await tester.tap(find.byTooltip(l10n.autoT0184));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip(l10n.autoT0184));
-    await tester.pumpAndSettle();
+    await swipeCalendarPage(tester, forward: false);
+    await swipeCalendarPage(tester, forward: false);
     await tester.longPress(_gridDay(15));
     await tester.pumpAndSettle();
     expect(find.text(l10n.calendarDayActionWrite), findsOneWidget);

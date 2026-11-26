@@ -144,4 +144,38 @@ void main() {
     ]);
     expect(diaryTodoItems('纯文本日记'), isEmpty);
   });
+
+  test('overdue lists only open real due dates before today, oldest first', () {
+    final index = TodoCalendarIndex.build(
+      today: today,
+      open: <TodoRow>[
+        _todo('two days late', due: '2026-11-08', minute: 9 * 60),
+        _todo('due today', due: '2026-11-10'),
+        _todo('one day late', due: '2026-11-09'),
+        // 逾期的重复待办：只取它真实的截止日，不取投影到今天以后的几次。
+        _todo(
+          'daily late',
+          due: '2026-11-07',
+          repeat: TodoRepeatRule(
+            frequency: TodoRepeatFrequency.daily,
+            anchor: DateTime(2026, 11, 7),
+          ),
+        ),
+      ],
+      completed: <TodoRow>[
+        _todo('done late', due: '2026-11-08', completedAt: today),
+      ],
+    );
+
+    expect(index.overdueBefore(today).map((entry) => entry.row.title), <String>[
+      'daily late',
+      'two days late',
+      'one day late',
+    ]);
+    expect(
+      index.overdueBefore(today).every((entry) => !entry.projected),
+      isTrue,
+    );
+    expect(index.overdueBefore(DateTime(2026, 11, 7)), isEmpty);
+  });
 }

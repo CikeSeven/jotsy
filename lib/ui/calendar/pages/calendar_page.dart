@@ -31,9 +31,11 @@ import '../../app_surface/widgets/app_glass_surface.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
 import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
+import '../../todos/controllers/todo_actions.dart';
+import '../../todos/controllers/todo_batch_actions.dart';
+import '../../todos/controllers/todo_navigation.dart';
 import '../../todos/providers/todo_providers.dart';
 import '../../todos/viewmodels/todo_calendar_index.dart';
-import '../../todos/widgets/todo_calendar_section.dart';
 import '../../todos/widgets/todo_quick_add_sheet.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
 import '../../diaries/providers/diary_mood_palette_provider.dart';
@@ -71,7 +73,6 @@ import '../widgets/calendar_display_options_sheet.dart';
 import '../widgets/calendar_filter_bar.dart';
 import '../widgets/calendar_filter_sheet.dart';
 import '../widgets/calendar_header.dart';
-import '../widgets/calendar_header_sliver.dart';
 import '../widgets/calendar_month_grid.dart';
 import '../widgets/calendar_month_summary.dart';
 import '../widgets/calendar_on_this_day_strip.dart';
@@ -82,12 +83,13 @@ import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/container_transform/container_transform_source.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../widgets/calendar_timeline_section.dart';
+import '../widgets/calendar_timeline_todos.dart';
 import '../../../app/theme/app_effects.dart';
 
 part 'calendar_page_sections.dart';
 part 'calendar_page_range.dart';
 part 'calendar_page_anniversaries.dart';
-part 'calendar_page_todos.dart';
+part 'calendar_page_day.dart';
 part 'calendar_page_layout.dart';
 part '../controllers/calendar_anniversary_actions.dart';
 part '../controllers/calendar_page_controller.dart';
@@ -101,12 +103,14 @@ part '../controllers/calendar_day_mood_actions.dart';
 /// 日历页（上历下表）。
 ///
 /// 页面职责（只做装配）：
-/// - 组合页头（固定在顶部，下滑时月份行收起、只留标题栏）、日历卡片（月/周
-///   网格或年视图 + 概览）、选中日标题、当天日记（时间线或卡片）与那年
-///   今日；区块构建见 calendar_page_sections.dart；
+/// - 组合页头（与其他 Tab 同一个单行页头，标题即月份，叠在内容之上）、
+///   日历卡片（月/周网格或年视图 + 概览）、选中日标题、当天日记与待办
+///   （时间线或卡片）与那年今日；区块构建见 calendar_page_sections.dart，
+///   选中日的日记与待办见 calendar_page_day.dart；
 /// - 监听打点/当日日记/心情配置/这天的心情/显示选项，翻月期间保留上一份
 ///   数据；
-/// - 不注册 Home 的“新建”FAB：在某天写日记走长按日期菜单或当天的空状态。
+/// - 不注册 Home 的“新建”FAB：在某天写日记走长按日期菜单、当天的空状态或
+///   时间线末尾的入口。
 ///
 /// 日期格样式、月度统计等计算在 viewmodels/，网格与日期格绘制在 widgets/，
 /// 选日/翻月/新建/显示选项保存/年视图导出等流程在 controllers/。
@@ -120,7 +124,9 @@ class CalendarPage extends ConsumerStatefulWidget {
 }
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
-  static const double _calendarCardHorizontalPadding = AppSpacing.m;
+  // 日历卡片距页面左右 8、卡片内再留 4：日期格与下方各区块（左右 12）
+  // 对齐，卡片边缘比下方内容各外扩 4，网格尽量宽。
+  static const double _calendarCardHorizontalPadding = AppSpacing.s;
   // 页头下缘到日历卡片：四个 Tab 统一的顶部间距（改版前就是 12，经典
   // 无背景时同样保留）。
   static const double _calendarCardTopPadding = kHomeTopContentGap;
@@ -319,7 +325,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final todosEnabled = ref.watch(
       appFeaturesProvider.select((features) => features.todos),
     );
-    final todoIndex = options.showTodos && todosEnabled
+    final todosShown = options.showTodos && todosEnabled;
+    final todoIndex = todosShown
         ? ref.watch(todoCalendarIndexProvider)
         : TodoCalendarIndex.empty;
     // 这天的心情与纪念日一样是日期本身的属性：整表订阅，不受筛选与范围选择
@@ -338,11 +345,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
     // 页头、日历卡片与选中日各区块在这里一次装配好，窄屏单列、宽屏居中
     // 单列与双栏只是摆放方式不同（见 calendar_page_layout.dart）。
-    CalendarHeader buildHeader(
-      double collapsedExtent,
-      double monthBarInset, {
-      bool showMonthBar = true,
-    }) => CalendarHeader(
+    CalendarHeader buildHeader({required bool showArrows}) => CalendarHeader(
       title: _controller.focusedMonthTitle,
       month: _focusedMonth,
       onJumpToToday: _controller.jumpToToday,
@@ -358,24 +361,24 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       titleTooltip: _yearMode ? l10n.autoT0177 : l10n.calendarYearViewTooltip,
       previousTooltip: _yearMode ? l10n.calendarPreviousYear : null,
       nextTooltip: _yearMode ? l10n.calendarNextYear : null,
-      collapsedExtent: collapsedExtent,
-      monthBarInset: monthBarInset,
-      showMonthBar: showMonthBar,
+      showArrows: showArrows,
     );
-    Widget buildPanel({required bool wide}) => _buildCalendarPanel(
-      options: options,
-      filter: filter,
-      filterTags: filterTags ?? const <Tag>[],
-      filterNotebooks: filterNotebooks ?? const <NotebookView>[],
-      summaries: summaries,
-      markersAsync: markersAsync,
-      moodOptions: moodOptions,
-      anniversaryIndex: anniversaryIndex,
-      todoIndex: todoIndex,
-      dayMoods: dayMoods,
-      now: now,
-      wide: wide,
-    );
+    Widget buildPanel({required bool wide, required bool headerArrows}) =>
+        _buildCalendarPanel(
+          options: options,
+          filter: filter,
+          filterTags: filterTags ?? const <Tag>[],
+          filterNotebooks: filterNotebooks ?? const <NotebookView>[],
+          summaries: summaries,
+          markersAsync: markersAsync,
+          moodOptions: moodOptions,
+          anniversaryIndex: anniversaryIndex,
+          todoIndex: todoIndex,
+          dayMoods: dayMoods,
+          now: now,
+          wide: wide,
+          headerArrows: headerArrows,
+        );
     final daySlivers = <Widget>[
       SliverToBoxAdapter(
         child: Padding(
@@ -405,8 +408,15 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         ),
       ),
       _buildAnniversarySliver(anniversaryIndex, now),
-      _buildTodoSliver(todoIndex, now),
-      ..._buildDayDiaryContentSlivers(day, options),
+      ..._buildDayDiaryContentSlivers(
+        day,
+        options,
+        todos: _buildTimelineTodos(
+          todosShown ? todoIndex : null,
+          day: day.day,
+          now: now,
+        ),
+      ),
       if (options.showOnThisDay) _buildOnThisDaySliver(now),
     ];
 

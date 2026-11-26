@@ -80,11 +80,12 @@ class CalendarMonthSummary extends StatelessWidget {
         ),
       );
     }
+    // 细条：分隔线上下各 4，网格与数字行贴得近一些，不另占一块。
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xs,
         AppSpacing.s,
         AppSpacing.xs,
+        AppSpacing.s,
         0,
       ),
       child: Column(
@@ -97,7 +98,7 @@ class CalendarMonthSummary extends StatelessWidget {
               alpha: colorScheme.brightness == Brightness.light ? 0.35 : 0.18,
             ),
           ),
-          const SizedBox(height: AppSpacing.s),
+          const SizedBox(height: AppSpacing.xs),
           ?header,
           AnimatedSwitcher(
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),

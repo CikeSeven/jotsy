@@ -15178,9 +15178,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get calendarAddTodo => 'ToDoを追加';
 
   @override
-  String get calendarTodoSectionTitle => 'この日のToDo';
-
-  @override
   String get calendarTodoRepeatHint => '繰り返しToDoの今後の回です。その日になったらチェックします';
 
   @override

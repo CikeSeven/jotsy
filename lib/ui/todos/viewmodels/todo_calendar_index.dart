@@ -102,4 +102,19 @@ class TodoCalendarIndex {
 
   /// [day] 有没有未完成的待办（日期格的角标）。
   bool hasOpenOn(DateTime day) => entriesOn(day).any((entry) => !entry.done);
+
+  /// 截止日在 [today] 之前、还没完成的待办（选中今天时的“已逾期”），按
+  /// 截止日、再按时刻排序。只取真实的截止日，不取重复待办投影出来的以后
+  /// 几次。
+  List<TodoCalendarEntry> overdueBefore(DateTime today) {
+    final todayKey = formatAnniversaryDate(today);
+    final keys =
+        _byDay.keys.where((String key) => key.compareTo(todayKey) < 0).toList()
+          ..sort();
+    return <TodoCalendarEntry>[
+      for (final key in keys)
+        for (final entry in _byDay[key]!)
+          if (!entry.done && !entry.projected) entry,
+    ];
+  }
 }

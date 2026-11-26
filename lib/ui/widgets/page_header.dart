@@ -5,7 +5,7 @@ import '../../app/theme/app_spacing.dart';
 import '../app_surface/widgets/app_page_backdrop.dart';
 import '../home/widgets/home_bar/home_top_bar_surface.dart';
 
-/// 首页 Tab（探索、待办）的顶栏：铺到状态栏的标题栏，作为页面 Stack 的直接
+/// 首页 Tab（日历、探索、待办）的顶栏：铺到状态栏的标题栏，作为页面 Stack 的直接
 /// 子项叠在内容之上（因此根节点必须是 [Positioned]）。
 ///
 /// 标题左右固定 16、不随页面内容列内收：首页各 Tab 的标题在任何宽度下都
@@ -22,6 +22,7 @@ class PageHeader extends StatelessWidget {
     this.titleTrailing,
     this.onTitleTap,
     this.titleTooltip,
+    this.titleChild,
   });
 
   // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
@@ -42,6 +43,19 @@ class PageHeader extends StatelessWidget {
 
   /// 可点标题的读屏说明与悬停提示。
   final String? titleTooltip;
+
+  /// 代替 [title] 文字的标题部件（如日历页随翻月方向滑动的月份）。它继承
+  /// 标题的字样与单行省略（经 DefaultTextStyle），点按与 [titleTrailing]
+  /// 照常；为 null 时显示 [title]，与原来完全一致。
+  final Widget? titleChild;
+
+  /// 标题字样：各 Tab 的页头标题同一字号字重。
+  static TextStyle? titleStyleOf(BuildContext context) =>
+      Theme.of(context).textTheme.headlineSmall?.copyWith(
+        fontSize: 25,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.5,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -78,16 +92,21 @@ class PageHeader extends StatelessWidget {
   }
 
   Widget _buildTitleRow(BuildContext context) {
-    Widget text = Text(
-      title,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-        fontSize: 25,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.5,
-      ),
-    );
+    final style = titleStyleOf(context);
+    final custom = titleChild;
+    Widget text = custom == null
+        ? Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          )
+        : DefaultTextStyle.merge(
+            style: style,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            child: custom,
+          );
     text = _decorateTitle(context, text);
     if (actions.isEmpty) {
       return Align(alignment: Alignment.centerLeft, child: text);

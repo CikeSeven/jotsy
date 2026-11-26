@@ -147,8 +147,8 @@ void main() {
     tester,
   ) async {
     _phone(tester, const Size(320, 640));
-    var previous = 0;
-    var next = 0;
+    var pick = 0;
+    var filter = 0;
     var today = 0;
     await tester.pumpWidget(
       _app(
@@ -158,9 +158,12 @@ void main() {
               CalendarHeader(
                 title: 'September 2026',
                 onJumpToToday: () => today++,
-                onPreviousMonth: () => previous++,
-                onNextMonth: () => next++,
-                onPickDate: () {},
+                onPreviousMonth: () {},
+                onNextMonth: () {},
+                onPickDate: () => pick++,
+                onOpenFilter: () => filter++,
+                onOpenDisplayOptions: () {},
+                onOpenAnniversaries: () {},
               ),
             ],
           ),
@@ -170,15 +173,17 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(CalendarHeader)),
     );
-    await tester.tap(find.byTooltip(l10n.autoT0184));
-    await tester.tap(find.byTooltip(l10n.autoT0185));
+    // 手机页头没有翻月箭头：月份标题（可省略）与四个操作互不重叠。
+    expect(find.byTooltip(l10n.autoT0184), findsNothing);
+    await tester.tap(find.text('September 2026'));
+    await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
     await tester.tap(find.byTooltip(l10n.autoT0180));
-    expect([previous, next, today], [1, 1, 1]);
+    expect([pick, filter, today], [1, 1, 1]);
     expect(
-      tester
-          .getRect(find.text('September 2026'))
-          .overlaps(tester.getRect(find.text(l10n.autoT0183))),
-      isFalse,
+      tester.getRect(find.text('September 2026')).right,
+      lessThanOrEqualTo(
+        tester.getRect(find.byTooltip(l10n.anniversaryListTitle)).left,
+      ),
     );
     expect(tester.takeException(), isNull);
   });

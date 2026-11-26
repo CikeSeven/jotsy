@@ -17747,9 +17747,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get calendarAddTodo => 'Добавить задачу';
 
   @override
-  String get calendarTodoSectionTitle => 'Задачи на этот день';
-
-  @override
   String get calendarTodoRepeatHint =>
       'Будущий повтор задачи; отметите, когда наступит';
 

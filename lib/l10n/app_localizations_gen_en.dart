@@ -17080,9 +17080,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarAddTodo => 'Add a to-do';
 
   @override
-  String get calendarTodoSectionTitle => 'To-dos for this day';
-
-  @override
   String get calendarTodoRepeatHint =>
       'An upcoming repeat of this to-do; tick it when it comes';
 

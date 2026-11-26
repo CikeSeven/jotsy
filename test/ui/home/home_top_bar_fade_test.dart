@@ -7,7 +7,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/calendar/widgets/calendar_header.dart';
+import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
@@ -116,7 +116,10 @@ void main() {
     _expectFades(tester, _surfaceOf(find.byType(DiaryTagFilterBar)));
 
     await _openTab(tester, l10n.navCalendar);
-    final calendar = _surfaceOf(find.byType(CalendarMonthBar));
+    final calendar = find.descendant(
+      of: find.byType(CalendarPage),
+      matching: find.byType(HomeTopBarSurface),
+    );
     _expectFades(tester, calendar);
     // 单片顶栏：玻璃就是它自己的范围，不往上多铺。
     expect(_glassOf(tester, calendar).top, tester.getRect(calendar).top);

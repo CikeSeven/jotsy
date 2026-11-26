@@ -10,6 +10,7 @@ import 'package:node_diary/ui/anniversaries/providers/anniversary_providers.dart
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/calendar/providers/calendar_diary_providers.dart';
 import 'package:node_diary/ui/calendar/providers/day_mood_providers.dart';
+import 'package:node_diary/ui/calendar/widgets/calendar_month_grid.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/todos/providers/todo_providers.dart';
@@ -24,9 +25,10 @@ import 'expressive_test_theme.dart';
 /// [dayMoods] 为固定的“这天的心情”；传 null 时不固定，读注入的数据库（设定、
 /// 清除心情的测试用）。
 ///
-/// 页宽默认 401.6：日历面板左右合计 41.6dp 内缩，页宽为整数 360，避免
-/// PageView 在数千页后触发 SliverFillViewport 的浮点精度断言；自定义
-/// [width] 也要满足“减 41.6 为整数”（如窄屏用 321.6）。宽窗口（≥ 600）
+/// 页宽默认 401.6：日历面板左右合计 25.6dp 内缩（卡片外 8、内 4、边框
+/// 0.8），网格宽为整数 376，避免 PageView 在数千页后触发 SliverFillViewport
+/// 的浮点精度断言；自定义 [width] 也要满足“减 25.6 为整数”（如窄屏用
+/// 321.6）。宽窗口（≥ 600）
 /// 的网格宽度由网格自己取整，任意宽度都可翻页。[height] 为窗口高度。
 /// 主题与应用同源（[expressiveTestTheme]），[brightness] 用于明暗双跑。
 Future<SettingsService> pumpCalendarPage(
@@ -142,4 +144,19 @@ DiaryWithTags calendarTestDiary(
     ),
     tags: const <Tag>[],
   );
+}
+
+/// 在月 / 周网格上左右滑一页（[forward] 为下一页）：手机页头没有翻月箭头，
+/// 与用户的操作一致。[settle] 为 false 时只发出手势，由调用方逐帧推进。
+Future<void> swipeCalendarPage(
+  WidgetTester tester, {
+  bool forward = true,
+  bool settle = true,
+}) async {
+  await tester.fling(
+    find.byType(CalendarMonthGrid),
+    Offset(forward ? -300 : 300, 0),
+    1500,
+  );
+  if (settle) await tester.pumpAndSettle();
 }

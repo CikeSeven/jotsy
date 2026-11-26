@@ -4,32 +4,38 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../app_surface/widgets/app_card_surface.dart';
 import '../../../core/database/app_database.dart';
-import '../../diaries/models/time_capsule.dart';
 import '../../diaries/sections/diaries_list_section.dart'
-    show DiaryOpenCallback, diaryCardTransitionTag;
-import '../../diaries/widgets/energy_battery_indicator.dart';
-import '../../widgets/container_transform/container_transform_source.dart';
-import '../../widgets/image_viewer_hero.dart';
-import '../../widgets/qweather_icon.dart';
+    show DiaryOpenCallback;
+import '../viewmodels/calendar_day_agenda.dart';
 import 'calendar_day_content_switcher.dart';
-import 'calendar_entry_thumbnail.dart';
-import '../../diaries/viewmodels/diary_card_view_data.dart';
-import '../../widgets/desktop_horizontal_scroll.dart';
+import 'calendar_timeline_diary_card.dart';
+import 'calendar_timeline_rail.dart';
+import 'calendar_timeline_todos.dart';
 
-/// 日历页“选中日期列表”的时间线区块。
+/// 日历页选中日的时间线：“左线右文”，日记与待办排在同一条线上。
 ///
-/// 设计目标：
-/// - 使用“左线右文”的阅读流强化一天内多条记录的故事感；
-/// - 节点优先展示心情 emoji，无心情时退化为中性圆点；
-/// - 每条只展示时间 + 正文摘要，保持视觉轻量。
+/// 输入：选中日、当天日记（按发表时间升序）、待办 [todos]（待办功能开启且
+/// 显示时由页面给出，否则为 null）与没有日记时的“写日记”入口 [onWrite]；
+/// 输出时间线，点按、勾选、新建都经回调交给页面。无副作用。
+///
+/// 自上而下（排序见 [CalendarDayAgenda]）：
+/// - 选中今天且有逾期待办时，时间线之上先是“已逾期”一组（不在线上）；
+/// - 线上依次是全天待办、按时刻穿插的日记与定时待办；
+/// - 末尾一行入口：没有日记时“写日记”（未来日期为时间胶囊），待办开启时
+///   “添加待办”。
+///
+/// 日记节点为心情 emoji 或中性圆点；待办没有节点，线从方框左侧经过。换日、
+/// 增删改与勾选后整条交叉淡入（签名含日期、各条 id 与更新时间）。
 class CalendarTimelineSection extends StatelessWidget {
   const CalendarTimelineSection({
     super.key,
     required this.selectedDay,
     required this.diaries,
     required this.onOpenDiary,
+    this.todos,
+    this.onWrite,
+    this.writeLabel,
   });
 
   /// 当前选中日期，用于生成切换动画签名。
@@ -38,27 +44,31 @@ class CalendarTimelineSection extends StatelessWidget {
   /// 当天日记集合（已按 createdAt 升序）。
   final List<DiaryWithTags> diaries;
 
-  /// 点击时间线条目：传入整条数据（预览页直接用它渲染首帧）与从封面缩略图
-  /// 抓取的共享元素画面（无封面、未解码或减少动画时为 null）。
+  /// 点击日记：传入整条数据（预览页直接用它渲染首帧）与从封面缩略图抓取的
+  /// 共享元素画面（无封面、未解码或减少动画时为 null）。
   final DiaryOpenCallback onOpenDiary;
+
+  /// 待办；null 时时间线只有日记、没有“添加待办”。
+  final CalendarTimelineTodos? todos;
+
+  /// 这一天没有日记时末尾的“写日记”入口；null 时不放。
+  final VoidCallback? onWrite;
+
+  /// [onWrite] 的文字；null 时为“写日记”。
+  final String? writeLabel;
 
   static const Duration _switchDuration = ExpressiveMotion.medium;
 
-  /// 每条的竖线段键为此前缀 + diaryId（测试据此量线段是否首尾相接）。
-  @visibleForTesting
-  static const String timelineRailKeyPrefix = 'calendar_timeline_rail_';
-
-  /// 左侧竖线列宽、节点外框边长与节点距条目顶部的距离；线宽与条目间距。
-  static const double _railWidth = 34;
-  static const double _nodeExtent = 28;
-  static const double _nodeTop = 14;
-  static const double _nodeCenter = _nodeTop + _nodeExtent / 2;
-  static const double _lineWidth = 1.5;
-  static const double _itemGap = 8;
-
   @override
   Widget build(BuildContext context) {
-    final switchKey = ValueKey<String>(_buildSwitchSignature());
+    final todos = this.todos;
+    final agenda = CalendarDayAgenda.build(
+      diaries: diaries,
+      todos: todos?.entries ?? const [],
+      overdue: todos?.overdue ?? const [],
+    );
+    final entries = _buildRailEntries(context, agenda);
+    final hasOverdue = todos != null && agenda.overdue.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -91,16 +101,15 @@ class CalendarTimelineSection extends StatelessWidget {
           );
         },
         child: KeyedSubtree(
-          key: switchKey,
+          key: ValueKey<String>(_buildSwitchSignature()),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              for (int index = 0; index < diaries.length; index++)
-                _buildTimelineItem(
-                  context,
-                  diary: diaries[index],
-                  index: index,
-                  isLast: index == diaries.length - 1,
-                ),
+              if (hasOverdue) ...<Widget>[
+                todos.overdueBlock(context),
+                const SizedBox(height: AppSpacing.s),
+              ],
+              CalendarTimelineRail(entries: entries),
             ],
           ),
         ),
@@ -108,9 +117,70 @@ class CalendarTimelineSection extends StatelessWidget {
     );
   }
 
+  List<CalendarRailEntry> _buildRailEntries(
+    BuildContext context,
+    CalendarDayAgenda agenda,
+  ) {
+    final todos = this.todos;
+    final entries = <CalendarRailEntry>[
+      if (todos != null)
+        for (final entry in agenda.allDay) todos.railEntry(context, entry),
+      for (final item in agenda.timed)
+        switch (item) {
+          CalendarAgendaDiary(:final diary) => CalendarRailEntry(
+            id: diary.diary.diaryId,
+            node: CalendarTimelineDiaryNode(diary: diary),
+            child: CalendarTimelineDiaryCard(
+              diary: diary,
+              onOpenDiary: onOpenDiary,
+            ),
+          ),
+          CalendarAgendaTodo(:final entry) => todos!.railEntry(context, entry),
+        },
+    ];
+    final actions = _buildActions(context, agenda);
+    if (actions.isNotEmpty) {
+      entries.add(
+        CalendarRailEntry(
+          id: 'actions',
+          // 文字按钮高 40，锚点对着它的中线。
+          anchor: 20,
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Wrap(spacing: AppSpacing.xs, children: actions),
+          ),
+        ),
+      );
+    }
+    return entries;
+  }
+
+  /// 末尾入口：没有日记时“写日记”，待办开启时“添加待办”。只有日记、待办
+  /// 关闭时不放，与改版前一致。
+  List<Widget> _buildActions(BuildContext context, CalendarDayAgenda agenda) {
+    final l10n = context.l10n;
+    final onWrite = this.onWrite;
+    final todos = this.todos;
+    return <Widget>[
+      if (!agenda.hasDiaries && onWrite != null)
+        TextButton.icon(
+          onPressed: onWrite,
+          icon: const FaIcon(FontAwesomeIcons.penNib, size: 13),
+          label: Text(writeLabel ?? l10n.autoT0181),
+        ),
+      if (todos != null)
+        TextButton.icon(
+          onPressed: todos.onAdd,
+          icon: const FaIcon(FontAwesomeIcons.plus, size: 13),
+          label: Text(l10n.calendarAddTodo),
+        ),
+    ];
+  }
+
   /// 列表切换签名：
   /// - 包含选中日期，确保“切换到另一日”一定触发过渡；
-  /// - 包含条目 id 与更新时间，确保同一天内容更新时动画也一致刷新。
+  /// - 包含日记 id 与更新时间、待办 id / 完成状态与更新时间，确保同一天
+  ///   内容更新时动画也一致刷新。
   String _buildSwitchSignature() {
     final dayKey =
         '${selectedDay.year}-${selectedDay.month}-${selectedDay.day}';
@@ -120,321 +190,6 @@ class CalendarTimelineSection extends StatelessWidget {
               '${item.diary.diaryId}_${item.diary.updatedAt.millisecondsSinceEpoch}',
         )
         .join('|');
-    return '$dayKey::$itemKey';
-  }
-
-  Widget _buildTimelineItem(
-    BuildContext context, {
-    required DiaryWithTags diary,
-    required int index,
-    required bool isLast,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final lineColor = colorScheme.outlineVariant.withValues(alpha: 0.6);
-    final coverAnchor = ImageViewerHeroAnchor();
-    final capsuleState = TimeCapsuleState.fromFields(
-      lockedAt: diary.diary.capsuleLockedAt,
-      unlockAt: diary.diary.capsuleUnlockAt,
-      now: DateTime.now(),
-    );
-    final isLockedCapsule = capsuleState.isLocked;
-    // 与日记列表共用按 (diaryId, updatedAt) 缓存的派生数据：选日/翻月重建
-    // 时间线不再重复 jsonDecode metadata，也不再为无封面条目解析整段正文。
-    final viewData = DiaryCardViewData.of(diary.diary);
-    final moodEmoji = viewData.moodEmoji;
-    final summary = isLockedCapsule
-        ? _countdownLabel(context, capsuleState)
-        : (viewData.previewText.isNotEmpty
-              ? viewData.previewText
-              : context.l10n.autoT0186);
-    final createdAtLabel = _formatHourMinute(diary.diary.createdAt);
-    final cover = isLockedCapsule ? null : viewData.previewCover;
-    final location = viewData.location;
-    final weather = viewData.weather;
-    final weatherIconCode = viewData.weatherIconCode;
-    final rawEnergy = viewData.energyLevel;
-    final energyLevel = rawEnergy == null
-        ? null
-        : EnergyBatteryIndicator.normalizeValue(rawEnergy);
-    final hasMetaRow =
-        (location != null && location.isNotEmpty) ||
-        (weather != null && weather.isNotEmpty) ||
-        energyLevel != null;
-
-    final isFirst = index == 0;
-    // 竖线按条目的实际高度铺满（#370）：原来是“14 + 节点 + 64”三段定高，
-    // 卡片高过约 106dp（封面、三行摘要加信息行）时线不够长，条目之间的
-    // 间距又在 Row 外面没有线，看起来一段一段断开。现在间距放进条目内，
-    // 线从上一条接到下一条；第一条从节点中心往下、最后一条到节点中心为止，
-    // 节点盖在线上。
-    return Stack(
-      // 卡片带外阴影，不裁切。
-      clipBehavior: Clip.none,
-      children: <Widget>[
-        if (!(isFirst && isLast))
-          Positioned(
-            key: ValueKey<String>(
-              '$timelineRailKeyPrefix${diary.diary.diaryId}',
-            ),
-            left: (_railWidth - _lineWidth) / 2,
-            width: _lineWidth,
-            top: isFirst ? _nodeCenter : 0,
-            bottom: isLast ? null : 0,
-            height: isLast ? _nodeCenter : null,
-            child: ColoredBox(color: lineColor),
-          ),
-        Padding(
-          padding: EdgeInsets.only(bottom: isLast ? 0 : _itemGap),
-          child: _buildTimelineRow(
-            context,
-            diary: diary,
-            moodEmoji: moodEmoji,
-            coverAnchor: coverAnchor,
-            createdAtLabel: createdAtLabel,
-            summary: summary,
-            isLockedCapsule: isLockedCapsule,
-            cover: cover,
-            location: location,
-            weather: weather,
-            weatherIconCode: weatherIconCode,
-            energyLevel: energyLevel,
-            hasMetaRow: hasMetaRow,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimelineRow(
-    BuildContext context, {
-    required DiaryWithTags diary,
-    required String? moodEmoji,
-    required ImageViewerHeroAnchor coverAnchor,
-    required String createdAtLabel,
-    required String summary,
-    required bool isLockedCapsule,
-    required String? cover,
-    required String? location,
-    required String? weather,
-    required String? weatherIconCode,
-    required double? energyLevel,
-    required bool hasMetaRow,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(
-          width: _railWidth,
-          child: Padding(
-            padding: const EdgeInsets.only(top: _nodeTop),
-            child: Center(
-              child: SizedBox(
-                width: _nodeExtent,
-                height: _nodeExtent,
-                child: Center(
-                  child: moodEmoji == null
-                      ? Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorScheme.primaryContainer,
-                              width: 2,
-                            ),
-                          ),
-                        )
-                      : Container(
-                          width: 26,
-                          height: 26,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: colorScheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            moodEmoji,
-                            style: const TextStyle(fontSize: 14, height: 1),
-                          ),
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          // 经典分支与原来的 Container + Material 写法逐像素一致；玻璃
-          // 时为内容玻璃。
-          // 预览页从这张卡片展开；点按处的 context 在来源之内才量得到它。
-          child: ContainerTransformSource(
-            tag: diaryCardTransitionTag(diary.diary.diaryId),
-            borderRadius: 22,
-            shadows: AppCardSurface.shadowsOf(context),
-            child: AppCardSurface(
-              borderRadius: const BorderRadius.all(Radius.circular(22)),
-              child: Builder(
-                builder: (BuildContext tapContext) => InkWell(
-                  borderRadius: BorderRadius.circular(22),
-                  onTap: () => onOpenDiary(
-                    diary,
-                    coverAnchor.capture(
-                      tag: diaryCoverHeroTag(diary.diary.diaryId),
-                    ),
-                    ContainerTransformSource.capture(tapContext),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text(
-                                createdAtLabel,
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                summary,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: isLockedCapsule
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: isLockedCapsule
-                                          ? FontWeight.w700
-                                          : FontWeight.w400,
-                                      height: 1.38,
-                                    ),
-                              ),
-                              if (hasMetaRow) ...<Widget>[
-                                const SizedBox(height: 6),
-                                _buildMetaInlineRow(
-                                  context,
-                                  location: location,
-                                  weather: weather,
-                                  weatherIconCode: weatherIconCode,
-                                  energyLevel: energyLevel,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (cover != null) ...<Widget>[
-                          const SizedBox(width: 12),
-                          CalendarEntryThumbnail(
-                            source: cover,
-                            diaryId: diary.diary.diaryId,
-                            anchor: coverAnchor,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _countdownLabel(BuildContext context, TimeCapsuleState state) {
-    final hours = state.remainingDuration.inHours;
-    if (hours > 0 && hours < 24) {
-      return context.l10n.timeCapsuleCountdownHours(hours.toString());
-    }
-    return context.l10n.timeCapsuleCountdownDays(
-      state.remainingDays.toString(),
-    );
-  }
-
-  Widget _buildMetaInlineRow(
-    BuildContext context, {
-    required String? location,
-    required String? weather,
-    required String? weatherIconCode,
-    required double? energyLevel,
-  }) {
-    final color = Theme.of(context).colorScheme.onSurfaceVariant;
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.bodySmall?.copyWith(color: color);
-
-    final segments = <Widget>[];
-    void appendSegment(Widget child) {
-      if (segments.isNotEmpty) {
-        segments.add(Text(' | ', style: textStyle));
-      }
-      segments.add(child);
-    }
-
-    if (location != null && location.isNotEmpty) {
-      appendSegment(
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            FaIcon(FontAwesomeIcons.locationDot, size: 11, color: color),
-            const SizedBox(width: 4),
-            Text(location, style: textStyle),
-          ],
-        ),
-      );
-    }
-
-    if (weather != null && weather.isNotEmpty) {
-      appendSegment(
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            QWeatherIcon(
-              iconCode: weatherIconCode,
-              weatherText: weather,
-              size: 11,
-              fallbackColor: color,
-            ),
-            const SizedBox(width: 4),
-            Text(weather, style: textStyle),
-          ],
-        ),
-      );
-    }
-
-    if (energyLevel != null) {
-      appendSegment(
-        EnergyBatteryIndicator(
-          value: energyLevel,
-          iconSize: 12,
-          showLabel: false,
-        ),
-      );
-    }
-
-    return DesktopHorizontalScroll(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(mainAxisSize: MainAxisSize.min, children: segments),
-      ),
-    );
-  }
-
-  /// 时间线时间文案固定为分钟级（HH:mm）。
-  String _formatHourMinute(DateTime value) {
-    final local = value.toLocal();
-    final hour = local.hour.toString().padLeft(2, '0');
-    final minute = local.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+    return '$dayKey::$itemKey::${todos?.signature ?? ''}';
   }
 }

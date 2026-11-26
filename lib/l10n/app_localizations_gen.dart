@@ -26774,12 +26774,6 @@ abstract class AppLocalizations {
   /// **'Add a to-do'**
   String get calendarAddTodo;
 
-  /// Title of the to-do card below the selected calendar day.
-  ///
-  /// In en, this message translates to:
-  /// **'To-dos for this day'**
-  String get calendarTodoSectionTitle;
-
   /// Screen reader hint on an upcoming repeat occurrence in the calendar that can't be ticked yet.
   ///
   /// In en, this message translates to:

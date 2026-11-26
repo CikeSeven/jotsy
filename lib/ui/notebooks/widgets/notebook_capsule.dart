@@ -17,11 +17,15 @@ class NotebookCapsule extends StatelessWidget {
   const NotebookCapsule({
     super.key,
     required this.notebook,
+    this.chapterTitle,
     this.onTap,
     this.maxNameWidth = 140,
   });
 
   final NotebookView notebook;
+
+  /// 可选章节标题；非空时显示为“日记本 · 章节”。
+  final String? chapterTitle;
   final VoidCallback? onTap;
   final double maxNameWidth;
 
@@ -30,6 +34,10 @@ class NotebookCapsule extends StatelessWidget {
     final theme = Theme.of(context);
     final accent = notebookAccentColors(notebook.color, theme.colorScheme);
     final radius = BorderRadius.circular(8);
+    final trimmedChapter = chapterTitle?.trim();
+    final label = trimmedChapter == null || trimmedChapter.isEmpty
+        ? notebook.name
+        : '${notebook.name} · $trimmedChapter';
     final content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
@@ -40,7 +48,7 @@ class NotebookCapsule extends StatelessWidget {
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxNameWidth),
             child: Text(
-              notebook.name,
+              label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(

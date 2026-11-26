@@ -184,4 +184,140 @@ void main() {
     expect(find.text('新建日记本'), findsOneWidget);
     await h.unmount();
   });
+
+  testWidgets('multi mode expands chapters inline and returns picked chapter', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final travel = await h.notebook(
+      '旅行',
+      payload: NotebookPayload(
+        chapters: <NotebookChapter>[
+          NotebookChapter(id: 'c1', title: '行前'),
+          NotebookChapter(id: 'c2', title: '行程'),
+        ],
+      ),
+    );
+    NotebookMembershipPick? pick;
+    await h.pump(
+      Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () async {
+                pick = await showNotebookMembershipPickerSheet(context);
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await h.settleAll();
+    // 没勾中时不展开章节胶囊。
+    expect(find.text('行前'), findsNothing);
+
+    await tester.tap(pickRow(travel));
+    await h.settleAll();
+    expect(find.text('行前'), findsOneWidget);
+    expect(find.text('行程'), findsOneWidget);
+    expect(find.text('未分章'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(ValueKey<String>('notebook_pick_chapter_${travel}_c2')),
+    );
+    await h.settleAll();
+    await tester.tap(find.text('完成'));
+    await h.settleAll();
+    expect(pick?.result, NotebookPickerResult(add: <String>{travel}));
+    expect(pick?.chapterIds, <String, String?>{travel: 'c2'});
+
+    // 已在 c2 时单独改回未分章，even when notebook check state is unchanged.
+    pick = null;
+    await h.pump(
+      Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () async {
+                pick = await showNotebookMembershipPickerSheet(
+                  context,
+                  initial: <String, NotebookPickState>{
+                    travel: NotebookPickState.all,
+                  },
+                  initialChapters: <String, String?>{travel: 'c2'},
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await h.settleAll();
+    expect(find.text('未分章'), findsOneWidget);
+    await tester.tap(
+      find.byKey(
+        ValueKey<String>('notebook_pick_chapter_${travel}_unassigned'),
+      ),
+    );
+    await h.settleAll();
+    await tester.tap(find.text('完成'));
+    await h.settleAll();
+    expect(pick?.result.isEmpty, isTrue);
+    expect(pick?.chapterIds, <String, String?>{travel: null});
+    await h.unmount();
+  });
+
+  testWidgets('single mode expands chapters for notebooks that have them', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    final travel = await h.notebook('旅行');
+    final work = await h.notebook(
+      '工作',
+      payload: NotebookPayload(
+        chapters: <NotebookChapter>[
+          NotebookChapter(id: 'c1', title: '周报'),
+          NotebookChapter(id: 'c2', title: '总结'),
+        ],
+      ),
+    );
+    NotebookMembershipPick? pick;
+    await h.pump(
+      Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () async {
+                pick = await showNotebookMembershipPickerSheet(
+                  context,
+                  mode: NotebookPickerMode.single,
+                  excludedIds: <String>{travel},
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await h.settleAll();
+    await tester.tap(pickRow(work));
+    await h.settleAll();
+    // 有章节的本子先展开章节供挑选，不直接关闭。
+    expect(pick, isNull);
+    expect(find.text('周报'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(ValueKey<String>('notebook_pick_chapter_${work}_c1')),
+    );
+    await h.settleAll();
+    expect(pick?.result, NotebookPickerResult(add: <String>{work}));
+    expect(pick?.chapterIds, <String, String?>{work: 'c1'});
+    await h.unmount();
+  });
 }

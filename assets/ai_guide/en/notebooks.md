@@ -22,9 +22,9 @@ Tap "＋ New notebook" on the shelf, or "+" at the top right of the management p
 - Default order and Template for new entries.
 
 ## Adding and removing entries
-- While writing, use the "Notebooks" row in the details panel.
-- On the preview page: "More → Add to notebook".
-- On the home page, long-press to start selecting, then tap "Add to notebook" in the top bar. Inside a regular notebook, "More actions" also has "Remove from this notebook" and "Move to…", both undoable.
+- While writing, use the "Notebooks" row in the details panel; when you select a regular notebook with chapters, its chapters expand inline so you can pick one right away.
+- On the preview page: "More → Add to notebook", where you can also pick a chapter directly.
+- On the home page, long-press to start selecting, then tap "Add to notebook" in the top bar. Inside a regular notebook, "More actions" also has "Remove from this notebook" and "Move to…" (letting you pick a chapter when the target notebook has chapters), both undoable.
 - While the home page is inside a regular notebook, the bottom-right button becomes "Write in X", and new entries go into that notebook.
 - On a computer, right-click a card and choose "Add to notebook…".
 

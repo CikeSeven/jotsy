@@ -11,34 +11,37 @@ import 'notebook_membership_ops.dart';
 
 /// 单篇日记的“收进日记本”：预览页“更多”与桌面列表卡片的右键菜单共用。
 ///
-/// 选择器的初始勾选为这篇现在所在的本子，确认后经 [NotebookMembershipOps]
-/// 一次写入全部变化并提示（收进私密日记本时说明它只在那本里显示）；写入
-/// 失败时只提示，不改动数据（事务整体回滚）。
+/// 选择器的初始勾选为这篇现在所在的本子与章节，确认后经
+/// [NotebookMembershipOps] 一次写入全部变化并提示（收进私密日记本时说明它只
+/// 在那本里显示）；写入失败时只提示，不改动数据（事务整体回滚）。
 Future<void> pickNotebooksForDiary(
   BuildContext context,
   WidgetRef ref, {
   required String diaryId,
 }) async {
   final database = ref.read(appDatabaseProvider);
-  final current = await database.getDiaryNotebookIds(diaryId);
+  final memberships = await database.getDiaryNotebookMemberships(diaryId);
   if (!context.mounted) return;
-  final result = await showNotebookPickerSheet(
+  final pick = await showNotebookMembershipPickerSheet(
     context,
     initial: <String, NotebookPickState>{
-      for (final id in current) id: NotebookPickState.all,
+      for (final id in memberships.keys) id: NotebookPickState.all,
     },
+    initialChapters: memberships,
   );
-  if (result == null || !context.mounted) return;
+  if (pick == null || !context.mounted) return;
   final l10n = context.l10n;
   final notebooks = ref.read(notebooksProvider).value ?? const <NotebookView>[];
   String message;
   try {
-    await NotebookMembershipOps(database).apply(result, <String>[diaryId]);
+    await NotebookMembershipOps(
+      database,
+    ).apply(pick.result, <String>[diaryId], chapterIds: pick.chapterIds);
     ref.invalidate(diaryNotebooksProvider(diaryId));
     message =
-        notebookPrivateAddedHint(l10n, result.add, notebooks) ??
-        (result.remove.isEmpty
-            ? l10n.notebookAddedToCount(result.add.length)
+        notebookPrivateAddedHint(l10n, pick.result.add, notebooks) ??
+        (pick.result.remove.isEmpty && pick.result.add.isNotEmpty
+            ? l10n.notebookAddedToCount(pick.result.add.length)
             : l10n.notebookMembershipUpdated);
   } catch (error) {
     debugPrint('Updating diary notebooks failed: $error');

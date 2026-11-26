@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_diary_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/providers/diary_create_prefs_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
@@ -181,6 +182,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
     if (!mounted) return;
     unawaited(HapticFeedback.lightImpact());
     if (capsuleExpired) _hint(l10n.publishCapsuleExpired);
+    if (ref.read(diaryCreatePrefsProvider).expandPublishPanel) {
+      unawaited(_panelController.expand());
+    }
     // AI：发表后自动回应（打开了才有；胶囊还没解封，不回应）与自动建议
     // 标签和心情（打开了才有，点选后才写入面板）。
     if (_meta.value.capsule == null) {

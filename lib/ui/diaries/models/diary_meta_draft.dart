@@ -25,6 +25,7 @@ class DiaryMetaDraft {
     this.cover,
     this.tagIds = const <int>{},
     this.notebookIds = const <String>{},
+    this.notebookChapterIds = const <String, String>{},
     this.location,
     this.locationAddressComponent,
     this.locationLatitude,
@@ -43,10 +44,19 @@ class DiaryMetaDraft {
   /// 空白文本归一为 null；历史草稿里越界的精力值限制到 1~5。
   factory DiaryMetaDraft.fromNewDiaryDraft(NewDiaryDraft draft) {
     final capsuleUnlockAt = draft.capsuleUnlockAt;
+    final notebookIds = Set<String>.unmodifiable(draft.notebookIds);
+    final notebookChapterIds = Map<String, String>.unmodifiable(
+      <String, String>{
+        for (final entry in draft.notebookChapterIds.entries)
+          if (notebookIds.contains(entry.key) && entry.value.trim().isNotEmpty)
+            entry.key: entry.value.trim(),
+      },
+    );
     return DiaryMetaDraft(
       cover: normalizeOptionalText(draft.cover),
       tagIds: Set<int>.unmodifiable(draft.selectedTagIds),
-      notebookIds: Set<String>.unmodifiable(draft.notebookIds),
+      notebookIds: notebookIds,
+      notebookChapterIds: notebookChapterIds,
       location: normalizeOptionalText(draft.location),
       locationAddressComponent: draft.locationAddressComponent,
       locationLatitude: draft.locationLatitude,
@@ -75,6 +85,9 @@ class DiaryMetaDraft {
 
   /// 所在的日记本（业务 id），按加入的先后（摘要里先显示先选的）。
   final Set<String> notebookIds;
+
+  /// 所在日记本中指定的章节（日记本业务 id → 章节 id；未分章的本子不在此列）。
+  final Map<String, String> notebookChapterIds;
   final String? location;
 
   /// 自动定位得到的地址组件，用于按层级重组地点文案与层级菜单预览。
@@ -105,6 +118,7 @@ class DiaryMetaDraft {
       cover: cover,
       selectedTagIds: <int>{...tagIds},
       notebookIds: notebookIds.toList(growable: false),
+      notebookChapterIds: Map<String, String>.unmodifiable(notebookChapterIds),
       location: location,
       locationAddressComponent: locationAddressComponent,
       locationLatitude: locationLatitude,
@@ -127,6 +141,7 @@ class DiaryMetaDraft {
     Object? cover = _unchanged,
     Set<int>? tagIds,
     Set<String>? notebookIds,
+    Map<String, String>? notebookChapterIds,
     Object? location = _unchanged,
     Object? locationAddressComponent = _unchanged,
     Object? locationLatitude = _unchanged,
@@ -145,6 +160,7 @@ class DiaryMetaDraft {
       cover: pick<String>(cover, this.cover),
       tagIds: tagIds ?? this.tagIds,
       notebookIds: notebookIds ?? this.notebookIds,
+      notebookChapterIds: notebookChapterIds ?? this.notebookChapterIds,
       location: pick<String>(location, this.location),
       locationAddressComponent: pick<Map<String, Object?>>(
         locationAddressComponent,
@@ -172,6 +188,7 @@ class DiaryMetaDraft {
       other.cover == cover &&
       setEquals(other.tagIds, tagIds) &&
       setEquals(other.notebookIds, notebookIds) &&
+      mapEquals(other.notebookChapterIds, notebookChapterIds) &&
       other.location == location &&
       identical(other.locationAddressComponent, locationAddressComponent) &&
       other.locationLatitude == locationLatitude &&
@@ -189,6 +206,9 @@ class DiaryMetaDraft {
     cover,
     Object.hashAllUnordered(tagIds),
     Object.hashAllUnordered(notebookIds),
+    Object.hashAllUnordered(
+      notebookChapterIds.entries.map((e) => Object.hash(e.key, e.value)),
+    ),
     location,
     identityHashCode(locationAddressComponent),
     locationLatitude,

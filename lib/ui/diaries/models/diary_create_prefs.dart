@@ -1,9 +1,8 @@
 // 新建日记的偏好（设置 → 编辑器设置 → 编辑行为）。
 //
 // 存储：单个 JSON 设置键 `app.settings.diary_create_prefs`（经
-// `SettingsService.setDiaryCreatePrefsRaw`），形如 `{"leave":"publish"}`，
-// 逐字段容错解析；全为默认时不存这个键。随备份导出，导入失败时回滚（与
-// 编辑器的其他写作偏好一样）。
+// `SettingsService.setDiaryCreatePrefsRaw`），逐字段容错解析；全为默认时不存
+// 这个键。随备份导出，导入失败时回滚（与编辑器的其他写作偏好一样）。
 
 import 'dart:convert';
 
@@ -35,20 +34,32 @@ enum DiaryCreateLeaveAction {
 /// 新建日记的偏好。不可变。
 @immutable
 class DiaryCreatePrefs {
-  const DiaryCreatePrefs({this.leaveAction = DiaryCreateLeaveAction.keepDraft});
+  const DiaryCreatePrefs({
+    this.leaveAction = DiaryCreateLeaveAction.keepDraft,
+    this.expandPublishPanel = false,
+  });
 
   static const DiaryCreatePrefs defaults = DiaryCreatePrefs();
 
   static const _keyLeave = 'leave';
+  static const _keyExpandPublishPanel = 'expand_publish_panel';
 
   /// 按返回时怎样处理这篇新日记。
   final DiaryCreateLeaveAction leaveAction;
 
+  /// 进入发布页时是否自动展开下方的详细信息面板（默认关）。
+  final bool expandPublishPanel;
+
   /// 按返回时直接发表。
   bool get publishOnLeave => leaveAction == DiaryCreateLeaveAction.publish;
 
-  DiaryCreatePrefs copyWith({DiaryCreateLeaveAction? leaveAction}) =>
-      DiaryCreatePrefs(leaveAction: leaveAction ?? this.leaveAction);
+  DiaryCreatePrefs copyWith({
+    DiaryCreateLeaveAction? leaveAction,
+    bool? expandPublishPanel,
+  }) => DiaryCreatePrefs(
+    leaveAction: leaveAction ?? this.leaveAction,
+    expandPublishPanel: expandPublishPanel ?? this.expandPublishPanel,
+  );
 
   /// 解析设置原文：空值、坏 JSON 或不是对象时为 [defaults]；每个字段单独
   /// 容错。
@@ -61,21 +72,30 @@ class DiaryCreatePrefs {
       return defaults;
     }
     if (node is! Map) return defaults;
+    final expand = node[_keyExpandPublishPanel];
     return DiaryCreatePrefs(
       leaveAction: DiaryCreateLeaveAction.fromStorage(node[_keyLeave]),
+      expandPublishPanel: expand is bool ? expand : false,
     );
   }
 
   /// 编码为设置原文；全为默认时为 null（移除这个键，备份里不留冗余配置）。
   String? encode() {
     if (this == defaults) return null;
-    return jsonEncode(<String, Object>{_keyLeave: leaveAction.storageName});
+    final json = <String, Object>{
+      if (leaveAction != DiaryCreateLeaveAction.keepDraft)
+        _keyLeave: leaveAction.storageName,
+      if (expandPublishPanel) _keyExpandPublishPanel: true,
+    };
+    return json.isEmpty ? null : jsonEncode(json);
   }
 
   @override
   bool operator ==(Object other) =>
-      other is DiaryCreatePrefs && other.leaveAction == leaveAction;
+      other is DiaryCreatePrefs &&
+      other.leaveAction == leaveAction &&
+      other.expandPublishPanel == expandPublishPanel;
 
   @override
-  int get hashCode => leaveAction.hashCode;
+  int get hashCode => Object.hash(leaveAction, expandPublishPanel);
 }

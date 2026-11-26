@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../app_surface/widgets/on_glass.dart';
 import '../../widgets/expressive_icon_swap.dart';
@@ -10,6 +11,7 @@ import '../models/notebook_pick_selection.dart';
 import '../viewmodels/notebook_tree_rows.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_cover_parts.dart';
+import 'notebook_pick_chapter_strip.dart';
 import 'notebook_tree_toggle.dart';
 
 /// 收录选择器的一行（底部面板与发布面板的日记本子页共用），外观沿用发布
@@ -25,6 +27,8 @@ import 'notebook_tree_toggle.dart';
 ///   （40 × 40，见 `NotebookFoldableRows`），点它不改勾选；
 /// - 画在玻璃面板上时（[OnGlass]）未选中的行底换成半透明凹槽色（与发布
 ///   面板里的标签行同一口径），选中的本子容器色不变。
+/// - [showChapters] 为 true 且 [chapters] 非空时，在行内顺滑展开章节胶囊
+///   供直接挑选（[onSelectChapter] 回调目标章节 id，null 为“未分章”）。
 class NotebookPickRow extends StatelessWidget {
   const NotebookPickRow({
     super.key,
@@ -35,6 +39,11 @@ class NotebookPickRow extends StatelessWidget {
     this.showCheck = true,
     this.indent = 0,
     this.toggle,
+    this.chapters = const <NotebookChapter>[],
+    this.selectedChapterId,
+    this.showChapters = false,
+    this.allowNoChapterHighlight = false,
+    this.onSelectChapter,
   });
 
   final NotebookView notebook;
@@ -51,6 +60,21 @@ class NotebookPickRow extends StatelessWidget {
   /// 子本的展开 / 收起；没有列出来的子本时为 null。
   final NotebookRowToggle? toggle;
 
+  /// 这本日记本的章节列表；空时不展开章节选择区。
+  final List<NotebookChapter> chapters;
+
+  /// 当前选中的章节 id；null 表示未分章。
+  final String? selectedChapterId;
+
+  /// 是否在行内展开章节选择区。
+  final bool showChapters;
+
+  /// 单选模式下不预先高亮“未分章”，由用户点击具体项确认。
+  final bool allowNoChapterHighlight;
+
+  /// 点击章节胶囊时的回调；为 null 时不提供章节选择。
+  final ValueChanged<String?>? onSelectChapter;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -61,6 +85,8 @@ class NotebookPickRow extends StatelessWidget {
     final active = state != NotebookPickState.none;
     final count = this.count;
     final toggle = this.toggle;
+    final onSelectChapter = this.onSelectChapter;
+    final supportsChapters = chapters.isNotEmpty && onSelectChapter != null;
     final privateIcon = switch (notebook.effectiveVisibility) {
       NotebookVisibility.locked => FontAwesomeIcons.lock,
       NotebookVisibility.hidden => FontAwesomeIcons.eyeSlash,
@@ -83,111 +109,135 @@ class NotebookPickRow extends StatelessWidget {
         scheme.outlineVariant,
       ),
     };
+    final mainRow = Semantics(
+      checked: showCheck ? state == NotebookPickState.all : null,
+      mixed: showCheck && state == NotebookPickState.some ? true : null,
+      button: !showCheck,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: <Widget>[
+                NotebookIconCircle(
+                  icon: notebook.icon,
+                  accent: accent,
+                  size: 32,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        notebook.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (count != null || privateIcon != null)
+                        Row(
+                          children: <Widget>[
+                            if (count != null)
+                              Flexible(
+                                child: Text(
+                                  l10n.notebookEntryCount(count),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: mutedStyle,
+                                ),
+                              ),
+                            if (privateIcon != null) ...<Widget>[
+                              if (count != null) const SizedBox(width: 6),
+                              FaIcon(
+                                privateIcon,
+                                size: 11,
+                                color: scheme.onSurfaceVariant,
+                                semanticLabel:
+                                    notebook.effectiveVisibility ==
+                                        NotebookVisibility.locked
+                                    ? l10n.notebookStateLocked
+                                    : l10n.notebookStateHidden,
+                              ),
+                            ],
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+                if (toggle != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 4),
+                    child: NotebookTreeToggleButton(
+                      key: ValueKey<String>(
+                        'notebook_pick_toggle_${notebook.id}',
+                      ),
+                      toggle: toggle,
+                      compact: true,
+                    ),
+                  ),
+                if (showCheck) ...<Widget>[
+                  SizedBox(width: toggle == null ? 8 : 4),
+                  ExpressiveIconSwap(
+                    switchKey: state,
+                    child: FaIcon(checkIcon, size: 18, color: checkColor),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
     return Padding(
       padding: EdgeInsetsDirectional.only(
         start: indent * notebookTreeIndentStep,
         bottom: 8,
       ),
-      child: Semantics(
-        checked: showCheck ? state == NotebookPickState.all : null,
-        mixed: showCheck && state == NotebookPickState.some ? true : null,
-        button: !showCheck,
-        child: ExpressiveStateBlend(
-          active: active && showCheck,
-          builder: (context, t, child) => Material(
-            color: Color.lerp(
-              notebookPickRowColor(context),
-              accent.container.withValues(alpha: isLight ? 0.72 : 0.6),
-              t,
-            ),
-            borderRadius: BorderRadius.circular(12),
-            child: child,
+      child: ExpressiveStateBlend(
+        active: active && (showCheck || showChapters),
+        builder: (context, t, child) => Material(
+          color: Color.lerp(
+            notebookPickRowColor(context),
+            accent.container.withValues(alpha: isLight ? 0.72 : 0.6),
+            t,
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: onTap,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 56),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: <Widget>[
-                    NotebookIconCircle(
-                      icon: notebook.icon,
-                      accent: accent,
-                      size: 32,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            notebook.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (count != null || privateIcon != null)
-                            Row(
-                              children: <Widget>[
-                                if (count != null)
-                                  Flexible(
-                                    child: Text(
-                                      l10n.notebookEntryCount(count),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: mutedStyle,
-                                    ),
-                                  ),
-                                if (privateIcon != null) ...<Widget>[
-                                  if (count != null) const SizedBox(width: 6),
-                                  FaIcon(
-                                    privateIcon,
-                                    size: 11,
-                                    color: scheme.onSurfaceVariant,
-                                    semanticLabel:
-                                        notebook.effectiveVisibility ==
-                                            NotebookVisibility.locked
-                                        ? l10n.notebookStateLocked
-                                        : l10n.notebookStateHidden,
-                                  ),
-                                ],
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (toggle != null)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(start: 4),
-                        child: NotebookTreeToggleButton(
-                          key: ValueKey<String>(
-                            'notebook_pick_toggle_${notebook.id}',
-                          ),
-                          toggle: toggle,
-                          compact: true,
-                        ),
-                      ),
-                    if (showCheck) ...<Widget>[
-                      SizedBox(width: toggle == null ? 8 : 4),
-                      ExpressiveIconSwap(
-                        switchKey: state,
-                        child: FaIcon(checkIcon, size: 18, color: checkColor),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          child: child,
         ),
+        child: supportsChapters
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  mainRow,
+                  AnimatedSize(
+                    duration: ExpressiveMotion.duration(
+                      context,
+                      ExpressiveMotion.fast,
+                    ),
+                    curve: ExpressiveMotion.effects,
+                    alignment: Alignment.topCenter,
+                    child: showChapters
+                        ? NotebookPickChapterStrip(
+                            notebookId: notebook.id,
+                            accent: accent,
+                            chapters: chapters,
+                            selectedChapterId: selectedChapterId,
+                            allowNoneSelected: allowNoChapterHighlight,
+                            onSelect: onSelectChapter,
+                          )
+                        : const SizedBox(width: double.infinity),
+                  ),
+                ],
+              )
+            : mainRow,
       ),
     );
   }

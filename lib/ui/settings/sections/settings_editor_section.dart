@@ -14,6 +14,7 @@ import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
 import '../widgets/settings_card_group.dart';
 import 'settings_code_block_style_tile.dart';
+import 'settings_editor_behavior_switches.dart';
 import 'settings_manual_save_switch.dart';
 import 'settings_open_in_editor_switch.dart';
 import 'settings_publish_on_leave_switch.dart';
@@ -23,8 +24,8 @@ import '../../ai/providers/ai_providers.dart';
 
 /// 设置 → 编辑器设置的三组：「正文」（正文字体与排版、代码块样式）、
 /// 「工具栏」（按钮排序、大小、始终显示）、「编辑行为」（打开日记时直接
-/// 编辑、返回时直接发表新日记、手动保存修改、自动显示当天照片）。日记模板
-/// 与心情符号在设置首页。
+/// 编辑、返回时直接发表新日记、发布时自动展开详细信息、手动保存修改、插入
+/// 图片和视频时默认小图、自动显示当天照片）。日记模板与心情符号在设置首页。
 class SettingsEditorSection extends ConsumerWidget {
   const SettingsEditorSection({super.key, required this.settingsAsync});
 
@@ -65,7 +66,13 @@ class SettingsEditorSection extends ConsumerWidget {
               children: <Widget>[
                 SettingsOpenInEditorSwitch(settingsService: settingsService),
                 SettingsPublishOnLeaveSwitch(settingsService: settingsService),
+                SettingsExpandPublishPanelSwitch(
+                  settingsService: settingsService,
+                ),
                 SettingsManualSaveSwitch(settingsService: settingsService),
+                SettingsDefaultMediaThumbnailSwitch(
+                  settingsService: settingsService,
+                ),
                 _DayPhotoSuggestionsSwitch(settings: settingsService),
               ],
             ),

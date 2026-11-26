@@ -19357,4 +19357,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String notebookContentsTransferredPrivate(String target) {
     return 'Transferred to \"$target\". Moved entries now only show in that notebook';
   }
+
+  @override
+  String get settingsExpandPublishPanel => 'Expand details on publish page';
+
+  @override
+  String get settingsExpandPublishPanelSubtitle =>
+      'Open the details panel automatically after tapping Publish on a new diary';
+
+  @override
+  String get settingsDefaultMediaThumbnail =>
+      'Insert images & videos as thumbnails';
+
+  @override
+  String get settingsDefaultMediaThumbnailSubtitle =>
+      'Newly added images and videos use compact thumbnail size by default';
 }

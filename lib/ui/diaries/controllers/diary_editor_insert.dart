@@ -32,12 +32,16 @@ af.Selection diaryEditorInsertionSelection(
 /// 插入的图片与视频也设为小图，接着排进那一排（diary_thumbnail_rows.dart）。
 /// 点小图右侧的空白后插图 / 插视频，它就出现在右边；想要大图时在图片菜单
 /// 或视频菜单里恢复正常显示。附件等其他块照常一行一块。
+/// [followDefaultThumbnail]：为 true 且控制器开启“插入图片和视频时默认小图”
+/// 时，插入的图片与视频直接设为小图（附件等其他块不受影响；用户仍可在菜单
+/// 里恢复正常显示）。
 void insertDiaryEditorNodes({
   required DiaryEditorController controller,
   required List<af.Node> nodes,
   af.Selection? selection,
   bool replaceSelection = false,
   bool followThumbnails = false,
+  bool followDefaultThumbnail = false,
 }) {
   if (nodes.isEmpty || controller.readOnly) return;
   final target = diaryEditorInsertionSelection(
@@ -88,11 +92,14 @@ void insertDiaryEditorNodes({
   final previous = insertPath.last > 0
       ? controller.document.nodeAtPath(insertPath.previous)
       : null;
-  // 插入点停在小图上（左侧或右侧）时同样跟着设为小图，插进那一排。
+  // 开启默认小图、或插入点紧跟 / 停在小图上时，将插入的图片与视频设为小图。
   final thumbnails =
-      followThumbnails &&
-      ((previous != null && isDiaryThumbnailMedia(previous)) ||
-          (delta == null && table == null && isDiaryThumbnailMedia(current)));
+      (followDefaultThumbnail && controller.defaultMediaThumbnail) ||
+      (followThumbnails &&
+          ((previous != null && isDiaryThumbnailMedia(previous)) ||
+              (delta == null &&
+                  table == null &&
+                  isDiaryThumbnailMedia(current))));
   transaction.insertNodes(insertPath, [
     for (final node in nodes)
       thumbnails && kDiaryThumbnailBlockTypes.contains(node.type)

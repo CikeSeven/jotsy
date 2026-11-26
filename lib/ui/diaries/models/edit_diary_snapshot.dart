@@ -10,10 +10,14 @@ class EditDiarySnapshot {
     required Set<int> selectedTagIds,
     required this.createdAt,
     List<String>? notebookIds,
+    Map<String, String>? notebookChapterIds,
   }) : selectedTagIds = Set<int>.unmodifiable(selectedTagIds),
        notebookIds = notebookIds == null
            ? null
-           : List<String>.unmodifiable(notebookIds);
+           : List<String>.unmodifiable(notebookIds),
+       notebookChapterIds = notebookChapterIds == null
+           ? null
+           : Map<String, String>.unmodifiable(notebookChapterIds);
 
   final String title;
   final String contentDocJson;
@@ -28,6 +32,9 @@ class EditDiarySnapshot {
   /// 所在日记本；null 表示用户没改过，保存时不动关联。
   final List<String>? notebookIds;
 
+  /// 所在日记本中指定的章节；null 表示用户没改过，保存时不动关联。
+  final Map<String, String>? notebookChapterIds;
+
   @override
   bool operator ==(Object other) =>
       other is EditDiarySnapshot &&
@@ -39,7 +46,8 @@ class EditDiarySnapshot {
       other.selectedTagIds.length == selectedTagIds.length &&
       other.selectedTagIds.containsAll(selectedTagIds) &&
       other.createdAt == createdAt &&
-      _sameIds(other.notebookIds, notebookIds);
+      _sameIds(other.notebookIds, notebookIds) &&
+      _sameChapters(other.notebookChapterIds, notebookChapterIds);
 
   @override
   int get hashCode => Object.hash(
@@ -51,6 +59,11 @@ class EditDiarySnapshot {
     Object.hashAll(selectedTagIds.toList()..sort()),
     createdAt,
     notebookIds == null ? null : Object.hashAll(notebookIds!),
+    notebookChapterIds == null
+        ? null
+        : Object.hashAllUnordered(
+            notebookChapterIds!.entries.map((e) => Object.hash(e.key, e.value)),
+          ),
   );
 
   static bool _sameIds(List<String>? a, List<String>? b) {
@@ -58,6 +71,15 @@ class EditDiarySnapshot {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  static bool _sameChapters(Map<String, String>? a, Map<String, String>? b) {
+    if (a == null || b == null) return a == b;
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
     }
     return true;
   }

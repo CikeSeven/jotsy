@@ -1,9 +1,9 @@
-// 编辑已有日记的偏好（设置 → 编辑器设置 → 编辑行为）。
+// 编辑器设置 → 编辑行为的偏好（已有日记保存方式、插入图片/视频默认小图）。
 //
 // 存储：单个 JSON 设置键 `app.settings.diary_edit_prefs`（经
-// `SettingsService.setDiaryEditPrefsRaw`），形如 `{"save":"manual"}`，逐字段
-// 容错解析；全为默认时不存这个键。随备份导出，导入失败时回滚（与编辑器的
-// 其他写作偏好一样）。新建日记的偏好另在 `DiaryCreatePrefs`。
+// `SettingsService.setDiaryEditPrefsRaw`），逐字段容错解析；全为默认时不存
+// 这个键。随备份导出，导入失败时回滚（与编辑器的其他写作偏好一样）。新建
+// 日记的偏好另在 `DiaryCreatePrefs`。
 
 import 'dart:convert';
 
@@ -32,23 +32,35 @@ enum DiaryEditSaveMode {
   }
 }
 
-/// 编辑已有日记的偏好。不可变。
+/// 编辑器的编辑行为偏好。不可变。
 @immutable
 class DiaryEditPrefs {
-  const DiaryEditPrefs({this.saveMode = DiaryEditSaveMode.auto});
+  const DiaryEditPrefs({
+    this.saveMode = DiaryEditSaveMode.auto,
+    this.defaultMediaThumbnail = false,
+  });
 
   static const DiaryEditPrefs defaults = DiaryEditPrefs();
 
   static const _keySave = 'save';
+  static const _keyDefaultMediaThumbnail = 'default_media_thumbnail';
 
   /// 修改怎样写进库里。
   final DiaryEditSaveMode saveMode;
 
+  /// 插入图片与视频时是否默认以小图显示（默认关）。
+  final bool defaultMediaThumbnail;
+
   /// 手动保存。
   bool get manualSave => saveMode == DiaryEditSaveMode.manual;
 
-  DiaryEditPrefs copyWith({DiaryEditSaveMode? saveMode}) =>
-      DiaryEditPrefs(saveMode: saveMode ?? this.saveMode);
+  DiaryEditPrefs copyWith({
+    DiaryEditSaveMode? saveMode,
+    bool? defaultMediaThumbnail,
+  }) => DiaryEditPrefs(
+    saveMode: saveMode ?? this.saveMode,
+    defaultMediaThumbnail: defaultMediaThumbnail ?? this.defaultMediaThumbnail,
+  );
 
   /// 解析设置原文：空值、坏 JSON 或不是对象时为 [defaults]；每个字段单独
   /// 容错。
@@ -61,21 +73,29 @@ class DiaryEditPrefs {
       return defaults;
     }
     if (node is! Map) return defaults;
+    final thumbnail = node[_keyDefaultMediaThumbnail];
     return DiaryEditPrefs(
       saveMode: DiaryEditSaveMode.fromStorage(node[_keySave]),
+      defaultMediaThumbnail: thumbnail is bool ? thumbnail : false,
     );
   }
 
   /// 编码为设置原文；全为默认时为 null（移除这个键，备份里不留冗余配置）。
   String? encode() {
     if (this == defaults) return null;
-    return jsonEncode(<String, Object>{_keySave: saveMode.storageName});
+    final json = <String, Object>{
+      if (saveMode != DiaryEditSaveMode.auto) _keySave: saveMode.storageName,
+      if (defaultMediaThumbnail) _keyDefaultMediaThumbnail: true,
+    };
+    return json.isEmpty ? null : jsonEncode(json);
   }
 
   @override
   bool operator ==(Object other) =>
-      other is DiaryEditPrefs && other.saveMode == saveMode;
+      other is DiaryEditPrefs &&
+      other.saveMode == saveMode &&
+      other.defaultMediaThumbnail == defaultMediaThumbnail;
 
   @override
-  int get hashCode => saveMode.hashCode;
+  int get hashCode => Object.hash(saveMode, defaultMediaThumbnail);
 }

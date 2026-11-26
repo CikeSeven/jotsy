@@ -16903,4 +16903,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String notebookContentsTransferredPrivate(String target) {
     return '已转移到「$target」，移入的日记只在该日记本中显示';
   }
+
+  @override
+  String get settingsExpandPublishPanel => '发布时自动展开详细信息';
+
+  @override
+  String get settingsExpandPublishPanelSubtitle => '新日记点发布进入发布页时，自动弹出下方的信息编辑面板';
+
+  @override
+  String get settingsDefaultMediaThumbnail => '插入图片和视频时默认小图';
+
+  @override
+  String get settingsDefaultMediaThumbnailSubtitle =>
+      '新插入的图片和视频默认显示为小图，仍可手动恢复正常大小';
 }

@@ -45,6 +45,8 @@
     <uses-permission
         android:name="android.permission.SCHEDULE_EXACT_ALARM"
         android:maxSdkVersion="32" />
+    <!-- 引导用户关闭电池优化（忽略省电限制），确保应用划掉后台后仍能按时唤醒推送待办提醒。 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- 保存图片到相册：API <= 29 需要写外部存储权限（gal 插件要求）。 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -55,8 +57,28 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">
-        <!-- 待办提醒：到点弹出、开机 / 更新后重新排定、通知上的“完成 /
-             稍后提醒”按钮（不打开应用，在后台引擎里处理）。 -->
+        <!-- 原生待办提醒调度：闹钟到点弹出、通知动作按钮后台处理，以及开机 / 升级 /
+             系统时间与时区变化 / 精确闹钟权限变化时的自愈重排。 -->
+        <receiver
+            android:name=".TodoReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".TodoNotificationActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".TodoReminderSystemReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <!-- 保留旧版插件的接收器：升级过渡期内用户点按旧通知上的按钮或旧闹钟仍能平滑兼容。 -->
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />

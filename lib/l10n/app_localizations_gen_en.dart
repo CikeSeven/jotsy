@@ -17060,7 +17060,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoSettingsReliabilityBody =>
-      'Some phone systems restrict apps in the background. If reminders often don\'t ring or arrive late, allow Jotsy to auto-start, turn off battery optimization for Jotsy, and make sure the Notifications and Alarms & reminders permissions are on in system settings.';
+      'Reminders are scheduled with system alarms and do not need Jotsy to stay open in the background. On some Android phones, clearing apps or battery savers can still block wakeups—check the items above to keep reminders on time.';
+
+  @override
+  String get todoSettingsBattery => 'Battery optimization';
+
+  @override
+  String get todoSettingsBatteryUnrestricted => 'Unrestricted';
+
+  @override
+  String get todoSettingsBatteryRestricted => 'Restricted. Tap to allow';
+
+  @override
+  String get todoSettingsBatterySubtitle =>
+      'Turn off battery optimization so reminders ring even when Jotsy isn\'t running in the background';
+
+  @override
+  String get todoSettingsExactPermission => 'Alarms & reminders';
+
+  @override
+  String get todoSettingsAutoStart => 'Auto-start & background settings';
+
+  @override
+  String get todoSettingsAutoStartSubtitle =>
+      'If your phone still blocks alarms after clearing recent apps, allow auto-start and unrestricted background usage here';
+
+  @override
+  String get todoSettingsReliabilityReady => 'Enabled';
+
+  @override
+  String get todoSettingsReliabilityAction => 'Tap to set up';
 
   @override
   String get todoReminderPermissionDenied =>

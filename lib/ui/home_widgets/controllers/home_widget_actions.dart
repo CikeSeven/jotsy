@@ -16,8 +16,8 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_features.dart';
@@ -26,6 +26,8 @@ import '../../../core/services/home_widgets/home_widget_gateway_plugin.dart';
 import '../../../core/services/home_widgets/home_widget_settings.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/todo_reminders/todo_notification_actions.dart';
+import '../../../core/services/todo_reminders/todo_notification_gateway.dart';
+import '../../../core/services/todo_reminders/todo_notification_gateway_plugin.dart';
 import '../viewmodels/home_widget_data_source.dart';
 import '../viewmodels/home_widget_snapshot_builder.dart';
 import 'home_widget_sync_controller.dart';
@@ -92,15 +94,26 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
   final database = AppDatabase();
   try {
     final wrote = await applyHomeWidgetAction(database, action);
-    // 应用没在运行，提醒调度器不在：完成的这一次剩下的提醒由这里取消（与通知
-    // 上的“完成”同一做法）。应用下次运行时调度器再按库里的数据对账。
+    // 应用没在运行，提醒调度器不在：完成的这一次剩下的提醒由这里取消（Android 原生
+    // 端已在 `WidgetActions.CompleteTodoAction` 同步取消；非 Android 或支持通道时经
+    // 网关兜底取消）。应用下次运行时调度器再按库里的数据对账。
     if (wrote && action is HomeWidgetCompleteTodoAction) {
       try {
         await cancelTodoOccurrenceNotifications(
-          FlutterLocalNotificationsPlugin(),
+          PluginTodoNotificationGateway.forBackground(
+            const TodoNotificationTexts(
+              channelName: '',
+              channelDescription: '',
+              complete: '',
+              snooze: '',
+              open: '',
+            ),
+          ),
           todoId: action.todoId,
           occurrence: action.occurrence,
         );
+      } on MissingPluginException {
+        // HomeWidgetBackgroundService 仅注册 pub 插件，Android 原生已完成取消。
       } catch (error) {
         debugPrint('home widgets: cancelling reminders failed: $error');
       }

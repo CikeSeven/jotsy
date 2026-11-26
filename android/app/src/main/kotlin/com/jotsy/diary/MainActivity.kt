@@ -21,7 +21,6 @@ class MainActivity : FlutterFragmentActivity() {
   private val configChannelName = "com.jotsy.diary/config"
   private val backupFileSaverChannelName = "com.jotsy.diary/backup_file_saver"
   private val webCookiesChannelName = "com.jotsy.diary/web_cookies"
-  private val notificationsChannelName = "com.jotsy.diary/notifications"
   private val backupFileSaverRequestCode = 7621
   private var pendingBackupSaveResult: MethodChannel.Result? = null
   private var pendingBackupSourcePath: String? = null
@@ -36,6 +35,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var appLockChannel: AppLockChannel? = null
   private var displayCornersChannel: DisplayCornersChannel? = null
   private var recordingServiceChannel: RecordingServiceChannel? = null
+  private var todoNotificationsChannel: TodoNotificationsChannel? = null
   private var widgetPreviewFactory: WidgetPreviewFactory? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
@@ -174,14 +174,13 @@ class MainActivity : FlutterFragmentActivity() {
           else -> result.notImplemented()
         }
       }
-    // 待办提醒权限被拒后，从设置页跳到系统的应用通知设置。
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, notificationsChannelName)
-      .setMethodCallHandler { call, result ->
-        when (call.method) {
-          "openNotificationSettings" -> result.success(openNotificationSettings())
-          else -> result.notImplemented()
-        }
-      }
+    // 待办提醒：原生 AlarmClock 调度、电池优化与自启动跳转通道（TodoNotificationsChannel.kt）。
+    todoNotificationsChannel?.dispose()
+    todoNotificationsChannel = TodoNotificationsChannel(
+      applicationContext,
+      flutterEngine.dartExecutor.binaryMessenger,
+      activityProvider = { this },
+    )
     // 云端笔记导入：读取网页视图中登录后的 Cookie（含 HttpOnly），只返回给
     // 调用方请求的那个地址。webview_flutter 只提供设置与清除，没有读取接口。
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, webCookiesChannelName)
@@ -366,31 +365,12 @@ class MainActivity : FlutterFragmentActivity() {
     displayCornersChannel = null
     recordingServiceChannel?.dispose()
     recordingServiceChannel = null
+    todoNotificationsChannel?.dispose()
+    todoNotificationsChannel = null
     widgetPreviewFactory?.dispose()
     widgetPreviewFactory = null
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     super.onDestroy()
-  }
-
-  /// 打开系统里本应用的通知设置（Android 8+ 直达通知页，更早的系统打开应用
-  /// 详情页）。经 startActivity → startActivityForResult，应用锁把它当作
-  /// 应用自己打开的页面，回来时不上锁。
-  private fun openNotificationSettings(): Boolean {
-    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
-    } else {
-      Intent(
-        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-        Uri.fromParts("package", packageName, null),
-      )
-    }
-    return try {
-      startActivity(intent)
-      true
-    } catch (_: Exception) {
-      false
-    }
   }
 }

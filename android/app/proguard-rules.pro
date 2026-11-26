@@ -15,3 +15,8 @@
 -keepclassmembers class androidx.media3.** {
     android.media.metrics.LogSessionId *;
 }
+
+# WorkManager 通过反射实例化 ListenableWorker 子类（TodoReminderWatchdogWorker）。
+-keep class com.jotsy.diary.TodoReminderWatchdogWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}

@@ -27,6 +27,61 @@ Future<String> _writeCover() async {
   return file.path;
 }
 
+DiaryWithTags _timelineDiary(
+  String id,
+  DateTime createdAt, {
+  String text = 'body',
+  String metadata = '{}',
+  String? cover,
+}) => DiaryWithTags(
+  diary: Diary(
+    id: id.hashCode,
+    diaryId: id,
+    title: id,
+    content: '[{"insert":"$text\\n"}]',
+    contentText: text,
+    metadata: metadata,
+    createdAt: createdAt,
+    updatedAt: createdAt,
+    isArchived: false,
+    isPinned: false,
+    isDeleted: false,
+    cover: cover,
+  ),
+  tags: const <Tag>[],
+);
+
+Future<void> _pumpTimeline(
+  WidgetTester tester,
+  List<DiaryWithTags> diaries,
+) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      locale: const Locale('zh'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: CalendarTimelineSection(
+            selectedDay: diaries.first.diary.createdAt,
+            diaries: diaries,
+            onOpenDiary: (_, _, _) {},
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Rect _railRect(WidgetTester tester, String diaryId) => tester.getRect(
+  find.byKey(
+    ValueKey<String>(
+      '${CalendarTimelineSection.timelineRailKeyPrefix}$diaryId',
+    ),
+  ),
+);
+
 void main() {
   testWidgets('calendar timeline hides locked capsule content', (tester) async {
     final now = DateTime.now();
@@ -175,5 +230,55 @@ void main() {
     expect(received!.tag, diaryCoverHeroTag('calendar-hero-1'));
     expect(received!.aspectRatio, closeTo(2, 0.05));
     received!.dispose();
+  });
+
+  testWidgets('timeline rail stays connected across tall entries (#370)', (
+    tester,
+  ) async {
+    final day = DateTime(2026, 11, 26, 8);
+    // 中间一条用长摘要 + 封面 + 地点撑高，旧写法的 64dp 竖线不够长。
+    final longText = List<String>.filled(12, '今天写了很长的一段日记').join();
+    await _pumpTimeline(tester, <DiaryWithTags>[
+      _timelineDiary('rail-first', day),
+      _timelineDiary(
+        'rail-tall',
+        day.add(const Duration(hours: 2)),
+        text: longText,
+        metadata: '{"context":{"location":"上海"}}',
+        cover: '/calendar-cover.jpg',
+      ),
+      _timelineDiary('rail-last', day.add(const Duration(hours: 5))),
+    ]);
+
+    final first = _railRect(tester, 'rail-first');
+    final tall = _railRect(tester, 'rail-tall');
+    final last = _railRect(tester, 'rail-last');
+    final top = tester.getTopLeft(find.byType(CalendarTimelineSection)).dy;
+
+    // 首条从节点中心往下，相邻两段首尾相接，最后一条只到节点中心。
+    expect(first.top - top, closeTo(28, 0.01));
+    expect(first.bottom, closeTo(tall.top, 0.01));
+    expect(tall.bottom, closeTo(last.top, 0.01));
+    expect(last.height, closeTo(28, 0.01));
+    // 中间这条确实高过旧写法能覆盖的 14 + 28 + 64。
+    expect(tall.height, greaterThan(106));
+    // 三段在同一条竖线上。
+    expect(first.left, tall.left);
+    expect(tall.left, last.left);
+  });
+
+  testWidgets('a single timeline entry draws no rail', (tester) async {
+    await _pumpTimeline(tester, <DiaryWithTags>[
+      _timelineDiary('rail-only', DateTime(2026, 11, 26, 8)),
+    ]);
+
+    expect(
+      find.byKey(
+        const ValueKey<String>(
+          '${CalendarTimelineSection.timelineRailKeyPrefix}rail-only',
+        ),
+      ),
+      findsNothing,
+    );
   });
 }

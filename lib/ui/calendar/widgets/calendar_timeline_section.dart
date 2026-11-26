@@ -44,6 +44,18 @@ class CalendarTimelineSection extends StatelessWidget {
 
   static const Duration _switchDuration = ExpressiveMotion.medium;
 
+  /// 每条的竖线段键为此前缀 + diaryId（测试据此量线段是否首尾相接）。
+  @visibleForTesting
+  static const String timelineRailKeyPrefix = 'calendar_timeline_rail_';
+
+  /// 左侧竖线列宽、节点外框边长与节点距条目顶部的距离；线宽与条目间距。
+  static const double _railWidth = 34;
+  static const double _nodeExtent = 28;
+  static const double _nodeTop = 14;
+  static const double _nodeCenter = _nodeTop + _nodeExtent / 2;
+  static const double _lineWidth = 1.5;
+  static const double _itemGap = 8;
+
   @override
   Widget build(BuildContext context) {
     final switchKey = ValueKey<String>(_buildSwitchSignature());
@@ -149,145 +161,193 @@ class CalendarTimelineSection extends StatelessWidget {
         (weather != null && weather.isNotEmpty) ||
         energyLevel != null;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          SizedBox(
-            width: 34,
-            child: Column(
-              children: <Widget>[
-                Container(
-                  width: 1.5,
-                  height: 14,
-                  color: index == 0 ? Colors.transparent : lineColor,
-                ),
-                SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: Center(
-                    child: moodEmoji == null
-                        ? Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: colorScheme.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: colorScheme.primaryContainer,
-                                width: 2,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: 26,
-                            height: 26,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: colorScheme.secondaryContainer,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              moodEmoji,
-                              style: const TextStyle(fontSize: 14, height: 1),
+    final isFirst = index == 0;
+    // 竖线按条目的实际高度铺满（#370）：原来是“14 + 节点 + 64”三段定高，
+    // 卡片高过约 106dp（封面、三行摘要加信息行）时线不够长，条目之间的
+    // 间距又在 Row 外面没有线，看起来一段一段断开。现在间距放进条目内，
+    // 线从上一条接到下一条；第一条从节点中心往下、最后一条到节点中心为止，
+    // 节点盖在线上。
+    return Stack(
+      // 卡片带外阴影，不裁切。
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        if (!(isFirst && isLast))
+          Positioned(
+            key: ValueKey<String>(
+              '$timelineRailKeyPrefix${diary.diary.diaryId}',
+            ),
+            left: (_railWidth - _lineWidth) / 2,
+            width: _lineWidth,
+            top: isFirst ? _nodeCenter : 0,
+            bottom: isLast ? null : 0,
+            height: isLast ? _nodeCenter : null,
+            child: ColoredBox(color: lineColor),
+          ),
+        Padding(
+          padding: EdgeInsets.only(bottom: isLast ? 0 : _itemGap),
+          child: _buildTimelineRow(
+            context,
+            diary: diary,
+            moodEmoji: moodEmoji,
+            coverAnchor: coverAnchor,
+            createdAtLabel: createdAtLabel,
+            summary: summary,
+            isLockedCapsule: isLockedCapsule,
+            cover: cover,
+            location: location,
+            weather: weather,
+            weatherIconCode: weatherIconCode,
+            energyLevel: energyLevel,
+            hasMetaRow: hasMetaRow,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineRow(
+    BuildContext context, {
+    required DiaryWithTags diary,
+    required String? moodEmoji,
+    required ImageViewerHeroAnchor coverAnchor,
+    required String createdAtLabel,
+    required String summary,
+    required bool isLockedCapsule,
+    required String? cover,
+    required String? location,
+    required String? weather,
+    required String? weatherIconCode,
+    required double? energyLevel,
+    required bool hasMetaRow,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          width: _railWidth,
+          child: Padding(
+            padding: const EdgeInsets.only(top: _nodeTop),
+            child: Center(
+              child: SizedBox(
+                width: _nodeExtent,
+                height: _nodeExtent,
+                child: Center(
+                  child: moodEmoji == null
+                      ? Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colorScheme.primaryContainer,
+                              width: 2,
                             ),
                           ),
-                  ),
+                        )
+                      : Container(
+                          width: 26,
+                          height: 26,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            moodEmoji,
+                            style: const TextStyle(fontSize: 14, height: 1),
+                          ),
+                        ),
                 ),
-                Container(
-                  width: 1.5,
-                  height: 64,
-                  color: isLast ? Colors.transparent : lineColor,
-                ),
-              ],
+              ),
             ),
           ),
-          Expanded(
-            // 经典分支与原来的 Container + Material 写法逐像素一致；玻璃
-            // 时为内容玻璃。
-            // 预览页从这张卡片展开；点按处的 context 在来源之内才量得到它。
-            child: ContainerTransformSource(
-              tag: diaryCardTransitionTag(diary.diary.diaryId),
-              borderRadius: 22,
-              shadows: AppCardSurface.shadowsOf(context),
-              child: AppCardSurface(
-                borderRadius: const BorderRadius.all(Radius.circular(22)),
-                child: Builder(
-                  builder: (BuildContext tapContext) => InkWell(
-                    borderRadius: BorderRadius.circular(22),
-                    onTap: () => onOpenDiary(
-                      diary,
-                      coverAnchor.capture(
-                        tag: diaryCoverHeroTag(diary.diary.diaryId),
-                      ),
-                      ContainerTransformSource.capture(tapContext),
+        ),
+        Expanded(
+          // 经典分支与原来的 Container + Material 写法逐像素一致；玻璃
+          // 时为内容玻璃。
+          // 预览页从这张卡片展开；点按处的 context 在来源之内才量得到它。
+          child: ContainerTransformSource(
+            tag: diaryCardTransitionTag(diary.diary.diaryId),
+            borderRadius: 22,
+            shadows: AppCardSurface.shadowsOf(context),
+            child: AppCardSurface(
+              borderRadius: const BorderRadius.all(Radius.circular(22)),
+              child: Builder(
+                builder: (BuildContext tapContext) => InkWell(
+                  borderRadius: BorderRadius.circular(22),
+                  onTap: () => onOpenDiary(
+                    diary,
+                    coverAnchor.capture(
+                      tag: diaryCoverHeroTag(diary.diary.diaryId),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Text(
-                                  createdAtLabel,
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        color: colorScheme.primary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                    ContainerTransformSource.capture(tapContext),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                createdAtLabel,
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                summary,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: isLockedCapsule
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurfaceVariant,
+                                      fontWeight: isLockedCapsule
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                      height: 1.38,
+                                    ),
+                              ),
+                              if (hasMetaRow) ...<Widget>[
+                                const SizedBox(height: 6),
+                                _buildMetaInlineRow(
+                                  context,
+                                  location: location,
+                                  weather: weather,
+                                  weatherIconCode: weatherIconCode,
+                                  energyLevel: energyLevel,
                                 ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  summary,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: isLockedCapsule
-                                            ? colorScheme.primary
-                                            : colorScheme.onSurfaceVariant,
-                                        fontWeight: isLockedCapsule
-                                            ? FontWeight.w700
-                                            : FontWeight.w400,
-                                        height: 1.38,
-                                      ),
-                                ),
-                                if (hasMetaRow) ...<Widget>[
-                                  const SizedBox(height: 6),
-                                  _buildMetaInlineRow(
-                                    context,
-                                    location: location,
-                                    weather: weather,
-                                    weatherIconCode: weatherIconCode,
-                                    energyLevel: energyLevel,
-                                  ),
-                                ],
                               ],
-                            ),
+                            ],
                           ),
-                          if (cover != null) ...<Widget>[
-                            const SizedBox(width: 12),
-                            CalendarEntryThumbnail(
-                              source: cover,
-                              diaryId: diary.diary.diaryId,
-                              anchor: coverAnchor,
-                            ),
-                          ],
+                        ),
+                        if (cover != null) ...<Widget>[
+                          const SizedBox(width: 12),
+                          CalendarEntryThumbnail(
+                            source: cover,
+                            diaryId: diary.diary.diaryId,
+                            anchor: coverAnchor,
+                          ),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

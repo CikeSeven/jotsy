@@ -17727,7 +17727,38 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get todoSettingsReliabilityBody =>
-      'Некоторые системы ограничивают фоновые приложения. Если напоминания часто не срабатывают или опаздывают, разрешите Jotsy автозапуск, отключите для Jotsy оптимизацию батареи и проверьте, что разрешения «Уведомления» и «Будильники и напоминания» включены в настройках системы.';
+      'Напоминания планируются через системные будильники и не требуют, чтобы Jotsy оставался в фоне. Некоторые оболочки при очистке памяти или экономии заряда блокируют пробуждение — проверьте пункты выше.';
+
+  @override
+  String get todoSettingsBattery => 'Оптимизация батареи';
+
+  @override
+  String get todoSettingsBatteryUnrestricted => 'Без ограничений';
+
+  @override
+  String get todoSettingsBatteryRestricted =>
+      'Ограничено. Нажмите, чтобы разрешить';
+
+  @override
+  String get todoSettingsBatterySubtitle =>
+      'Отключите оптимизацию батареи, чтобы напоминания приходили вовремя, даже когда Jotsy закрыт';
+
+  @override
+  String get todoSettingsExactPermission => 'Будильники и напоминания';
+
+  @override
+  String get todoSettingsAutoStart => 'Автозапуск и работа в фоне';
+
+  @override
+  String get todoSettingsAutoStartSubtitle =>
+      'Откройте настройки системы и разрешите автозапуск, если телефон блокирует будильники после закрытия';
+
+  @override
+  String get todoSettingsReliabilityReady => 'Включено';
+
+  @override
+  String get todoSettingsReliabilityAction =>
+      'Выключено. Нажмите для настройки';
 
   @override
   String get todoReminderPermissionDenied =>

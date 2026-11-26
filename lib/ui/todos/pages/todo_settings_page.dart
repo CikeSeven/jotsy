@@ -23,33 +23,21 @@ import '../providers/todo_providers.dart';
 import '../providers/todo_reminder_providers.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_list_picker_sheet.dart';
+import '../widgets/todo_reliability_sheet.dart';
 import '../widgets/todo_sheet.dart';
 import '../widgets/todo_view_switcher.dart';
 
 /// 设置 → 待办：显示偏好、提醒与清单管理入口。
 ///
 /// 每项改动立即经 [saveTodoSettings] 写入单个设置键 `app.settings.todos`
-/// （随备份导出）；设置未就绪时各项禁用。通知权限与准时闹钟是系统状态，
-/// 不存设置：页面打开与回到前台（可能刚从系统设置回来）时重新读取。
+/// （随备份导出）；设置未就绪时各项禁用。通知权限、准时闹钟与电池优化是系统
+/// 状态，不存设置：页面打开与回到前台（可能刚从系统设置回来）时重新读取。
 class TodoSettingsPage extends ConsumerStatefulWidget {
   const TodoSettingsPage({super.key});
 
   @override
   ConsumerState<TodoSettingsPage> createState() => _TodoSettingsPageState();
 }
-
-/// 系统通知权限与准时闹钟（不支持提醒的平台为 null）。
-final _reminderStatusProvider =
-    FutureProvider.autoDispose<({bool notifications, bool exact})?>((
-      Ref ref,
-    ) async {
-      final gateway = ref.watch(todoNotificationGatewayProvider);
-      if (gateway == null) return null;
-      return (
-        notifications: await gateway.notificationsEnabled(),
-        exact: await gateway.exactAlarmsAllowed(),
-      );
-    });
 
 class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
   late final AppLifecycleListener _lifecycle;
@@ -58,7 +46,7 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
   void initState() {
     super.initState();
     _lifecycle = AppLifecycleListener(
-      onResume: () => ref.invalidate(_reminderStatusProvider),
+      onResume: () => ref.invalidate(todoReminderSystemStatusProvider),
     );
   }
 
@@ -72,7 +60,22 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
     final scheduler = ref.read(todoReminderSchedulerProvider);
     final allowed = await scheduler?.ensurePermission() ?? false;
     if (!allowed) await openTodoNotificationSettings();
-    if (mounted) ref.invalidate(_reminderStatusProvider);
+    if (mounted) ref.invalidate(todoReminderSystemStatusProvider);
+  }
+
+  Future<void> _fixExactAlarm() async {
+    await requestTodoExactAlarmPermission();
+    if (mounted) ref.invalidate(todoReminderSystemStatusProvider);
+  }
+
+  Future<void> _fixBatteryOptimization() async {
+    await requestIgnoreTodoBatteryOptimizations();
+    if (mounted) ref.invalidate(todoReminderSystemStatusProvider);
+  }
+
+  Future<void> _openAutoStart() async {
+    await openTodoAutoStartSettings();
+    if (mounted) ref.invalidate(todoReminderSystemStatusProvider);
   }
 
   @override
@@ -210,9 +213,20 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
                     const SizedBox(height: 16),
                     _RemindersGroup(
                       settings: settings,
-                      status: ref.watch(_reminderStatusProvider).value,
+                      status: ref.watch(todoReminderSystemStatusProvider).value,
                       onSave: service == null ? null : save,
                       onFixPermission: () => unawaited(_fixPermission()),
+                      onFixExactAlarm: () => unawaited(_fixExactAlarm()),
+                      onFixBattery: () => unawaited(_fixBatteryOptimization()),
+                      onShowReliability: () => unawaited(
+                        showTodoReliabilitySheet(
+                          context,
+                          onFixNotification: _fixPermission,
+                          onFixExactAlarm: _fixExactAlarm,
+                          onFixBattery: _fixBatteryOptimization,
+                          onOpenAutoStart: _openAutoStart,
+                        ),
+                      ),
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -237,21 +251,27 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
   }
 }
 
-/// 提醒分组：通知权限（手机）、全天待办的提醒时刻、稍后提醒时长、锁屏隐藏
-/// 内容（Android）与“提醒不准时？”（Android）；桌面组尾写明只在应用运行时
-/// 提醒。
+/// 提醒分组：通知权限（手机）、电池优化（Android）、全天待办的提醒时刻、
+/// 稍后提醒时长、锁屏隐藏内容（Android）与“提醒不准时？”（Android）；桌面组尾
+/// 写明只在应用运行时提醒。
 class _RemindersGroup extends StatelessWidget {
   const _RemindersGroup({
     required this.settings,
     required this.status,
     required this.onSave,
     required this.onFixPermission,
+    required this.onFixExactAlarm,
+    required this.onFixBattery,
+    required this.onShowReliability,
   });
 
   final TodoSettings settings;
-  final ({bool notifications, bool exact})? status;
+  final TodoReminderSystemStatus? status;
   final Future<void> Function(TodoSettings next)? onSave;
   final VoidCallback onFixPermission;
+  final VoidCallback onFixExactAlarm;
+  final VoidCallback onFixBattery;
+  final VoidCallback onShowReliability;
 
   @override
   Widget build(BuildContext context) {
@@ -295,22 +315,6 @@ class _RemindersGroup extends StatelessWidget {
       await save(settings.copyWith(snoozeMinutes: minutes));
     }
 
-    Future<void> showReliabilityTips() => showTodoSheet<void>(
-      context: context,
-      builder: (BuildContext sheetContext) => TodoSheetBody(
-        title: l10n.todoSettingsReliability,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              l10n.todoSettingsReliabilityBody,
-              style: Theme.of(sheetContext).textTheme.bodyMedium,
-            ),
-          ),
-        ],
-      ),
-    );
-
     return SettingsCardGroup(
       title: l10n.todoSettingsRemindersGroup,
       footer: background ? null : l10n.todoSettingsDesktopNote,
@@ -328,9 +332,28 @@ class _RemindersGroup extends StatelessWidget {
                 ? l10n.todoSettingsExactOff
                 : null,
             subtitleColor: scheme.error,
-            onTap: status != null && status.notifications
+            onTap: status == null
                 ? null
-                : onFixPermission,
+                : !status.notifications
+                ? onFixPermission
+                : !status.exact
+                ? onFixExactAlarm
+                : null,
+          ),
+        if (AppPlatform.isAndroid)
+          SettingsNavTile(
+            icon: FontAwesomeIcons.bolt,
+            title: l10n.todoSettingsBattery,
+            value: status == null
+                ? null
+                : status.ignoringBattery
+                ? l10n.todoSettingsBatteryUnrestricted
+                : l10n.todoSettingsBatteryRestricted,
+            subtitle: status != null && !status.ignoringBattery
+                ? l10n.todoSettingsBatterySubtitle
+                : null,
+            subtitleColor: scheme.error,
+            onTap: onFixBattery,
           ),
         SettingsNavTile(
           icon: FontAwesomeIcons.clock,
@@ -362,7 +385,7 @@ class _RemindersGroup extends StatelessWidget {
           SettingsNavTile(
             icon: FontAwesomeIcons.circleQuestion,
             title: l10n.todoSettingsReliability,
-            onTap: () => unawaited(showReliabilityTips()),
+            onTap: onShowReliability,
           ),
       ],
     );

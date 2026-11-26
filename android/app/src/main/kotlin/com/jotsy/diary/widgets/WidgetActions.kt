@@ -11,6 +11,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
+import com.jotsy.diary.TodoReminderManager
 import com.jotsy.diary.widgets.kinds.MoodCalendarWidget
 import com.jotsy.diary.widgets.kinds.OnThisDayWidget
 import com.jotsy.diary.widgets.kinds.PhotoMemoriesWidget
@@ -88,6 +89,7 @@ object WidgetActions {
       val due = parameters[DueKey] ?: ""
       WidgetOverlay.putTodo(context, todoId, done = true)
       WidgetState.redrawAll(context, TodosWidget())
+      TodoReminderManager.cancelOccurrence(context, todoId, due.ifEmpty { null })
       sendToDart(context, "todo-complete", mapOf("id" to todoId, "due" to due))
     }
   }

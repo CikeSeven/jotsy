@@ -31,6 +31,7 @@
 - 必须：提醒一律相对截止日；自定义时间可选到截止日之后、截止日随之顺延，禁止改回只许选到截止日。
 - 必须：排提醒只经 `planTodoReminders` 与系统已排通知对账：只新排今后 30 天、最多 200 条（iOS 60）；仍有效且尚未投递的系统提醒到点后保留一天。排程失败须重试。禁止在网关外直接排系统通知。
 - 必须：系统通知只经 `TodoNotificationGateway`：手机交给系统定时，不许精确闹钟时退回不精确；桌面只在应用运行时提醒，设置页写明。
+- 必须：Android 定时唤醒走原生 `TodoReminderManager`（`AlarmManager.setAlarmClock` + 开机 / 升级 / 时间与时区变化 / 权限变化接收器 + `WorkManager` 巡检），确保应用不在后台也能弹出；通知按钮与小组件勾选在后台 isolate 写入后须同步取消或补排原生闹钟。
 - 必须：通知小图标 `ic_stat_todo` 在 `res/raw/keep.xml` 登记保留，以免 release 资源裁剪删掉。
 - 禁止：启动时主动请求通知权限；只在用户加提醒时与设置页权限行请求。
 - 必须：通知按钮写库只经 `applyTodoNotificationAction`，“完成”只在那一次仍是当前截止日时生效；后台与主 isolate 不同时写库。

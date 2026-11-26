@@ -145,6 +145,9 @@ dependencies {
     // 桌面小组件。版本与 home_widget 插件以 api 带进来的 Glance 保持一致：不同
     // 版本会被 Gradle 统一升到较高的那个。升级 home_widget 时一并核对。
     implementation("androidx.glance:glance-appwidget:1.2.0")
+    // 待办提醒的周期性自愈巡检（TodoReminderWatchdogWorker）。版本与 home_widget
+    // 引入的 WorkManager 保持一致，升级 home_widget 时一并核对。
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.16.1")
 }

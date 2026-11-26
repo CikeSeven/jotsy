@@ -1,8 +1,12 @@
+import 'dart:async';
+import 'dart:ui' show PluginUtilities;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../database/app_database.dart' show formatAnniversaryDate;
 import '../app_platform.dart';
 import 'todo_notification_actions.dart';
 import 'todo_notification_gateway.dart';
@@ -12,28 +16,58 @@ import 'todo_reminder_planner.dart';
 /// 做的设置（静音、关闭）跟着 id 走。
 const String kTodoNotificationChannelId = 'todo_reminders';
 
-/// 打开系统通知设置的原生通道（`MainActivity` / `AppDelegate`）。
+/// 待办提醒与权限的原生通道（Android：`TodoNotificationsChannel.kt`，iOS：`AppDelegate.swift`）。
 const MethodChannel todoNotificationsChannel = MethodChannel(
   'com.jotsy.diary/notifications',
 );
 
 /// 打开系统里本应用的通知设置（权限被拒后从设置页跳过去）；平台不支持或
 /// 打不开时返回 false。
-Future<bool> openTodoNotificationSettings() async {
+Future<bool> openTodoNotificationSettings() =>
+    _invokeSettingsMethod('openNotificationSettings', defaultValue: false);
+
+/// 打开系统里本应用的“闹钟和提醒”权限页（Android 12+）。
+Future<bool> requestTodoExactAlarmPermission() =>
+    _invokeSettingsMethod('requestExactAlarmsPermission', defaultValue: false);
+
+/// 系统是否已对本应用关闭电池优化（忽略后台限制）；非 Android 平台恒为 true。
+Future<bool> isIgnoringTodoBatteryOptimizations() async {
+  if (!AppPlatform.isAndroid) return true;
+  return _invokeSettingsMethod(
+    'isIgnoringBatteryOptimizations',
+    defaultValue: true,
+  );
+}
+
+/// 引导用户关闭对本应用的电池优化（Android 6+）；支持时弹出系统弹窗或跳转设置页。
+Future<bool> requestIgnoreTodoBatteryOptimizations() async {
+  if (!AppPlatform.isAndroid) return true;
+  return _invokeSettingsMethod(
+    'requestIgnoreBatteryOptimizations',
+    defaultValue: false,
+  );
+}
+
+/// 尽量直达厂商“自启动 / 后台运行管理”设置页，不支持时回落到系统应用详情页。
+Future<bool> openTodoAutoStartSettings() =>
+    _invokeSettingsMethod('openAutoStartSettings', defaultValue: false);
+
+Future<bool> _invokeSettingsMethod(
+  String method, {
+  required bool defaultValue,
+}) async {
   try {
-    return await todoNotificationsChannel.invokeMethod<bool>(
-          'openNotificationSettings',
-        ) ??
-        false;
+    return await todoNotificationsChannel.invokeMethod<bool>(method) ??
+        defaultValue;
   } on MissingPluginException {
-    return false;
+    return defaultValue;
   } on PlatformException {
-    return false;
+    return defaultValue;
   }
 }
 
 /// 一条待办通知在各平台上的外观：渠道、优先级、锁屏可见性与两个按钮。
-/// 主 isolate 排提醒与后台 isolate 排“稍后提醒”共用，保证两边一模一样。
+/// iOS / 桌面排提醒与后台排“稍后提醒”共用，保证外观一致。
 NotificationDetails todoNotificationDetails({
   required TodoNotificationTexts texts,
   required int snoozeMinutes,
@@ -51,6 +85,7 @@ NotificationDetails todoNotificationDetails({
       kTodoNotificationChannelId,
       texts.channelName,
       channelDescription: texts.channelDescription,
+      icon: 'ic_stat_todo',
       importance: Importance.high,
       priority: Priority.high,
       category: AndroidNotificationCategory.reminder,
@@ -96,18 +131,22 @@ NotificationDetails todoNotificationDetails({
 /// 10 分钟登记；分类在初始化时定下，之后改设置的时长只影响 Android 与桌面。
 const String kTodoDarwinCategoryId = 'todo_reminder';
 
-/// 手机：交给系统定时（Android 的 AlarmManager、iOS 的本地通知），应用没在
-/// 运行也会按时弹出；开机后由插件的 receiver 重新排定。
+/// 手机端通知网关：
+/// - Android：经原生 `TodoReminderManager` 使用 `AlarmManager.setAlarmClock` +
+///   自愈系统接收器 + WorkManager 巡检，划掉后台后仍能唤醒推送；点开与冷启动
+///   仍由插件的 `SELECT_NOTIFICATION` 接住；
+/// - iOS / 桌面：走 `flutter_local_notifications`。
 class PluginTodoNotificationGateway implements TodoNotificationGateway {
   PluginTodoNotificationGateway({FlutterLocalNotificationsPlugin? plugin})
     : plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
-  // 后台动作的引擎已由插件启动，不需要再次注册通知回调。
+  // 后台动作的引擎已由原生/插件启动，不需要再次注册通知回调。
   PluginTodoNotificationGateway.forBackground(this._texts)
     : plugin = FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin plugin;
   TodoNotificationTexts? _texts;
+  void Function(TodoNotificationEvent event)? _onEvent;
   bool _initialized = false;
 
   @protected
@@ -119,7 +158,9 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
     required void Function(TodoNotificationEvent event) onEvent,
   }) async {
     _texts = texts;
+    _onEvent = onEvent;
     if (_initialized) return;
+
     final darwin = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -158,7 +199,7 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
           actionId: response.actionId,
           payload: response.payload,
         );
-        if (event != null) onEvent(event);
+        if (event != null) _onEvent?.call(event);
       },
       onDidReceiveBackgroundNotificationResponse:
           todoNotificationBackgroundHandler,
@@ -167,7 +208,49 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
     if (AppPlatform.isAndroid && initialized != true) {
       throw StateError('Could not initialize local notifications');
     }
+    if (AppPlatform.isAndroid) {
+      todoNotificationsChannel.setMethodCallHandler(_handleAndroidChannelCall);
+      final callbackHandle = PluginUtilities.getCallbackHandle(
+        todoNotificationBackgroundMain,
+      )?.toRawHandle();
+      await todoNotificationsChannel
+          .invokeMethod<bool>('initialize', <String, Object?>{
+            'channelName': texts.channelName,
+            'channelDescription': texts.channelDescription,
+            if (callbackHandle != null) 'actionCallbackHandle': callbackHandle,
+          });
+      await _cancelLegacyAndroidPluginReminders();
+    }
     _initialized = true;
+  }
+
+  Future<Object?> _handleAndroidChannelCall(MethodCall call) async {
+    if (call.method == 'onNotificationAction') {
+      final args = call.arguments as Map<dynamic, dynamic>?;
+      final event = TodoNotificationEvent.fromResponse(
+        actionId: args?['actionId'] as String?,
+        payload: args?['payload'] as String?,
+      );
+      final onEvent = _onEvent;
+      if (event == null || onEvent == null) return false;
+      onEvent(event);
+      return true;
+    }
+    return null;
+  }
+
+  /// 清理旧版本留在 `flutter_local_notifications` 队列里的待办闹钟，防止升级后重复响铃。
+  Future<void> _cancelLegacyAndroidPluginReminders() async {
+    try {
+      final legacy = await plugin.pendingNotificationRequests();
+      for (final request in legacy) {
+        if (request.payload?.startsWith(kTodoReminderPayloadPrefix) ?? false) {
+          await plugin.cancel(id: request.id);
+        }
+      }
+    } catch (error) {
+      debugPrint('todo reminders: legacy cleanup skipped: $error');
+    }
   }
 
   @override
@@ -200,18 +283,10 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
   Future<bool> notificationsEnabled() async {
     try {
       if (AppPlatform.isAndroid) {
-        final android = _android;
-        if (android == null ||
-            await android.areNotificationsEnabled() != true) {
-          return false;
-        }
-        final channels = await android.getNotificationChannels();
-        return !(channels?.any(
-              (channel) =>
-                  channel.id == kTodoNotificationChannelId &&
-                  channel.importance == Importance.none,
+        return await todoNotificationsChannel.invokeMethod<bool>(
+              'notificationsEnabled',
             ) ??
-            false);
+            false;
       }
       if (AppPlatform.isIOS) {
         final options = await _ios?.checkPermissions();
@@ -246,7 +321,10 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
   Future<bool> exactAlarmsAllowed() async {
     try {
       if (AppPlatform.isAndroid) {
-        return await _android?.canScheduleExactNotifications() ?? false;
+        return await todoNotificationsChannel.invokeMethod<bool>(
+              'canScheduleExactAlarms',
+            ) ??
+            false;
       }
       return true;
     } catch (error) {
@@ -256,6 +334,18 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
 
   @override
   Future<Map<int, String>> pending() async {
+    if (AppPlatform.isAndroid) {
+      final entries = await todoNotificationsChannel
+          .invokeListMethod<Map<dynamic, dynamic>>('getPendingReminders');
+      return <int, String>{
+        for (final entry in entries ?? const <Map<dynamic, dynamic>>[])
+          if (entry['id'] is int && entry['payload'] is String)
+            if ((entry['payload'] as String).startsWith(
+              kTodoReminderPayloadPrefix,
+            ))
+              entry['id'] as int: entry['payload'] as String,
+      };
+    }
     final requests = await plugin.pendingNotificationRequests();
     return <int, String>{
       for (final request in requests)
@@ -267,6 +357,11 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
 
   @override
   Future<void> schedule(TodoNotificationRequest request) async {
+    if (AppPlatform.isAndroid) {
+      await _scheduleAndroidNative(request);
+      return;
+    }
+
     final details = todoNotificationDetails(
       texts: texts,
       snoozeMinutes: request.snoozeMinutes,
@@ -301,6 +396,52 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
     }
   }
 
+  Future<void> _scheduleAndroidNative(TodoNotificationRequest request) async {
+    final localFireAt = request.reminder.fireAt.toLocal();
+    Future<void> invokeWithMode(bool exact) => todoNotificationsChannel
+        .invokeMethod<void>('scheduleReminder', <String, Object?>{
+          'id': request.id,
+          'todoId': request.reminder.todoId,
+          'occurrence': formatAnniversaryDate(request.reminder.occurrence),
+          'title': request.reminder.title,
+          'body': request.body,
+          'payload': request.payloadForAlarmMode(exact),
+          'fireAtMillis': localFireAt.millisecondsSinceEpoch,
+          'localYear': localFireAt.year,
+          'localMonth': localFireAt.month,
+          'localDay': localFireAt.day,
+          'localHour': localFireAt.hour,
+          'localMinute': localFireAt.minute,
+          'snoozeMinutes': request.snoozeMinutes,
+          'hideOnLockScreen': request.hideOnLockScreen,
+          'exact': exact,
+          'channelName': texts.channelName,
+          'channelDescription': texts.channelDescription,
+          'completeLabel': texts.complete,
+          'snoozeLabel': texts.snooze,
+        });
+
+    final exact = request.androidExact ?? true;
+    try {
+      await invokeWithMode(exact);
+    } on PlatformException catch (error) {
+      if (!exact ||
+          (error.code != 'exact_alarms_not_permitted' &&
+              await exactAlarmsAllowed())) {
+        rethrow;
+      }
+      await invokeWithMode(false);
+    }
+  }
+
   @override
-  Future<void> cancel(int id) => plugin.cancel(id: id);
+  Future<void> cancel(int id) {
+    if (AppPlatform.isAndroid) {
+      return todoNotificationsChannel.invokeMethod<void>(
+        'cancelReminder',
+        <String, Object?>{'id': id},
+      );
+    }
+    return plugin.cancel(id: id);
+  }
 }

@@ -15160,7 +15160,36 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get todoSettingsReliabilityBody =>
-      '一部のスマートフォンはバックグラウンドのアプリを制限します。リマインダーが鳴らない・遅れる場合は、システム設定でJotsyの自動起動を許可し、Jotsyの電池最適化をオフにして、「通知」と「アラームとリマインダー」の許可がオンになっているか確認してください。';
+      'リマインダーはシステムのアラーム機能で通知されるため、Jotsyをバックグラウンドで常時起動しておく必要はありません。一部の端末では省電力機能やタスクキルが通知を遮断することがあるため、上の項目をご確認ください。';
+
+  @override
+  String get todoSettingsBattery => '電池の最適化';
+
+  @override
+  String get todoSettingsBatteryUnrestricted => '制限なし';
+
+  @override
+  String get todoSettingsBatteryRestricted => '制限中・タップして許可';
+
+  @override
+  String get todoSettingsBatterySubtitle =>
+      '電池の最適化をオフにすると、バックグラウンドで起動していなくても定刻に通知されます';
+
+  @override
+  String get todoSettingsExactPermission => 'アラームとリマインダー';
+
+  @override
+  String get todoSettingsAutoStart => '自動起動とバックグラウンド設定';
+
+  @override
+  String get todoSettingsAutoStartSubtitle =>
+      'アプリ終了後に通知がブロックされる場合は、ここから自動起動を許可してください';
+
+  @override
+  String get todoSettingsReliabilityReady => '有効';
+
+  @override
+  String get todoSettingsReliabilityAction => '未設定・タップして設定';
 
   @override
   String get todoReminderPermissionDenied => '通知がオフのため、リマインダーは表示されません';

@@ -1,18 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart' show DateUtils;
 import 'package:flutter/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/todo_reminders/todo_notification_actions.dart';
 import '../../../core/services/todo_reminders/todo_notification_gateway.dart';
+import '../../../core/services/todo_reminders/todo_reminder_format.dart';
 import '../../../core/services/todo_reminders/todo_reminder_planner.dart';
 import '../models/todo_settings.dart';
-import '../widgets/todo_labels.dart';
 
 // 应用运行时补排进入 30 天窗口的提醒。手机退到后台后仍由系统负责投递。
 const _replanInterval = Duration(minutes: 15);
@@ -228,29 +226,13 @@ class TodoReminderScheduler {
       ))
         reminder.id: TodoNotificationRequest(
           reminder: reminder,
-          body: _body(l10n, reminder),
+          body: formatTodoReminderNotificationBody(l10n, reminder),
           languageCode: l10n.localeName,
           snoozeMinutes: settings.snoozeMinutes,
           hideOnLockScreen: settings.hideContentOnLockScreen,
           androidExact: exact,
         ),
     };
-  }
-
-  /// “今天”“明天”以弹出通知那天为准，否则提前排好的通知会显示过期的相对日期。
-  String _body(AppLocalizations l10n, PlannedReminder reminder) {
-    if (reminder.snooze) return l10n.todoNotificationSnoozedBody;
-    final date = TodoLabels.relativeDay(
-      l10n,
-      reminder.occurrence,
-      DateUtils.dateOnly(reminder.fireAt.toLocal()),
-    );
-    final minute = reminder.dueMinute;
-    if (minute == null) return date;
-    final time = DateFormat.jm(
-      l10n.localeName,
-    ).format(DateTime(2000, 1, 1, minute ~/ 60, minute % 60));
-    return l10n.todoDueWithTime(date, time);
   }
 
   Future<void> _handleAction(TodoNotificationEvent event) async {

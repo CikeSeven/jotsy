@@ -336,4 +336,45 @@ void main() {
     expect(await scheduler.ensurePermission(), isFalse);
     expect(gateway.permissionRequests, 1);
   });
+
+  test(
+    'cancelTodoOccurrenceNotifications only cancels the targeted occurrence',
+    () async {
+      final todoA = await db.createTodo(
+        TodoInput(
+          title: '吃药',
+          dueDate: DateTime(2026, 11, 11),
+          dueMinute: 9 * 60,
+          reminders: const <TodoReminder>[
+            TodoReminder.beforeDue(15),
+            TodoReminder.beforeDue(0),
+          ],
+          repeat: TodoRepeatRule(
+            frequency: TodoRepeatFrequency.daily,
+            anchor: DateTime(2026, 11, 11),
+          ),
+        ),
+      );
+      await addTodo(title: '另一项');
+      scheduler.enabled = true;
+      await feed();
+      final totalBefore = gateway.scheduled.length;
+      expect(totalBefore, greaterThan(4));
+
+      await cancelTodoOccurrenceNotifications(
+        gateway,
+        todoId: todoA,
+        occurrence: '2026-11-11',
+      );
+      expect(gateway.scheduled.length, totalBefore - 2);
+      expect(
+        gateway.scheduled.values.where(
+          (r) =>
+              r.reminder.todoId == todoA &&
+              r.reminder.occurrence == DateTime(2026, 11, 11),
+        ),
+        isEmpty,
+      );
+    },
+  );
 }

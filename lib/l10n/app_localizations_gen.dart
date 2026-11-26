@@ -26741,8 +26741,62 @@ abstract class AppLocalizations {
   /// Body of the late-or-missing reminders tips sheet.
   ///
   /// In en, this message translates to:
-  /// **'Some phone systems restrict apps in the background. If reminders often don\'t ring or arrive late, allow Jotsy to auto-start, turn off battery optimization for Jotsy, and make sure the Notifications and Alarms & reminders permissions are on in system settings.'**
+  /// **'Reminders are scheduled with system alarms and do not need Jotsy to stay open in the background. On some Android phones, clearing apps or battery savers can still block wakeups—check the items above to keep reminders on time.'**
   String get todoSettingsReliabilityBody;
+
+  /// To-do settings: Android row to disable battery optimization so alarms wake up reliably.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery optimization'**
+  String get todoSettingsBattery;
+
+  /// Shown when battery optimization is turned off for Jotsy.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrestricted'**
+  String get todoSettingsBatteryUnrestricted;
+
+  /// Shown when Android battery optimization may restrict background alarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted. Tap to allow'**
+  String get todoSettingsBatteryRestricted;
+
+  /// Subtitle explaining why turning off battery optimization helps reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off battery optimization so reminders ring even when Jotsy isn\'t running in the background'**
+  String get todoSettingsBatterySubtitle;
+
+  /// Reliability checklist row for exact alarm permission on Android.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarms & reminders'**
+  String get todoSettingsExactPermission;
+
+  /// Reliability checklist row to open OEM auto-start or system app settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-start & background settings'**
+  String get todoSettingsAutoStart;
+
+  /// Subtitle for the auto-start & background settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'If your phone still blocks alarms after clearing recent apps, allow auto-start and unrestricted background usage here'**
+  String get todoSettingsAutoStartSubtitle;
+
+  /// Status text in the reliability checklist when a requirement is met.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get todoSettingsReliabilityReady;
+
+  /// Status text in the reliability checklist when user action is needed.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to set up'**
+  String get todoSettingsReliabilityAction;
 
   /// Shown when a reminder was added but the system doesn't allow notifications.
   ///

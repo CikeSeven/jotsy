@@ -14900,7 +14900,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoSettingsReliabilityBody =>
-      '部分手机系统会限制后台应用。如果提醒经常不响或延迟，请在系统设置里允许 Jotsy 自启动、关闭对 Jotsy 的电池优化，并确认“通知”和“闹钟和提醒”权限已开启。';
+      '待办提醒由系统闹钟直接唤醒推送，不需要让 Jotsy 一直挂在后台。部分手机系统的省电策略或一键清理仍可能拦截唤醒，确认以上几项已开启即可在划掉后台后依然准时响铃。';
+
+  @override
+  String get todoSettingsBattery => '电池优化';
+
+  @override
+  String get todoSettingsBatteryUnrestricted => '无限制';
+
+  @override
+  String get todoSettingsBatteryRestricted => '受限制，点按开启';
+
+  @override
+  String get todoSettingsBatterySubtitle => '关闭电池优化后，即使划掉后台也能按时弹出提醒';
+
+  @override
+  String get todoSettingsExactPermission => '闹钟和提醒权限';
+
+  @override
+  String get todoSettingsAutoStart => '自启动与后台管理';
+
+  @override
+  String get todoSettingsAutoStartSubtitle => '若清理后台后系统仍拦截唤醒，请在这里开启自启动并设为后台无限制';
+
+  @override
+  String get todoSettingsReliabilityReady => '已开启';
+
+  @override
+  String get todoSettingsReliabilityAction => '未开启，点按设置';
 
   @override
   String get todoReminderPermissionDenied => '通知权限未开启，提醒不会弹出';

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/todo_reminders/todo_reminder_format.dart';
 import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_priority_colors.dart';
@@ -94,21 +95,7 @@ abstract final class TodoLabels {
     AppLocalizations l10n,
     DateTime day,
     DateTime today,
-  ) {
-    final diff = DateTime.utc(
-      day.year,
-      day.month,
-      day.day,
-    ).difference(DateTime.utc(today.year, today.month, today.day)).inDays;
-    if (diff == 0) return l10n.todoDueToday;
-    if (diff == 1) return l10n.todoDueTomorrow;
-    if (diff == -1) return l10n.todoDueYesterday;
-    if (diff > 1 && diff < 7) {
-      return DateFormat.EEEE(l10n.localeName).format(day);
-    }
-    if (day.year == today.year) return l10n.formatMonthDay(day);
-    return l10n.formatFullDate(day);
-  }
+  ) => formatTodoRelativeDay(l10n, day, today);
 
   /// 截止日（与时刻）的说法，如“明天 15:00”“11月20日”。
   static String due(

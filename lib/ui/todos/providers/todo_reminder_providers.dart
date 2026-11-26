@@ -31,6 +31,24 @@ final todoNotificationOpenRequestProvider =
       TodoNotificationOpenRequest.new,
     );
 
+/// Android / iOS 系统提醒权限与后台限制状态（不支持提醒的平台为 null）。
+typedef TodoReminderSystemStatus = ({
+  bool notifications,
+  bool exact,
+  bool ignoringBattery,
+});
+
+final todoReminderSystemStatusProvider =
+    FutureProvider.autoDispose<TodoReminderSystemStatus?>((Ref ref) async {
+      final gateway = ref.watch(todoNotificationGatewayProvider);
+      if (gateway == null) return null;
+      return (
+        notifications: await gateway.notificationsEnabled(),
+        exact: await gateway.exactAlarmsAllowed(),
+        ignoringBattery: await isIgnoringTodoBatteryOptimizations(),
+      );
+    });
+
 class TodoNotificationOpenRequest extends Notifier<String?> {
   @override
   String? build() => null;

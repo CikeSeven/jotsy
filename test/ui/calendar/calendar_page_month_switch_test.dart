@@ -12,16 +12,19 @@ import 'package:node_diary/ui/calendar/providers/calendar_diary_providers.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../support/calendar_test_harness.dart';
+
 /// 当前月立即返回空打点；其他月份按 [otherMonthDelay] 模拟查询耗时。
 Future<void> _pumpCalendar(
   WidgetTester tester, {
   Duration otherMonthDelay = Duration.zero,
   Locale locale = const Locale('zh'),
+  double width = 401.6,
 }) async {
-  // 日历面板左右合计 41.6dp 内缩（含 0.8 边框），默认 800 宽测试窗口下
-  // PageView 页宽为 758.4，乘以数千页后触发 SliverFillViewport 的浮点精度
-  // 断言；取 401.6 让页宽为整数 360。
-  tester.view.physicalSize = const Size(401.6, 900);
+  // 日历面板左右合计 25.6dp 内缩（含 0.8 边框），手机宽度下 PageView 页宽
+  // 不是整数时，乘以数千页后触发 SliverFillViewport 的浮点精度断言；取
+  // 401.6 让页宽为整数 376。宽窗口（≥ 600）的网格自己取整。
+  tester.view.physicalSize = Size(width, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final now = DateTime.now();
@@ -70,7 +73,8 @@ void main() {
   testWidgets('next month in week view switches to month view of next month', (
     tester,
   ) async {
-    await _pumpCalendar(tester);
+    // 页头的翻月箭头只在宽窗口（与桌面）出现。
+    await _pumpCalendar(tester, width: 800);
 
     CalendarFormat currentFormat() => tester
         .widget<TableCalendar<DiaryCalendarMarker>>(
@@ -104,9 +108,8 @@ void main() {
       tester,
       otherMonthDelay: const Duration(milliseconds: 60),
     );
-    final l10n = tester.element(find.byType(CalendarPage)).l10n;
 
-    await tester.tap(find.byTooltip(l10n.autoT0185));
+    await swipeCalendarPage(tester, settle: false);
     for (var frame = 0; frame < 30; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
       expect(
@@ -125,10 +128,9 @@ void main() {
       tester,
       otherMonthDelay: const Duration(milliseconds: 900),
     );
-    final l10n = tester.element(find.byType(CalendarPage)).l10n;
 
-    await tester.tap(find.byTooltip(l10n.autoT0185));
-    // 逐帧推进：翻页动画过半才切换焦点月份并开始加载。
+    await swipeCalendarPage(tester, settle: false);
+    // 逐帧推进：翻页过半才切换焦点月份并开始加载。
     for (var frame = 0; frame < 45; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
     }

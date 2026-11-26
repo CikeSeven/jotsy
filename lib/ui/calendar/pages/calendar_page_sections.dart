@@ -87,6 +87,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required Map<DateTime, DayMood> dayMoods,
     required DateTime now,
     bool wide = false,
+    bool headerArrows = true,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final today = DateUtils.dateOnly(now);
@@ -110,11 +111,13 @@ extension _CalendarPageSections on _CalendarPageState {
             now: now,
             moodOptions: moodOptions,
           );
+    // 卡片内左右只留 4（加上卡片距页面的 8，日期格与下方区块的 12 对齐），
+    // 上方 8 给星期栏透气，下方 4：概览细条自带分隔线与上边距。
     const padding = EdgeInsets.fromLTRB(
+      AppSpacing.xs,
       AppSpacing.s,
-      AppSpacing.l,
-      AppSpacing.s,
-      AppSpacing.s,
+      AppSpacing.xs,
+      AppSpacing.xs,
     );
     final panel = Stack(
       children: <Widget>[
@@ -129,6 +132,7 @@ extension _CalendarPageSections on _CalendarPageState {
               todoIndex: todoIndex,
               dayMoods: dayMoods,
               wide: wide,
+              yearArrows: !headerArrows,
             ),
             if (filter.isActive)
               Padding(
@@ -211,6 +215,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required TodoCalendarIndex todoIndex,
     required Map<DateTime, DayMood> dayMoods,
     required bool wide,
+    required bool yearArrows,
   }) {
     final Widget body;
     if (_yearMode) {
@@ -230,6 +235,10 @@ extension _CalendarPageSections on _CalendarPageState {
         onMonthTap: _controller.openMonthFromYear,
         onBasisChanged: _controller.setYearBasis,
         onExport: () => unawaited(_controller.exportYearImage()),
+        // 页头没有箭头（手机）时，年视图自己放上一年 / 下一年：年视图不像
+        // 月网格那样能左右滑。
+        onPreviousYear: yearArrows ? _controller.goToPreviousMonth : null,
+        onNextYear: yearArrows ? _controller.goToNextMonth : null,
       );
     } else {
       body = CalendarMonthGrid(

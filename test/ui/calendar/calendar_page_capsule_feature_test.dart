@@ -19,10 +19,9 @@ Finder _gridDay(int day) => find.descendant(
   matching: find.text('$day'),
 );
 
-/// 翻到下个月再长按 15 号：一定是未来日期。
+/// 滑到下个月再长按 15 号：一定是未来日期。
 Future<void> _longPressFutureDay(WidgetTester tester) async {
-  await tester.tap(find.byTooltip(_l10n(tester).autoT0185));
-  await tester.pumpAndSettle();
+  await swipeCalendarPage(tester);
   await tester.longPress(_gridDay(15));
   await tester.pumpAndSettle();
 }
@@ -63,8 +62,7 @@ void main() {
       (tester) async {
         await pumpCalendarPage(tester, prefs: prefs);
         final l10n = _l10n(tester);
-        await tester.tap(find.byTooltip(l10n.autoT0185));
-        await tester.pumpAndSettle();
+        await swipeCalendarPage(tester);
         await tester.tap(_gridDay(15));
         await tester.pumpAndSettle();
         final empty = find.byType(CalendarDayEmptyState);

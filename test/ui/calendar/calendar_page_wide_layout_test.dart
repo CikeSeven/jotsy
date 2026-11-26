@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
@@ -15,6 +16,14 @@ import '../../support/calendar_test_harness.dart';
 
 AppLocalizations _l10n(WidgetTester tester) =>
     tester.element(find.byType(CalendarPage)).l10n;
+
+/// 页头标题（当前月份）。
+Finder _headerTitle(WidgetTester tester) => find.descendant(
+  of: find.byType(CalendarHeader),
+  matching: find.text(
+    DateFormat.yMMM(_l10n(tester).localeName).format(DateTime.now()),
+  ),
+);
 
 Finder _gridDay(int day) => find.descendant(
   of: find.byType(CalendarMonthGrid),
@@ -71,22 +80,19 @@ void main() {
           .rowHeight,
       greaterThan(CalendarMonthGrid.rowHeight),
     );
-    // 月份行在左栏卡片正上方、与卡片同宽，页头只留标题栏。
-    expect(find.byTooltip(l10n.autoT0184).hitTestable(), findsOneWidget);
+    // 页头单行：标题就是月份，翻月箭头放在页头（宽窗口）。选中日标题与
+    // 左栏卡片顶端对齐（网格在卡片 0.8 边框 + 8 内边距之下）。
     expect(
       find.descendant(
         of: find.byType(CalendarHeader),
-        matching: find.byType(CalendarMonthBar),
+        matching: find.byTooltip(l10n.autoT0184),
       ),
-      findsNothing,
+      findsOneWidget,
     );
-    final monthBar = tester.getRect(find.byType(CalendarMonthBar));
-    expect(monthBar.left, 40);
-    expect(monthBar.width, 600);
-    expect(monthBar.bottom, lessThan(gridRect.top));
+    expect(gridRect.top - headingRect.top, moreOrLessEquals(8.8, epsilon: 1));
     // 标题栏不随 1200 的内容容器内收：标题距左缘 16，与其他 Tab 一致
     // （#308）。
-    expect(tester.getTopLeft(find.text(l10n.autoT0183)).dx, 16);
+    expect(tester.getTopLeft(_headerTitle(tester)).dx, 16);
     // 日期高亮保持手机比例：选中的今天最宽 64，居中在格子里。
     final cellRect = tester.getRect(
       find
@@ -156,13 +162,10 @@ void main() {
     expect(headingRect.left, greaterThanOrEqualTo(90));
     expect(headingRect.right, lessThanOrEqualTo(810));
     expect(gridRect.center.dx, moreOrLessEquals(450, epsilon: 1));
-    // 页头底色铺满，月份行与这一列对齐；标题不内收，与其他 Tab 一样距
-    // 左缘 16（#308）。
-    expect(tester.getTopLeft(find.text(l10n.autoT0183)).dx, 16);
-    expect(
-      tester.getRect(find.byType(CalendarMonthBar)).left,
-      moreOrLessEquals(106, epsilon: 1),
-    );
+    // 页头底色铺满；标题不内收，与其他 Tab 一样距左缘 16（#308）。中等
+    // 宽度的页头也有翻月箭头。
+    expect(tester.getTopLeft(_headerTitle(tester)).dx, 16);
+    expect(find.byTooltip(l10n.autoT0185).hitTestable(), findsOneWidget);
   });
 
   testWidgets('a phone width keeps the fixed row height', (tester) async {

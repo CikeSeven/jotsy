@@ -2,26 +2,28 @@ part of 'calendar_page.dart';
 
 /// 按页面可用宽度 [_CalendarPageLayout._buildCalendarLayout] 摆放日历页。
 typedef _CalendarHeaderFactory =
-    CalendarHeader Function(
-      double collapsedExtent,
-      double monthBarInset, {
-      bool showMonthBar,
-    });
-typedef _CalendarPanelFactory = Widget Function({required bool wide});
+    CalendarHeader Function({required bool showArrows});
+typedef _CalendarPanelFactory =
+    Widget Function({required bool wide, required bool headerArrows});
 
 /// 日历页的三种摆放（页面装配的一部分）：
 ///
-/// - 紧凑（< 600）：手机布局，单个 CustomScrollView，与改版前完全一致；
-/// - 中等（600–1023）：同样单列，月份行与所有区块居中到
-///   [AppContentWidth.reading]（720）宽；
+/// - 紧凑（< 600）：手机布局，单个 CustomScrollView；
+/// - 中等（600–1023）：同样单列，所有区块居中到 [AppContentWidth.reading]
+///   （720）宽；
 /// - 展开（≥ 1024）：内容容器居中到 [AppContentWidth.grid]（1200）；
-///   左栏是月份行 + 日历卡片（月/周网格或年视图，宽
-///   `clamp(可用宽 × 0.5, 440, 600)`），不随右栏滚动；右栏是独立的滚动
-///   列表（选中日标题、纪念日、当天日记、那年今日，最宽 720）。左栏选日即
-///   改页面状态，右栏随之重建。
+///   左栏是日历卡片（月/周网格或年视图，宽 `clamp(可用宽 × 0.5, 440, 600)`），
+///   不随右栏滚动；右栏是独立的滚动列表（选中日标题、纪念日、当天日记、
+///   那年今日，最宽 720）。左栏选日即改页面状态，右栏随之重建。
 ///
-/// 三种摆放的标题栏（“日历” + 操作按钮）都铺满页宽、距左右 16，不随内容
-/// 列内收：与日记、待办、探索的页头标题停在同一位置，切换 Tab 不跳（#308）。
+/// 页头（[CalendarHeader]，与其他 Tab 同一个 [PageHeader]）叠在内容之上：
+/// 内容从它下面滚过（玻璃顶栏时透出并被模糊），滚动视图顶部留出页头高度。
+/// 标题栏铺满页宽、距左右 16，不随内容列内收：与日记、待办、探索的页头
+/// 标题停在同一位置，切换 Tab 不跳（#308）。
+///
+/// 翻月箭头只在宽窗口与桌面放进页头；手机上靠左右滑网格，年视图没有滑动，
+/// 由年视图自己在着色依据两侧放上一年 / 下一年（[_CalendarPanelFactory] 的
+/// `headerArrows`）。
 ///
 /// 居中一律用滚动视图的左右内边距（[AppContentWidth.gutter] 的思路），
 /// 滚动视图本身不收窄：滚动条留在窗口边缘，留白处的滚轮也能滚动内容。
@@ -37,57 +39,65 @@ extension _CalendarPageLayout on _CalendarPageState {
     required double bottomSpace,
   }) {
     final windowClass = AppBreakpoints.classOf(width);
+    final headerArrows = windowClass.isWide || AppPlatform.isDesktop;
+    final headerHeight =
+        MediaQuery.paddingOf(context).top + CalendarHeader.height;
+    final Widget body;
     if (windowClass == AppWindowClass.expanded) {
-      return _buildTwoColumnLayout(
+      body = _buildTwoColumnLayout(
         width: width,
-        buildHeader: buildHeader,
+        topSpace: headerHeight,
         buildPanel: buildPanel,
         daySlivers: daySlivers,
         bottomSpace: bottomSpace,
       );
-    }
-    // 单列：区块各自带 16 的左右内边距，居中的是含内边距的 720 宽一列。
-    final side = windowClass == AppWindowClass.compact
-        ? 0.0
-        : math.max(0.0, (width - AppContentWidth.reading) / 2);
-    Widget centred(Widget sliver) => side == 0
-        ? sliver
-        : SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: side),
-            sliver: sliver,
-          );
-    return CustomScrollView(
-      slivers: <Widget>[
-        // 页头固定在顶部，月份行随下滑收起、只留标题栏，见
-        // CalendarHeaderSliver。底色铺满页宽，月份行与下方一列对齐。
-        CalendarHeaderSliver(
-          builder: (_, double collapsedExtent) =>
-              buildHeader(collapsedExtent, side),
-        ),
-        centred(
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                _CalendarPageState._calendarCardHorizontalPadding,
-                _CalendarPageState._calendarCardTopPadding,
-                _CalendarPageState._calendarCardHorizontalPadding,
-                _CalendarPageState._calendarBottomGap,
+    } else {
+      // 单列：区块各自带左右内边距，居中的是含内边距的 720 宽一列。
+      final side = windowClass == AppWindowClass.compact
+          ? 0.0
+          : math.max(0.0, (width - AppContentWidth.reading) / 2);
+      Widget centred(Widget sliver) => side == 0
+          ? sliver
+          : SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: side),
+              sliver: sliver,
+            );
+      body = CustomScrollView(
+        slivers: <Widget>[
+          centred(
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  _CalendarPageState._calendarCardHorizontalPadding,
+                  headerHeight + _CalendarPageState._calendarCardTopPadding,
+                  _CalendarPageState._calendarCardHorizontalPadding,
+                  _CalendarPageState._calendarBottomGap,
+                ),
+                child: buildPanel(
+                  wide: windowClass.isWide,
+                  headerArrows: headerArrows,
+                ),
               ),
-              child: buildPanel(wide: windowClass.isWide),
             ),
           ),
-        ),
-        for (final sliver in daySlivers) centred(sliver),
-        SliverToBoxAdapter(child: SizedBox(height: bottomSpace)),
+          for (final sliver in daySlivers) centred(sliver),
+          SliverToBoxAdapter(child: SizedBox(height: bottomSpace)),
+        ],
+      );
+    }
+    return Stack(
+      children: <Widget>[
+        Positioned.fill(child: body),
+        buildHeader(showArrows: headerArrows),
       ],
     );
   }
 
-  /// 展开档的双栏。页头不放进滚动视图：两栏各自滚动，“下滑收起月份行”
-  /// 无从对应；月份行固定在左栏顶部、始终可见。
+  /// 展开档的双栏：两栏各自滚动，顶部都让出页头高度，选中日标题与左栏
+  /// 卡片顶端对齐。
   Widget _buildTwoColumnLayout({
     required double width,
-    required _CalendarHeaderFactory buildHeader,
+    required double topSpace,
     required _CalendarPanelFactory buildPanel,
     required List<Widget> daySlivers,
     required double bottomSpace,
@@ -101,74 +111,39 @@ extension _CalendarPageLayout on _CalendarPageState {
     final contentWidth = width - side * 2;
     // 取整：网格（table_calendar 的 PageView）宽度为整数，翻页不累积浮点误差。
     final leftWidth = (width * 0.5).clamp(440.0, 600.0).floorToDouble();
-    // 右栏区块自带 16 的左右内边距：左侧那 16 正好是两栏间距，右侧那 16
-    // 落在内容容器之内，故右栏滚动视图的右内边距要扣掉它。超出 720 的部分
-    // 也并入右侧留白。
+    // 右栏区块自带 12 的左右内边距：左侧那 12 是两栏间距的一部分，右侧那
+    // 12 落在内容容器之内，故右栏滚动视图的右内边距要扣掉它。超出 720 的
+    // 部分也并入右侧留白。
     final rightContent = math.min(
       contentWidth - leftWidth - _columnGap,
       AppContentWidth.reading - AppSpacing.m * 2,
     );
     final rightPadding =
         width - side - leftWidth - rightContent - AppSpacing.m * 2;
-    final header = buildHeader(0, 0, showMonthBar: false);
-    return Column(
+    final top = topSpace + _CalendarPageState._calendarCardTopPadding;
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // 页头只留标题栏，铺满页宽、距左右 16（不内缩到内容容器）；月份行
-        // 放到左栏卡片正上方，箭头对齐卡片两侧。
-        header,
+        // 左栏一般放得下；窗口很矮时可单独滚动。不继承首页下发的主滚动
+        // 控制器，那是右栏的（“点当前 Tab 回到顶部”）。
+        SizedBox(
+          width: side + leftWidth,
+          child: SingleChildScrollView(
+            primary: false,
+            padding: EdgeInsets.fromLTRB(side, top, 0, bottomSpace),
+            child: buildPanel(wide: true, headerArrows: true),
+          ),
+        ),
         Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              SizedBox(
-                width: side + leftWidth,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(left: side),
-                      child: header.monthBar(),
-                    ),
-                    // 左栏一般放得下；窗口很矮时可单独滚动。不继承首页下发
-                    // 的主滚动控制器，那是右栏的（“点当前 Tab 回到顶部”）。
-                    Expanded(
-                      child: SingleChildScrollView(
-                        primary: false,
-                        padding: EdgeInsets.fromLTRB(
-                          side,
-                          _CalendarPageState._calendarCardTopPadding,
-                          0,
-                          bottomSpace,
-                        ),
-                        child: buildPanel(wide: true),
-                      ),
-                    ),
-                  ],
+          child: CustomScrollView(
+            slivers: <Widget>[
+              SliverToBoxAdapter(child: SizedBox(height: top)),
+              for (final sliver in daySlivers)
+                SliverPadding(
+                  padding: EdgeInsets.only(right: math.max(0.0, rightPadding)),
+                  sliver: sliver,
                 ),
-              ),
-              Expanded(
-                child: CustomScrollView(
-                  slivers: <Widget>[
-                    // 选中日标题与左栏卡片顶端对齐（卡片上方是月份行）。
-                    const SliverToBoxAdapter(
-                      child: SizedBox(
-                        height:
-                            CalendarHeader.monthBarHeight +
-                            _CalendarPageState._calendarCardTopPadding,
-                      ),
-                    ),
-                    for (final sliver in daySlivers)
-                      SliverPadding(
-                        padding: EdgeInsets.only(
-                          right: math.max(0.0, rightPadding),
-                        ),
-                        sliver: sliver,
-                      ),
-                    SliverToBoxAdapter(child: SizedBox(height: bottomSpace)),
-                  ],
-                ),
-              ),
+              SliverToBoxAdapter(child: SizedBox(height: bottomSpace)),
             ],
           ),
         ),

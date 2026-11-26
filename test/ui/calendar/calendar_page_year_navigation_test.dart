@@ -82,8 +82,7 @@ void main() {
         await pumpCalendarPage(tester, brightness: brightness);
         final now = DateTime.now();
         final nextMonth = DateTime(now.year, now.month + 1);
-        await tester.tap(find.byTooltip(_l10n(tester).autoT0185));
-        await tester.pumpAndSettle();
+        await swipeCalendarPage(tester);
 
         await _openPreviousYearMarch(tester);
 
@@ -92,8 +91,7 @@ void main() {
         // 连续切年后仍从新月份继续浏览，不能读回第一次翻页留下的旧页码。
         await _openPreviousYearMarch(tester);
         _expectMonth(tester, DateTime(nextMonth.year - 2, 3));
-        await tester.tap(find.byTooltip(_l10n(tester).autoT0185));
-        await tester.pumpAndSettle();
+        await swipeCalendarPage(tester);
         _expectMonth(tester, DateTime(nextMonth.year - 2, 4));
       });
 

@@ -37,6 +37,8 @@ class CalendarYearView extends StatelessWidget {
     required this.onBasisChanged,
     required this.onExport,
     this.dayMoods = const <DateTime, DayMood>{},
+    this.onPreviousYear,
+    this.onNextYear,
   });
 
   final int year;
@@ -55,6 +57,11 @@ class CalendarYearView extends StatelessWidget {
   final ValueChanged<CalendarYearBasis> onBasisChanged;
   final VoidCallback onExport;
 
+  /// 上一年 / 下一年；页头已有翻页箭头（宽窗口、桌面）时为 null，不重复
+  /// 放。手机页头没有箭头、年视图又不能左右滑，就放在着色依据两侧。
+  final VoidCallback? onPreviousYear;
+  final VoidCallback? onNextYear;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -67,19 +74,37 @@ class CalendarYearView extends StatelessWidget {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-          child: ExpressiveButtonGroup<CalendarYearBasis>(
-            // 标签只有两三个字，320dp 屏上也能横排。
-            minSegmentWidth: 72,
-            segments: <ButtonSegment<CalendarYearBasis>>[
-              for (final value in CalendarYearBasis.values)
-                ButtonSegment<CalendarYearBasis>(
-                  value: value,
-                  label: Text(calendarYearBasisLabel(l10n, value)),
+          child: Row(
+            children: <Widget>[
+              if (onPreviousYear != null)
+                IconButton(
+                  tooltip: l10n.calendarPreviousYear,
+                  onPressed: onPreviousYear,
+                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                ),
+              Expanded(
+                child: ExpressiveButtonGroup<CalendarYearBasis>(
+                  // 标签只有两三个字，320dp 屏上两侧放了箭头也能横排。
+                  minSegmentWidth: 64,
+                  segments: <ButtonSegment<CalendarYearBasis>>[
+                    for (final value in CalendarYearBasis.values)
+                      ButtonSegment<CalendarYearBasis>(
+                        value: value,
+                        label: Text(calendarYearBasisLabel(l10n, value)),
+                      ),
+                  ],
+                  selected: <CalendarYearBasis>{basis},
+                  onSelectionChanged: (Set<CalendarYearBasis> selection) =>
+                      onBasisChanged(selection.single),
+                ),
+              ),
+              if (onNextYear != null)
+                IconButton(
+                  tooltip: l10n.calendarNextYear,
+                  onPressed: onNextYear,
+                  icon: const FaIcon(FontAwesomeIcons.angleRight, size: 18),
                 ),
             ],
-            selected: <CalendarYearBasis>{basis},
-            onSelectionChanged: (Set<CalendarYearBasis> selection) =>
-                onBasisChanged(selection.single),
           ),
         ),
         const SizedBox(height: AppSpacing.s),

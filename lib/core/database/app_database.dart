@@ -136,6 +136,10 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
+  /// 打开指定路径的 SQLite 数据库文件（桌面数据迁移与路径重绑用）。
+  AppDatabase.openFile(File file)
+    : super(LazyDatabase(() async => NativeDatabase.createInBackground(file)));
+
   /// 测试专用构造：注入自定义 [QueryExecutor]（如内存库），
   /// 便于在不依赖文件系统的前提下验证迁移与查询行为。
   @visibleForTesting

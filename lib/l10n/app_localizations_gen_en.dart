@@ -19357,4 +19357,165 @@ class AppLocalizationsEn extends AppLocalizations {
   String notebookContentsTransferredPrivate(String target) {
     return 'Transferred to \"$target\". Moved entries now only show in that notebook';
   }
+
+  @override
+  String get storageLocationTitle => 'Data storage location';
+
+  @override
+  String get storageLocationDefaultBadge => 'Default';
+
+  @override
+  String get storageLocationCustomBadge => 'Custom';
+
+  @override
+  String get storageLocationPortableBadge => 'Portable';
+
+  @override
+  String get storageLocationDescription =>
+      'Stores your diary database, images, videos, recordings, attachments, backgrounds, imported fonts, and sync/backup state. Preferences and passcodes stay in the system config directory.';
+
+  @override
+  String get storageLocationOpenFolder => 'Open folder';
+
+  @override
+  String get storageLocationChangeButton => 'Change location';
+
+  @override
+  String get storageLocationResetDefault => 'Reset to default';
+
+  @override
+  String get storageLocationOpenFailed => 'Couldn\'t open the data folder';
+
+  @override
+  String get storageLocationPickTitle => 'Select data storage folder';
+
+  @override
+  String get storageLocationErrorSamePath => 'Already using this folder';
+
+  @override
+  String get storageLocationErrorInvalidPath =>
+      'Please choose a valid absolute folder path.';
+
+  @override
+  String get storageLocationErrorDriveRoot =>
+      'Please don\'t select a drive root directly. Choose or create a dedicated subfolder instead.';
+
+  @override
+  String get storageLocationErrorNested =>
+      'The new folder cannot be inside or contain the current data folder.';
+
+  @override
+  String get storageLocationErrorInsideApp =>
+      'The data folder cannot be inside the program installation folder, as updates replace files there.';
+
+  @override
+  String get storageLocationErrorNotWritable =>
+      'Jotsy doesn\'t have write permission for the selected folder.';
+
+  @override
+  String get storageLocationErrorNotEmpty =>
+      'Please choose an empty folder or an existing Jotsy data folder so your diaries stay separate from other files.';
+
+  @override
+  String get storageLocationInvalidTitle => 'Cannot use this folder';
+
+  @override
+  String get storageLocationConfirmMigrateTitle =>
+      'Change data storage location?';
+
+  @override
+  String get storageLocationConfirmMigrateBody =>
+      'Your database, media files, backgrounds, imported fonts, and sync state will be copied and rebound to the new folder, then the migrated files in the old folder will be cleaned up. Please don\'t close Jotsy during migration.';
+
+  @override
+  String get storageLocationConfirmMigrateAction => 'Move data';
+
+  @override
+  String get storageLocationConfirmResetTitle => 'Reset to default location?';
+
+  @override
+  String get storageLocationConfirmSwitchTitle => 'Switch to existing data?';
+
+  @override
+  String get storageLocationConfirmSwitchBody =>
+      'The selected folder already contains Jotsy diary data. Switching will open the data in that folder instead (files in your current folder will remain untouched).';
+
+  @override
+  String get storageLocationConfirmSwitchAction => 'Switch';
+
+  @override
+  String get storageLocationCurrentLabel => 'Current location';
+
+  @override
+  String get storageLocationTargetLabel => 'New location';
+
+  @override
+  String get storageLocationPreparing => 'Preparing to move data...';
+
+  @override
+  String get storageLocationMigratingTitle => 'Moving data storage location';
+
+  @override
+  String get storageLocationMigratingHint =>
+      'Please keep Jotsy open until the transfer finishes. Original files stay safe until the new location is verified.';
+
+  @override
+  String get storageLocationPhasePreparing => 'Preparing files...';
+
+  @override
+  String get storageLocationPhaseCopying => 'Copying diaries and media...';
+
+  @override
+  String get storageLocationPhaseRebinding => 'Updating media paths...';
+
+  @override
+  String get storageLocationPhaseFinalizing => 'Saving location settings...';
+
+  @override
+  String get storageLocationPhaseCleaningUp => 'Cleaning up old location...';
+
+  @override
+  String storageLocationMigrationCounts(
+    int copied,
+    int total,
+    String copiedSize,
+    String totalSize,
+  ) {
+    return '$copied / $total files · $copiedSize / $totalSize';
+  }
+
+  @override
+  String storageLocationMigratedNotice(String path) {
+    return 'Data storage moved to $path';
+  }
+
+  @override
+  String storageLocationMigratedCleanupPartial(String path) {
+    return 'Data moved to $path. Some old files could not be removed automatically and can be deleted manually.';
+  }
+
+  @override
+  String storageLocationSwitchedNotice(String path) {
+    return 'Switched data storage to $path';
+  }
+
+  @override
+  String storageLocationMigrationFailed(String error) {
+    return 'Could not change data location; kept original data ($error)';
+  }
+
+  @override
+  String get storageLocationStartupFailedTitle =>
+      'Could not move data on startup';
+
+  @override
+  String storageLocationStartupFailedBody(String error) {
+    return 'Your original data is safe. You can retry moving it or open Jotsy using the previous location.\n\n$error';
+  }
+
+  @override
+  String get storageLocationUseOldLocation => 'Use previous location';
+
+  @override
+  String get storageLocationRetryMigration => 'Retry';
 }

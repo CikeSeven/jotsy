@@ -16903,4 +16903,157 @@ class AppLocalizationsZh extends AppLocalizations {
   String notebookContentsTransferredPrivate(String target) {
     return '已转移到「$target」，移入的日记只在该日记本中显示';
   }
+
+  @override
+  String get storageLocationTitle => '数据存储位置';
+
+  @override
+  String get storageLocationDefaultBadge => '默认位置';
+
+  @override
+  String get storageLocationCustomBadge => '自定义位置';
+
+  @override
+  String get storageLocationPortableBadge => '便携模式';
+
+  @override
+  String get storageLocationDescription =>
+      '存放日记数据库、图片、视频、录音、附件、背景图、导入字体与同步/备份状态；应用偏好与密码仍留在系统配置目录。';
+
+  @override
+  String get storageLocationOpenFolder => '打开文件夹';
+
+  @override
+  String get storageLocationChangeButton => '更改位置';
+
+  @override
+  String get storageLocationResetDefault => '恢复默认';
+
+  @override
+  String get storageLocationOpenFailed => '无法打开数据文件夹';
+
+  @override
+  String get storageLocationPickTitle => '选择数据存储文件夹';
+
+  @override
+  String get storageLocationErrorSamePath => '当前已经使用该文件夹';
+
+  @override
+  String get storageLocationErrorInvalidPath => '请选择有效的完整目录路径。';
+
+  @override
+  String get storageLocationErrorDriveRoot => '请勿直接选择磁盘根目录，请新建或选择单独的子文件夹。';
+
+  @override
+  String get storageLocationErrorNested => '新位置不能是当前数据目录的子文件夹或上级目录。';
+
+  @override
+  String get storageLocationErrorInsideApp => '数据目录不能放在程序安装目录内，以免更新或卸载时被替换。';
+
+  @override
+  String get storageLocationErrorNotWritable => '没有该文件夹的写入权限，请换一个位置。';
+
+  @override
+  String get storageLocationErrorNotEmpty =>
+      '请选择空文件夹，或者已包含 Jotsy 数据的文件夹，避免与其他文件混放。';
+
+  @override
+  String get storageLocationInvalidTitle => '无法使用该文件夹';
+
+  @override
+  String get storageLocationConfirmMigrateTitle => '更改数据存储位置？';
+
+  @override
+  String get storageLocationConfirmMigrateBody =>
+      '将复制日记数据库、媒体文件、背景图、导入字体与同步状态到新文件夹并更新路径引用，验证通过后清理原位置的已迁移文件。迁移期间请勿关闭应用。';
+
+  @override
+  String get storageLocationConfirmMigrateAction => '开始迁移';
+
+  @override
+  String get storageLocationConfirmResetTitle => '恢复默认存储位置？';
+
+  @override
+  String get storageLocationConfirmSwitchTitle => '切换到已有数据？';
+
+  @override
+  String get storageLocationConfirmSwitchBody =>
+      '所选文件夹中已经存在 Jotsy 日记数据。继续后将直接切换到该文件夹并读取其中的数据（当前位置的文件不会被删除）。';
+
+  @override
+  String get storageLocationConfirmSwitchAction => '切换使用';
+
+  @override
+  String get storageLocationCurrentLabel => '当前位置';
+
+  @override
+  String get storageLocationTargetLabel => '新位置';
+
+  @override
+  String get storageLocationPreparing => '正在准备迁移数据…';
+
+  @override
+  String get storageLocationMigratingTitle => '正在迁移数据存储位置';
+
+  @override
+  String get storageLocationMigratingHint => '迁移过程中请保持应用开启；验证完成前，原位置的数据会完整保留。';
+
+  @override
+  String get storageLocationPhasePreparing => '正在扫描待迁移文件…';
+
+  @override
+  String get storageLocationPhaseCopying => '正在复制日记与媒体文件…';
+
+  @override
+  String get storageLocationPhaseRebinding => '正在更新媒体路径引用…';
+
+  @override
+  String get storageLocationPhaseFinalizing => '正在保存存储位置设置…';
+
+  @override
+  String get storageLocationPhaseCleaningUp => '正在清理原位置文件…';
+
+  @override
+  String storageLocationMigrationCounts(
+    int copied,
+    int total,
+    String copiedSize,
+    String totalSize,
+  ) {
+    return '已复制 $copied / $total 个文件 · $copiedSize / $totalSize';
+  }
+
+  @override
+  String storageLocationMigratedNotice(String path) {
+    return '数据存储位置已迁移至 $path';
+  }
+
+  @override
+  String storageLocationMigratedCleanupPartial(String path) {
+    return '数据已迁移至 $path，原位置有少量文件被占用未能自动删除，可稍后手动清理。';
+  }
+
+  @override
+  String storageLocationSwitchedNotice(String path) {
+    return '已切换数据存储位置至 $path';
+  }
+
+  @override
+  String storageLocationMigrationFailed(String error) {
+    return '更改存储位置失败，已保留原位置数据（$error）';
+  }
+
+  @override
+  String get storageLocationStartupFailedTitle => '启动时迁移数据失败';
+
+  @override
+  String storageLocationStartupFailedBody(String error) {
+    return '原位置的数据完好无损。你可以重试迁移，或暂按原位置打开应用。\n\n$error';
+  }
+
+  @override
+  String get storageLocationUseOldLocation => '使用原位置打开';
+
+  @override
+  String get storageLocationRetryMigration => '重试';
 }

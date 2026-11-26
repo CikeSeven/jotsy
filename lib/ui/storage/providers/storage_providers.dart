@@ -1,6 +1,15 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/services/app_data_location.dart';
+import '../../../core/services/app_data_location_migrator.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/desktop_save_service.dart';
 import '../../../core/services/storage/storage_duplicates.dart';
 import '../../../core/services/storage/storage_media_service.dart';
 import '../../../core/services/storage/storage_usage_models.dart';
@@ -73,10 +82,48 @@ final storageCompressContextProvider =
       );
     });
 
+/// 桌面端数据存储位置服务（非桌面平台不展示自定义路径入口）。
+final storageLocationStoreProvider = Provider<AppDataLocationStore>(
+  (Ref ref) => AppDataLocationStore.instance,
+);
+
+/// 桌面端当前解析出的数据位置；非桌面端或测试未挂载路径插件时为 null。
+final storageLocationProvider =
+    FutureProvider.autoDispose<AppDataLocationResolution?>((Ref ref) async {
+      if (!AppPlatform.supportsCustomDataDirectory) return null;
+      try {
+        return await ref.watch(storageLocationStoreProvider).resolve();
+      } on MissingPluginException {
+        return null;
+      }
+    });
+
+/// 桌面端迁移器（测试可注入假实例）。
+final storageLocationMigratorProvider = Provider<AppDataLocationMigrator>(
+  (Ref ref) =>
+      AppDataLocationMigrator(store: ref.watch(storageLocationStoreProvider)),
+);
+
+/// 选择文件夹对话框（测试可覆盖）。
+final storageDirectoryPickerProvider = Provider<DesktopDirectoryPicker>(
+  (Ref ref) =>
+      ({required String dialogTitle}) =>
+          FilePicker.platform.getDirectoryPath(dialogTitle: dialogTitle),
+);
+
+/// 打开本地文件夹（测试可覆盖）。
+final storageFolderOpenerProvider = Provider<Future<bool> Function(String)>(
+  (Ref ref) => (String path) async {
+    await Directory(path).create(recursive: true);
+    return launchUrl(Uri.directory(path), mode: LaunchMode.externalApplication);
+  },
+);
+
 /// 删除、压缩、合并、清理之后：总览、媒体页、重复文件页与设置首页的
 /// “已用”一起重新读取（重复文件跟着扫描重算）。
 void refreshStorageViews(WidgetRef ref) {
   ref
     ..invalidate(storageReportProvider)
-    ..invalidate(storageQuickTotalProvider);
+    ..invalidate(storageQuickTotalProvider)
+    ..invalidate(storageLocationProvider);
 }

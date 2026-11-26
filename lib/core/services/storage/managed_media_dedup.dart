@@ -99,11 +99,14 @@ abstract final class ManagedMediaDedup {
     }
   }
 
-  @visibleForTesting
-  static void debugReset() {
+  /// 清空进程内大小缓存与新文件登记（数据位置迁移后调用）。
+  static void clearCache() {
     _ManagedMediaSizes._byDirectory.clear();
     FreshManagedFiles._paths.clear();
   }
+
+  @visibleForTesting
+  static void debugReset() => clearCache();
 }
 
 /// 本进程刚导入、还没被别处共用的托管文件。

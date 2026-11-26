@@ -142,8 +142,9 @@ When a new version is out, Jotsy lets you know and downloads and installs it in 
 
 ### Windows
 
-- **Installer** (recommended): run `…-setup.exe`. Install for all users (needs administrator rights) or just for yourself; it adds a Start menu shortcut and, optionally, a desktop shortcut. Uninstall it from the system's Installed apps.
-- **Portable**: extract the `.zip` to any folder and run `jotsy.exe` inside it.
+- **Installer** (recommended): run `…-setup.exe`. Install for all users (needs administrator rights) or just for yourself; the wizard lets you choose a custom **data storage directory** (defaulting to the system AppData support directory, or another drive such as `D:\JotsyData`, automatically migrating existing data on next launch if changed during upgrade; silent installs support `/DATADIR="D:\JotsyData"`); it adds a Start menu shortcut and, optionally, a desktop shortcut. Uninstall it from the system's Installed apps.
+- **Portable**: extract the `.zip` to any folder and run `jotsy.exe` inside it. To keep data next to the executable (e.g. `./JotsyData`), add `jotsy_data_location.json` (`{"mode":"relative","path":"JotsyData"}`) alongside `jotsy.exe`.
+- **Change in app**: On Windows and other desktop platforms, open **Settings → Storage management → Data storage location** to migrate to another folder/drive or reset to default at any time.
 
 The installer and `jotsy.exe` aren't code-signed yet, so SmartScreen may warn about an unknown publisher the first time; choose **More info › Run anyway**. If that worries you, check the files against `SHA256SUMS.txt` first.
 

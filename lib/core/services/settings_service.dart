@@ -941,8 +941,7 @@ class SettingsService {
     await _writePreference(_prefs.remove(_keyTagPickerSort));
   }
 
-  /// 只供测试构造“升级前留下旧草稿”的状态；应用内不再写入此键。
-  @visibleForTesting
+  /// 供本地数据目录迁移重绑旧版单条草稿路径及测试构造旧草稿使用；应用内日常编辑不再写入此键。
   Future<void> setCreateDiaryDraftRaw(String value) async {
     await _writePreference(_prefs.setString(_keyCreateDiaryDraft, value));
   }

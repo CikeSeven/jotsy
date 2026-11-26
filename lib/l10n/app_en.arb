@@ -22079,5 +22079,220 @@
         "type": "String"
       }
     }
+  },
+  "storageLocationTitle": "Data storage location",
+  "@storageLocationTitle": {
+    "description": "Storage page (desktop): heading of the card showing where app data is stored."
+  },
+  "storageLocationDefaultBadge": "Default",
+  "@storageLocationDefaultBadge": {
+    "description": "Storage location badge when using the system default app support folder."
+  },
+  "storageLocationCustomBadge": "Custom",
+  "@storageLocationCustomBadge": {
+    "description": "Storage location badge when using a user-selected custom folder."
+  },
+  "storageLocationPortableBadge": "Portable",
+  "@storageLocationPortableBadge": {
+    "description": "Storage location badge when configured via portable config alongside the executable."
+  },
+  "storageLocationDescription": "Stores your diary database, images, videos, recordings, attachments, backgrounds, imported fonts, and sync/backup state. Preferences and passcodes stay in the system config directory.",
+  "@storageLocationDescription": {
+    "description": "Storage location card: explains what data lives in the data root directory."
+  },
+  "storageLocationOpenFolder": "Open folder",
+  "@storageLocationOpenFolder": {
+    "description": "Button to open the current data directory in the system file manager."
+  },
+  "storageLocationChangeButton": "Change location",
+  "@storageLocationChangeButton": {
+    "description": "Button to pick a new data storage folder and migrate data."
+  },
+  "storageLocationResetDefault": "Reset to default",
+  "@storageLocationResetDefault": {
+    "description": "Button to migrate data back to the default system support directory."
+  },
+  "storageLocationOpenFailed": "Couldn't open the data folder",
+  "@storageLocationOpenFailed": {
+    "description": "SnackBar shown when launching the system file manager fails."
+  },
+  "storageLocationPickTitle": "Select data storage folder",
+  "@storageLocationPickTitle": {
+    "description": "Title of the desktop directory picker dialog for choosing data storage location."
+  },
+  "storageLocationErrorSamePath": "Already using this folder",
+  "@storageLocationErrorSamePath": {
+    "description": "SnackBar shown when the user selects the folder currently in use."
+  },
+  "storageLocationErrorInvalidPath": "Please choose a valid absolute folder path.",
+  "@storageLocationErrorInvalidPath": {
+    "description": "Dialog message when the chosen path is empty or relative."
+  },
+  "storageLocationErrorDriveRoot": "Please don't select a drive root directly. Choose or create a dedicated subfolder instead.",
+  "@storageLocationErrorDriveRoot": {
+    "description": "Dialog message when the user selects a drive root or filesystem root."
+  },
+  "storageLocationErrorNested": "The new folder cannot be inside or contain the current data folder.",
+  "@storageLocationErrorNested": {
+    "description": "Dialog message when the target directory overlaps with the current data directory."
+  },
+  "storageLocationErrorInsideApp": "The data folder cannot be inside the program installation folder, as updates replace files there.",
+  "@storageLocationErrorInsideApp": {
+    "description": "Dialog message when the target directory is inside the app bundle or installation directory."
+  },
+  "storageLocationErrorNotWritable": "Jotsy doesn't have write permission for the selected folder.",
+  "@storageLocationErrorNotWritable": {
+    "description": "Dialog message when a write probe fails in the target folder."
+  },
+  "storageLocationErrorNotEmpty": "Please choose an empty folder or an existing Jotsy data folder so your diaries stay separate from other files.",
+  "@storageLocationErrorNotEmpty": {
+    "description": "Dialog message when the selected folder contains non-Jotsy files."
+  },
+  "storageLocationInvalidTitle": "Cannot use this folder",
+  "@storageLocationInvalidTitle": {
+    "description": "Title of the alert dialog shown when the chosen data folder is invalid."
+  },
+  "storageLocationConfirmMigrateTitle": "Change data storage location?",
+  "@storageLocationConfirmMigrateTitle": {
+    "description": "Confirmation dialog title before migrating data to a new custom folder."
+  },
+  "storageLocationConfirmMigrateBody": "Your database, media files, backgrounds, imported fonts, and sync state will be copied and rebound to the new folder, then the migrated files in the old folder will be cleaned up. Please don't close Jotsy during migration.",
+  "@storageLocationConfirmMigrateBody": {
+    "description": "Confirmation dialog explanation before migrating data to a new folder."
+  },
+  "storageLocationConfirmMigrateAction": "Move data",
+  "@storageLocationConfirmMigrateAction": {
+    "description": "Confirm button label to start migrating data to a new folder."
+  },
+  "storageLocationConfirmResetTitle": "Reset to default location?",
+  "@storageLocationConfirmResetTitle": {
+    "description": "Confirmation dialog title before moving data back to the default system support folder."
+  },
+  "storageLocationConfirmSwitchTitle": "Switch to existing data?",
+  "@storageLocationConfirmSwitchTitle": {
+    "description": "Confirmation dialog title when the selected folder already contains a Jotsy database."
+  },
+  "storageLocationConfirmSwitchBody": "The selected folder already contains Jotsy diary data. Switching will open the data in that folder instead (files in your current folder will remain untouched).",
+  "@storageLocationConfirmSwitchBody": {
+    "description": "Confirmation dialog explanation when switching to an existing Jotsy data folder."
+  },
+  "storageLocationConfirmSwitchAction": "Switch",
+  "@storageLocationConfirmSwitchAction": {
+    "description": "Confirm button label to switch to an existing Jotsy data folder."
+  },
+  "storageLocationCurrentLabel": "Current location",
+  "@storageLocationCurrentLabel": {
+    "description": "Label above the current data directory path in confirmation dialogs."
+  },
+  "storageLocationTargetLabel": "New location",
+  "@storageLocationTargetLabel": {
+    "description": "Label above the target data directory path in confirmation dialogs."
+  },
+  "storageLocationPreparing": "Preparing to move data...",
+  "@storageLocationPreparing": {
+    "description": "Busy overlay label while flushing pending writes and closing the database before migration."
+  },
+  "storageLocationMigratingTitle": "Moving data storage location",
+  "@storageLocationMigratingTitle": {
+    "description": "Heading on the full-screen migration progress screen."
+  },
+  "storageLocationMigratingHint": "Please keep Jotsy open until the transfer finishes. Original files stay safe until the new location is verified.",
+  "@storageLocationMigratingHint": {
+    "description": "Subtitle on the migration progress screen."
+  },
+  "storageLocationPhasePreparing": "Preparing files...",
+  "@storageLocationPhasePreparing": {
+    "description": "Migration phase label while scanning files to copy."
+  },
+  "storageLocationPhaseCopying": "Copying diaries and media...",
+  "@storageLocationPhaseCopying": {
+    "description": "Migration phase label while copying files."
+  },
+  "storageLocationPhaseRebinding": "Updating media paths...",
+  "@storageLocationPhaseRebinding": {
+    "description": "Migration phase label while rebinding SQLite media paths."
+  },
+  "storageLocationPhaseFinalizing": "Saving location settings...",
+  "@storageLocationPhaseFinalizing": {
+    "description": "Migration phase label while committing configuration."
+  },
+  "storageLocationPhaseCleaningUp": "Cleaning up old location...",
+  "@storageLocationPhaseCleaningUp": {
+    "description": "Migration phase label while removing migrated files from the old location."
+  },
+  "storageLocationMigrationCounts": "{copied} / {total} files · {copiedSize} / {totalSize}",
+  "@storageLocationMigrationCounts": {
+    "description": "Migration progress counter showing files and bytes copied.",
+    "placeholders": {
+      "copied": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "copiedSize": {
+        "type": "String"
+      },
+      "totalSize": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedNotice": "Data storage moved to {path}",
+  "@storageLocationMigratedNotice": {
+    "description": "SnackBar shown after migrating data to a new location.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigratedCleanupPartial": "Data moved to {path}. Some old files could not be removed automatically and can be deleted manually.",
+  "@storageLocationMigratedCleanupPartial": {
+    "description": "SnackBar shown when migration succeeded but some files in the old directory were locked.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationSwitchedNotice": "Switched data storage to {path}",
+  "@storageLocationSwitchedNotice": {
+    "description": "SnackBar shown after switching to an existing data folder.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationMigrationFailed": "Could not change data location; kept original data ({error})",
+  "@storageLocationMigrationFailed": {
+    "description": "SnackBar shown when relocation fails and rolls back to the original location.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationStartupFailedTitle": "Could not move data on startup",
+  "@storageLocationStartupFailedTitle": {
+    "description": "Error screen heading when a pending startup migration fails."
+  },
+  "storageLocationStartupFailedBody": "Your original data is safe. You can retry moving it or open Jotsy using the previous location.\n\n{error}",
+  "@storageLocationStartupFailedBody": {
+    "description": "Error screen explanation when a pending startup migration fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "storageLocationUseOldLocation": "Use previous location",
+  "@storageLocationUseOldLocation": {
+    "description": "Button to cancel pending startup migration and open using the old directory."
+  },
+  "storageLocationRetryMigration": "Retry",
+  "@storageLocationRetryMigration": {
+    "description": "Button to retry pending startup migration."
   }
 }

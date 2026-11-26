@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show countAll;
@@ -26,7 +27,7 @@ import 'app_features_legacy.dart';
 class DataArchiveService {
   DataArchiveService._();
 
-  static Future<void> _pending = Future<void>.value();
+  static Future<void>? _pending;
 
   /// 覆盖恢复成功之后要通知的监听者：局域网同步据此删掉同步状态、把已配对
   /// 设备的下一次同步改为“以哪边为准”（docs/lan_sync.md §3）。由
@@ -36,14 +37,22 @@ class DataArchiveService {
   static final Set<Future<void> Function()> replacedAllListeners =
       <Future<void> Function()>{};
 
-  static Future<T> _run<T>(Future<T> Function() action) {
-    final result = _pending.then((_) => action());
-    // 一次失败不能阻塞后续恢复；调用方仍从 result 收到原异常。
-    _pending = result.then<void>(
-      (_) {},
-      onError: (Object error, StackTrace stack) {},
-    );
-    return result;
+  static Future<T> _run<T>(Future<T> Function() action) async {
+    final prev = _pending;
+    final gate = Completer<void>();
+    _pending = gate.future;
+    try {
+      if (prev != null) {
+        await prev.catchError((Object _, StackTrace _) {});
+      }
+      return await action();
+    } finally {
+      // 队列排空时重置为 null，避免跨 Zone（或测试 FakeAsync）持有已结束的旧 Future。
+      if (identical(_pending, gate.future)) {
+        _pending = null;
+      }
+      gate.complete();
+    }
   }
 
   /// 其他导入来源（如其他日记应用的导出）写入本机数据时，与备份导入导出

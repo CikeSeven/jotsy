@@ -139,4 +139,9 @@ class _InlineImageCache {
     }
     return image;
   }
+
+  static void clear() => _entries.clear();
 }
+
+/// 清空日历正文首图路径缓存（数据位置迁移后调用）。
+void clearCalendarInlineImageCache() => _InlineImageCache.clear();

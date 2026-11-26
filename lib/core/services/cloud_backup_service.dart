@@ -147,6 +147,11 @@ class CloudBackupService {
     return result;
   }
 
+  /// 等待正在进行的网盘增量/自动备份队列全部空闲（迁移数据位置前调用）。
+  Future<void> waitForIdle() async {
+    await Future.wait<void>(_locks.values.toList(growable: false));
+  }
+
   /// 导出当前数据为 ZIP 并上传；无论成败都删除本地临时 ZIP。
   Future<CloudBackupEntry> uploadCurrentBackup(
     CloudBackupTarget target, {

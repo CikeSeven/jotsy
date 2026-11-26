@@ -6,8 +6,8 @@ import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
+import 'app_data_directory.dart';
 import 'diary_imported_font.dart';
 import 'font_file_info.dart';
 
@@ -27,8 +27,10 @@ class DiaryFontImportException implements Exception {
 
 /// 管理导入的正文字体：复制文件、维护清单、向引擎注册。
 ///
-/// - 存储：应用支持目录下的 `diary_fonts/`，不在文档目录，因此不会被日记媒体
-///   回收或完整备份打包；备份只带排版偏好里的字体 id，换机后需重新导入。
+/// - 存储：手机在应用支持目录下的 `diary_fonts/`，桌面跟随
+///   [appDataRootDirectory]（经 [appFontsBaseDirectory]）；不在日记媒体目录，
+///   因此不会被日记媒体回收或完整备份打包；备份只带排版偏好里的字体 id，
+///   换机后需重新导入。
 /// - 清单：同目录 `fonts.json`。写入经临时文件再改名，进程中断时不会留下半份
 ///   清单；清单与文件不一致时（文件被系统清理）以文件为准，缺文件的条目不列出。
 /// - 注册：`FontLoader` 的注册是进程级的且无法撤销，同一字体每个进程只注册
@@ -38,7 +40,7 @@ class DiaryFontImportException implements Exception {
 /// - 并发：导入、删除与补写指纹串行执行，避免两次写清单互相覆盖。
 class DiaryFontStorageService {
   DiaryFontStorageService({Future<Directory> Function()? baseDirectory})
-    : _baseDirectory = baseDirectory ?? getApplicationSupportDirectory;
+    : _baseDirectory = baseDirectory ?? appFontsBaseDirectory;
 
   static const String directoryName = 'diary_fonts';
   static const String _manifestFileName = 'fonts.json';

@@ -46,7 +46,7 @@
   - `widgets/` 其余：`diary_card/` 共用日记卡片，`diary_preview/` 预览页，`publish_panel/` 发布与编辑共用的信息面板，`diary_color_panel/` 等为工具栏面板，另有查找栏、链接、留言、这天的照片、宽窗口右栏 `diary_detail_pane/`。
 - `app_surface/`：背景与材质设置模型、背景解码缓存；`widgets/` 为 `AppPageBackground`、`AppPageBackdrop`、`AppGlass.of`（`app_glass_scope.dart`）与 `AppGlassSurface` / `AppCardSurface` / `AppGlassFab` / `AppGlassField`。
 - `anniversaries/`：纪念日与倒数日（列表、详情、编辑页）。
-- `todos/`：独立待办（待办 Tab、搜索、清单管理、设置、详情面板与批量操作）。
+- `todos/`：独立待办（待办 Tab、搜索、清单管理、设置、详情面板与批量操作）；列表拍平与缓存 `viewmodels/todo_list_entries.dart` / `todo_list_model.dart`，列表外壳 `sections/todo_list_slivers.dart`（开放区）与 `todo_done_section.dart`（可折叠的已完成组），视图切换 `controllers/todo_view_switch.dart`，拖动排序 `controllers/todo_reorder.dart`，“今天” `todoTodayProvider`。
 - `mind_maps/`：思维导图：`layout/` 布局引擎、画布与工作区、样式 / 导出 / AI 面板、嵌入导图编辑页与查看页；导图日记经 `diaries/` 的编辑页接入。
 - `diary_templates/`：日记模板：`models/built_in/` 内置模板、套用与撤销、管理页与编辑页。
 - `notebooks/`：日记本：首页卡组 `widgets/notebook_switcher/`（状态机 `controllers/notebook_switcher_controller.dart`）、编辑、目录与章节、智能规则、统计、上锁、嵌套树、封面 `widgets/notebook_cover/`；`controllers/notebook_navigation.dart`（`openNotebookFromAnywhere`）、选本流程 `diary_notebook_pick_flow.dart`、首页范围 `providers/home_notebook_scope_provider.dart`。
@@ -61,6 +61,7 @@
 - `settings/`：设置首页 `pages/settings_page.dart`（Tab 为 `SettingsPage`，入口在“更多”菜单时经 `openSettingsPage` 推入 `SettingsRoutePage`）与各二级页；样式编辑页的区块在 `sections/<样式名>/`；功能管理 `providers/app_features_provider.dart`（`appFeaturesProvider` / `saveAppFeatures`）；导入恢复 `controllers/backup_import_flow.dart`（`chooseBackupImportMode`）；另有网盘备份、回收站、标签管理、更新日志。
 - `widgets/`：跨 feature 公共 UI：
   - 平铺文件：`app_top_bar.dart`、`form_width.dart`、`keyboard_visibility.dart`（`KeyboardVisibility` / `KeyboardInsetPadding`）、`width_layout_builder.dart`、`expressive_*.dart`（按钮组、加载、入场、图片淡入 `expressiveImageFrameBuilder`）、`delayed_loading_indicator.dart` / `action_loading_overlay.dart`、`launch_reveal.dart`、看图 `image_viewer_page.dart`（`openImageViewer`）、`reorder_handle.dart`、`desktop_horizontal_scroll.dart`、`editing_session_blocker.dart`、滚动显隐判定 `scroll_chrome_hider.dart`、颜色选择。
+  - 列表动效：进出场 `list_item_presence.dart`、让位（FLIP）`list_make_room.dart`、数据变化编排 `list_change_host.dart`（`ListChangeHost`，日记与待办共用）、整块折叠 `sliver_collapse.dart`（`AnimatedSliverCollapse`）、逐位滚动的计数 `rolling_text.dart` / `animated_rolling_text.dart`。
   - `floating_top_bar/`：日记页浮岛顶栏（`FloatingTopBarHost`、岛与动作胶囊、标题岛、状态栏渐隐带、`FloatingTopBarCover`）。
   - `app_modal/`：`showAppModalBottomSheet` / `showAppDialog` 唯一入口。
   - `expressive_menu/`：锚定弹出菜单 `ExpressiveMenuAnchor` / `ExpressiveMenuButton` 与二级菜单。

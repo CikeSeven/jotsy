@@ -5,21 +5,31 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../app_surface/widgets/app_glass_scope.dart';
+import '../../diaries/controllers/diary_list_switch_motion.dart';
+import '../../diaries/widgets/diary_list_switch_reveal.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/empty_hint.dart';
-import '../models/todo_settings.dart';
+import '../../widgets/expressive_entrance.dart';
+import '../../widgets/list_make_room.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_groups.dart';
+import '../viewmodels/todo_list_entries.dart';
 import '../widgets/todo_inline_add_row.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_quick_add_sheet.dart';
 import '../widgets/todo_view_hero.dart';
+import 'todo_list_callbacks.dart';
 import 'todo_list_slivers.dart';
 
-/// 待办页的列表列：页头留白 → 概览卡（[TodoViewHero]）→ 各组（
-/// [buildTodoListSlivers]，内联新建插在未完成与已完成之间）→ 末尾给 FAB 与
+/// 待办页的列表列：页头留白 → 概览卡（[TodoViewHero]）→ 各组
+/// （[TodoListSlivers]，内联新建插在未完成与已完成之间）→ 末尾给 FAB 与
 /// 玻璃底栏的空位。还在加载时为延迟出现的加载指示；没有任何一组时，内联
 /// 新建之后是空状态。
+///
+/// 每个视图有自己的滚动位置（按视图键存进 PageStorage，切回来时停在原
+/// 处）。概览卡、各项与空状态都挂着视图切换的退场 / 错峰入场
+/// （[switchMotion]，概览卡是第 0 项）。
 ///
 /// 内联新建在输入时（[inlineEditing]）列表底部让出被键盘盖住的一段：首页
 /// Scaffold 不随键盘缩小，不让的话列表末尾的输入框会被键盘盖住；让出后视口
@@ -29,17 +39,18 @@ Widget buildTodosPageList({
   required TodoView view,
   required DateTime today,
   required List<TodoGroup>? groups,
+  required List<TodoListEntry>? entries,
   required List<TodoRow>? open,
   required List<TodoRow>? completed,
   required Map<TodoSmartView, int> counts,
   required Map<String, TodoListRow> listsById,
   required Map<String?, TodoListProgress> progress,
-  required TodoSettings settings,
   required bool wide,
   required double width,
   required double topInset,
   required double bottomInset,
   required bool inlineEditing,
+  required bool reorderable,
   required Set<String> collapsed,
   required ValueChanged<String> onToggleCollapsed,
   required TodoListRowState rowState,
@@ -48,9 +59,10 @@ Widget buildTodosPageList({
   required Key inlineAddKey,
   required ValueChanged<bool> onInlineEditingChanged,
   required VoidCallback? onEditList,
+  required MakeRoomController makeRoom,
+  required DiaryListSwitchMotion switchMotion,
 }) {
   final l10n = context.l10n;
-  final scheme = Theme.of(context).colorScheme;
   final gutter = wide
       ? AppSpacing.l
       : AppContentWidth.gutter(width, AppContentWidth.reading);
@@ -73,71 +85,96 @@ Widget buildTodosPageList({
           preset: inlinePreset,
           onEditingChanged: onInlineEditingChanged,
         );
+  Widget reveal(int index, Widget child, {bool glass = false}) =>
+      DiaryListSwitchReveal(
+        motion: switchMotion,
+        index: index,
+        glass: glass,
+        child: child,
+      );
 
   final slivers = <Widget>[
     SliverToBoxAdapter(child: SizedBox(height: topInset)),
     SliverPadding(
       padding: padding.copyWith(bottom: AppSpacing.xs),
       sliver: SliverToBoxAdapter(
-        child: TodoViewHero(
-          view: view,
-          today: today,
-          summary: summary,
-          count: heroCount,
-          list: listId == null ? null : listsById[listId],
-          progress: view.isSingleList ? progress[listId] : null,
-          onEditList: onEditList,
+        child: reveal(
+          0,
+          glass: AppGlass.of(context).isGlass(AppGlassComponent.cards),
+          TodoViewHero(
+            view: view,
+            today: today,
+            summary: summary,
+            count: heroCount,
+            list: listId == null ? null : listsById[listId],
+            progress: view.isSingleList ? progress[listId] : null,
+            onEditList: onEditList,
+          ),
         ),
       ),
     ),
-    if (groups == null)
+    if (groups == null || entries == null)
       const SliverFillRemaining(
         hasScrollBody: false,
         child: DelayedLoadingIndicator(),
       )
-    else if (groups.isEmpty) ...<Widget>[
-      if (inlineAdd != null)
-        SliverPadding(
-          padding: padding.copyWith(top: AppSpacing.m),
-          sliver: SliverToBoxAdapter(child: inlineAdd),
-        ),
-      SliverFillRemaining(
-        hasScrollBody: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-          child: EmptyHint(
-            icon: view.smart == null
-                ? FontAwesomeIcons.listCheck
-                : TodoLabels.smartViewIcon(view.smart!),
-            message: switch (view.smart) {
-              TodoSmartView.today => l10n.todoEmptyToday,
-              TodoSmartView.completed => l10n.todoEmptyCompleted,
-              _ => l10n.todoEmptyList,
-            },
-          ),
-        ),
-      ),
-    ] else
-      ...buildTodoListSlivers(
+    else ...<Widget>[
+      TodoListSlivers(
         groups: groups,
+        entries: entries,
+        doneKind: switch (view.smart) {
+          TodoSmartView.today => TodoGroupKind.completedToday,
+          _ when view.isSingleList => TodoGroupKind.completed,
+          _ => null,
+        },
+        reorderable: reorderable,
         listsById: listsById,
         showListOnRows: !view.isSingleList,
-        reorderable: view.isSingleList && settings.sort == TodoSortMode.manual,
         today: today,
         collapsed: collapsed,
         onToggleCollapsed: onToggleCollapsed,
-        horizontalPadding: gutter,
-        scheme: scheme,
-        state: rowState,
         callbacks: callbacks,
+        state: rowState,
+        makeRoom: makeRoom,
+        switchMotion: switchMotion,
+        horizontalPadding: gutter,
+        firstRevealIndex: 1,
         inlineAdd: inlineAdd,
       ),
+      if (groups.isEmpty)
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+            child: reveal(
+              2,
+              // 最后一条完成 / 移走后淡入上移，而不是硬切出现。
+              ExpressiveEntrance(
+                child: EmptyHint(
+                  icon: view.smart == null
+                      ? FontAwesomeIcons.listCheck
+                      : TodoLabels.smartViewIcon(view.smart!),
+                  message: switch (view.smart) {
+                    TodoSmartView.today => l10n.todoEmptyToday,
+                    TodoSmartView.completed => l10n.todoEmptyCompleted,
+                    _ => l10n.todoEmptyList,
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+    ],
     // FAB、玻璃底栏与多选操作栏下方留出空间，最后一条能完整滚出来。
     SliverToBoxAdapter(child: SizedBox(height: 112 + bottomInset)),
   ];
   return _KeyboardGap(
     enabled: inlineEditing,
-    child: CustomScrollView(slivers: slivers),
+    child: CustomScrollView(
+      // 按视图存滚动位置：切回来时停在原处，换到别的视图从头开始。
+      key: PageStorageKey<String>('todos_list_${view.key}'),
+      slivers: slivers,
+    ),
   );
 }
 

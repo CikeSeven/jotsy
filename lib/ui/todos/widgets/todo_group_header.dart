@@ -6,17 +6,20 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
+import '../../widgets/animated_rolling_text.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_style.dart';
 import 'todo_labels.dart';
 
-/// 分组标题：`titleSmall` w700 + 条数小胶囊（`surfaceContainerHigh` 底）。
+/// 分组标题：`titleSmall` w700 + 条数小胶囊（`surfaceContainerHigh` 底，
+/// 条数变化时逐位滚动）。
 ///
 /// - 逾期为 `error`，行尾可给“全部改到今天”（[onMoveOverdueToToday]）；
 /// - “全部”视图里按清单分的组带清单图标（强调色）；
 /// - 已完成（清单底部 / 今天已完成）可点按折叠，箭头随折叠旋转
-///   （`fast` + effects，减少动画时直接到位）；
+///   （`fast` + effects，减少动画时直接到位），下面的行整块收起 / 展开
+///   （见 `TodoDoneSection`）；
 /// - 没有标题的一组（[TodoGroupKind.plain]）不画。
 class TodoGroupHeader extends StatelessWidget {
   const TodoGroupHeader({
@@ -185,7 +188,7 @@ class _CountPill extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
+      child: AnimatedRollingText(
         '$count',
         style: theme.textTheme.labelSmall?.copyWith(
           color: color,

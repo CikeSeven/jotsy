@@ -21,6 +21,17 @@ enum TodoSmartView {
   completed,
 }
 
+/// 智能视图在视图面板、左栏与设置里的先后（今天 / 计划 / 重要 / 全部 /
+/// 收集箱 / 已完成），清单排在它们之后。
+const List<TodoSmartView> kTodoSmartViews = <TodoSmartView>[
+  TodoSmartView.today,
+  TodoSmartView.planned,
+  TodoSmartView.important,
+  TodoSmartView.all,
+  TodoSmartView.inbox,
+  TodoSmartView.completed,
+];
+
 /// 待办页当前显示的内容：一个智能视图，或一个清单。
 ///
 /// 页面临时状态（切换视图不写库）；“打开时显示”的选择以 [key] 存进

@@ -3,8 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../app_surface/widgets/app_card_surface.dart';
+import '../../widgets/animated_rolling_text.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_style.dart';
@@ -20,7 +22,9 @@ import 'todo_progress_ring.dart';
 ///   条；清单行尾有编辑按钮（[onEditList]）；
 /// - 其他智能视图：图标块 + 名称 + 未完成数（已完成视图为最近完成的条数）。
 ///
-/// 只展示，数字由页面算好传入（[summary]、[progress]、[count]）。
+/// 只展示，数字由页面算好传入（[summary]、[progress]、[count]）。数字变化
+/// 时逐位滚动（[AnimatedRollingText]），逾期 / 已完成胶囊出现或消失时卡片
+/// 高度按弹簧过渡，下面的列表跟着平滑让开。
 class TodoViewHero extends StatelessWidget {
   const TodoViewHero({
     super.key,
@@ -72,7 +76,16 @@ class TodoViewHero extends StatelessWidget {
         AppSpacing.l,
         AppSpacing.l,
       ),
-      child: child,
+      child: AnimatedSize(
+        // AnimatedSize 不接受 0 时长（见 durationNonZero）。
+        duration: ExpressiveMotion.durationNonZero(
+          context,
+          ExpressiveMotion.medium,
+        ),
+        curve: ExpressiveMotion.spatial,
+        alignment: AlignmentDirectional.topStart,
+        child: child,
+      ),
     );
   }
 }
@@ -96,13 +109,17 @@ class _TodayHero extends StatelessWidget {
     final chips = <Widget>[
       if (summary.overdue > 0)
         _HeroChip(
+          key: const ValueKey<String>('overdue'),
           text: l10n.todoHeroOverdue(summary.overdue),
+          count: summary.overdue,
           background: scheme.errorContainer,
           foreground: scheme.onErrorContainer,
         ),
       if (summary.doneToday > 0)
         _HeroChip(
+          key: const ValueKey<String>('done'),
           text: l10n.todoHeroDone(summary.doneToday),
+          count: summary.doneToday,
           background: scheme.secondaryContainer,
           foreground: scheme.onSecondaryContainer,
         ),
@@ -126,8 +143,9 @@ class _TodayHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
+              AnimatedRollingText.sentence(
                 headline,
+                number: summary.remaining > 0 ? summary.remaining : null,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -147,7 +165,7 @@ class _TodayHero extends StatelessWidget {
           fraction: summary.fraction,
           color: scheme.primary,
           track: scheme.surfaceContainerHighest,
-          center: Text(
+          center: AnimatedRollingText(
             '${summary.doneToday}/${summary.total}',
             style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.w700,
@@ -209,8 +227,9 @@ class _ListHero extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  Text(
+                  AnimatedRollingText.sentence(
                     l10n.todoHeroListProgress(progress.done, progress.total),
+                    number: progress.done,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -274,10 +293,11 @@ class _SmartHero extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              Text(
+              AnimatedRollingText.sentence(
                 view == TodoSmartView.completed
                     ? l10n.todoHeroCompletedCount(count)
                     : l10n.todoHeroOpenCount(count),
+                number: count,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -324,12 +344,17 @@ class TodoIconBlock extends StatelessWidget {
 
 class _HeroChip extends StatelessWidget {
   const _HeroChip({
+    super.key,
     required this.text,
+    required this.count,
     required this.background,
     required this.foreground,
   });
 
   final String text;
+
+  /// 胶囊里的数字（变化时逐位滚动）。
+  final int count;
   final Color background;
   final Color foreground;
 
@@ -344,8 +369,9 @@ class _HeroChip extends StatelessWidget {
         color: background,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
+      child: AnimatedRollingText.sentence(
         text,
+        number: count,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
           color: foreground,
           fontWeight: FontWeight.w600,

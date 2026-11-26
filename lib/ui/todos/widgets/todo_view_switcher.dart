@@ -7,23 +7,13 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../app_surface/widgets/app_card_surface.dart';
+import '../../widgets/animated_rolling_text.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_list_style.dart';
 import 'todo_labels.dart';
 import 'todo_progress_ring.dart';
 import 'todo_view_hero.dart';
-
-/// 待办页可切换的视图：智能视图（今天 / 计划 / 重要 / 全部 / 收集箱 /
-/// 已完成）与各清单。
-const List<TodoSmartView> kTodoSmartViews = <TodoSmartView>[
-  TodoSmartView.today,
-  TodoSmartView.planned,
-  TodoSmartView.important,
-  TodoSmartView.all,
-  TodoSmartView.inbox,
-  TodoSmartView.completed,
-];
 
 /// 智能视图的网格（视图面板 3 列、宽窗口侧栏 2 列）：每格 16 圆角，左上
 /// 语义容器色的图标圆、右上未完成数（`titleLarge` w800 等宽数字，已完成与
@@ -151,7 +141,7 @@ class _SmartViewTile extends StatelessWidget {
                     ),
                     const Spacer(),
                     if (count != null && count > 0)
-                      Text(
+                      AnimatedRollingText(
                         '$count',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
@@ -248,7 +238,7 @@ class TodoListNavRow extends StatelessWidget {
                             ),
                           ),
                           if (open > 0)
-                            Text(
+                            AnimatedRollingText(
                               '$open',
                               style: theme.textTheme.labelLarge?.copyWith(
                                 color: scheme.onSurfaceVariant,

@@ -44,4 +44,34 @@ void main() {
     }
     expect(offenders, isEmpty);
   });
+
+  // 更多按钮统一使用竖向三点（FontAwesomeIcons.ellipsisVertical，#383）；
+  // 横向三点只留给非“更多操作按钮”的语义（如“其他”分类、折叠省略行、全部变量）。
+  test('more buttons across lib use vertical ellipsis', () {
+    const allowedHorizontalEllipsis = <String>{
+      'lib/ui/diaries/sections/diary_share_sheet.dart',
+      'lib/ui/diaries/widgets/diary_comments/diary_comments_section.dart',
+      'lib/ui/diary_templates/widgets/diary_template_variable_bar.dart',
+      'lib/ui/storage/viewmodels/storage_labels.dart',
+    };
+    final pattern = RegExp(r'\bFontAwesomeIcons\.ellipsis\b');
+    final offenders = <String>[];
+    for (final file in files) {
+      final normalized = file.path.replaceAll(r'\', '/');
+      if (allowedHorizontalEllipsis.contains(normalized)) continue;
+      final lines = file.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        if (line.trimLeft().startsWith('//')) continue;
+        if (pattern.hasMatch(line)) {
+          offenders.add('$normalized:${i + 1} uses FontAwesomeIcons.ellipsis');
+        }
+      }
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason: '更多按钮应统一使用 FontAwesomeIcons.ellipsisVertical',
+    );
+  });
 }

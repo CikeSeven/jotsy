@@ -44,8 +44,7 @@ void main() {
       final l10n = tester.element(find.byType(CalendarPage)).l10n;
       expect(_gridOptions(tester).cellStyle, CalendarCellStyle.mood);
 
-      await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
-      await tester.pumpAndSettle();
+      await tapCalendarMoreAction(tester, l10n.calendarDisplayOptionsTooltip);
       await tester.tap(find.text(l10n.calendarCellStyleHeat));
       await tester.pumpAndSettle();
 

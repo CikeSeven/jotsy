@@ -64,8 +64,7 @@ void main() {
         );
         final l10n = tester.element(find.byType(CalendarPage)).l10n;
 
-        await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarDisplayOptionsTooltip);
         // “农历与节假日”分组里农历在前、节假日在后，两组用同一套文案。
         final show = find.text(l10n.calendarLunarAlways).first;
         await tester.ensureVisible(show);
@@ -91,8 +90,7 @@ void main() {
         );
         final l10n = tester.element(find.byType(CalendarPage)).l10n;
 
-        await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarDisplayOptionsTooltip);
         expect(find.text(l10n.calendarOptionsHolidays), findsOneWidget);
         final show = find.text(l10n.calendarLunarAlways).last;
         await tester.ensureVisible(show);

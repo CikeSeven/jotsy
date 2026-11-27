@@ -6,7 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../sections/todo_section_callbacks.dart';
 
-/// 分区标题行尾：“+”（在这个分区里新建）与“⋯”菜单（重命名、上移、下移、
+/// 分区标题行尾：“+”（在这个分区里新建）与 ⋮ 菜单（重命名、上移、下移、
 /// 删除；挪到头的那一项停用）。
 class TodoSectionHeaderActions extends StatelessWidget {
   const TodoSectionHeaderActions({
@@ -34,7 +34,7 @@ class TodoSectionHeaderActions extends StatelessWidget {
         ),
         ExpressiveMenuButton(
           tooltip: l10n.todoSectionActions,
-          icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 14),
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 14),
           items: <Widget>[
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.pen),

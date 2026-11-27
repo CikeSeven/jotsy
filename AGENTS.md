@@ -113,7 +113,7 @@
 - 必须：组件统一继承 Material 3 Expressive 主题（`useMaterial3: true`）；单选按钮组用 `ExpressiveButtonGroup`，等待状态用 `ExpressiveLoadingIndicator`。
 - 必须：动画时长与曲线只取 `ExpressiveMotion` token，并尊重系统减少动画设置；禁止在 UI 层新增 `Duration(milliseconds: …)` 动画时长（防抖 / 超时不受限）。
 - 必须：按钮 `textStyle` 由主题文字样式派生，禁止传裸 `TextStyle`（会丢应用字体，Linux 上中文变方块）。
-- 必须：新增图标用 `font_awesome_flutter`；返回按钮统一 `FontAwesomeIcons.angleLeft`、尺寸 18；富文本工具栏与设置预览图标同源。
+- 必须：新增图标用 `font_awesome_flutter`；返回按钮统一 `FontAwesomeIcons.angleLeft`、尺寸 18；更多按钮统一 `FontAwesomeIcons.ellipsisVertical`；富文本工具栏与设置预览图标同源。
 - 必须：亮暗主题都保证文字与图标可读；颜色优先用 `colorScheme` 语义色，禁止用 `Colors.white/black` 做固定前景或背景。
 - 例外：用户自定义的卡片 / 预览页颜色属于用户数据，但必须有暗色值并做对比度兜底。
 - 禁止：应用界面与默认样式使用任何渐变；同一区域叠加多层重模糊。

@@ -14,10 +14,90 @@ import '../../../app/theme/expressive_motion.dart';
 /// 清除按钮（读屏“移除”），否则右侧只留内边距。文字最宽 [maxLabelWidth]
 /// 省略。
 ///
-/// 值变化时不硬切：底色、字色与描边一起补间，宽度按弹簧过渡，文字交叉淡入。
-class TodoFieldPill extends StatelessWidget {
+/// 值变化时不硬切：底色、字色与描边一起补间，宽度按弹簧过渡，文字交叉淡入；
+/// 值落到胶囊上时（识别出来、手动选好）轻弹一下。
+class TodoFieldPill extends StatefulWidget {
   const TodoFieldPill({
     super.key,
+    required this.icon,
+    required this.label,
+    required this.set,
+    required this.onTap,
+    this.onClear,
+    this.iconColor,
+    this.background,
+    this.foreground,
+    this.maxLabelWidth = 200,
+  });
+
+  final FaIconData icon;
+  final String label;
+
+  /// 是否设了值：没设时画成描边、只写名称的占位。
+  final bool set;
+  final VoidCallback? onTap;
+  final VoidCallback? onClear;
+  final Color? iconColor;
+  final Color? background;
+  final Color? foreground;
+  final double maxLabelWidth;
+
+  @override
+  State<TodoFieldPill> createState() => _TodoFieldPillState();
+}
+
+/// 值落到胶囊上（从没设变成设了，或设了的值换了）时以弹簧轻弹一下。
+class _TodoFieldPillState extends State<TodoFieldPill>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pop = AnimationController.unbounded(
+    vsync: this,
+    value: 1,
+  );
+
+  static final Tolerance _tolerance = Tolerance(distance: 1e-3, velocity: 1e-2);
+
+  @override
+  void didUpdateWidget(TodoFieldPill oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.set && (!oldWidget.set || oldWidget.label != widget.label)) {
+      ExpressiveMotion.springTo(
+        context,
+        _pop,
+        1,
+        spring: ExpressiveMotion.springSpatialFast,
+        tolerance: _tolerance,
+        kick: 1.6,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _pop.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _pop,
+      child: _TodoFieldPillBody(
+        icon: widget.icon,
+        label: widget.label,
+        set: widget.set,
+        onTap: widget.onTap,
+        onClear: widget.onClear,
+        iconColor: widget.iconColor,
+        background: widget.background,
+        foreground: widget.foreground,
+        maxLabelWidth: widget.maxLabelWidth,
+      ),
+    );
+  }
+}
+
+class _TodoFieldPillBody extends StatelessWidget {
+  const _TodoFieldPillBody({
     required this.icon,
     required this.label,
     required this.set,

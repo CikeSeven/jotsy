@@ -13,6 +13,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../controllers/todo_reminder_permission.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_quick_parse.dart';
 import 'todo_quick_add_sheet.dart' show TodoQuickAddPreset;
@@ -47,8 +48,14 @@ class TodoInlineAddRow extends ConsumerStatefulWidget {
 }
 
 class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
-    with WidgetsBindingObserver {
-  final TodoQuickInputController _controller = TodoQuickInputController();
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  /// 新认出片段时高亮淡入。
+  late final AnimationController _highlightFade = AnimationController(
+    vsync: this,
+    value: 1,
+  );
+  late final TodoQuickInputController _controller = TodoQuickInputController()
+    ..fade = _highlightFade;
   final FocusNode _focus = FocusNode();
   final Set<TodoQuickTokenKind> _ignored = <TodoQuickTokenKind>{};
   bool _editing = false;
@@ -63,7 +70,7 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _focus.addListener(_onFocusChanged);
-    _controller.addListener(_onTextChanged);
+    _controller.addListener(_onControllerChanged);
   }
 
   @override
@@ -93,16 +100,14 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
       );
     }
     _focus.removeListener(_onFocusChanged);
-    _controller.removeListener(_onTextChanged);
+    _controller.removeListener(_onControllerChanged);
     _controller.dispose();
+    _highlightFade.dispose();
     _focus.dispose();
     super.dispose();
   }
 
-  DateTime get _today {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
+  DateTime get _today => ref.read(todoTodayProvider);
 
   TodoQuickParse _parse() => todoQuickParseOf(
     _controller.text,
@@ -112,12 +117,29 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
     ignore: _ignored,
   );
 
+  /// 控制器的通知里只有文字或选区变了才重新识别：高亮淡入的每一帧也会
+  /// 通知（让输入框重画），不能拿来重算。
+  TextEditingValue? _lastValue;
+
+  void _onControllerChanged() {
+    if (_controller.value == _lastValue) return;
+    _lastValue = _controller.value;
+    _onTextChanged();
+  }
+
   void _onTextChanged() {
     if (_controller.text.isEmpty) _ignored.clear();
     final parse = _parse();
-    _controller.highlights = <TextRange>[
-      for (final token in parse.tokens) token.range,
-    ];
+    final ranges = <TextRange>[for (final token in parse.tokens) token.range];
+    final gained = _controller.gainsHighlights(ranges);
+    _controller.highlights = ranges;
+    if (gained) {
+      _highlightFade.duration = ExpressiveMotion.duration(
+        context,
+        ExpressiveMotion.fast,
+      );
+      unawaited(_highlightFade.forward(from: 0));
+    }
     setState(() {});
   }
 
@@ -151,6 +173,12 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
     if (title.isEmpty) return;
     final preset = widget.preset;
     final date = parse.date ?? preset.dueDate;
+    final reminder = date == null
+        ? null
+        : parse.reminder?.resolve(
+            dueMinute: parse.minute,
+            allDayMinute: ref.read(todoSettingsProvider).allDayReminderMinute,
+          );
     setState(() => _saving = true);
     try {
       await ref
@@ -162,9 +190,14 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
               priority: parse.priority ?? preset.priority,
               dueDate: date,
               dueMinute: date == null ? null : parse.minute,
+              reminders: <TodoReminder>[?reminder],
+              repeat: date == null ? null : parse.repeat?.ruleFrom(date),
               linkedDiaryId: preset.linkedDiaryId,
             ),
           );
+      if (reminder != null && mounted) {
+        unawaited(ensureTodoReminderPermission(context, ref));
+      }
       _ignored.clear();
       _controller.clear();
     } finally {
@@ -301,6 +334,9 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
                     parse: parse,
                     today: _today,
                     lists: lists,
+                    allDayMinute: ref
+                        .read(todoSettingsProvider)
+                        .allDayReminderMinute,
                     onDismiss: (TodoQuickTokenKind kind) {
                       _ignored.add(kind);
                       _onTextChanged();

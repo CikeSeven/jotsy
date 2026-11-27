@@ -16649,6 +16649,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todoQuickAddedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count added',
+      one: '1 added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoQuickAddedUndo => 'Undo add';
+
+  @override
+  String todoQuickSplitPrompt(int count) {
+    return 'Split into $count to-dos?';
+  }
+
+  @override
+  String get todoQuickSplit => 'Split';
+
+  @override
+  String get todoQuickKeepOne => 'Keep as one';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

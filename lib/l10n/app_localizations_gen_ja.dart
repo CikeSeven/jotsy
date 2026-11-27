@@ -14833,6 +14833,25 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String todoQuickAddedCount(int count) {
+    return '$count 件追加しました';
+  }
+
+  @override
+  String get todoQuickAddedUndo => '追加を取り消す';
+
+  @override
+  String todoQuickSplitPrompt(int count) {
+    return '$count 件のToDoに分けますか？';
+  }
+
+  @override
+  String get todoQuickSplit => '分ける';
+
+  @override
+  String get todoQuickKeepOne => '1件にする';
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

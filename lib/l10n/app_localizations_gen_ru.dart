@@ -17292,6 +17292,25 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String todoQuickAddedCount(int count) {
+    return 'Добавлено: $count';
+  }
+
+  @override
+  String get todoQuickAddedUndo => 'Отменить добавление';
+
+  @override
+  String todoQuickSplitPrompt(int count) {
+    return 'Разбить на задачи ($count)?';
+  }
+
+  @override
+  String get todoQuickSplit => 'Разбить';
+
+  @override
+  String get todoQuickKeepOne => 'Оставить одной';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

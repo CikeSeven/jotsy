@@ -12,6 +12,7 @@ import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_style.dart';
 import 'todo_labels.dart';
 import 'todo_progress_ring.dart';
+import 'todo_today_hero.dart';
 
 /// 待办列表顶部的概览卡（卡片表面、24 圆角、无投影），按视图换内容：
 ///
@@ -58,7 +59,7 @@ class TodoViewHero extends StatelessWidget {
     final smart = view.smart;
     final Widget child;
     if (smart == TodoSmartView.today) {
-      child = _TodayHero(today: today, summary: summary);
+      child = TodoTodayHero(today: today, summary: summary);
     } else if (view.isSingleList) {
       child = _ListHero(
         list: list,
@@ -86,94 +87,6 @@ class TodoViewHero extends StatelessWidget {
         alignment: AlignmentDirectional.topStart,
         child: child,
       ),
-    );
-  }
-}
-
-class _TodayHero extends StatelessWidget {
-  const _TodayHero({required this.today, required this.summary});
-
-  final DateTime today;
-  final TodoTodaySummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final headline = summary.remaining > 0
-        ? l10n.todoHeroRemaining(summary.remaining)
-        : summary.doneToday > 0
-        ? l10n.todoHeroAllDone
-        : l10n.todoHeroNothing;
-    final chips = <Widget>[
-      if (summary.overdue > 0)
-        _HeroChip(
-          key: const ValueKey<String>('overdue'),
-          text: l10n.todoHeroOverdue(summary.overdue),
-          count: summary.overdue,
-          background: scheme.errorContainer,
-          foreground: scheme.onErrorContainer,
-        ),
-      if (summary.doneToday > 0)
-        _HeroChip(
-          key: const ValueKey<String>('done'),
-          text: l10n.todoHeroDone(summary.doneToday),
-          count: summary.doneToday,
-          background: scheme.secondaryContainer,
-          foreground: scheme.onSecondaryContainer,
-        ),
-    ];
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                l10n.todoHeroDate(
-                  TodoLabels.weekdayName(l10n, today.weekday, short: false),
-                  l10n.formatMonthDay(today),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              AnimatedRollingText.sentence(
-                headline,
-                number: summary.remaining > 0 ? summary.remaining : null,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              if (chips.isNotEmpty) ...<Widget>[
-                const SizedBox(height: AppSpacing.s),
-                Wrap(spacing: 6, runSpacing: 4, children: chips),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(width: AppSpacing.m),
-        TodoProgressRing(
-          fraction: summary.fraction,
-          color: scheme.primary,
-          track: scheme.surfaceContainerHighest,
-          center: AnimatedRollingText(
-            '${summary.doneToday}/${summary.total}',
-            style: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -338,45 +251,6 @@ class TodoIconBlock extends StatelessWidget {
         borderRadius: BorderRadius.circular(size * 0.32),
       ),
       child: FaIcon(icon, size: size * 0.4, color: foreground),
-    );
-  }
-}
-
-class _HeroChip extends StatelessWidget {
-  const _HeroChip({
-    super.key,
-    required this.text,
-    required this.count,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String text;
-
-  /// 胶囊里的数字（变化时逐位滚动）。
-  final int count;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s,
-        vertical: 3,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: AnimatedRollingText.sentence(
-        text,
-        number: count,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: foreground,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 }

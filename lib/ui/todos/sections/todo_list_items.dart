@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
-import '../../../core/services/app_platform.dart';
 import '../../diaries/controllers/diary_list_switch_motion.dart';
 import '../../diaries/widgets/diary_list_switch_reveal.dart';
-import '../../diaries/widgets/diary_swipe_action_item.dart';
 import '../../widgets/list_change_host.dart';
 import '../../widgets/list_item_presence.dart';
 import '../../widgets/list_make_room.dart';
 import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_entries.dart';
 import '../widgets/todo_group_header.dart';
-import '../widgets/todo_tile.dart';
-import '../widgets/todo_tile_context_menu.dart';
 import 'todo_list_callbacks.dart';
+import 'todo_list_tile.dart';
 
 /// 列表里各项的外壳与内容（标题、间隙、待办行），开放区、已完成区块共用。
 ///
@@ -40,7 +35,6 @@ class TodoListItems {
     required this.switchMotion,
     required this.presenceDuration,
     required this.glassCards,
-    required this.scheme,
     required this.collapsed,
     required this.onToggleCollapsed,
   });
@@ -60,7 +54,6 @@ class TodoListItems {
 
   /// 行是否为玻璃卡片（淡入淡出须经玻璃自己显现）。
   final bool glassCards;
-  final ColorScheme scheme;
 
   /// 折叠了的组键。
   final Set<String> collapsed;
@@ -225,54 +218,13 @@ class TodoListItems {
 
   Widget _tile(TodoRow row, {Widget? trailing}) {
     final listId = row.listId;
-    final done = row.completedAt != null;
-    final selected = state.selectionMode
-        ? state.selected.contains(row.todoId)
-        : state.highlightedId == row.todoId;
-    Widget child = TodoTile(
+    return TodoListTile(
       row: row,
+      callbacks: callbacks,
+      state: state,
       today: today,
       list: showListOnRows && listId != null ? listsById[listId] : null,
       trailing: trailing,
-      selectionMode: state.selectionMode,
-      selected: selected,
-      onToggle: () => callbacks.onToggle(row),
-      onTap: () => callbacks.onTap(row),
-      onLongPress: () => callbacks.onLongPress(row),
     );
-    if (AppPlatform.isDesktop) {
-      if (state.selectionMode) return child;
-      return TodoTileContextMenu(
-        done: done,
-        onToggle: () => callbacks.onSwipeToggle(row),
-        onMoveToToday: () => callbacks.onMoveToToday(row),
-        onMoveToList: () => callbacks.onMoveToList(row),
-        onDelete: () => callbacks.onDelete(row),
-        child: child,
-      );
-    }
-    // 按 updated_at 换 key：滑出后组件一直保持收起，重复待办右滑完成后
-    // 推到下一次、仍留在原位（清单 / 全部视图）时要换一个新的，不然这一行
-    // 一直是 0 高。
-    child = DiarySwipeActionItem(
-      key: ValueKey<DateTime>(row.updatedAt),
-      diaryId: row.todoId,
-      enabled: !state.selectionMode,
-      icon: FontAwesomeIcons.trashCan,
-      actionColor: scheme.errorContainer,
-      actionIconColor: scheme.onErrorContainer,
-      borderRadius: AppRadii.input,
-      onSwiped: () => callbacks.onDelete(row),
-      startAction: SwipeActionSpec(
-        icon: done ? FontAwesomeIcons.rotateLeft : FontAwesomeIcons.check,
-        actionColor: done ? scheme.secondaryContainer : scheme.primaryContainer,
-        actionIconColor: done
-            ? scheme.onSecondaryContainer
-            : scheme.onPrimaryContainer,
-        onSwiped: () => callbacks.onSwipeToggle(row),
-      ),
-      child: child,
-    );
-    return child;
   }
 }

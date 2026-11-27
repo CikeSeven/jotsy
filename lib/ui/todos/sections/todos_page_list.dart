@@ -149,18 +149,7 @@ Widget buildTodosPageList({
             child: reveal(
               2,
               // 最后一条完成 / 移走后淡入上移，而不是硬切出现。
-              ExpressiveEntrance(
-                child: EmptyHint(
-                  icon: view.smart == null
-                      ? FontAwesomeIcons.listCheck
-                      : TodoLabels.smartViewIcon(view.smart!),
-                  message: switch (view.smart) {
-                    TodoSmartView.today => l10n.todoEmptyToday,
-                    TodoSmartView.completed => l10n.todoEmptyCompleted,
-                    _ => l10n.todoEmptyList,
-                  },
-                ),
-              ),
+              ExpressiveEntrance(child: _emptyHint(l10n, view)),
             ),
           ),
         ),
@@ -175,6 +164,33 @@ Widget buildTodosPageList({
       key: PageStorageKey<String>('todos_list_${view.key}'),
       slivers: slivers,
     ),
+  );
+}
+
+/// 按视图的空状态：主句说这里现在是空的，第二行说这里会出现什么、怎么
+/// 开始（内联新建就在它上面）。
+Widget _emptyHint(AppLocalizations l10n, TodoView view) {
+  final (String message, String detail) = switch (view.smart) {
+    TodoSmartView.today => (l10n.todoEmptyToday, l10n.todoEmptyTodayHint),
+    TodoSmartView.planned => (l10n.todoEmptyPlanned, l10n.todoEmptyPlannedHint),
+    TodoSmartView.important => (
+      l10n.todoEmptyImportant,
+      l10n.todoEmptyImportantHint,
+    ),
+    TodoSmartView.all => (l10n.todoEmptyAll, l10n.todoEmptyAllHint),
+    TodoSmartView.inbox => (l10n.todoEmptyInbox, l10n.todoEmptyInboxHint),
+    TodoSmartView.completed => (
+      l10n.todoEmptyCompleted,
+      l10n.todoEmptyCompletedHint,
+    ),
+    null => (l10n.todoEmptyList, l10n.todoEmptyListHint),
+  };
+  return EmptyHint(
+    icon: view.smart == null
+        ? FontAwesomeIcons.listCheck
+        : TodoLabels.smartViewIcon(view.smart!),
+    message: message,
+    detail: detail,
   );
 }
 

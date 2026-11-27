@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../home/widgets/home_bar/home_top_bar_surface.dart';
@@ -15,6 +16,7 @@ import '../../widgets/width_layout_builder.dart';
 import '../controllers/todo_actions.dart';
 import '../controllers/todo_appearance_tracker.dart';
 import '../controllers/todo_completion_queue.dart';
+import '../controllers/todo_completion_undo.dart';
 import '../controllers/todo_list_actions.dart';
 import '../controllers/todo_navigation.dart';
 import '../controllers/todo_page_rows.dart';
@@ -36,7 +38,10 @@ import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_model.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_quick_add_sheet.dart';
-import '../widgets/todo_view_switcher.dart';
+import '../widgets/todo_row_drag.dart';
+import '../widgets/todo_sidebar.dart';
+
+part 'todos_page_views.dart';
 
 /// 待办 Tab。
 ///
@@ -83,7 +88,14 @@ class _TodosPageState extends ConsumerState<TodosPage>
   late final TodoReorder _reorder = TodoReorder(onChanged: _rebuild);
   late final TodoCompletionQueue _queue = TodoCompletionQueue(
     onChanged: _rebuild,
+    undo: _completionUndo,
   );
+  late final TodoCompletionUndo _completionUndo = TodoCompletionUndo(
+    todayOf: () => ref.read(todoTodayProvider),
+  );
+
+  /// 步骤就地展开的行。
+  final Set<String> _expandedSteps = <String>{};
   late final TodoPageSelection _selection = TodoPageSelection(
     onChanged: (bool selecting) {
       if (!mounted) return;
@@ -155,91 +167,10 @@ class _TodosPageState extends ConsumerState<TodosPage>
     if (mounted) setState(() {});
   }
 
+  /// 给 [_TodosPageViews] 用的 setState（扩展里不能直接调受保护的成员）。
+  void _update(VoidCallback fn) => setState(fn);
+
   AppDatabase get _db => ref.read(appDatabaseProvider);
-
-  List<TodoListRow> get _lists =>
-      ref.read(todoListsProvider).value ?? const <TodoListRow>[];
-
-  /// 当前视图；清单被删掉（本机或同步）时回到“今天”。
-  TodoView _effectiveView(List<TodoListRow>? lists) {
-    final view = _view ?? ref.read(todoSettingsProvider).defaultView;
-    final listId = view.listId;
-    if (listId != null &&
-        lists != null &&
-        !lists.any((list) => list.listId == listId)) {
-      return TodoView.today;
-    }
-    return view;
-  }
-
-  TodoQuickAddPreset _presetFor(TodoView view) {
-    final settings = ref.read(todoSettingsProvider);
-    return TodoQuickAddPreset(
-      listId: view.createListId(settings.defaultListId),
-      dueDate: view.presetsToday ? ref.read(todoTodayProvider) : null,
-      priority: view.presetsHighPriority
-          ? TodoPriority.high
-          : TodoPriority.none,
-    );
-  }
-
-  Future<void> _create() => showTodoQuickAddSheet(
-    context,
-    preset: _presetFor(_effectiveView(ref.read(todoListsProvider).value)),
-  );
-
-  /// 选了视图 [next]：旧列表退场、换成新视图、新列表错峰入场（左栏与视图
-  /// 面板立即标出新的选中）。
-  void _select(TodoView next) {
-    _selection.clear();
-    final current = _effectiveView(_lists);
-    if (next == current && _viewSwitch.target == null) return;
-    unawaited(
-      _viewSwitch.switchTo(
-        context,
-        next,
-        direction: TodoViewSwitch.directionOf(current, next, _lists),
-      ),
-    );
-    setState(() {});
-  }
-
-  /// 列表看不见的那一帧换成 [view]（[TodoViewSwitch] 回调）。
-  void _applyView(TodoView view) {
-    if (!mounted) return;
-    final from = _effectiveView(_lists);
-    setState(() {
-      _titleDirection = TodoViewSwitch.directionOf(from, view, _lists);
-      _view = view;
-      _reorder.clear();
-    });
-  }
-
-  Future<void> _createList() async {
-    final id = await createTodoListFlow(context, ref);
-    if (id != null && mounted) _select(TodoView.list(id));
-  }
-
-  Future<void> _openViewSheet(TodoView current) async {
-    final result = await showTodoViewSheet(context, current: current);
-    if (!mounted || result == null) return;
-    switch (result) {
-      case TodoViewPicked(:final view):
-        _select(view);
-      case TodoViewCreateList():
-        await _createList();
-      case TodoViewManageLists():
-        await openTodoListsManage(context);
-    }
-  }
-
-  void _openDetail(TodoRow row) {
-    if (_threePane) {
-      setState(() => _detailId = row.todoId);
-    } else {
-      unawaited(openTodoDetail(context, row.todoId));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -320,6 +251,8 @@ class _TodosPageState extends ConsumerState<TodosPage>
         leaving: _queue.leaving.toSet(),
         appearing: _appearance.appearing,
         highlightedId: _threePane ? _detailId : null,
+        expandedSteps: _expandedSteps,
+        swipeLeft: settings.swipeLeft,
       ),
       callbacks: buildTodoPageCallbacks(
         context: context,
@@ -327,7 +260,13 @@ class _TodosPageState extends ConsumerState<TodosPage>
         selection: _selection,
         queue: _queue,
         reorder: _reorder,
+        undo: _completionUndo,
         openDetail: _openDetail,
+        onToggleSteps: (TodoRow row) => setState(
+          () =>
+              _expandedSteps.remove(row.todoId) ||
+              _expandedSteps.add(row.todoId),
+        ),
       ),
       inlinePreset: view.smart == TodoSmartView.completed
           ? null
@@ -369,6 +308,17 @@ class _TodosPageState extends ConsumerState<TodosPage>
           counts: counts,
           progress: progress,
           onSelected: _select,
+          onDrop: AppPlatform.isDesktop
+              ? (TodoView target, TodoDragPayload payload) => unawaited(
+                  dropTodosOnView(
+                    context,
+                    ref,
+                    target: target,
+                    payload: payload,
+                    selection: _selection,
+                  ),
+                )
+              : null,
           onCreateList: () => unawaited(_createList()),
           onManageLists: () => unawaited(openTodoListsManage(context)),
         ),
@@ -391,30 +341,31 @@ class _TodosPageState extends ConsumerState<TodosPage>
           onExitSelection: _selection.clear,
           bottomInset: bottomInset,
           body: layout(width),
-          header: selecting
-              ? TodoSelectionHeader(
-                  count: _selection.ids.length,
-                  allSelected: _selection.containsAll(visibleRows),
-                  onToggleAll: () => _selection.toggleAll(visibleRows),
-                  onClose: _selection.clear,
-                )
-              : TodosPageHeader(
-                  view: view,
-                  title: listId != null
-                      ? listsById[listId]?.name ?? l10n.navTodos
-                      : TodoLabels.smartView(l10n, view.smart!),
-                  titleDirection: _titleDirection,
-                  narrow: width < AppBreakpoints.expanded,
-                  wideShell: HomeChromeScope.wideShellOf(context),
-                  settings: settings,
-                  completedInView: completed == null
-                      ? 0
-                      : countCompletedInView(view, completed),
-                  list: listId == null ? null : listsById[listId],
-                  onOpenViews: () =>
-                      unawaited(_openViewSheet(_viewSwitch.target ?? view)),
-                  onCreate: () => unawaited(_create()),
-                ),
+          header: TodosPageHeader(
+            view: view,
+            title: listId != null
+                ? listsById[listId]?.name ?? l10n.navTodos
+                : TodoLabels.smartView(l10n, view.smart!),
+            titleDirection: _titleDirection,
+            narrow: width < AppBreakpoints.expanded,
+            wideShell: HomeChromeScope.wideShellOf(context),
+            settings: settings,
+            completedInView: completed == null
+                ? 0
+                : countCompletedInView(view, completed),
+            list: listId == null ? null : listsById[listId],
+            onOpenViews: () =>
+                unawaited(_openViewSheet(_viewSwitch.target ?? view)),
+            onCreate: () => unawaited(_create()),
+            selection: selecting
+                ? TodosHeaderSelection(
+                    count: _selection.ids.length,
+                    allSelected: _selection.containsAll(visibleRows),
+                    onToggleAll: () => _selection.toggleAll(visibleRows),
+                    onClose: _selection.clear,
+                  )
+                : null,
+          ),
           actionBar: selecting
               ? buildTodoSelectionActionBar(
                   context,

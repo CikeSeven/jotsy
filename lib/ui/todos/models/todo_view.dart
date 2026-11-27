@@ -69,6 +69,13 @@ class TodoView {
   /// 这个清单的已完成。
   bool get isSingleList => listId != null || smart == TodoSmartView.inbox;
 
+  /// 桌面上能否把待办行拖到左栏的这一格上：今天（改到今天）、收集箱与各个
+  /// 清单（移进去）。
+  bool get acceptsDrop =>
+      listId != null ||
+      smart == TodoSmartView.today ||
+      smart == TodoSmartView.inbox;
+
   /// 在这个视图里新建的待办放进哪个清单：清单视图为它自己，收集箱为 null，
   /// 其余智能视图取设置里的默认清单 [fallbackListId]。
   String? createListId(String? fallbackListId) {

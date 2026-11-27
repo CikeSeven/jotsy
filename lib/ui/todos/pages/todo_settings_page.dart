@@ -25,6 +25,7 @@ import '../widgets/todo_labels.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reliability_sheet.dart';
 import '../widgets/todo_sheet.dart';
+import '../widgets/todo_swipe_action_sheet.dart';
 
 /// 设置 → 待办：显示偏好、提醒与清单管理入口。
 ///
@@ -206,6 +207,26 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
                                 save(settings.copyWith(smartParse: value)),
                               ),
                       ),
+                      // 滑动只在手机上有；桌面用右键菜单。
+                      if (!AppPlatform.isDesktop)
+                        SettingsNavTile(
+                          icon: FontAwesomeIcons.leftLong,
+                          title: l10n.todoSettingsSwipeLeft,
+                          value: todoSwipeActionLabel(l10n, settings.swipeLeft),
+                          onTap: service == null
+                              ? null
+                              : () => unawaited(() async {
+                                  final action = await showTodoSwipeActionSheet(
+                                    context,
+                                    current: settings.swipeLeft,
+                                  );
+                                  if (action != null) {
+                                    await save(
+                                      settings.copyWith(swipeLeft: action),
+                                    );
+                                  }
+                                }()),
+                        ),
                     ],
                   ),
                   if (AppPlatform.supportsReminders) ...<Widget>[

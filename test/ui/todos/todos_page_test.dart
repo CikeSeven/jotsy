@@ -13,6 +13,8 @@ import 'package:node_diary/ui/todos/widgets/todo_detail_pane.dart';
 import 'package:node_diary/ui/todos/widgets/todo_group_header.dart';
 import 'package:node_diary/ui/todos/widgets/todo_labels.dart';
 import 'package:node_diary/ui/todos/widgets/todo_tile.dart';
+import 'package:node_diary/ui/todos/widgets/todo_complete_motion.dart';
+import 'package:node_diary/ui/todos/widgets/todo_sidebar.dart';
 import 'package:node_diary/ui/todos/widgets/todo_view_switcher.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/todo_check_box.dart';
@@ -115,10 +117,11 @@ void main() {
     final l10n = todoL10n(tester);
     await tester.tap(find.byType(TodoCheckBoxVisual));
     await tester.pump();
-    // 行内动效播完后才开始收起，收起后才写库。
-    await tester.pump(const Duration(milliseconds: 300));
+    // 勾选三拍（含停的一拍）播完后才开始收起，收起后才写库。
+    await tester.pump(TodoCompleteMotion.check);
     expect((await todoRowTitled(tester, db, '寄快递')).completedAt, isNull);
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(TodoCompleteMotion.collapse);
+    await settleTodos(tester);
     await settleTodos(tester);
     expect(openTodoTitles(tester), isEmpty);
     expect((await todoRowTitled(tester, db, '寄快递')).completedAt, isNotNull);
@@ -245,7 +248,10 @@ void main() {
     expect(selecting.last, isTrue);
     expect(find.text(l10n.todoSelectedCount(1)), findsOneWidget);
     await tester.tap(find.text('乙'));
-    await tester.pump(const Duration(milliseconds: 400));
+    // 已选条数逐位滚动，停下后回到普通文字。
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(find.text(l10n.todoSelectedCount(2)), findsOneWidget);
 
     await tester.tap(find.text(l10n.todoBatchActionComplete));

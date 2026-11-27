@@ -6,13 +6,13 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
-import '../../app_surface/widgets/app_card_surface.dart';
 import '../../widgets/animated_rolling_text.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_list_style.dart';
 import 'todo_labels.dart';
 import 'todo_progress_ring.dart';
+import 'todo_row_drag.dart';
 import 'todo_view_hero.dart';
 
 /// 智能视图的网格（视图面板 3 列、宽窗口侧栏 2 列）：每格 16 圆角，左上
@@ -26,12 +26,16 @@ class TodoSmartViewGrid extends StatelessWidget {
     required this.counts,
     required this.columns,
     required this.onSelected,
+    this.onDrop,
   });
 
   final TodoView view;
   final Map<TodoSmartView, int> counts;
   final int columns;
   final ValueChanged<TodoView> onSelected;
+
+  /// 桌面左栏：拖来的待办落在接得住的格子上（[TodoView.acceptsDrop]）。
+  final TodoViewDrop? onDrop;
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +50,16 @@ class TodoSmartViewGrid extends StatelessWidget {
             for (final smart in kTodoSmartViews)
               SizedBox(
                 width: width.floorToDouble(),
-                child: _SmartViewTile(
-                  view: smart,
-                  count: smart == TodoSmartView.completed
-                      ? null
-                      : counts[smart],
-                  selected: view.smart == smart,
-                  onTap: () => onSelected(TodoView.smart(smart)),
+                child: TodoDropTarget(
+                  onDrop: _dropFor(TodoView.smart(smart)),
+                  child: _SmartViewTile(
+                    view: smart,
+                    count: smart == TodoSmartView.completed
+                        ? null
+                        : counts[smart],
+                    selected: view.smart == smart,
+                    onTap: () => onSelected(TodoView.smart(smart)),
+                  ),
                 ),
               ),
           ],
@@ -60,6 +67,9 @@ class TodoSmartViewGrid extends StatelessWidget {
       },
     );
   }
+
+  ValueChanged<TodoDragPayload>? _dropFor(TodoView target) =>
+      todoDropFor(onDrop, target);
 }
 
 class _SmartViewTile extends StatelessWidget {
@@ -347,55 +357,6 @@ class TodoNewListRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// 宽窗口（≥1024）左栏：2 列智能视图网格 + 清单（各带进度条）+ 新建清单。
-class TodoSidebar extends StatelessWidget {
-  const TodoSidebar({
-    super.key,
-    required this.view,
-    required this.lists,
-    required this.counts,
-    required this.progress,
-    required this.onSelected,
-    required this.onCreateList,
-    required this.onManageLists,
-  });
-
-  final TodoView view;
-  final List<TodoListRow> lists;
-  final Map<TodoSmartView, int> counts;
-  final Map<String?, TodoListProgress> progress;
-  final ValueChanged<TodoView> onSelected;
-  final VoidCallback onCreateList;
-  final VoidCallback onManageLists;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCardSurface(
-      shadow: false,
-      child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.m),
-        children: <Widget>[
-          TodoSmartViewGrid(
-            view: view,
-            counts: counts,
-            columns: 2,
-            onSelected: onSelected,
-          ),
-          TodoListsSectionHeader(onManage: onManageLists),
-          for (final list in lists)
-            TodoListNavRow(
-              list: list,
-              progress: progress[list.listId],
-              selected: view.listId == list.listId,
-              onTap: () => onSelected(TodoView.list(list.listId)),
-            ),
-          TodoNewListRow(onTap: onCreateList),
-        ],
       ),
     );
   }

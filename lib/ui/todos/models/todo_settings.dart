@@ -20,6 +20,15 @@ enum TodoSortMode {
   created,
 }
 
+/// 手机上往行首方向滑（LTR 为左滑）一行待办做什么。枚举名即持久化值。
+enum TodoSwipeAction {
+  /// 删除（可撤销，默认）。
+  delete,
+
+  /// 改期：弹出截止日面板，这一行弹回原位。
+  reschedule,
+}
+
 /// 待办的偏好。
 ///
 /// 存储：单个 JSON 设置键 `app.settings.todos`（经
@@ -44,6 +53,7 @@ class TodoSettings {
     this.snoozeMinutes = 10,
     this.hideContentOnLockScreen = false,
     this.smartParse = true,
+    this.swipeLeft = TodoSwipeAction.delete,
   });
 
   static const TodoSettings defaults = TodoSettings();
@@ -76,6 +86,9 @@ class TodoSettings {
   /// `parseTodoQuickInput`）。
   final bool smartParse;
 
+  /// 左滑（RTL 为右滑）一行待办的动作。
+  final TodoSwipeAction swipeLeft;
+
   /// 打开时显示的视图；认不出（含清单已删）时由调用方回到“今天”。
   TodoView get defaultView => TodoView.parse(defaultViewKey) ?? TodoView.today;
 
@@ -90,6 +103,7 @@ class TodoSettings {
   static const _keySnooze = 'snoozeMinutes';
   static const _keyHideContent = 'hideContentOnLockScreen';
   static const _keySmartParse = 'smartParse';
+  static const _keySwipeLeft = 'swipeLeft';
 
   static TodoSettings decode(String? raw) {
     if (raw == null || raw.trim().isEmpty) return defaults;
@@ -126,6 +140,9 @@ class TodoSettings {
       smartParse: map[_keySmartParse] is bool
           ? map[_keySmartParse] as bool
           : defaults.smartParse,
+      swipeLeft:
+          TodoSwipeAction.values.asNameMap()[map[_keySwipeLeft]] ??
+          defaults.swipeLeft,
     );
   }
 
@@ -152,6 +169,7 @@ class TodoSettings {
       _keySnooze: snoozeMinutes,
       _keyHideContent: hideContentOnLockScreen,
       _keySmartParse: smartParse,
+      _keySwipeLeft: swipeLeft.name,
     });
   }
 
@@ -165,6 +183,7 @@ class TodoSettings {
     int? snoozeMinutes,
     bool? hideContentOnLockScreen,
     bool? smartParse,
+    TodoSwipeAction? swipeLeft,
   }) {
     return TodoSettings(
       showCompleted: showCompleted ?? this.showCompleted,
@@ -178,6 +197,7 @@ class TodoSettings {
       hideContentOnLockScreen:
           hideContentOnLockScreen ?? this.hideContentOnLockScreen,
       smartParse: smartParse ?? this.smartParse,
+      swipeLeft: swipeLeft ?? this.swipeLeft,
     );
   }
 
@@ -191,7 +211,8 @@ class TodoSettings {
       other.allDayReminderMinute == allDayReminderMinute &&
       other.snoozeMinutes == snoozeMinutes &&
       other.hideContentOnLockScreen == hideContentOnLockScreen &&
-      other.smartParse == smartParse;
+      other.smartParse == smartParse &&
+      other.swipeLeft == swipeLeft;
 
   @override
   int get hashCode => Object.hash(
@@ -203,5 +224,6 @@ class TodoSettings {
     snoozeMinutes,
     hideContentOnLockScreen,
     smartParse,
+    swipeLeft,
   );
 }

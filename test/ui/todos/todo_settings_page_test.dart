@@ -104,6 +104,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(calls, contains('requestExactAlarmsPermission'));
 
+        await tester.ensureVisible(find.text('电池优化'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('电池优化'));
         await tester.pumpAndSettle();
         expect(calls, contains('requestIgnoreBatteryOptimizations'));

@@ -6,7 +6,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/animated_rolling_text.dart';
 import '../../widgets/page_header.dart';
+import '../../widgets/select_all_button.dart';
 import '../controllers/todo_navigation.dart';
 import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
@@ -14,6 +16,9 @@ import 'todos_page_menu.dart';
 
 /// 待办页的页头（[PageHeader]，叠在列表之上）：标题为当前视图名，换视图
 /// 时朝 [titleDirection] 滑换（与列表的退场 / 入场同一方向）。
+///
+/// 多选时（给了 [selection]）同一个页头换成“已选 N”、全选 / 取消全选与
+/// 退出（`xmark`）：底板不动，标题行与按钮交叉淡入（[PageHeader.contentKey]）。
 ///
 /// 窄窗口（[narrow]，按页面实际可用宽度判断）标题后带 `angleDown`、整体可点
 /// 弹出视图面板（[onOpenViews]）；宽窗口有左栏，标题不带箭头、不可点。
@@ -31,6 +36,7 @@ class TodosPageHeader extends StatelessWidget {
     required this.list,
     required this.onOpenViews,
     required this.onCreate,
+    this.selection,
   });
 
   final TodoView view;
@@ -48,10 +54,36 @@ class TodosPageHeader extends StatelessWidget {
   final VoidCallback onOpenViews;
   final VoidCallback onCreate;
 
+  /// 多选中时的页头内容；null 为平时。
+  final TodosHeaderSelection? selection;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final selection = this.selection;
+    if (selection != null) {
+      return PageHeader(
+        contentKey: #selection,
+        title: l10n.todoSelectedCount(selection.count),
+        titleChild: AnimatedRollingText.sentence(
+          l10n.todoSelectedCount(selection.count),
+          number: selection.count,
+        ),
+        actions: <Widget>[
+          SelectAllButton(
+            allSelected: selection.allSelected,
+            onPressed: selection.onToggleAll,
+          ),
+          IconButton(
+            tooltip: l10n.todoSelectionExit,
+            onPressed: selection.onClose,
+            icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+          ),
+        ],
+      );
+    }
     return PageHeader(
+      contentKey: #view,
       title: title,
       titleChild: _SlidingTitle(title: title, direction: titleDirection),
       titleTrailing: narrow
@@ -84,6 +116,23 @@ class TodosPageHeader extends StatelessWidget {
       ],
     );
   }
+}
+
+/// 多选时页头上的内容：已选条数（变化时逐位滚动）、是否已全选，以及全选 /
+/// 取消全选与退出多选。
+@immutable
+class TodosHeaderSelection {
+  const TodosHeaderSelection({
+    required this.count,
+    required this.allSelected,
+    required this.onToggleAll,
+    required this.onClose,
+  });
+
+  final int count;
+  final bool allSelected;
+  final VoidCallback onToggleAll;
+  final VoidCallback onClose;
 }
 
 /// 视图名：换视图时新旧标题朝 [direction] 交替滑过（新标题从那一侧进来、

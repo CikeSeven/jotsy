@@ -26018,6 +26018,102 @@ abstract class AppLocalizations {
   /// **'No matching to-dos'**
   String get todoEmptySearch;
 
+  /// Second line of the empty Today view.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos due today show up here'**
+  String get todoEmptyTodayHint;
+
+  /// Empty state of the Planned view.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing scheduled'**
+  String get todoEmptyPlanned;
+
+  /// Second line of the empty Planned view.
+  ///
+  /// In en, this message translates to:
+  /// **'Give a to-do a date and it lands here, sorted by day'**
+  String get todoEmptyPlannedHint;
+
+  /// Empty state of the Important view.
+  ///
+  /// In en, this message translates to:
+  /// **'No high-priority to-dos'**
+  String get todoEmptyImportant;
+
+  /// Second line of the empty Important view; !!! is the quick-entry mark for high priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Add !!! while typing, or set High priority in details'**
+  String get todoEmptyImportantHint;
+
+  /// Empty state of the All view.
+  ///
+  /// In en, this message translates to:
+  /// **'All clear'**
+  String get todoEmptyAll;
+
+  /// Second line of the empty All view.
+  ///
+  /// In en, this message translates to:
+  /// **'Every unfinished to-do shows up here'**
+  String get todoEmptyAllHint;
+
+  /// Empty state of the Inbox view.
+  ///
+  /// In en, this message translates to:
+  /// **'Your inbox is empty'**
+  String get todoEmptyInbox;
+
+  /// Second line of the empty Inbox view.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos without a list land here'**
+  String get todoEmptyInboxHint;
+
+  /// Second line of the empty Completed view.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished to-dos are kept here by day'**
+  String get todoEmptyCompletedHint;
+
+  /// Second line of an empty list; the inline add row sits above it.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first to-do above'**
+  String get todoEmptyListHint;
+
+  /// Due pill on a row due within the hour; {minutes} counts down every minute.
+  ///
+  /// In en, this message translates to:
+  /// **'In {minutes} min'**
+  String todoDueInMinutes(int minutes);
+
+  /// Screen reader label of the steps pill on a row when collapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Show steps'**
+  String get todoStepsExpand;
+
+  /// Screen reader label of the steps pill on a row when expanded.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide steps'**
+  String get todoStepsCollapse;
+
+  /// Action that changes a to-do's due date (swipe, screen reader action).
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get todoReschedule;
+
+  /// Settings row: what swiping a to-do left does (mirrored in right-to-left layouts).
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe left'**
+  String get todoSettingsSwipeLeft;
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

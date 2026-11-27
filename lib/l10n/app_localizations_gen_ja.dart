@@ -14740,6 +14740,56 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todoEmptySearch => '一致するToDoはありません';
 
   @override
+  String get todoEmptyTodayHint => '今日が期限のToDoがここに表示されます';
+
+  @override
+  String get todoEmptyPlanned => '日付のあるToDoはありません';
+
+  @override
+  String get todoEmptyPlannedHint => '日付を設定すると、日ごとにここに並びます';
+
+  @override
+  String get todoEmptyImportant => '優先度が高いToDoはありません';
+
+  @override
+  String get todoEmptyImportantHint => '入力時に !!! を付けるか、詳細で優先度を「高」にします';
+
+  @override
+  String get todoEmptyAll => 'すべて完了しました';
+
+  @override
+  String get todoEmptyAllHint => '未完了のToDoはすべてここに表示されます';
+
+  @override
+  String get todoEmptyInbox => '受信箱は空です';
+
+  @override
+  String get todoEmptyInboxHint => 'リストに入っていないToDoはここに入ります';
+
+  @override
+  String get todoEmptyCompletedHint => '完了したToDoは日ごとにここに残ります';
+
+  @override
+  String get todoEmptyListHint => '上の欄から最初のToDoを追加しましょう';
+
+  @override
+  String todoDueInMinutes(int minutes) {
+    return 'あと$minutes分';
+  }
+
+  @override
+  String get todoStepsExpand => 'ステップを表示';
+
+  @override
+  String get todoStepsCollapse => 'ステップを隠す';
+
+  @override
+  String get todoReschedule => '日付を変更';
+
+  @override
+  String get todoSettingsSwipeLeft => '左スワイプ';
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

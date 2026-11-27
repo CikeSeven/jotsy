@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_modal/app_dialog.dart';
 import '../widgets/todo_labels.dart';
+import 'todo_completion_undo.dart';
 
 /// 撤销提示的停留时间（非动画计时）。
 const Duration _undoDuration = Duration(seconds: 5);
@@ -17,13 +18,15 @@ const Duration _undoDuration = Duration(seconds: 5);
 /// 是调用前取好的 [AppDatabase]：提示关闭时页面可能已卸载。
 
 /// 勾选 / 取消勾选一条待办。完成时给出可撤销的提示：重复待办写明下一次的
-/// 日子。取消完成不提示（再点一下就回去了）。[onWritten] 在写库之后、弹
-/// 提示之前调用（待办页据此结束“收起中”，不必等提示关闭）。
+/// 日子；给了 [undo]（待办页的列表）时经它与接连完成的几条合并成一条提示。
+/// 取消完成不提示（再点一下就回去了）。[onWritten] 在写库之后、弹提示之前
+/// 调用（待办页据此结束“收起中”，不必等提示关闭）。
 Future<void> toggleTodoDone(
   BuildContext context,
   AppDatabase database,
   TodoRow row, {
   VoidCallback? onWritten,
+  TodoCompletionUndo? undo,
 }) async {
   if (row.completedAt != null) {
     await database.uncompleteTodo(row.todoId);
@@ -33,6 +36,10 @@ Future<void> toggleTodoDone(
   final completion = await database.completeTodo(row.todoId);
   onWritten?.call();
   if (completion == null || !context.mounted) return;
+  if (undo != null) {
+    await undo.add(context, database, completion);
+    return;
+  }
   final l10n = context.l10n;
   final next = completion.nextDue;
   final message = next == null

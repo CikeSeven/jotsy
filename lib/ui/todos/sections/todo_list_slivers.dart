@@ -118,7 +118,6 @@ class TodoListSlivers extends StatelessWidget {
       switchMotion: switchMotion,
       presenceDuration: duration,
       glassCards: AppGlass.of(context).isGlass(AppGlassComponent.cards),
-      scheme: Theme.of(context).colorScheme,
       collapsed: collapsed,
       onToggleCollapsed: onToggleCollapsed,
     );

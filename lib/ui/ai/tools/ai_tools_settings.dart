@@ -237,6 +237,7 @@ class SetFeatureEnabledTool extends AiTool {
     'swipe_archive',
     'comments',
     'mind_maps',
+    'todo_focus',
   ];
 
   @override
@@ -252,7 +253,7 @@ class SetFeatureEnabledTool extends AiTool {
   String get description =>
       'Turn an app feature on or off (Settings → Features). Turning a '
       'feature off only hides it; its data is kept. Anniversaries also need '
-      'the calendar.';
+      'the calendar; the to-do focus timer also needs to-dos.';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -288,6 +289,7 @@ class SetFeatureEnabledTool extends AiTool {
         'swipe_archive' => l10n.settingsFeaturesSwipeArchive,
         'comments' => l10n.settingsFeaturesComments,
         'mind_maps' => l10n.settingsFeaturesMindMaps,
+        'todo_focus' => l10n.settingsFeaturesTodoFocus,
         final other => '${other ?? ''}',
       };
 
@@ -321,6 +323,7 @@ class SetFeatureEnabledTool extends AiTool {
       'time_capsules' => current.copyWith(timeCapsules: on),
       'swipe_archive' => current.copyWith(swipeArchive: on),
       'mind_maps' => current.copyWith(mindMaps: on),
+      'todo_focus' => current.copyWith(todoFocus: on),
       _ => current.copyWith(comments: on),
     };
     await saveAppFeatures(settings, next);
@@ -329,6 +332,8 @@ class SetFeatureEnabledTool extends AiTool {
         'ok': true,
         if (feature == 'anniversaries' && on && !next.calendar)
           'note': 'Anniversaries only show when the calendar is on too.',
+        if (feature == 'todo_focus' && on && !next.todos)
+          'note': 'The focus timer only shows when to-dos are on too.',
       },
       summary: context.l10n.aiToolDone,
       undo: <String, Object?>{'features': current.encode()},

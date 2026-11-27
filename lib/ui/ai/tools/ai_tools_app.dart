@@ -82,6 +82,7 @@ class GetAppContextTool extends AiTool {
           'time_capsules': features.timeCapsules,
           'comments': features.comments,
           'mind_maps': features.mindMaps,
+          'todo_focus': features.todoFocusEnabled,
         },
         'mood_options': settings.moodOptions,
         'diary_words_left_this_turn': context.allowance.remaining,
@@ -389,6 +390,7 @@ class ReadGuideTool extends AiTool {
     'comments' => features.comments,
     'ai' => features.ai,
     'mindMaps' => features.mindMaps,
+    'todoFocus' => features.todoFocusEnabled,
     _ => true,
   };
 }

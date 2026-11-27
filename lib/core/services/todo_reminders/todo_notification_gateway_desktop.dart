@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'todo_focus_notifications.dart';
 import 'todo_notification_gateway.dart';
 import 'todo_notification_gateway_plugin.dart';
 
@@ -71,5 +72,39 @@ class DesktopTodoNotificationGateway extends PluginTodoNotificationGateway {
   @override
   Future<void> cancel(int id) async {
     _timers.remove(id)?.timer.cancel();
+  }
+
+  Timer? _focusTimer;
+
+  /// 桌面没有倒计时通知：只在走完时弹一次（进程内计时，应用关着时不弹）。
+  @override
+  Future<void> showFocus(TodoFocusNotice notice) async {
+    _focusTimer?.cancel();
+    final delay = notice.endsAt.difference(now());
+    if (delay.isNegative) return;
+    _focusTimer = Timer(delay, () {
+      _focusTimer = null;
+      unawaited(_showFocusEnd(notice));
+    });
+  }
+
+  Future<void> _showFocusEnd(TodoFocusNotice notice) async {
+    try {
+      await plugin.show(
+        id: kTodoFocusEndId,
+        title: notice.endTitle,
+        body: notice.endBody,
+        notificationDetails: todoFocusEndDetails(notice),
+        payload: kTodoFocusPayloadPrefix,
+      );
+    } catch (error) {
+      debugPrint('todo focus: showing the end notice failed: $error');
+    }
+  }
+
+  @override
+  Future<void> cancelFocus() async {
+    _focusTimer?.cancel();
+    _focusTimer = null;
   }
 }

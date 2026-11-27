@@ -78,4 +78,17 @@ class FakeTodoNotificationGateway implements TodoNotificationGateway {
     cancelled.add(id);
     scheduled.remove(id);
   }
+
+  /// 正在显示的专注通知（[cancelFocus] 后为 null）与撤下的次数。
+  TodoFocusNotice? focus;
+  int focusCancels = 0;
+
+  @override
+  Future<void> showFocus(TodoFocusNotice notice) async => focus = notice;
+
+  @override
+  Future<void> cancelFocus() async {
+    focus = null;
+    focusCancels++;
+  }
 }

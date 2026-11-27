@@ -11,6 +11,7 @@ import '../../../core/services/app_platform.dart';
 import '../../../core/services/todo_reminders/todo_notification_gateway_plugin.dart';
 import '../../app_surface/models/app_surface_enums.dart';
 import '../../app_surface/widgets/app_page_background.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../settings/widgets/settings_card_group.dart';
 import '../../settings/widgets/settings_nav_tile.dart';
 import '../../settings/widgets/settings_option_tiles.dart';
@@ -21,6 +22,7 @@ import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../providers/todo_reminder_providers.dart';
+import '../sections/todo_focus_settings_group.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reliability_sheet.dart';
@@ -84,6 +86,9 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
     final settings = ref.watch(todoSettingsProvider);
     final service = ref.watch(settingsServiceProvider).asData?.value;
     final lists = ref.watch(todoListsProvider).value ?? const <TodoListRow>[];
+    final focusOn = ref.watch(
+      appFeaturesProvider.select((features) => features.todoFocusEnabled),
+    );
 
     Future<void> save(TodoSettings next) async {
       if (service != null) await saveTodoSettings(service, next);
@@ -254,6 +259,13 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
                           onOpenAutoStart: _openAutoStart,
                         ),
                       ),
+                    ),
+                  ],
+                  if (focusOn) ...<Widget>[
+                    const SizedBox(height: 16),
+                    TodoFocusSettingsGroup(
+                      settings: settings,
+                      onSave: service == null ? null : save,
                     ),
                   ],
                   const SizedBox(height: 16),

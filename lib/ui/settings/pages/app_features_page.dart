@@ -122,11 +122,38 @@ class AppFeaturesPage extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      SettingsSwitchTile(
-                        title: l10n.navTodos,
-                        subtitle: l10n.settingsFeaturesTodosSubtitle,
-                        value: features.todos,
-                        onChanged: writer((v) => features.copyWith(todos: v)),
+                      // 待办与其下的专注计时合成一项，理由同上面的日历与纪念日。
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          SettingsSwitchTile(
+                            title: l10n.navTodos,
+                            subtitle: l10n.settingsFeaturesTodosSubtitle,
+                            value: features.todos,
+                            onChanged: writer(
+                              (v) => features.copyWith(todos: v),
+                            ),
+                          ),
+                          SettingsReveal(
+                            visible: features.todos,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                settingsNestedDivider,
+                                SettingsSwitchTile(
+                                  title: l10n.settingsFeaturesTodoFocus,
+                                  subtitle:
+                                      l10n.settingsFeaturesTodoFocusSubtitle,
+                                  nested: true,
+                                  value: features.todoFocus,
+                                  onChanged: writer(
+                                    (v) => features.copyWith(todoFocus: v),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       SettingsSwitchTile(
                         title: l10n.navExplore,

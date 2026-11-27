@@ -162,6 +162,39 @@ class TodoNotificationRequest {
   }
 }
 
+/// 专注计时通知的 payload 前缀：提醒的对账（`pending` 只认
+/// [kTodoReminderPayloadPrefix]）与旧版清理都不碰它。
+const String kTodoFocusPayloadPrefix = 'todo-focus:';
+
+/// 专注的倒计时与结束提醒用固定的通知 id：同一时间只有一段计时，再排一次
+/// 即替换。提醒的 id 是 31 位哈希，与这两个撞上的概率可以忽略。
+const int kTodoFocusCountdownId = 0x7ffffff0;
+const int kTodoFocusEndId = 0x7ffffff1;
+
+/// 一段专注 / 休息的通知：倒计时（只在 Android，系统自己走秒）与走完时的
+/// 一次提醒。文案由调用方按界面语言给出。
+@immutable
+class TodoFocusNotice {
+  const TodoFocusNotice({
+    required this.title,
+    required this.endsAt,
+    required this.endTitle,
+    required this.endBody,
+    required this.channelName,
+    required this.channelDescription,
+  });
+
+  /// 倒计时通知的标题（“专注中 · 写报告”）。
+  final String title;
+
+  /// 走完的时刻。
+  final DateTime endsAt;
+  final String endTitle;
+  final String endBody;
+  final String channelName;
+  final String channelDescription;
+}
+
 /// 系统通知的统一接口：手机交给系统定时（[PluginTodoNotificationGateway]），
 /// 桌面在进程里计时（[DesktopTodoNotificationGateway]），测试换成假实现。
 ///
@@ -194,4 +227,12 @@ abstract class TodoNotificationGateway {
   Future<void> schedule(TodoNotificationRequest request);
 
   Future<void> cancel(int id);
+
+  /// 专注计时：Android 常驻一条倒计时通知（系统按 chronometer 走秒，到点
+  /// 自己收起），各平台在 [TodoFocusNotice.endsAt] 弹一次“结束了”（手机交给
+  /// 系统定时，桌面只在应用运行时）。再调一次即替换。
+  Future<void> showFocus(TodoFocusNotice notice);
+
+  /// 撤下专注的倒计时与还没弹出的结束提醒（暂停、提前结束时）。
+  Future<void> cancelFocus();
 }

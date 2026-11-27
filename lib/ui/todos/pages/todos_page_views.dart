@@ -121,6 +121,11 @@ extension _TodosPageViews on _TodosPageState {
       delete: () => _onCursor(callbacks.onDelete),
       reschedule: () => _onCursor(callbacks.onReschedule),
       selectView: _select,
+      focus: ref.read(appFeaturesProvider).todoFocusEnabled
+          ? () => _onCursor(
+              (TodoRow row) => unawaited(startTodoFocus(context, ref, row)),
+            )
+          : null,
       escape: () {
         if (_selection.active) {
           _selection.clear();

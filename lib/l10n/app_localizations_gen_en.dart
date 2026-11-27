@@ -20063,4 +20063,202 @@ class AppLocalizationsEn extends AppLocalizations {
   String todoAiKeep(String title) {
     return 'Keep “$title”';
   }
+
+  @override
+  String get todoFocusTitle => 'Focus';
+
+  @override
+  String get todoFocusAction => 'Start focus';
+
+  @override
+  String todoFocusPhaseFocus(int round, int total) {
+    return 'Focus · round $round of $total';
+  }
+
+  @override
+  String get todoFocusPhaseShortBreak => 'Short break';
+
+  @override
+  String get todoFocusPhaseLongBreak => 'Long break';
+
+  @override
+  String get todoFocusPaused => 'Paused';
+
+  @override
+  String get todoFocusPause => 'Pause';
+
+  @override
+  String get todoFocusResume => 'Resume';
+
+  @override
+  String get todoFocusExtend => 'Add 5 minutes';
+
+  @override
+  String get todoFocusStop => 'End';
+
+  @override
+  String get todoFocusSkipBreak => 'Skip break';
+
+  @override
+  String get todoFocusDoneTitle => 'Focus done';
+
+  @override
+  String todoFocusDoneBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Focused for $count minutes',
+      one: 'Focused for 1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoFocusStartBreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Take a $count-minute break',
+      one: 'Take a 1-minute break',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoFocusAgain => 'Another round';
+
+  @override
+  String get todoFocusCompleteTodo => 'Complete this to-do';
+
+  @override
+  String get todoFocusBreakDoneTitle => 'Break\'s over';
+
+  @override
+  String todoFocusStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Focus for $count minutes',
+      one: 'Focus for 1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoFocusStoppedNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Kept $count minutes of focus',
+      one: 'Kept 1 minute of focus',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoFocusHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String todoFocusMinutes(int count) {
+    return '$count min';
+  }
+
+  @override
+  String todoFocusTotal(String duration) {
+    return 'Focused $duration in total';
+  }
+
+  @override
+  String todoReviewFocusWeek(String duration) {
+    return '$duration of focus this week';
+  }
+
+  @override
+  String todoFocusBannerRunning(String time) {
+    return 'Focusing · $time';
+  }
+
+  @override
+  String todoFocusBannerBreak(String time) {
+    return 'On a break · $time';
+  }
+
+  @override
+  String get todoFocusBannerPaused => 'Focus paused';
+
+  @override
+  String get todoFocusBannerEnded => 'Time\'s up — tap to continue';
+
+  @override
+  String get todoFocusChannelName => 'Focus timer';
+
+  @override
+  String get todoFocusChannelDescription =>
+      'Countdown and end alerts for focus and breaks';
+
+  @override
+  String todoFocusRunningTitle(String title) {
+    return 'Focusing · $title';
+  }
+
+  @override
+  String get todoFocusRunningUntitled => 'Focusing';
+
+  @override
+  String get todoFocusBreakRunningTitle => 'On a break';
+
+  @override
+  String get todoFocusEndTitle => 'Focus done';
+
+  @override
+  String todoFocusEndBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes of focus — time for a break',
+      one: '1 minute of focus — time for a break',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoFocusBreakEndTitle => 'Break\'s over';
+
+  @override
+  String get todoFocusBreakEndBody => 'Start the next round when you\'re ready';
+
+  @override
+  String get todoSettingsFocusGroup => 'Focus timer';
+
+  @override
+  String get todoSettingsFocusLength => 'Focus length (minutes)';
+
+  @override
+  String get todoSettingsShortBreak => 'Short break (minutes)';
+
+  @override
+  String get todoSettingsLongBreak => 'Long break (minutes)';
+
+  @override
+  String get todoSettingsLongBreakEvery => 'Long break after every … rounds';
+
+  @override
+  String get settingsFeaturesTodoFocus => 'Focus timer';
+
+  @override
+  String get settingsFeaturesTodoFocusSubtitle =>
+      'Pomodoro-style focus and breaks, with time kept per to-do';
+
+  @override
+  String todoFocusRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rounds',
+      one: '1 round',
+    );
+    return '$_temp0';
+  }
 }

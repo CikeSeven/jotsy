@@ -5,7 +5,7 @@ summary: Turning on to-dos, lists and views, tags, due dates, reminders, repeats
 features: [todos]
 platforms: []
 destinations: [tab_todos, settings_todos, settings_features]
-keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, AI breakdown, organize with AI, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
+keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, AI breakdown, organize with AI, focus, focus timer, pomodoro, break, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
 ---
 To-dos are a task list separate from your diary, with due dates, reminders, repeats and priorities. Checkboxes inside a diary's text are unrelated to them.
 
@@ -46,6 +46,13 @@ To-dos have their own tags, completely separate from diary tags: diary tag manag
 ## With diaries and the calendar
 - On the preview page, "More → Add a to-do" creates a to-do linked to that diary. If the diary has a checklist, "Copy checklist to to-dos" also appears (the diary itself is unchanged). Linked to-dos show under "Related to-dos" at the end of the diary.
 - On the calendar, days with to-dos get a checkbox badge, the selected day shows "To-dos for this day", and long-pressing a date offers "Add a to-do". Turn this off under Calendar display → Show to-dos.
+
+## Focus timer
+- Start: "More → Start focus" at the top right of a to-do's details; on a computer, pick a row with the arrow keys and press F. The focus page shows a large ring and a countdown, with Pause / Resume, "Add 5 minutes" and "End" below.
+- When it runs out you can "Take an N-minute break", "Complete this to-do" or start "Another round"; every few rounds there is a long break. Lengths and the long-break interval are under Settings → To-dos → "Focus timer".
+- The timer keeps going when you leave the page: a "Focusing · 12:34" pill appears at the top of the To-dos page, tap it to go back. On phones the notification shade shows the countdown and you get an alert at the end; on computers alerts only appear while Jotsy is open.
+- A session is kept once it reaches 1 minute; ending early keeps the time actually focused. The details show how long you've focused on a to-do in total, and the Completed view and the Explore to-dos card show this week's focus time. Focus records go with full backups and LAN sync; if you delete a to-do and undo, its total is unchanged.
+- If you don't need it, turn off "Focus timer" (under "To-dos") in Settings → Features; existing records are kept.
 
 ## Settings and notes
 Go to Settings → To-dos (in the "Organize" group) for Show completed, Open to, New to-dos go to, Smart recognition, Notification permission, All-day reminder time and Snooze for.

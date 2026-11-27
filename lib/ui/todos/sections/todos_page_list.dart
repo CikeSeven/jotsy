@@ -22,6 +22,7 @@ import '../widgets/todo_labels.dart';
 import '../widgets/todo_quick_add_sheet.dart';
 import '../widgets/todo_review_summary.dart';
 import '../widgets/todo_row_drag.dart';
+import '../widgets/todo_focus_banner.dart';
 import '../widgets/todo_view_hero.dart';
 import '../widgets/todo_week_strip.dart';
 import 'todo_list_callbacks.dart';
@@ -105,6 +106,10 @@ Widget buildTodosPageList({
 
   final slivers = <Widget>[
     SliverToBoxAdapter(child: SizedBox(height: topInset)),
+    SliverPadding(
+      padding: padding.copyWith(top: 0, bottom: 0),
+      sliver: const SliverToBoxAdapter(child: TodoFocusBanner()),
+    ),
     SliverPadding(
       padding: padding.copyWith(bottom: AppSpacing.xs),
       sliver: SliverToBoxAdapter(

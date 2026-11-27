@@ -50,6 +50,9 @@
 - 必须：快速新建粘贴多行时先问“拆成 N 条待办？”，拆开时每行各自识别、一次写库；刚添加的进“已添加”堆栈（可点开、可撤销删除）。
 - 必须：专注记录只存 `todo_focus_sessions`（schema v24，口径只经 `todo_focus.dart`：不到 60 秒不记、实际时长不超过计划时长），读写只经 `_AppDatabaseTodoFocusOps`；写完即不可变、应用里不改不删，备份合并与局域网同步按 `session_id` 取并集；进行中的计时只存本机，结束才落库。
 - 例外：删除待办（含删清单、连同删除分区）时不清空专注记录上的 `todo_id`，与“删除路径清理关联”的总规则不同：撤销删除后这条待办的累计照旧，同步也不必改写不可变的记录；指向不存在的待办时按“没有关联”算，总时长照常计入回顾。
+- 必须：专注计时只在 `todoFocusEnabled` 时出现（入口为详情“更多”的“开始专注”与桌面焦点行的 F；待办页顶上的专注胶囊在计时或走完时出现，点开回到专注页），整个应用同一时间只有一段计时，状态只经 `todoFocusProvider`：按墙钟推算（`TodoFocusRun`：开始时刻、计划秒数、暂停累计，系统时间往回拨按 0 算），进行中的只存本机键 `app.todos.focus_run`（不随备份、不同步），退后台、被杀进程后读回接着走；走完按计划的结束时刻记一行，提前结束按实际专注秒数记（不到 60 秒不记），休息不记；功能关掉时停下且不记。为别的待办计时时再点“开始专注”只打开正在进行的那一段，不打断它。
+- 必须：专注节奏（专注、短休、长休时长与长休间隔）只存待办偏好的 `focus` 对象（`TodoFocusSettings`，逐字段容错、只认可选值），专注计时开着时才在待办设置里出现。
+- 必须：专注的通知只经 `TodoNotificationGateway.showFocus` / `cancelFocus`（payload 前缀 `kTodoFocusPayloadPrefix`，提醒对账不碰它）：Android 常驻一条 chronometer 倒计时（安静渠道 `todo_focus`，走完自己收起）并在结束时刻经 `alarmClock` 模式弹一次（渠道 `todo_focus_end`，不许准时闹钟时退回不精确）；iOS 只排结束提醒；桌面只在应用运行时弹结束提醒。开始、继续、加时时重排，暂停与提前结束时撤下，走完时不撤；排不上时计时照常。
 - 必须：AI 入口只有详情步骤卡的“AI 拆解”与快速新建的“AI 整理”，只在 `aiModuleAvailableProvider(AiModule.todos)` 时出现（AI 规则见 `ai_assistant.md`）；流式生成与预览只经 `TodoAiDrafts`，模型输出只经 `parseTodoAiSteps` / `parseTodoAiItems` 逐行、逐字段校验，生成中只认收完的整行。建议一律先预览、可勾掉与改写，确认后才写库：拆解经 `setTodoSteps` 一次接在已有步骤后（去掉已有的、不超过 `TodoStep.maxSteps`），整理经 `createTodos` 一次建好（自带的值优先，没带的按 `TodoQuickAddDraft.inputForAi` 取面板上手动选的 / 预填的，整段原文的识别结果不算）；放弃不写任何东西。
 - 必须：日记互通只有“添加待办”“转为独立待办”与正文后的“相关待办”；功能关闭时不订阅、不占位。
 - 必须：日历上的待办只经 `todoCalendarIndexProvider`，待办开启且 `showTodos` 时才订阅；AI 工具口径见 `ai_assistant.md`。

@@ -57,7 +57,13 @@ class TodoGroupHeader extends StatelessWidget {
       ),
       TodoGroupKind.today => (l10n.todoGroupToday, null),
       TodoGroupKind.tomorrow => (l10n.todoGroupTomorrow, null),
-      TodoGroupKind.nextDays => (l10n.todoGroupNextDays, null),
+      TodoGroupKind.day => (
+        l10n.todoHeroDate(
+          TodoLabels.weekdayName(l10n, group.day!.weekday, short: false),
+          l10n.formatMonthDay(group.day!),
+        ),
+        null,
+      ),
       TodoGroupKind.later => (l10n.todoGroupLater, null),
       TodoGroupKind.list => (
         list?.name ?? l10n.todoViewInbox,

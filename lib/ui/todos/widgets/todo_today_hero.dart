@@ -23,10 +23,18 @@ import 'todo_progress_ring.dart';
 /// 这次变化时演一次：打开页面时已经做完、或把最后一件改到明天，都不演。
 /// 减少动画时直接到位（触觉照旧）。
 class TodoTodayHero extends StatefulWidget {
-  const TodoTodayHero({super.key, required this.today, required this.summary});
+  const TodoTodayHero({
+    super.key,
+    required this.today,
+    required this.summary,
+    this.onPlan,
+  });
 
   final DateTime today;
   final TodoTodaySummary summary;
+
+  /// “规划今天”（有可规划的待办时由页面给出）。
+  final VoidCallback? onPlan;
 
   @override
   State<TodoTodayHero> createState() => _TodoTodayHeroState();
@@ -168,6 +176,23 @@ class _TodoTodayHeroState extends State<TodoTodayHero>
               if (chips.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.s),
                 Wrap(spacing: 6, runSpacing: 4, children: chips),
+              ],
+              if (widget.onPlan case final onPlan?) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.s,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: onPlan,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.wandMagicSparkles,
+                    size: 13,
+                  ),
+                  label: Text(l10n.todoPlanToday),
+                ),
               ],
             ],
           ),

@@ -5,7 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 
 /// 桌面上待办行的右键菜单（4 项单行动作，经 [ExpressiveMenuAnchor.openAt]
-/// 在指针处打开）：完成 / 恢复、改到今天、移到清单…、删除。
+/// 在指针处打开）：完成 / 恢复、改期（改期面板）、移到清单…、删除。
 ///
 /// 只在桌面挂上（调用方按 `AppPlatform.isDesktop` 决定）；手机上的同类操作
 /// 走左右滑与长按多选。
@@ -14,7 +14,7 @@ class TodoTileContextMenu extends StatelessWidget {
     super.key,
     required this.done,
     required this.onToggle,
-    required this.onMoveToToday,
+    required this.onReschedule,
     required this.onMoveToList,
     required this.onDelete,
     required this.child,
@@ -22,7 +22,7 @@ class TodoTileContextMenu extends StatelessWidget {
 
   final bool done;
   final VoidCallback onToggle;
-  final VoidCallback onMoveToToday;
+  final VoidCallback onReschedule;
   final VoidCallback onMoveToList;
   final VoidCallback onDelete;
   final Widget child;
@@ -41,9 +41,9 @@ class TodoTileContextMenu extends StatelessWidget {
         ),
         if (!done)
           ExpressiveMenuItem(
-            leadingIcon: const FaIcon(FontAwesomeIcons.solidSun),
-            onPressed: onMoveToToday,
-            child: Text(l10n.todoMoveToToday),
+            leadingIcon: const FaIcon(FontAwesomeIcons.calendarDay),
+            onPressed: onReschedule,
+            child: Text(l10n.todoReschedule),
           ),
         ExpressiveMenuItem(
           leadingIcon: const FaIcon(FontAwesomeIcons.folderOpen),

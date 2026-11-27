@@ -12,8 +12,8 @@ enum TodoGroupKind {
   today,
   tomorrow,
 
-  /// 后天起七天内。
-  nextDays,
+  /// 计划视图里后天起七天内的某一天（[TodoGroup.day]）。
+  day,
   later,
 
   /// “全部”视图里按清单分的一组（[TodoGroup.listId] 为 null 即收集箱）。
@@ -48,6 +48,7 @@ class TodoGroup {
   String get key => switch (kind) {
     TodoGroupKind.list => 'list:${listId ?? ''}',
     TodoGroupKind.completedDay => 'day:${day!.toIso8601String()}',
+    TodoGroupKind.day => 'due:${day!.toIso8601String()}',
     _ => kind.name,
   };
 }
@@ -58,8 +59,9 @@ class TodoGroup {
 /// 完成的在前）、清单顺序 [listOrder]、排序方式与“今天” [today]（本地零点）；
 /// 输出：要显示的各组，空组不出现。
 ///
-/// - 今天：逾期 / 今天两组，[showCompleted] 时底部再加今天完成的一组；计划：逾期 / 今天 / 明天 / 未来七天 / 更晚。这两
-///   个视图里“手动”排序按截止时刻（全天的在前），其余排序方式照常；
+/// - 今天：逾期 / 今天两组，[showCompleted] 时底部再加今天完成的一组；计划：
+///   逾期 / 今天 / 明天 / 之后七天内每天一组 / 更晚。这两个视图里“手动”排序
+///   按截止时刻（全天的在前），其余排序方式照常；
 /// - 重要：高优先级的一组；
 /// - 全部：按清单分组，收集箱在前，清单按拖动顺序，空清单不出现；
 /// - 收集箱与清单：未完成一组，[showCompleted] 时底部再加这个清单的已完成；
@@ -83,6 +85,8 @@ List<TodoGroup> buildTodoGroups({
 
   List<TodoGroup> dated(List<TodoRow> rows, {required bool future}) {
     final buckets = <TodoGroupKind, List<TodoRow>>{};
+    // 七天内每天一组（按日期字符串，正好按日子先后）。
+    final days = <String, List<TodoRow>>{};
     for (final row in rows) {
       final due = row.dueDate;
       if (due == null) continue;
@@ -96,23 +100,32 @@ List<TodoGroup> buildTodoGroups({
       } else if (due == tomorrowText) {
         kind = TodoGroupKind.tomorrow;
       } else if (due.compareTo(weekText) <= 0) {
-        kind = TodoGroupKind.nextDays;
+        days.putIfAbsent(due, () => <TodoRow>[]).add(row);
+        continue;
       } else {
         kind = TodoGroupKind.later;
       }
       buckets.putIfAbsent(kind, () => <TodoRow>[]).add(row);
     }
     final effectiveSort = sort == TodoSortMode.manual ? TodoSortMode.due : sort;
+    TodoGroup? group(TodoGroupKind kind) => switch (buckets[kind]) {
+      final rows? => TodoGroup(
+        kind: kind,
+        rows: sortTodoRows(rows, effectiveSort),
+      ),
+      null => null,
+    };
     return <TodoGroup>[
-      for (final kind in const <TodoGroupKind>[
-        TodoGroupKind.overdue,
-        TodoGroupKind.today,
-        TodoGroupKind.tomorrow,
-        TodoGroupKind.nextDays,
-        TodoGroupKind.later,
-      ])
-        if (buckets[kind] case final rows?)
-          TodoGroup(kind: kind, rows: sortTodoRows(rows, effectiveSort)),
+      ?group(TodoGroupKind.overdue),
+      ?group(TodoGroupKind.today),
+      ?group(TodoGroupKind.tomorrow),
+      for (final day in days.keys.toList()..sort())
+        TodoGroup(
+          kind: TodoGroupKind.day,
+          day: parseAnniversaryDate(day),
+          rows: sortTodoRows(days[day]!, effectiveSort),
+        ),
+      ?group(TodoGroupKind.later),
     ];
   }
 

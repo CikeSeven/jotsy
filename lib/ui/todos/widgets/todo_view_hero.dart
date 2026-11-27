@@ -36,6 +36,8 @@ class TodoViewHero extends StatelessWidget {
     this.list,
     this.progress,
     this.onEditList,
+    this.onPlanToday,
+    this.weekStrip,
   });
 
   final TodoView view;
@@ -54,12 +56,22 @@ class TodoViewHero extends StatelessWidget {
   final TodoListProgress? progress;
   final VoidCallback? onEditList;
 
+  /// 今天视图：有可规划的待办时“规划今天”按钮（null 时不显示）。
+  final VoidCallback? onPlanToday;
+
+  /// 计划视图：卡片下半部的一周日期条。
+  final Widget? weekStrip;
+
   @override
   Widget build(BuildContext context) {
     final smart = view.smart;
     final Widget child;
     if (smart == TodoSmartView.today) {
-      child = TodoTodayHero(today: today, summary: summary);
+      child = TodoTodayHero(
+        today: today,
+        summary: summary,
+        onPlan: onPlanToday,
+      );
     } else if (view.isSingleList) {
       child = _ListHero(
         list: list,
@@ -67,7 +79,17 @@ class TodoViewHero extends StatelessWidget {
         onEdit: onEditList,
       );
     } else {
-      child = _SmartHero(view: smart!, count: count);
+      final strip = weekStrip;
+      child = strip == null
+          ? _SmartHero(view: smart!, count: count)
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _SmartHero(view: smart!, count: count),
+                const SizedBox(height: AppSpacing.m),
+                strip,
+              ],
+            );
     }
     return AppCardSurface(
       shadow: false,

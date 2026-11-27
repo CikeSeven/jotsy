@@ -361,6 +361,8 @@ class _TodosPageState extends ConsumerState<TodosPage>
               : null,
           onCreateList: () => unawaited(_createList()),
           onManageLists: () => unawaited(openTodoListsManage(context)),
+          tags: ref.watch(todoTagsProvider).value ?? const <TodoTagUsage>[],
+          onManageTags: () => unawaited(openTodoTagsManage(context)),
         ),
         list: (double listWidth) => list(listWidth, wide: true),
         onCloseDetail: () => setState(() => _detailId = null),
@@ -383,9 +385,12 @@ class _TodosPageState extends ConsumerState<TodosPage>
           body: layout(width),
           header: TodosPageHeader(
             view: view,
-            title: listId != null
-                ? listsById[listId]?.name ?? l10n.navTodos
-                : TodoLabels.smartView(l10n, view.smart!),
+            title: TodoLabels.viewName(
+              l10n,
+              view,
+              listsById.values,
+              missing: l10n.navTodos,
+            ),
             titleDirection: _titleDirection,
             narrow: width < AppBreakpoints.expanded,
             wideShell: HomeChromeScope.wideShellOf(context),

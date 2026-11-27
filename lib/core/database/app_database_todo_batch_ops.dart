@@ -12,6 +12,10 @@ enum TodoBatchField {
 
   /// 优先级。
   priority,
+
+  /// 标签（`metadata` 里的 `tags` 一个键；批量加标签、标签改名 / 合并 /
+  /// 删除的撤销）。
+  tags,
 }
 
 /// 待办的批量写入：多选后的完成、改日期 / 清单 / 优先级，以及它们的撤销。
@@ -202,7 +206,10 @@ mixin _AppDatabaseTodoBatchOps
             reminders: Value(row.reminders),
             repeat: Value(row.repeat),
             snoozedUntil: Value(row.snoozedUntil),
-            metadata: await _restoredPostponeCount(row),
+            metadata: await _restoredMetadataKey(
+              row,
+              TodoMetadataKeys.postponeCount,
+            ),
           ),
           TodoBatchField.list => TodosCompanion(
             listId: Value(row.listId),
@@ -211,7 +218,12 @@ mixin _AppDatabaseTodoBatchOps
           TodoBatchField.priority => TodosCompanion(
             priority: Value(row.priority),
           ),
+          TodoBatchField.tags => TodosCompanion(
+            metadata: await _restoredMetadataKey(row, TodoTags.metadataKey),
+          ),
         };
+        // 只回写 metadata 的一个键时，值本来就一样就不写（不刷新 updated_at）。
+        if (field == TodoBatchField.tags && !change.metadata.present) continue;
         await (update(todos)..where((t) => t.todoId.equals(row.todoId))).write(
           change.copyWith(updatedAt: Value(now)),
         );
@@ -219,20 +231,18 @@ mixin _AppDatabaseTodoBatchOps
     });
   }
 
-  /// 撤销改期时推迟次数回到改之前（只改这一个键，别的键以库里现在的为准）；
-  /// 次数本来就一样时不写。
-  Future<Value<String>> _restoredPostponeCount(TodoRow before) async {
+  /// 撤销时 `metadata` 里的 [key] 回到 [before] 时的值（只改这一个键，别的
+  /// 键以库里现在的为准）；本来就一样时不写。改期的推迟次数与标签共用。
+  Future<Value<String>> _restoredMetadataKey(TodoRow before, String key) async {
     final current = await getTodo(before.todoId);
     if (current == null) return const Value.absent();
-    final was = decodeTodoMetadata(
-      before.metadata,
-    )[TodoMetadataKeys.postponeCount];
+    final was = decodeTodoMetadata(before.metadata)[key];
     final map = decodeTodoMetadata(current.metadata);
-    if (map[TodoMetadataKeys.postponeCount] == was) return const Value.absent();
+    if (jsonEncode(map[key]) == jsonEncode(was)) return const Value.absent();
     if (was == null) {
-      map.remove(TodoMetadataKeys.postponeCount);
+      map.remove(key);
     } else {
-      map[TodoMetadataKeys.postponeCount] = was;
+      map[key] = was;
     }
     return Value(jsonEncode(map));
   }

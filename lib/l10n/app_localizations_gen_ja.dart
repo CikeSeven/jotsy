@@ -14931,6 +14931,89 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todoSearchFilterStatus => '状態';
 
   @override
+  String get todoFieldTags => 'タグ';
+
+  @override
+  String get todoTagSearchHint => 'タグを検索または作成';
+
+  @override
+  String todoTagCreate(String name) {
+    return '「$name」を作成';
+  }
+
+  @override
+  String get todoTagRecent => '最近使用';
+
+  @override
+  String get todoTagsEmptyHint => 'To-Do を追加するときに @タグ と入力するか、上で作成します。';
+
+  @override
+  String todoTagLimitHint(int count) {
+    return '1 件につきタグは $count 個まで';
+  }
+
+  @override
+  String get todoTagsManageTitle => 'タグを管理';
+
+  @override
+  String get todoTagsManageEmpty => 'タグはまだありません';
+
+  @override
+  String todoTagUsage(int open, int total) {
+    return '未完了 $open 件 · 合計 $total 件';
+  }
+
+  @override
+  String get todoTagRename => 'タグ名を変更';
+
+  @override
+  String get todoTagRenameHint => '既存のタグ名にすると 2 つが統合されます。';
+
+  @override
+  String todoTagDeleteTitle(String name) {
+    return '「$name」を削除しますか？';
+  }
+
+  @override
+  String todoTagDeleteMessage(int count) {
+    return '$count 件の To-Do からこのタグを外します。To-Do 自体は残ります。';
+  }
+
+  @override
+  String todoTagRenamedNotice(String name) {
+    return '「$name」に変更しました';
+  }
+
+  @override
+  String todoTagMergedNotice(String name) {
+    return '「$name」に統合しました';
+  }
+
+  @override
+  String todoTagDeletedNotice(String name) {
+    return '「$name」を削除しました';
+  }
+
+  @override
+  String get todoBatchAddTag => 'タグを追加';
+
+  @override
+  String todoBatchTaggedNotice(int count, String name) {
+    return '$count 件に「$name」を追加しました';
+  }
+
+  @override
+  String get todoEmptyTag => 'このタグの To-Do はありません';
+
+  @override
+  String get todoEmptyTagHint => 'ここで追加した To-Do にはこのタグが付きます。';
+
+  @override
+  String todoTagsMoreLabel(int count) {
+    return 'ほかにタグ $count 個';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

@@ -129,6 +129,17 @@ List<TodoGroup> buildTodoGroups({
     ];
   }
 
+  if (view.tag case final tag?) {
+    final rows = <TodoRow>[
+      for (final row in open)
+        if (TodoTags.contains(TodoTags.ofMetadataText(row.metadata), tag)) row,
+    ];
+    return <TodoGroup>[
+      if (rows.isNotEmpty)
+        TodoGroup(kind: TodoGroupKind.plain, rows: sortTodoRows(rows, sort)),
+    ];
+  }
+
   switch (view.smart) {
     case TodoSmartView.today:
       final doneToday = <TodoRow>[

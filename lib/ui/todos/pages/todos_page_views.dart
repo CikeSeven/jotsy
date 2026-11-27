@@ -26,6 +26,7 @@ extension _TodosPageViews on _TodosPageState {
       priority: view.presetsHighPriority
           ? TodoPriority.high
           : TodoPriority.none,
+      tags: view.presetTags,
     );
   }
 
@@ -76,6 +77,8 @@ extension _TodosPageViews on _TodosPageState {
         await _createList();
       case TodoViewManageLists():
         await openTodoListsManage(context);
+      case TodoViewManageTags():
+        await openTodoTagsManage(context);
     }
   }
 

@@ -16774,6 +16774,115 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoSearchFilterStatus => 'Status';
 
   @override
+  String get todoFieldTags => 'Tags';
+
+  @override
+  String get todoTagSearchHint => 'Find or create a tag';
+
+  @override
+  String todoTagCreate(String name) {
+    return 'Create “$name”';
+  }
+
+  @override
+  String get todoTagRecent => 'Recently used';
+
+  @override
+  String get todoTagsEmptyHint =>
+      'Type @tag while adding a to-do, or create one above.';
+
+  @override
+  String todoTagLimitHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count tags per to-do',
+      one: 'Up to 1 tag per to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoTagsManageTitle => 'Manage tags';
+
+  @override
+  String get todoTagsManageEmpty => 'No tags yet';
+
+  @override
+  String todoTagUsage(int open, int total) {
+    return '$open open · $total in all';
+  }
+
+  @override
+  String get todoTagRename => 'Rename tag';
+
+  @override
+  String get todoTagRenameHint =>
+      'Using an existing tag\'s name merges the two.';
+
+  @override
+  String todoTagDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String todoTagDeleteMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'It is removed from $count to-dos. The to-dos stay.',
+      one: 'It is removed from 1 to-do. The to-do stays.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoTagRenamedNotice(String name) {
+    return 'Renamed to “$name”';
+  }
+
+  @override
+  String todoTagMergedNotice(String name) {
+    return 'Merged into “$name”';
+  }
+
+  @override
+  String todoTagDeletedNotice(String name) {
+    return 'Deleted “$name”';
+  }
+
+  @override
+  String get todoBatchAddTag => 'Add tag';
+
+  @override
+  String todoBatchTaggedNotice(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added “$name” to $count to-dos',
+      one: 'Added “$name” to 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoEmptyTag => 'Nothing with this tag';
+
+  @override
+  String get todoEmptyTagHint => 'To-dos you add here get this tag.';
+
+  @override
+  String todoTagsMoreLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more tags',
+      one: '1 more tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

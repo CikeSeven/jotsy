@@ -100,7 +100,11 @@ mixin _AppDatabaseTodoDetailOps
       if (index < 0) return null;
       final step = steps[index];
       final id = await createTodo(
-        TodoInput(title: step.title, listId: row.listId),
+        TodoInput(
+          title: step.title,
+          listId: row.listId,
+          tags: TodoTags.ofMetadataText(row.metadata),
+        ),
       );
       if (step.done) await completeTodo(id);
       await setTodoSteps(todoId, <TodoStep>[...steps]..removeAt(index));

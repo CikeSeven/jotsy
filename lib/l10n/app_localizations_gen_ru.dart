@@ -17399,6 +17399,124 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoSearchFilterStatus => 'Статус';
 
   @override
+  String get todoFieldTags => 'Метки';
+
+  @override
+  String get todoTagSearchHint => 'Найти или создать метку';
+
+  @override
+  String todoTagCreate(String name) {
+    return 'Создать «$name»';
+  }
+
+  @override
+  String get todoTagRecent => 'Недавние';
+
+  @override
+  String get todoTagsEmptyHint =>
+      'Введите @метку при добавлении задачи или создайте её выше.';
+
+  @override
+  String todoTagLimitHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Не больше $count метки на задачу',
+      many: 'Не больше $count меток на задачу',
+      few: 'Не больше $count меток на задачу',
+      one: 'Не больше $count метки на задачу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoTagsManageTitle => 'Управление метками';
+
+  @override
+  String get todoTagsManageEmpty => 'Меток пока нет';
+
+  @override
+  String todoTagUsage(int open, int total) {
+    return 'Открыто: $open · всего: $total';
+  }
+
+  @override
+  String get todoTagRename => 'Переименовать метку';
+
+  @override
+  String get todoTagRenameHint =>
+      'Если указать имя существующей метки, они объединятся.';
+
+  @override
+  String todoTagDeleteTitle(String name) {
+    return 'Удалить «$name»?';
+  }
+
+  @override
+  String todoTagDeleteMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Метка будет снята с $count задачи. Сами задачи останутся.',
+      many: 'Метка будет снята с $count задач. Сами задачи останутся.',
+      few: 'Метка будет снята с $count задач. Сами задачи останутся.',
+      one: 'Метка будет снята с $count задачи. Сама задача останется.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoTagRenamedNotice(String name) {
+    return 'Переименовано в «$name»';
+  }
+
+  @override
+  String todoTagMergedNotice(String name) {
+    return 'Объединено с «$name»';
+  }
+
+  @override
+  String todoTagDeletedNotice(String name) {
+    return 'Метка «$name» удалена';
+  }
+
+  @override
+  String get todoBatchAddTag => 'Добавить метку';
+
+  @override
+  String todoBatchTaggedNotice(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Метка «$name» добавлена к $count задачи',
+      many: 'Метка «$name» добавлена к $count задачам',
+      few: 'Метка «$name» добавлена к $count задачам',
+      one: 'Метка «$name» добавлена к $count задаче',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoEmptyTag => 'С этой меткой задач нет';
+
+  @override
+  String get todoEmptyTagHint =>
+      'Задачи, добавленные здесь, получат эту метку.';
+
+  @override
+  String todoTagsMoreLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ещё $count метки',
+      many: 'Ещё $count меток',
+      few: 'Ещё $count метки',
+      one: 'Ещё $count метка',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

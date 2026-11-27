@@ -5,10 +5,12 @@ import '../../../core/database/app_database.dart';
 import '../../app_surface/widgets/app_card_surface.dart';
 import '../models/todo_view.dart';
 import 'todo_row_drag.dart';
+import 'todo_tag_nav.dart';
 import 'todo_view_switcher.dart';
 
-/// 宽窗口（≥1024）左栏：2 列智能视图网格 + 清单（各带进度条）+ 新建清单。
-/// 给了 [onDrop]（桌面）时，今天、收集箱与各清单接得住拖来的待办行。
+/// 宽窗口（≥1024）左栏：2 列智能视图网格 + 清单（各带进度条）+ 新建清单 +
+/// 待办标签（有标签时）。给了 [onDrop]（桌面）时，今天、收集箱、各清单与
+/// 各标签接得住拖来的待办行。
 class TodoSidebar extends StatelessWidget {
   const TodoSidebar({
     super.key,
@@ -19,6 +21,8 @@ class TodoSidebar extends StatelessWidget {
     required this.onSelected,
     required this.onCreateList,
     required this.onManageLists,
+    required this.tags,
+    required this.onManageTags,
     this.onDrop,
   });
 
@@ -32,6 +36,8 @@ class TodoSidebar extends StatelessWidget {
   final TodoViewDrop? onDrop;
   final VoidCallback onCreateList;
   final VoidCallback onManageLists;
+  final List<TodoTagUsage> tags;
+  final VoidCallback onManageTags;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +65,13 @@ class TodoSidebar extends StatelessWidget {
               ),
             ),
           TodoNewListRow(onTap: onCreateList),
+          TodoTagNavSection(
+            tags: tags,
+            view: view,
+            onSelected: onSelected,
+            onManage: onManageTags,
+            onDrop: onDrop,
+          ),
         ],
       ),
     );

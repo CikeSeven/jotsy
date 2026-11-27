@@ -75,6 +75,7 @@ Map<String, Object?> aiTodoItem(TodoRow row, Map<String, String>? lists) {
   final reminders = decodeTodoReminders(row.reminders);
   final repeat = decodeTodoRepeat(row.repeat);
   final completedAt = row.completedAt;
+  final tags = TodoTags.ofMetadataText(row.metadata);
   return <String, Object?>{
     'id': row.todoId,
     'title': row.title,
@@ -82,6 +83,7 @@ Map<String, Object?> aiTodoItem(TodoRow row, Map<String, String>? lists) {
     'due_date': ?row.dueDate,
     if (row.dueDate != null && minute != null) 'due_time': _hhmm(minute),
     if (row.priority > 0) 'priority': TodoPriority.of(row.priority).name,
+    if (tags.isNotEmpty) 'tags': tags,
     'done': completedAt != null,
     if (completedAt != null) 'completed_at': aiToolDateTime(completedAt),
     if (note.isNotEmpty)
@@ -411,6 +413,13 @@ String aiTodoRepeatText(AppLocalizations l10n, Object? raw) {
 }
 
 /// 待办工具共用的 `describeArg`：提醒与重复写成可读的说法，其余走通用格式。
+/// 待办标签参数的写法（与日记标签无关）。
+const AiArraySchema aiTodoTagsSchema = AiArraySchema(
+  items: AiStringSchema(maxLength: TodoTags.maxLength),
+  maxItems: TodoTags.maxPerTodo,
+  description: 'To-do tags (separate from diary tags).',
+);
+
 String? aiDescribeTodoArg(AppLocalizations l10n, String key, Object? value) =>
     switch (key) {
       'reminders' => aiTodoRemindersText(l10n, value),

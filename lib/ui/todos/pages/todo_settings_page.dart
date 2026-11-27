@@ -89,14 +89,13 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
       if (service != null) await saveTodoSettings(service, next);
     }
 
-    String viewName(TodoView view) {
-      final listId = view.listId;
-      if (listId == null) return TodoLabels.smartView(l10n, view.smart!);
-      for (final list in lists) {
-        if (list.listId == listId) return list.name;
-      }
-      return TodoLabels.smartView(l10n, TodoSmartView.today);
-    }
+    String viewName(TodoView view) => TodoLabels.viewName(
+      l10n,
+      view,
+      lists,
+      missing: TodoLabels.smartView(l10n, TodoSmartView.today),
+    );
+    final tags = ref.watch(todoTagsProvider).value ?? const <TodoTagUsage>[];
 
     String? defaultListName() {
       final id = settings.defaultListId;
@@ -128,6 +127,14 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
                 selected: settings.defaultView == TodoView.list(list.listId),
                 onTap: () =>
                     Navigator.of(sheetContext).pop(TodoView.list(list.listId)),
+              ),
+            for (final tag in tags)
+              TodoSheetOption(
+                icon: FontAwesomeIcons.tag,
+                label: tag.name,
+                selected: settings.defaultView == TodoView.tag(tag.name),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(TodoView.tag(tag.name)),
               ),
           ],
         ),

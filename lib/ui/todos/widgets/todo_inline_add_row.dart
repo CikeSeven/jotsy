@@ -58,6 +58,9 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
     ..fade = _highlightFade;
   final FocusNode _focus = FocusNode();
   final Set<TodoQuickTokenKind> _ignored = <TodoQuickTokenKind>{};
+
+  /// 单个点掉的识别标签（[TodoTags.keyOf] 键）。
+  final Set<String> _ignoredTags = <String>{};
   bool _editing = false;
   bool _saving = false;
 
@@ -114,8 +117,19 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
     enabled: ref.read(todoSettingsProvider).smartParse,
     today: _today,
     lists: ref.read(todoListsProvider).value ?? const <TodoListRow>[],
+    tags: <String>[
+      for (final usage
+          in ref.read(todoTagsProvider).value ?? const <TodoTagUsage>[])
+        usage.name,
+    ],
     ignore: _ignored,
+    ignoreTags: _ignoredTags,
   );
+
+  void _resetIgnored() {
+    _ignored.clear();
+    _ignoredTags.clear();
+  }
 
   /// 控制器的通知里只有文字或选区变了才重新识别：高亮淡入的每一帧也会
   /// 通知（让输入框重画），不能拿来重算。
@@ -128,7 +142,7 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
   }
 
   void _onTextChanged() {
-    if (_controller.text.isEmpty) _ignored.clear();
+    if (_controller.text.isEmpty) _resetIgnored();
     final parse = _parse();
     final ranges = <TextRange>[for (final token in parse.tokens) token.range];
     final gained = _controller.gainsHighlights(ranges);
@@ -193,12 +207,14 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
               reminders: <TodoReminder>[?reminder],
               repeat: date == null ? null : parse.repeat?.ruleFrom(date),
               linkedDiaryId: preset.linkedDiaryId,
+              // 视图预填的（标签视图里为这个标签）在前，识别出的接在后面。
+              tags: <String>[...preset.tags, ...parse.tags],
             ),
           );
       if (reminder != null && mounted) {
         unawaited(ensureTodoReminderPermission(context, ref));
       }
-      _ignored.clear();
+      _resetIgnored();
       _controller.clear();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -339,6 +355,10 @@ class _TodoInlineAddRowState extends ConsumerState<TodoInlineAddRow>
                         .allDayReminderMinute,
                     onDismiss: (TodoQuickTokenKind kind) {
                       _ignored.add(kind);
+                      _onTextChanged();
+                    },
+                    onDismissTag: (String tag) {
+                      _ignoredTags.add(TodoTags.keyOf(tag));
                       _onTextChanged();
                     },
                   ),

@@ -12,7 +12,7 @@ import 'todo_field_pill.dart';
 import 'todo_labels.dart';
 
 /// 快速新建面板底部的一行属性按钮（40 高、可横向滚动）：日期、提醒、重复、
-/// 清单与优先级（4 项弹出菜单）。显示的都是此刻生效的值（手动选的 > 识别
+/// 清单、优先级（4 项弹出菜单）与标签。显示的都是此刻生效的值（手动选的 > 识别
 /// 出的 > 视图预填的），点开对应的面板由宿主处理。
 class TodoQuickAddFields extends StatelessWidget {
   const TodoQuickAddFields({
@@ -32,6 +32,9 @@ class TodoQuickAddFields extends StatelessWidget {
     required this.onClearRepeat,
     required this.onPickList,
     required this.onPriority,
+    required this.tags,
+    required this.onPickTags,
+    required this.onClearTags,
   });
 
   final DateTime today;
@@ -49,6 +52,9 @@ class TodoQuickAddFields extends StatelessWidget {
   final VoidCallback onClearRepeat;
   final VoidCallback onPickList;
   final ValueChanged<TodoPriority> onPriority;
+  final List<String> tags;
+  final VoidCallback onPickTags;
+  final VoidCallback onClearTags;
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +143,16 @@ class TodoQuickAddFields extends StatelessWidget {
                     set: priority != TodoPriority.none,
                     onTap: menu.toggle,
                   ),
+            ),
+            _pill(
+              icon: FontAwesomeIcons.tag,
+              iconColor: tags.isEmpty ? null : scheme.tertiary,
+              label: tags.isEmpty
+                  ? l10n.todoFieldTags
+                  : tags.map((String tag) => '@$tag').join(' '),
+              set: tags.isNotEmpty,
+              onTap: onPickTags,
+              onClear: tags.isEmpty ? null : onClearTags,
             ),
           ],
         ),

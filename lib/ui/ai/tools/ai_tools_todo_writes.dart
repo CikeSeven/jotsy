@@ -56,7 +56,7 @@ class CreateTodoTool extends AiTool {
       'shortcut for one reminder before the due time; `reminders` and '
       '`repeat` set them fully (a to-do without `date` then gets today). '
       '`steps` are sub-tasks. `list` is a list name ("" = inbox; omitted = '
-      'the default list).';
+      'the default list). `tags` are to-do tags, not diary tags.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'diary_id'};
@@ -80,6 +80,7 @@ class CreateTodoTool extends AiTool {
       ),
       'list': AiStringSchema(allowEmpty: true),
       'priority': AiStringSchema(enumValues: aiTodoPriorities),
+      'tags': aiTodoTagsSchema,
       'diary_id': AiStringSchema(description: 'Link the to-do to an entry.'),
     },
     required: <String>['title'],
@@ -154,6 +155,9 @@ class CreateTodoTool extends AiTool {
           for (final step in args['steps'] as List? ?? const []) step as String,
         ]),
         linkedDiaryId: diaryId,
+        tags: <String>[
+          for (final tag in args['tags'] as List? ?? const []) tag as String,
+        ],
       ),
     );
     // 与待办页同一口径：先保存提醒，再确认系统允许发通知。
@@ -202,8 +206,9 @@ class UpdateTodosTool extends AiTool {
       '`time` alone keeps each date; `all_day` removes the time; '
       '`clear_due` removes the date (and repeat). `reminders` replaces all '
       'reminders ([] removes them); `repeat` replaces the repeat rule. '
-      '`list` ("" = inbox), `priority`, and `diary_id` ("" unlinks). `title` '
-      'and `note` only for one to-do at a time. Steps: edit_todo_steps.';
+      '`list` ("" = inbox), `priority`, `tags` (to-do tags, not diary tags; '
+      'replaces all, [] removes) and `diary_id` ("" unlinks). `title` and '
+      '`note` only for one to-do at a time. Steps: edit_todo_steps.';
 
   @override
   Set<String> get diaryIdArgs => const <String>{'diary_id'};
@@ -221,6 +226,7 @@ class UpdateTodosTool extends AiTool {
       'list': AiStringSchema(allowEmpty: true),
       'priority': AiStringSchema(enumValues: aiTodoPriorities),
       'diary_id': AiStringSchema(allowEmpty: true),
+      'tags': aiTodoTagsSchema,
       'title': AiStringSchema(maxLength: 500),
       'note': AiStringSchema(allowEmpty: true),
     },
@@ -326,6 +332,7 @@ class UpdateTodosTool extends AiTool {
         repeatArg != null ||
         args.containsKey('list') ||
         args.containsKey('priority') ||
+        args.containsKey('tags') ||
         diaryId != null ||
         args.containsKey('title') ||
         args.containsKey('note');
@@ -387,6 +394,12 @@ class UpdateTodosTool extends AiTool {
       );
       undo['priority'] = [for (final row in before) row.toJson()];
     }
+    if (args['tags'] case final List<Object?> tags) {
+      final before = await database.setTodosTags(ids, <String>[
+        for (final tag in tags) tag as String,
+      ]);
+      undo['tags'] = [for (final row in before) row.toJson()];
+    }
     if (diaryId != null) {
       final target = diaryId.isEmpty ? null : diaryId;
       final previous = <String, Object?>{};
@@ -437,6 +450,7 @@ class UpdateTodosTool extends AiTool {
       ('due', TodoBatchField.due),
       ('list', TodoBatchField.list),
       ('priority', TodoBatchField.priority),
+      ('tags', TodoBatchField.tags),
     ]) {
       if (data.containsKey(key)) {
         await database.restoreTodoFields(aiTodoRows(data[key]), field);

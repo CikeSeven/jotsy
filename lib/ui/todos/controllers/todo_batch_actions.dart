@@ -122,6 +122,24 @@ Future<void> setTodosPriorityWithUndo(
   }
 }
 
+/// 批量加标签 [tag]（多选栏“加标签”、桌面拖到左栏的标签上），可撤销。
+Future<void> addTagToTodosWithUndo(
+  BuildContext context,
+  AppDatabase database,
+  Iterable<String> ids,
+  String tag,
+) async {
+  final name = TodoTags.normalize(tag);
+  if (name == null) return;
+  final before = await database.addTodosTag(ids, name);
+  if (before.isEmpty || !context.mounted) return;
+  final undone = await showTodoUndoHint(
+    context,
+    context.l10n.todoBatchTaggedNotice(before.length, name),
+  );
+  if (undone) await database.restoreTodoFields(before, TodoBatchField.tags);
+}
+
 /// 批量删除（硬删除，可撤销）。
 Future<void> deleteTodosWithUndo(
   BuildContext context,

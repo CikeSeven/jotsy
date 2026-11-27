@@ -1,11 +1,11 @@
 ---
 id: todos
 title: To-dos
-summary: Turning on to-dos, lists and views, due dates, reminders, repeats, priority, steps, and links to diaries.
+summary: Turning on to-dos, lists and views, tags, due dates, reminders, repeats, priority, steps, and links to diaries.
 features: [todos]
 platforms: []
 destinations: [tab_todos, settings_todos, settings_features]
-keywords: [to-do, todo, to-dos, tasks, list, inbox, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
+keywords: [to-do, todo, to-dos, tasks, list, inbox, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
 ---
 To-dos are a task list separate from your diary, with due dates, reminders, repeats and priorities. Checkboxes inside a diary's text are unrelated to them.
 
@@ -15,7 +15,14 @@ To-dos are off by default: turn on "To-dos" in Settings → Features and a "To-d
 ## Views and lists
 Tap the page title (such as "Today ▾"; wide windows show them in the left column) to switch views: Today, Planned, Important, All, Inbox and Completed, followed by your lists. To-dos not in a list live in the Inbox. Use "New list" to create one with a name, color and icon. The page's "More" menu lets you edit or delete a list, "Manage lists", change the sort, show or hide completed items, and clear completed. Deleting a list deletes its to-dos too (undoable from the notice).
 - Sort by: Manual, Due date, Priority or Date created. With Manual, in the Inbox or a list you can hold the handle at the end of an open to-do and drag it to reorder (not while selecting).
-- Search: the magnifier "Search to-dos" in the page header looks through titles, notes and steps; completed to-dos are listed too (open ones first).
+- Search: the magnifier "Search to-dos" in the page header looks through titles, notes and steps; completed to-dos are listed too (open ones first) and matches are highlighted. Below the search box you can filter by status, list, tag, high priority or having a date, even without typing a keyword. On a computer, Ctrl / ⌘ + F on the to-do tab opens to-do search.
+
+## Tags
+To-dos have their own tags, completely separate from diary tags: diary tag management, the tag bar and search never show to-do tags, and to-dos never show diary tags.
+- Tagging: type "@home" while adding a to-do (with a space before it; the @ in an email address doesn't count), or tap "Tags" in the details or the new to-do panel to pick or create one. Each to-do can have up to 10.
+- Browsing: the "Tags" group in the view panel and the left column lists every to-do tag; open one to see its open to-dos, and new to-dos added there get the tag. "Open to" can be a tag too.
+- In bulk: select to-dos, then "More → Add tag" at the bottom; on a computer you can drag to-dos onto a tag in the left column.
+- Managing: "Manage" beside the Tags group renames a tag (using an existing name merges the two) or deletes it (it is only removed from the to-dos; they stay). Both can be undone from the notice.
 
 ## Adding to-dos
 - Tap "New to-do" at the bottom right, type in "What needs doing?" and press Enter. The panel stays open so you can keep adding; the buttons below set Date, Reminders, Repeat, List and Priority.
@@ -26,7 +33,7 @@ Tap the page title (such as "Today ▾"; wide windows show them in the left colu
 - Tap the checkbox to complete a to-do; you can undo from the notice. On a phone, swipe right to complete and left to delete.
 - Tap a to-do to open its details: edit the title, set date, reminders, repeat, priority, list and linked diary, and add steps and notes. "More" lets you duplicate or delete it.
 - Long-press to start selecting; the bottom bar can complete, change the date, move to a list, set priority or delete in bulk. The Overdue group has "Move all to today".
-- On a computer, right-click a to-do for Mark as done, Move to today, Move to list… and Delete.
+- On a computer, right-click a to-do for Mark as done, Reschedule…, Move to list… and Delete.
 
 ## Dates, reminders and repeats
 - Date: Today, Tomorrow, Next Monday or Pick a date…, then optionally set a time or make it all day.
@@ -42,4 +49,4 @@ Go to Settings → To-dos (in the "Organize" group) for Show completed, Open to,
 - On phones, reminders are delivered by the system on time; the app asks for notification permission the first time you add a reminder. Android also has "Hide content on the lock screen", and "Reminders late or missing?" explains what to do if reminders are often late.
 - On computers, reminders only appear while Jotsy is open; reminders that come due while it's closed won't pop up.
 - Deleted to-dos don't go to the recycle bin; you can only undo from the notice.
-- The AI assistant can create, change, complete, reopen and delete to-dos, set reminders, repeats and steps, and create, rename or delete lists, for example "Remind me to hand in the report tomorrow at 3pm", "Remind me every Monday to send the weekly report" or "Split groceries into milk and eggs". It can also change to-do settings such as showing completed to-dos, sort order, the view to open on, the default list and smart recognition.
+- The AI assistant can create, change, complete, reopen and delete to-dos, set reminders, repeats, steps and to-do tags, and create, rename or delete lists, for example "Remind me to hand in the report tomorrow at 3pm", "Remind me every Monday to send the weekly report" or "Split groceries into milk and eggs". It can also change to-do settings such as showing completed to-dos, sort order, the view to open on, the default list and smart recognition.

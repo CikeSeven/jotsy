@@ -14,6 +14,7 @@ class TodoInput {
     this.steps = const <TodoStep>[],
     this.linkedDiaryId,
     this.sourceDiaryId,
+    this.tags = const <String>[],
   });
 
   final String title;
@@ -33,6 +34,9 @@ class TodoInput {
 
   /// 从哪篇日记转来（写进 `metadata`）。
   final String? sourceDiaryId;
+
+  /// 待办标签（规整后写进 `metadata.tags`，见 [TodoTags]）。
+  final List<String> tags;
 }
 
 /// 待办写入：新建、逐项修改、拖动排序与删除（查询见 `_AppDatabaseTodoQueries`）。
@@ -68,6 +72,7 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
         final id = _newBusinessUuid();
         ids.add(id);
         final due = input.dueDate;
+        final tags = TodoTags.normalizeAll(input.tags);
         created.add(
           TodosCompanion.insert(
             todoId: id,
@@ -86,6 +91,7 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
               jsonEncode(<String, Object?>{
                 if (input.sourceDiaryId != null)
                   TodoMetadataKeys.sourceDiaryId: input.sourceDiaryId,
+                if (tags.isNotEmpty) TodoTags.metadataKey: tags,
               }),
             ),
             createdAt: now,

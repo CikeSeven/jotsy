@@ -26,6 +26,9 @@ import 'todo_quick_input.dart';
 import 'todo_reminder_sheet.dart';
 import 'todo_repeat_sheet.dart';
 import 'todo_sheet.dart';
+import 'todo_tag_picker_sheet.dart';
+
+part 'todo_quick_add_pickers.dart';
 
 /// 快速新建待办时预先带上的字段（来自当前视图、日历选中日或日记）。
 @immutable
@@ -36,6 +39,7 @@ class TodoQuickAddPreset {
     this.priority = TodoPriority.none,
     this.title = '',
     this.linkedDiaryId,
+    this.tags = const <String>[],
   });
 
   final String? listId;
@@ -43,6 +47,9 @@ class TodoQuickAddPreset {
   final TodoPriority priority;
   final String title;
   final String? linkedDiaryId;
+
+  /// 预先带上的标签（在标签视图里新建时为这个标签）。
+  final List<String> tags;
 }
 
 /// 快速新建待办：大号输入框（智能识别的片段高亮）+ 右侧主色圆形发送键，
@@ -89,6 +96,7 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
     listId: widget.preset.listId,
     dueDate: widget.preset.dueDate,
     priority: widget.preset.priority,
+    tags: widget.preset.tags,
   );
   bool _saving = false;
 
@@ -122,7 +130,13 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
     enabled: ref.read(todoSettingsProvider).smartParse,
     today: _today,
     lists: ref.read(todoListsProvider).value ?? const <TodoListRow>[],
+    tags: <String>[
+      for (final usage
+          in ref.read(todoTagsProvider).value ?? const <TodoTagUsage>[])
+        usage.name,
+    ],
     ignore: _draft.ignore,
+    ignoreTags: _draft.ignoredTags,
   );
 
   TodoQuickParse _parse() => _parseText(_title.text);
@@ -138,7 +152,7 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
   }
 
   void _onChanged() {
-    if (_title.text.isEmpty) _draft.ignored.clear();
+    if (_title.text.isEmpty) _draft.resetIgnored();
     final ranges = <TextRange>[
       for (final token in _parse().tokens) token.range,
     ];
@@ -175,7 +189,7 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
         for (var i = 0; i < ids.length; i++)
           TodoAddedItem(id: ids[i], title: inputs[i].title),
       ]);
-      _draft.ignored.clear();
+      _draft.resetIgnored();
       _title.clear();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -214,70 +228,8 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
     await ref.read(appDatabaseProvider).deleteTodo(id);
   }
 
-  Future<void> _pickDue(TodoQuickParse parse) async {
-    final choice = await showTodoDueSheet(
-      context,
-      date: _draft.effDate(parse),
-      minute: _draft.effMinute(parse),
-      today: _today,
-    );
-    if (choice == null || !mounted) return;
-    setState(
-      () => _draft.pickDue(
-        choice.date,
-        choice.minute,
-        parse,
-        allDayMinute: _allDayMinute,
-      ),
-    );
-    _onChanged();
-  }
-
-  Future<void> _pickReminders(TodoQuickParse parse) async {
-    final due = _draft.effDate(parse) ?? _today;
-    await showTodoReminderSheet(
-      context,
-      reminders: _draft.effReminders(parse, _allDayMinute),
-      dueDate: due,
-      dueMinute: _draft.effDate(parse) == null ? null : _draft.effMinute(parse),
-      allDayMinute: _allDayMinute,
-      onChanged: (List<TodoReminder> next) {
-        setState(() => _draft.setReminders(next, parse, due));
-        if (next.isNotEmpty) {
-          unawaited(ensureTodoReminderPermission(context, ref));
-        }
-      },
-      onDueMoved: (TodoDueMove move) =>
-          setState(() => _draft.moveDue(move.date, move.minute)),
-    );
-    _onChanged();
-  }
-
-  Future<void> _pickRepeat(TodoQuickParse parse) async {
-    final anchor = _draft.effDate(parse) ?? _today;
-    final choice = await showTodoRepeatSheet(
-      context,
-      current: _draft.effRepeat(parse),
-      anchor: anchor,
-    );
-    if (choice == null || !mounted) return;
-    setState(() => _draft.setRepeat(choice.rule, parse, anchor));
-    _onChanged();
-  }
-
-  Future<void> _pickList() async {
-    final choice = await showTodoListPickerSheet(
-      context,
-      current: _draft.listId,
-    );
-    if (choice == null || !mounted) return;
-    setState(() {
-      _draft
-        ..listId = choice.listId
-        ..listPicked = true;
-    });
-    _onChanged();
-  }
+  /// 属性面板（part 文件里的扩展）改了手上的值后重建。
+  void _update(VoidCallback fn) => setState(fn);
 
   @override
   Widget build(BuildContext context) {
@@ -399,6 +351,12 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
                 ..priority = value
                 ..priorityPicked = true;
             });
+            _onChanged();
+          },
+          tags: _draft.effTags(parse),
+          onPickTags: () => unawaited(_pickTags(parse)),
+          onClearTags: () {
+            setState(_draft.clearTags);
             _onChanged();
           },
         ),

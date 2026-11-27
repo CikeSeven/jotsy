@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/database/todo_tags.dart';
+
 /// 待办页左侧 / 顶部可切换的智能视图。枚举名即持久化值（“打开时显示”）。
 enum TodoSmartView {
   /// 截止日不晚于今天的未完成待办（逾期的在最上面一组）。
@@ -32,15 +34,18 @@ const List<TodoSmartView> kTodoSmartViews = <TodoSmartView>[
   TodoSmartView.completed,
 ];
 
-/// 待办页当前显示的内容：一个智能视图，或一个清单。
+/// 待办页当前显示的内容：一个智能视图、一个清单，或一个待办标签。
 ///
 /// 页面临时状态（切换视图不写库）；“打开时显示”的选择以 [key] 存进
 /// `TodoSettings`。
 @immutable
 class TodoView {
-  const TodoView.smart(TodoSmartView this.smart) : listId = null;
+  const TodoView.smart(TodoSmartView this.smart) : listId = null, tag = null;
 
-  const TodoView.list(String this.listId) : smart = null;
+  const TodoView.list(String this.listId) : smart = null, tag = null;
+
+  /// 一个待办标签下的全部未完成待办（与日记标签无关）。
+  const TodoView.tag(String this.tag) : smart = null, listId = null;
 
   static const TodoView today = TodoView.smart(TodoSmartView.today);
   static const TodoView inbox = TodoView.smart(TodoSmartView.inbox);
@@ -48,11 +53,18 @@ class TodoView {
   /// 智能视图；清单时为 null。
   final TodoSmartView? smart;
 
-  /// 清单的业务 id；智能视图时为 null。
+  /// 清单的业务 id；不是清单视图时为 null。
   final String? listId;
 
-  /// 持久化键：智能视图为枚举名，清单为 `list:<id>`。
-  String get key => listId != null ? 'list:$listId' : smart!.name;
+  /// 标签名；不是标签视图时为 null。同一标签不分大小写（见 [TodoTags]）。
+  final String? tag;
+
+  /// 持久化键：智能视图为枚举名，清单为 `list:<id>`，标签为 `tag:<名称>`。
+  String get key => switch ((listId, tag)) {
+    (final String id, _) => 'list:$id',
+    (_, final String name) => 'tag:$name',
+    _ => smart!.name,
+  };
 
   /// 解析 [key]；认不出时为 null（调用方回到“今天”）。
   static TodoView? parse(String? key) {
@@ -60,6 +72,10 @@ class TodoView {
     if (key.startsWith('list:')) {
       final id = key.substring(5);
       return id.isEmpty ? null : TodoView.list(id);
+    }
+    if (key.startsWith('tag:')) {
+      final name = TodoTags.normalize(key.substring(4));
+      return name == null ? null : TodoView.tag(name);
     }
     final smart = TodoSmartView.values.asNameMap()[key];
     return smart == null ? null : TodoView.smart(smart);
@@ -70,9 +86,10 @@ class TodoView {
   bool get isSingleList => listId != null || smart == TodoSmartView.inbox;
 
   /// 桌面上能否把待办行拖到左栏的这一格上：今天（改到今天）、收集箱与各个
-  /// 清单（移进去）。
+  /// 清单（移进去）、各个标签（加上这个标签）。
   bool get acceptsDrop =>
       listId != null ||
+      tag != null ||
       smart == TodoSmartView.today ||
       smart == TodoSmartView.inbox;
 
@@ -93,12 +110,24 @@ class TodoView {
   /// 在这个视图里新建的待办预先带上的优先级：“重要”视图带高优先级。
   bool get presetsHighPriority => smart == TodoSmartView.important;
 
-  @override
-  bool operator ==(Object other) =>
-      other is TodoView && other.smart == smart && other.listId == listId;
+  /// 在这个视图里新建的待办预先带上的标签：标签视图带它自己（否则新建的
+  /// 不在当前列表里，看起来像没建成）。
+  List<String> get presetTags => <String>[?tag];
+
+  String? get _tagKey => switch (tag) {
+    final String name => TodoTags.keyOf(name),
+    null => null,
+  };
 
   @override
-  int get hashCode => Object.hash(smart, listId);
+  bool operator ==(Object other) =>
+      other is TodoView &&
+      other.smart == smart &&
+      other.listId == listId &&
+      other._tagKey == _tagKey;
+
+  @override
+  int get hashCode => Object.hash(smart, listId, _tagKey);
 
   @override
   String toString() => 'TodoView($key)';

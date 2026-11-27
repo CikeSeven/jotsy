@@ -26,6 +26,11 @@ final todoListsProvider = StreamProvider<List<TodoListRow>>((Ref ref) {
   return ref.watch(appDatabaseProvider).watchTodoLists();
 });
 
+/// 全部待办标签及用量（按名称排序）。与日记标签无关（见 `TodoTags`）。
+final todoTagsProvider = StreamProvider<List<TodoTagUsage>>((Ref ref) {
+  return ref.watch(appDatabaseProvider).watchTodoTags();
+});
+
 /// 每个清单的完成进度（键为清单业务 id，收集箱为 null；没有待办的清单不在
 /// 表里，按 [TodoListProgress.empty] 处理）。
 final todoListProgressProvider = StreamProvider<Map<String?, TodoListProgress>>(

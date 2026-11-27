@@ -20,6 +20,7 @@ import 'notebook_payload.dart';
 import 'sync_rows.dart';
 import 'todo_recurrence.dart';
 import 'todo_rules.dart';
+import 'todo_tags.dart';
 import '../services/app_data_directory.dart';
 
 export 'ai_message_images.dart';
@@ -34,6 +35,7 @@ export 'notebook_rules.dart';
 export 'sync_rows.dart';
 export 'todo_recurrence.dart';
 export 'todo_rules.dart';
+export 'todo_tags.dart';
 
 part 'app_database.g.dart';
 part 'app_database_schema.dart';
@@ -80,6 +82,7 @@ part 'app_database_todo_complete_ops.dart';
 part 'app_database_todo_list_ops.dart';
 part 'app_database_todo_batch_ops.dart';
 part 'app_database_todo_detail_ops.dart';
+part 'app_database_todo_tag_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -135,6 +138,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseTodoListOps,
         _AppDatabaseTodoBatchOps,
         _AppDatabaseTodoDetailOps,
+        _AppDatabaseTodoTagOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 

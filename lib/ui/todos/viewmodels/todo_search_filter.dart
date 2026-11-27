@@ -5,8 +5,8 @@ import '../../../core/database/app_database.dart';
 /// 待办搜索的状态筛选。
 enum TodoSearchStatus { all, open, done }
 
-/// 待办搜索页的筛选（页面临时状态，不持久化）：状态、清单、只看高优先级、
-/// 只看有日期的。纯数据 + 纯函数。
+/// 待办搜索页的筛选（页面临时状态，不持久化）：状态、清单、标签、只看高
+/// 优先级、只看有日期的。纯数据 + 纯函数。
 @immutable
 class TodoSearchFilter {
   const TodoSearchFilter({
@@ -15,6 +15,7 @@ class TodoSearchFilter {
     this.listId,
     this.highOnly = false,
     this.datedOnly = false,
+    this.tag,
   });
 
   final TodoSearchStatus status;
@@ -25,9 +26,16 @@ class TodoSearchFilter {
   final bool highOnly;
   final bool datedOnly;
 
+  /// 只看带这个待办标签的（不分大小写）；null 为不按标签筛。
+  final String? tag;
+
   /// 什么都没筛。
   bool get isEmpty =>
-      status == TodoSearchStatus.all && !listChosen && !highOnly && !datedOnly;
+      status == TodoSearchStatus.all &&
+      !listChosen &&
+      !highOnly &&
+      !datedOnly &&
+      tag == null;
 
   bool matches(TodoRow row) {
     final done = row.completedAt != null;
@@ -36,6 +44,11 @@ class TodoSearchFilter {
     if (listChosen && row.listId != listId) return false;
     if (highOnly && row.priority != TodoPriority.high.index) return false;
     if (datedOnly && row.dueDate == null) return false;
+    final tag = this.tag;
+    if (tag != null &&
+        !TodoTags.contains(TodoTags.ofMetadataText(row.metadata), tag)) {
+      return false;
+    }
     return true;
   }
 
@@ -56,6 +69,7 @@ class TodoSearchFilter {
     listId: listId,
     highOnly: highOnly ?? this.highOnly,
     datedOnly: datedOnly ?? this.datedOnly,
+    tag: tag,
   );
 
   /// 只看某个清单（null 即收集箱）。
@@ -65,6 +79,7 @@ class TodoSearchFilter {
     listId: listId,
     highOnly: highOnly,
     datedOnly: datedOnly,
+    tag: tag,
   );
 
   /// 不再按清单筛。
@@ -72,5 +87,16 @@ class TodoSearchFilter {
     status: status,
     highOnly: highOnly,
     datedOnly: datedOnly,
+    tag: tag,
+  );
+
+  /// 只看带标签 [tag] 的；null 为不再按标签筛。
+  TodoSearchFilter withTag(String? tag) => TodoSearchFilter(
+    status: status,
+    listChosen: listChosen,
+    listId: listId,
+    highOnly: highOnly,
+    datedOnly: datedOnly,
+    tag: tag,
   );
 }

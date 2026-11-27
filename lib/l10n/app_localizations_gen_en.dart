@@ -17460,6 +17460,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'The lock screen only shows that there\'s a reminder; unlock to see what it is';
 
   @override
+  String get todoSettingsDigest => 'Daily digest';
+
+  @override
+  String get todoSettingsDigestSubtitle =>
+      'A notification each day with how many to-dos are due and how many are overdue';
+
+  @override
+  String get todoSettingsDigestTime => 'Digest time';
+
+  @override
+  String todoDigestTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos for today',
+      one: '1 to-do for today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoDigestOverdue(int count) {
+    return '$count overdue';
+  }
+
+  @override
   String get todoSettingsDesktopNote =>
       'On computers, reminders only appear while Jotsy is open. Reminders that come due while it\'s closed won\'t pop up.';
 

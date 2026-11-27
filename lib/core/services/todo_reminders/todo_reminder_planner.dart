@@ -16,6 +16,7 @@ class PlannedReminder {
     required this.dueMinute,
     required this.fireAt,
     this.snooze = false,
+    this.digest = false,
   });
 
   /// 通知 id：由 [todoId] 与 [fireAt] 决定（见 [todoReminderNotificationId]），
@@ -34,6 +35,10 @@ class PlannedReminder {
   /// 是不是“稍后提醒”排出的那一条。
   final bool snooze;
 
+  /// 是不是每日摘要（见 `planTodoDigests`）：[todoId] 为空，通知不带“完成 /
+  /// 稍后提醒”按钮，点开切到待办 Tab 的“今天”。
+  final bool digest;
+
   /// 通知的 payload：点开或按通知上的按钮时据此找到待办与这一次。
   String get payload => encodeTodoReminderPayload(
     todoId: todoId,
@@ -49,11 +54,20 @@ class PlannedReminder {
       other.occurrence == occurrence &&
       other.dueMinute == dueMinute &&
       other.fireAt == fireAt &&
-      other.snooze == snooze;
+      other.snooze == snooze &&
+      other.digest == digest;
 
   @override
-  int get hashCode =>
-      Object.hash(id, todoId, title, occurrence, dueMinute, fireAt, snooze);
+  int get hashCode => Object.hash(
+    id,
+    todoId,
+    title,
+    occurrence,
+    dueMinute,
+    fireAt,
+    snooze,
+    digest,
+  );
 }
 
 /// 通知 payload 的前缀：对账时只认带这个前缀的待办通知，不碰别的通知。

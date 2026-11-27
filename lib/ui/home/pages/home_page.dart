@@ -18,6 +18,7 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/todos/controllers/todo_navigation.dart';
+import 'package:node_diary/ui/todos/models/todo_view.dart';
 import 'package:node_diary/ui/todos/providers/todo_reminder_providers.dart';
 import 'package:node_diary/ui/todos/pages/todos_page.dart';
 import 'package:node_diary/ui/widgets/scroll_chrome_hider.dart';
@@ -365,10 +366,15 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(todoNotificationOpenRequestProvider.notifier).consume();
     final index = _tabs.indexOf(HomeTab.todos);
     if (index < 0) return;
+    // 每日摘要（todoId 为空）：切到待办 Tab 的“今天”，不打开详情。
+    final digest = todoId.isEmpty;
+    if (digest) {
+      ref.read(todoViewRequestProvider.notifier).request(TodoView.today);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       await _controller.switchToIndex(index);
-      if (mounted) await openTodoDetail(context, todoId);
+      if (mounted && !digest) await openTodoDetail(context, todoId);
     });
   }
 

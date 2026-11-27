@@ -15228,6 +15228,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoSettingsHideContentSubtitle => '锁屏上只显示有一条提醒，解锁后才看得到内容';
 
   @override
+  String get todoSettingsDigest => '每日摘要';
+
+  @override
+  String get todoSettingsDigestSubtitle => '每天定时通知今天有几件待办、几件已逾期';
+
+  @override
+  String get todoSettingsDigestTime => '摘要时间';
+
+  @override
+  String todoDigestTitle(int count) {
+    return '今天有 $count 件待办';
+  }
+
+  @override
+  String todoDigestOverdue(int count) {
+    return '其中 $count 件已逾期';
+  }
+
+  @override
   String get todoSettingsDesktopNote => '电脑上只在 Jotsy 打开时提醒，关掉应用后到点的提醒不会弹出。';
 
   @override

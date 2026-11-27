@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/todos/pages/todo_settings_page.dart';
+import 'package:node_diary/ui/todos/providers/todo_providers.dart';
 import 'package:node_diary/ui/todos/providers/todo_reminder_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -159,6 +160,45 @@ void main() {
         await tester.tap(find.text('提醒不准时？'));
         await tester.pumpAndSettle();
         expect(find.text('已开启'), findsNWidgets(3));
+      } finally {
+        await unmount(tester, database);
+      }
+    },
+  );
+  testWidgets(
+    'turning on the daily digest asks for notifications and reveals its time',
+    (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        _nativeChannel,
+        (call) async => true,
+      );
+      final gateway = FakeTodoNotificationGateway()..enabled = false;
+      final database = await pumpSettings(tester, gateway: gateway);
+      try {
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(TodoSettingsPage)),
+        );
+        expect(find.text('摘要时间'), findsNothing);
+
+        await Scrollable.ensureVisible(
+          tester.element(find.text('每日摘要')),
+          alignment: 0.5,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('每日摘要'));
+        await settle(tester);
+        await tester.pumpAndSettle();
+
+        expect(container.read(todoSettingsProvider).digestMinute, 8 * 60);
+        expect(find.text('摘要时间'), findsOneWidget);
+        expect(gateway.permissionRequests, 1);
+
+        await tester.tap(find.text('每日摘要'));
+        await settle(tester);
+        await tester.pumpAndSettle();
+        expect(container.read(todoSettingsProvider).digestMinute, isNull);
+        expect(find.text('摘要时间'), findsNothing);
       } finally {
         await unmount(tester, database);
       }

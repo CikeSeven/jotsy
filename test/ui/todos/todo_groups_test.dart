@@ -238,6 +238,24 @@ void main() {
     expect(TodoSettings.decode('not json'), TodoSettings.defaults);
   });
 
+  test('the daily digest time is kept only when it is on and valid', () {
+    const on = TodoSettings(digestMinute: 7 * 60 + 30);
+    expect(TodoSettings.decode(on.encode()).digestMinute, 7 * 60 + 30);
+    expect(
+      on.copyWith(clearDigest: true),
+      TodoSettings.defaults,
+      reason: '关掉后回到默认、设置键可以移除',
+    );
+    const other = TodoSettings(snoozeMinutes: 30);
+    expect(
+      other.encode(),
+      isNot(contains('digestMinute')),
+      reason: '关着时不写，旧设置升级后逐字节不变',
+    );
+    expect(TodoSettings.decode('{"digestMinute":1440}').digestMinute, isNull);
+    expect(TodoSettings.decode('{"digestMinute":"8:00"}').digestMinute, isNull);
+  });
+
   test('sort moves old implicit manual to priority but keeps real choices', () {
     TodoSortMode sortOf(String raw) => TodoSettings.decode(raw).sort;
     // 旧版本顺带写出的默认值“手动”当作没选，换成新的默认值。

@@ -30,6 +30,7 @@ import '../controllers/todo_view_switch.dart';
 import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
+import '../providers/todo_reminder_providers.dart';
 import '../sections/todo_list_callbacks.dart';
 import '../sections/todo_selection_bar.dart';
 import '../sections/todo_view_sheet.dart';
@@ -166,6 +167,17 @@ class _TodosPageState extends ConsumerState<TodosPage>
     _lifecycle = AppLifecycleListener(
       onResume: () => ref.read(todoTodayProvider.notifier).refresh(),
     );
+    // 点每日摘要通知：首页切过来并要求换到“今天”（本页还没建好时请求先到，
+    // fireImmediately 接住）。换视图要用到布局与动效，消费请求也不能在
+    // 构建中改 provider，都放到帧后。
+    ref.listenManual<TodoView?>(todoViewRequestProvider, (_, TodoView? view) {
+      if (view == null) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(todoViewRequestProvider.notifier).consume();
+        _select(view);
+      });
+    }, fireImmediately: true);
   }
 
   @override

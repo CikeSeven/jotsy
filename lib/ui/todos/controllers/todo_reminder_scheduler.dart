@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
+import '../../../core/services/todo_reminders/todo_digest_planner.dart';
 import '../../../core/services/todo_reminders/todo_notification_actions.dart';
 import '../../../core/services/todo_reminders/todo_notification_gateway.dart';
 import '../../../core/services/todo_reminders/todo_reminder_format.dart';
@@ -215,32 +216,55 @@ class TodoReminderScheduler {
     final exact = AppPlatform.isAndroid
         ? await gateway.exactAlarmsAllowed()
         : null;
-    return <int, TodoNotificationRequest>{
-      for (final reminder in planTodoReminders(
-        todos: todos,
-        now: clock,
-        limit: limit,
-        pendingIds: AppPlatform.supportsBackgroundReminders
-            ? pendingIds
-            : const <int>{},
-      ))
-        reminder.id: TodoNotificationRequest(
+    final kept = AppPlatform.supportsBackgroundReminders
+        ? pendingIds
+        : const <int>{};
+    final digestMinute = settings.digestMinute;
+    // 摘要最多一周 7 条，先从上限里留出来，提醒排在剩下的名额里。
+    final digests = digestMinute == null
+        ? const <PlannedTodoDigest>[]
+        : planTodoDigests(
+            todos: todos,
+            now: clock,
+            minute: digestMinute,
+            pendingIds: kept,
+          );
+    TodoNotificationRequest request(PlannedReminder reminder, String body) =>
+        TodoNotificationRequest(
           reminder: reminder,
-          body: formatTodoReminderNotificationBody(l10n, reminder),
+          body: body,
           languageCode: l10n.localeName,
           snoozeMinutes: settings.snoozeMinutes,
           hideOnLockScreen: settings.hideContentOnLockScreen,
           androidExact: exact,
+        );
+    final requests = <int, TodoNotificationRequest>{
+      for (final reminder in planTodoReminders(
+        todos: todos,
+        now: clock,
+        limit: limit - digests.length,
+        pendingIds: kept,
+      ))
+        reminder.id: request(
+          reminder,
+          formatTodoReminderNotificationBody(l10n, reminder),
         ),
     };
+    for (final digest in digests) {
+      final text = formatTodoDigestNotification(l10n, digest);
+      requests[digest.id] = request(digest.toReminder(text.title), text.body);
+    }
+    return requests;
   }
 
   Future<void> _handleAction(TodoNotificationEvent event) async {
     if (_disposed) return;
     if (event.action == TodoNotificationAction.open) {
+      // 每日摘要的 todoId 为空：首页据此切到待办 Tab 的“今天”。
       onOpen(event.todoId);
       return;
     }
+    if (event.todoId.isEmpty) return;
     await applyTodoNotificationAction(database, event, now: now());
   }
 

@@ -31,6 +31,8 @@ data class TodoReminderRecord(
   val channelDescription: String,
   val completeLabel: String,
   val snoozeLabel: String,
+  /** False for the daily digest: it is not tied to one to-do, so no complete / snooze buttons. */
+  val actions: Boolean = true,
 ) {
   fun toJson(): JSONObject = JSONObject().apply {
     put("id", id)
@@ -51,6 +53,7 @@ data class TodoReminderRecord(
     put("channelDescription", channelDescription)
     put("completeLabel", completeLabel)
     put("snoozeLabel", snoozeLabel)
+    put("actions", actions)
   }
 
   fun toPendingMap(): Map<String, Any> = mapOf(
@@ -97,6 +100,7 @@ data class TodoReminderRecord(
           channelDescription = obj.optString("channelDescription", ""),
           completeLabel = obj.optString("completeLabel", "Complete"),
           snoozeLabel = obj.optString("snoozeLabel", "Snooze"),
+          actions = obj.optBoolean("actions", true),
         )
       }.getOrNull()
     }
@@ -128,6 +132,7 @@ data class TodoReminderRecord(
           ?: "Complete",
         snoozeLabel = (args["snoozeLabel"] as? String)?.takeIf { it.isNotBlank() }
           ?: "Snooze",
+        actions = args["actions"] as? Boolean ?: true,
       )
     }
   }

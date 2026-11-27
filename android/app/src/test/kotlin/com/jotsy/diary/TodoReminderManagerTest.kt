@@ -153,6 +153,27 @@ class TodoReminderManagerTest {
   }
 
   @Test
+  fun `daily digest posts without buttons and keeps the flag across restarts`() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      ShadowAlarmManager.setCanScheduleExactAlarms(true)
+    }
+    val now = 1_999_999_000_000L
+    val digest = sampleRecord(id = 103, todoId = "", fireAtMillis = now + 10_000L)
+      .copy(actions = false)
+    TodoReminderManager.schedule(context, digest, exact = true, nowMillis = now)
+    assertEquals(false, TodoReminderStore.get(context, 103)?.actions)
+
+    TodoReminderReceiver().onReceive(
+      context,
+      Intent(TodoReminderManager.ACTION_FIRE).putExtra(TodoReminderManager.EXTRA_REMINDER_ID, 103),
+    )
+
+    val posted = shadowOf(notificationManager).getNotification(103)
+    assertNotNull(posted)
+    assertEquals(0, posted.actions?.size ?: 0)
+  }
+
+  @Test
   fun `recovery preserves future alarms without exact permission and catches up within 24h`() {
     val now = 2_000_000_000_000L
     val stale = sampleRecord(id = 1, fireAtMillis = now - 25L * 3600L * 1000L)

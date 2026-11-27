@@ -23,6 +23,7 @@ import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../providers/todo_reminder_providers.dart';
 import '../sections/todo_focus_settings_group.dart';
+import '../sections/todo_reminders_settings_group.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reliability_sheet.dart';
@@ -56,6 +57,12 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
   void dispose() {
     _lifecycle.dispose();
     super.dispose();
+  }
+
+  /// 打开每日摘要时请求一次权限（每次运行只问一次），然后刷新权限行。
+  Future<void> _requestPermission() async {
+    await ref.read(todoReminderSchedulerProvider)?.ensurePermission();
+    if (mounted) ref.invalidate(todoReminderSystemStatusProvider);
   }
 
   Future<void> _fixPermission() async {
@@ -243,10 +250,11 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
                   ),
                   if (AppPlatform.supportsReminders) ...<Widget>[
                     const SizedBox(height: 16),
-                    _RemindersGroup(
+                    TodoRemindersSettingsGroup(
                       settings: settings,
                       status: ref.watch(todoReminderSystemStatusProvider).value,
                       onSave: service == null ? null : save,
+                      onRequestPermission: _requestPermission,
                       onFixPermission: () => unawaited(_fixPermission()),
                       onFixExactAlarm: () => unawaited(_fixExactAlarm()),
                       onFixBattery: () => unawaited(_fixBatteryOptimization()),
@@ -286,147 +294,6 @@ class _TodoSettingsPageState extends ConsumerState<TodoSettingsPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// 提醒分组：通知权限（手机）、电池优化（Android）、全天待办的提醒时刻、
-/// 稍后提醒时长、锁屏隐藏内容（Android）与“提醒不准时？”（Android）；桌面组尾
-/// 写明只在应用运行时提醒。
-class _RemindersGroup extends StatelessWidget {
-  const _RemindersGroup({
-    required this.settings,
-    required this.status,
-    required this.onSave,
-    required this.onFixPermission,
-    required this.onFixExactAlarm,
-    required this.onFixBattery,
-    required this.onShowReliability,
-  });
-
-  final TodoSettings settings;
-  final TodoReminderSystemStatus? status;
-  final Future<void> Function(TodoSettings next)? onSave;
-  final VoidCallback onFixPermission;
-  final VoidCallback onFixExactAlarm;
-  final VoidCallback onFixBattery;
-  final VoidCallback onShowReliability;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    final save = onSave;
-    final status = this.status;
-    final background = AppPlatform.supportsBackgroundReminders;
-
-    Future<void> pickAllDayTime() async {
-      final minute = settings.allDayReminderMinute;
-      final picked = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay(hour: minute ~/ 60, minute: minute % 60),
-      );
-      if (picked == null || save == null) return;
-      await save(
-        settings.copyWith(
-          allDayReminderMinute: picked.hour * 60 + picked.minute,
-        ),
-      );
-    }
-
-    Future<void> pickSnooze() async {
-      final minutes = await showTodoSheet<int>(
-        context: context,
-        builder: (BuildContext sheetContext) => TodoSheetBody(
-          title: l10n.todoSettingsSnooze,
-          children: <Widget>[
-            for (final value in TodoSettings.snoozeChoices)
-              TodoSheetOption(
-                icon: FontAwesomeIcons.clock,
-                label: l10n.todoSettingsSnoozeMinutes(value),
-                selected: value == settings.snoozeMinutes,
-                onTap: () => Navigator.of(sheetContext).pop(value),
-              ),
-          ],
-        ),
-      );
-      if (minutes == null || save == null) return;
-      await save(settings.copyWith(snoozeMinutes: minutes));
-    }
-
-    return SettingsCardGroup(
-      title: l10n.todoSettingsRemindersGroup,
-      footer: background ? null : l10n.todoSettingsDesktopNote,
-      children: <Widget>[
-        if (background)
-          SettingsNavTile(
-            icon: FontAwesomeIcons.bell,
-            title: l10n.todoSettingsPermission,
-            value: status == null
-                ? null
-                : status.notifications
-                ? l10n.todoSettingsPermissionOn
-                : l10n.todoSettingsPermissionOff,
-            subtitle: status != null && status.notifications && !status.exact
-                ? l10n.todoSettingsExactOff
-                : null,
-            subtitleColor: scheme.error,
-            onTap: status == null
-                ? null
-                : !status.notifications
-                ? onFixPermission
-                : !status.exact
-                ? onFixExactAlarm
-                : null,
-          ),
-        if (AppPlatform.isAndroid)
-          SettingsNavTile(
-            icon: FontAwesomeIcons.bolt,
-            title: l10n.todoSettingsBattery,
-            value: status == null
-                ? null
-                : status.ignoringBattery
-                ? l10n.todoSettingsBatteryUnrestricted
-                : l10n.todoSettingsBatteryRestricted,
-            subtitle: status != null && !status.ignoringBattery
-                ? l10n.todoSettingsBatterySubtitle
-                : null,
-            subtitleColor: scheme.error,
-            onTap: onFixBattery,
-          ),
-        SettingsNavTile(
-          icon: FontAwesomeIcons.clock,
-          title: l10n.todoSettingsAllDayTime,
-          value: TodoLabels.formatTodoTime(
-            context,
-            settings.allDayReminderMinute,
-          ),
-          onTap: save == null ? null : () => unawaited(pickAllDayTime()),
-        ),
-        SettingsNavTile(
-          icon: FontAwesomeIcons.stopwatch,
-          title: l10n.todoSettingsSnooze,
-          value: l10n.todoSettingsSnoozeMinutes(settings.snoozeMinutes),
-          onTap: save == null ? null : () => unawaited(pickSnooze()),
-        ),
-        if (AppPlatform.supportsNotificationVisibility)
-          SettingsSwitchTile(
-            title: l10n.todoSettingsHideContent,
-            subtitle: l10n.todoSettingsHideContentSubtitle,
-            value: settings.hideContentOnLockScreen,
-            onChanged: save == null
-                ? null
-                : (bool value) => unawaited(
-                    save(settings.copyWith(hideContentOnLockScreen: value)),
-                  ),
-          ),
-        if (AppPlatform.isAndroid)
-          SettingsNavTile(
-            icon: FontAwesomeIcons.circleQuestion,
-            title: l10n.todoSettingsReliability,
-            onTap: onShowReliability,
-          ),
-      ],
     );
   }
 }

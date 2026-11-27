@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import 'todo_focus_settings.dart';
 import 'todo_view.dart';
+
+export 'todo_focus_settings.dart';
 
 /// 清单与智能视图里待办的排序方式。枚举名即持久化值。
 enum TodoSortMode {
@@ -54,6 +57,7 @@ class TodoSettings {
     this.hideContentOnLockScreen = false,
     this.smartParse = true,
     this.swipeLeft = TodoSwipeAction.delete,
+    this.focus = TodoFocusSettings.defaults,
   });
 
   static const TodoSettings defaults = TodoSettings();
@@ -89,6 +93,9 @@ class TodoSettings {
   /// 左滑（RTL 为右滑）一行待办的动作。
   final TodoSwipeAction swipeLeft;
 
+  /// 专注计时的节奏（存在 `focus` 对象里，见 [TodoFocusSettings]）。
+  final TodoFocusSettings focus;
+
   /// 打开时显示的视图；认不出（含清单已删）时由调用方回到“今天”。
   TodoView get defaultView => TodoView.parse(defaultViewKey) ?? TodoView.today;
 
@@ -104,6 +111,7 @@ class TodoSettings {
   static const _keyHideContent = 'hideContentOnLockScreen';
   static const _keySmartParse = 'smartParse';
   static const _keySwipeLeft = 'swipeLeft';
+  static const _keyFocus = 'focus';
 
   static TodoSettings decode(String? raw) {
     if (raw == null || raw.trim().isEmpty) return defaults;
@@ -143,6 +151,7 @@ class TodoSettings {
       swipeLeft:
           TodoSwipeAction.values.asNameMap()[map[_keySwipeLeft]] ??
           defaults.swipeLeft,
+      focus: TodoFocusSettings.fromJson(map[_keyFocus]),
     );
   }
 
@@ -170,6 +179,7 @@ class TodoSettings {
       _keyHideContent: hideContentOnLockScreen,
       _keySmartParse: smartParse,
       _keySwipeLeft: swipeLeft.name,
+      if (focus != TodoFocusSettings.defaults) _keyFocus: focus.toJson(),
     });
   }
 
@@ -184,6 +194,7 @@ class TodoSettings {
     bool? hideContentOnLockScreen,
     bool? smartParse,
     TodoSwipeAction? swipeLeft,
+    TodoFocusSettings? focus,
   }) {
     return TodoSettings(
       showCompleted: showCompleted ?? this.showCompleted,
@@ -198,6 +209,7 @@ class TodoSettings {
           hideContentOnLockScreen ?? this.hideContentOnLockScreen,
       smartParse: smartParse ?? this.smartParse,
       swipeLeft: swipeLeft ?? this.swipeLeft,
+      focus: focus ?? this.focus,
     );
   }
 
@@ -212,7 +224,8 @@ class TodoSettings {
       other.snoozeMinutes == snoozeMinutes &&
       other.hideContentOnLockScreen == hideContentOnLockScreen &&
       other.smartParse == smartParse &&
-      other.swipeLeft == swipeLeft;
+      other.swipeLeft == swipeLeft &&
+      other.focus == focus;
 
   @override
   int get hashCode => Object.hash(
@@ -225,5 +238,6 @@ class TodoSettings {
     hideContentOnLockScreen,
     smartParse,
     swipeLeft,
+    focus,
   );
 }

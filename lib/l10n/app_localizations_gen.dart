@@ -31222,6 +31222,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep “{title}”'**
   String todoAiKeep(String title);
+
+  /// Focus timer page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get todoFocusTitle;
+
+  /// Menu item / shortcut that starts a focus session for this to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Start focus'**
+  String get todoFocusAction;
+
+  /// Focus page: label above the ring while focusing, with the round in the cycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus · round {round} of {total}'**
+  String todoFocusPhaseFocus(int round, int total);
+
+  /// Focus page: label while on a short break.
+  ///
+  /// In en, this message translates to:
+  /// **'Short break'**
+  String get todoFocusPhaseShortBreak;
+
+  /// Focus page: label while on a long break.
+  ///
+  /// In en, this message translates to:
+  /// **'Long break'**
+  String get todoFocusPhaseLongBreak;
+
+  /// Focus page: shown under the time while paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get todoFocusPaused;
+
+  /// Focus page: pause button.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get todoFocusPause;
+
+  /// Focus page: resume button.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get todoFocusResume;
+
+  /// Focus page: button that adds five minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 5 minutes'**
+  String get todoFocusExtend;
+
+  /// Focus page: button that ends the session early (what was focused is kept).
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get todoFocusStop;
+
+  /// Focus page: button that skips the break.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip break'**
+  String get todoFocusSkipBreak;
+
+  /// Focus page: heading when a focus session has run out.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus done'**
+  String get todoFocusDoneTitle;
+
+  /// Focus page: how long the finished session was.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Focused for 1 minute} other{Focused for {count} minutes}}'**
+  String todoFocusDoneBody(int count);
+
+  /// Focus page: button that starts the break of this many minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Take a 1-minute break} other{Take a {count}-minute break}}'**
+  String todoFocusStartBreak(int count);
+
+  /// Focus page: button that starts another focus round right away.
+  ///
+  /// In en, this message translates to:
+  /// **'Another round'**
+  String get todoFocusAgain;
+
+  /// Focus page: button that completes the to-do that was focused on.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete this to-do'**
+  String get todoFocusCompleteTodo;
+
+  /// Focus page: heading when a break has run out.
+  ///
+  /// In en, this message translates to:
+  /// **'Break\'s over'**
+  String get todoFocusBreakDoneTitle;
+
+  /// Focus page: button that starts focusing for this many minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Focus for 1 minute} other{Focus for {count} minutes}}'**
+  String todoFocusStart(int count);
+
+  /// Snack bar after ending a focus session early, with the minutes kept.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Kept 1 minute of focus} other{Kept {count} minutes of focus}}'**
+  String todoFocusStoppedNotice(int count);
+
+  /// A focus duration with hours and minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String todoFocusHoursMinutes(int hours, int minutes);
+
+  /// A focus duration under an hour.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String todoFocusMinutes(int count);
+
+  /// To-do details: how long has been spent focusing on it in total.
+  ///
+  /// In en, this message translates to:
+  /// **'Focused {duration} in total'**
+  String todoFocusTotal(String duration);
+
+  /// Completed view / explore card: focus time this week.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} of focus this week'**
+  String todoReviewFocusWeek(String duration);
+
+  /// To-dos page: pill shown while focusing, with the time left.
+  ///
+  /// In en, this message translates to:
+  /// **'Focusing · {time}'**
+  String todoFocusBannerRunning(String time);
+
+  /// To-dos page: pill shown during a break, with the time left.
+  ///
+  /// In en, this message translates to:
+  /// **'On a break · {time}'**
+  String todoFocusBannerBreak(String time);
+
+  /// To-dos page: pill shown while the focus timer is paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus paused'**
+  String get todoFocusBannerPaused;
+
+  /// To-dos page: pill shown when a focus or break has run out.
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up — tap to continue'**
+  String get todoFocusBannerEnded;
+
+  /// Notification channel for the focus timer (Android system settings).
+  ///
+  /// In en, this message translates to:
+  /// **'Focus timer'**
+  String get todoFocusChannelName;
+
+  /// Description of the focus timer notification channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Countdown and end alerts for focus and breaks'**
+  String get todoFocusChannelDescription;
+
+  /// Countdown notification title while focusing on a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Focusing · {title}'**
+  String todoFocusRunningTitle(String title);
+
+  /// Countdown notification title while focusing without a to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Focusing'**
+  String get todoFocusRunningUntitled;
+
+  /// Countdown notification title during a break.
+  ///
+  /// In en, this message translates to:
+  /// **'On a break'**
+  String get todoFocusBreakRunningTitle;
+
+  /// Notification when a focus session has run out.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus done'**
+  String get todoFocusEndTitle;
+
+  /// Body of the focus-done notification.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute of focus — time for a break} other{{count} minutes of focus — time for a break}}'**
+  String todoFocusEndBody(int count);
+
+  /// Notification when a break has run out.
+  ///
+  /// In en, this message translates to:
+  /// **'Break\'s over'**
+  String get todoFocusBreakEndTitle;
+
+  /// Body of the break-over notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the next round when you\'re ready'**
+  String get todoFocusBreakEndBody;
+
+  /// To-do settings: group heading for the focus timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus timer'**
+  String get todoSettingsFocusGroup;
+
+  /// To-do settings: focus length, in minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus length (minutes)'**
+  String get todoSettingsFocusLength;
+
+  /// To-do settings: short break length, in minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Short break (minutes)'**
+  String get todoSettingsShortBreak;
+
+  /// To-do settings: long break length, in minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Long break (minutes)'**
+  String get todoSettingsLongBreak;
+
+  /// To-do settings: how many focus rounds before a long break.
+  ///
+  /// In en, this message translates to:
+  /// **'Long break after every … rounds'**
+  String get todoSettingsLongBreakEvery;
+
+  /// Feature management: switch for the focus timer, nested under To-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus timer'**
+  String get settingsFeaturesTodoFocus;
+
+  /// Feature management: subtitle of the focus timer switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Pomodoro-style focus and breaks, with time kept per to-do'**
+  String get settingsFeaturesTodoFocusSubtitle;
+
+  /// To-do settings: a number of focus rounds (long break interval).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 round} other{{count} rounds}}'**
+  String todoFocusRounds(int count);
 }
 
 class _AppLocalizationsDelegate

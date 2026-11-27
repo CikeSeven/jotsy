@@ -17511,4 +17511,164 @@ class AppLocalizationsZh extends AppLocalizations {
   String todoAiKeep(String title) {
     return '保留“$title”';
   }
+
+  @override
+  String get todoFocusTitle => '专注';
+
+  @override
+  String get todoFocusAction => '开始专注';
+
+  @override
+  String todoFocusPhaseFocus(int round, int total) {
+    return '专注 · 第 $round/$total 轮';
+  }
+
+  @override
+  String get todoFocusPhaseShortBreak => '短休息';
+
+  @override
+  String get todoFocusPhaseLongBreak => '长休息';
+
+  @override
+  String get todoFocusPaused => '已暂停';
+
+  @override
+  String get todoFocusPause => '暂停';
+
+  @override
+  String get todoFocusResume => '继续';
+
+  @override
+  String get todoFocusExtend => '加 5 分钟';
+
+  @override
+  String get todoFocusStop => '结束';
+
+  @override
+  String get todoFocusSkipBreak => '跳过休息';
+
+  @override
+  String get todoFocusDoneTitle => '专注完成';
+
+  @override
+  String todoFocusDoneBody(int count) {
+    return '专注了 $count 分钟';
+  }
+
+  @override
+  String todoFocusStartBreak(int count) {
+    return '休息 $count 分钟';
+  }
+
+  @override
+  String get todoFocusAgain => '再专注一轮';
+
+  @override
+  String get todoFocusCompleteTodo => '完成这条待办';
+
+  @override
+  String get todoFocusBreakDoneTitle => '休息结束';
+
+  @override
+  String todoFocusStart(int count) {
+    return '开始专注 $count 分钟';
+  }
+
+  @override
+  String todoFocusStoppedNotice(int count) {
+    return '已记下 $count 分钟专注';
+  }
+
+  @override
+  String todoFocusHoursMinutes(int hours, int minutes) {
+    return '$hours 小时 $minutes 分';
+  }
+
+  @override
+  String todoFocusMinutes(int count) {
+    return '$count 分钟';
+  }
+
+  @override
+  String todoFocusTotal(String duration) {
+    return '累计专注 $duration';
+  }
+
+  @override
+  String todoReviewFocusWeek(String duration) {
+    return '本周专注 $duration';
+  }
+
+  @override
+  String todoFocusBannerRunning(String time) {
+    return '专注中 · $time';
+  }
+
+  @override
+  String todoFocusBannerBreak(String time) {
+    return '休息中 · $time';
+  }
+
+  @override
+  String get todoFocusBannerPaused => '专注已暂停';
+
+  @override
+  String get todoFocusBannerEnded => '时间到了，点这里继续';
+
+  @override
+  String get todoFocusChannelName => '专注计时';
+
+  @override
+  String get todoFocusChannelDescription => '专注与休息的倒计时和结束提醒';
+
+  @override
+  String todoFocusRunningTitle(String title) {
+    return '专注中 · $title';
+  }
+
+  @override
+  String get todoFocusRunningUntitled => '专注中';
+
+  @override
+  String get todoFocusBreakRunningTitle => '休息中';
+
+  @override
+  String get todoFocusEndTitle => '专注结束';
+
+  @override
+  String todoFocusEndBody(int count) {
+    return '专注了 $count 分钟，休息一下吧';
+  }
+
+  @override
+  String get todoFocusBreakEndTitle => '休息结束';
+
+  @override
+  String get todoFocusBreakEndBody => '准备好了就开始下一轮专注';
+
+  @override
+  String get todoSettingsFocusGroup => '专注计时';
+
+  @override
+  String get todoSettingsFocusLength => '专注时长（分钟）';
+
+  @override
+  String get todoSettingsShortBreak => '短休息（分钟）';
+
+  @override
+  String get todoSettingsLongBreak => '长休息（分钟）';
+
+  @override
+  String get todoSettingsLongBreakEvery => '每几轮长休息一次';
+
+  @override
+  String get settingsFeaturesTodoFocus => '专注计时';
+
+  @override
+  String get settingsFeaturesTodoFocusSubtitle => '番茄钟式的专注与休息，记下每条待办专注了多久';
+
+  @override
+  String todoFocusRounds(int count) {
+    return '$count 轮';
+  }
 }

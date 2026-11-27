@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../database/app_database.dart' show formatAnniversaryDate;
 import '../app_platform.dart';
+import 'todo_focus_notifications.dart';
 import 'todo_notification_actions.dart';
 import 'todo_notification_gateway.dart';
 import 'todo_reminder_planner.dart';
@@ -136,7 +137,9 @@ const String kTodoDarwinCategoryId = 'todo_reminder';
 ///   自愈系统接收器 + WorkManager 巡检，划掉后台后仍能唤醒推送；点开与冷启动
 ///   仍由插件的 `SELECT_NOTIFICATION` 接住；
 /// - iOS / 桌面：走 `flutter_local_notifications`。
-class PluginTodoNotificationGateway implements TodoNotificationGateway {
+class PluginTodoNotificationGateway
+    with TodoFocusPluginNotifications
+    implements TodoNotificationGateway {
   PluginTodoNotificationGateway({FlutterLocalNotificationsPlugin? plugin})
     : plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
@@ -144,6 +147,7 @@ class PluginTodoNotificationGateway implements TodoNotificationGateway {
   PluginTodoNotificationGateway.forBackground(this._texts)
     : plugin = FlutterLocalNotificationsPlugin();
 
+  @override
   final FlutterLocalNotificationsPlugin plugin;
   TodoNotificationTexts? _texts;
   void Function(TodoNotificationEvent event)? _onEvent;

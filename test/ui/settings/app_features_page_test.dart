@@ -124,6 +124,25 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('the focus timer sits under to-dos and hides with them', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(const AppFeaturesPage());
+    final l10n = h.l10n;
+    // 待办默认关闭：专注计时跟着藏起来。
+    expect(switchTile(l10n.settingsFeaturesTodoFocus), findsNothing);
+    await toggle(tester, l10n.navTodos);
+    expect(tile(tester, l10n.settingsFeaturesTodoFocus).value, isTrue);
+    await toggle(tester, l10n.settingsFeaturesTodoFocus);
+    expect(stored(h).todoFocus, isFalse);
+    expect(stored(h).todoFocusEnabled, isFalse);
+    await toggle(tester, l10n.navTodos);
+    expect(switchTile(l10n.settingsFeaturesTodoFocus), findsNothing);
+    expect(stored(h).todoFocus, isFalse, reason: '关待办不改写专注计时自己的值');
+    await h.unmount();
+  });
+
   testWidgets('anniversaries hide with the calendar and come back with the '
       'stored value', (tester) async {
     final h = await DiaryDraftsHarness.create(tester);

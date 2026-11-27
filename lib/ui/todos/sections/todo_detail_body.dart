@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/controllers/diary_list_switch_motion.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/editing_session_blocker.dart';
 import '../../widgets/empty_hint.dart';
@@ -18,8 +19,11 @@ import '../../widgets/expressive_entrance.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/todo_actions.dart';
 import '../controllers/todo_debounced_writer.dart';
+import '../controllers/todo_focus_controller.dart';
+import '../controllers/todo_focus_flow.dart';
 import '../controllers/todo_field_editors.dart';
 import '../providers/todo_providers.dart';
+import '../viewmodels/todo_focus_format.dart';
 import '../widgets/todo_detail_pills.dart';
 import '../widgets/todo_note_extras.dart';
 import '../widgets/todo_streak_card.dart';
@@ -190,6 +194,12 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
     }
     final today = ref.watch(todoTodayProvider);
     final steps = decodeTodoSteps(row.steps);
+    final focusOn = ref.watch(
+      appFeaturesProvider.select((features) => features.todoFocusEnabled),
+    );
+    final focusSeconds = focusOn
+        ? ref.watch(todoFocusSecondsProvider(row.todoId)).value ?? 0
+        : 0;
     final repeating = decodeTodoRepeat(row.repeat) != null;
     // 内容错峰入场：每一块比上一块晚一点（只在打开时演一次，之后数据
     // 变化不再演）。
@@ -209,6 +219,9 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
             onToggle: () => unawaited(toggleTodoDone(context, _database, row)),
             onDelete: _delete,
             onDuplicate: () => unawaited(_duplicate(row, today)),
+            onFocus: focusOn && row.completedAt == null
+                ? () => unawaited(startTodoFocus(context, ref, row))
+                : null,
           ),
         ),
         const SizedBox(height: AppSpacing.m),
@@ -269,7 +282,14 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
           enter(TodoStreakCard(todoId: row.todoId, today: today)),
         ],
         const SizedBox(height: AppSpacing.l),
-        enter(TodoDetailFooter(row: row)),
+        enter(
+          TodoDetailFooter(
+            row: row,
+            focusTotal: focusSeconds >= 60
+                ? TodoFocusFormat.duration(l10n, focusSeconds)
+                : null,
+          ),
+        ),
       ],
     );
   }

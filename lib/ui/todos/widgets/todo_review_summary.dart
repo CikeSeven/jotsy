@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/animated_rolling_text.dart';
+import '../controllers/todo_focus_controller.dart';
+import '../viewmodels/todo_focus_format.dart';
 import '../viewmodels/todo_review_stats.dart';
 
 /// 待办回顾：左侧两行数字（“本周完成 N 件”“连续 N 天”，第一次出现时从 0
 /// 逐位滚上去），右侧最近 7 天的迷你柱（按当天件数比例，今天的为 `primary`、
 /// 其余半透明，0 件留一道底线），柱子第一次出现时从底部错峰长起来。
+/// 专注计时开着、本周专注过时，左侧再多一行“本周专注 X”。
 /// 已完成视图的概览卡与探索页的待办卡共用。减少动画时直接到位。
-class TodoReviewSummary extends StatefulWidget {
+class TodoReviewSummary extends ConsumerStatefulWidget {
   const TodoReviewSummary({
     super.key,
     required this.stats,
@@ -22,10 +27,10 @@ class TodoReviewSummary extends StatefulWidget {
   final DateTime today;
 
   @override
-  State<TodoReviewSummary> createState() => _TodoReviewSummaryState();
+  ConsumerState<TodoReviewSummary> createState() => _TodoReviewSummaryState();
 }
 
-class _TodoReviewSummaryState extends State<TodoReviewSummary>
+class _TodoReviewSummaryState extends ConsumerState<TodoReviewSummary>
     with SingleTickerProviderStateMixin {
   late final AnimationController _grow = AnimationController(vsync: this);
 
@@ -64,6 +69,18 @@ class _TodoReviewSummaryState extends State<TodoReviewSummary>
     final stats = widget.stats;
     final week = _counted ? stats.weekDone : 0;
     final streak = _counted ? stats.streak : 0;
+    final today = widget.today;
+    final monday = DateTime(
+      today.year,
+      today.month,
+      today.day - (today.weekday - 1),
+    );
+    final focusOn = ref.watch(
+      appFeaturesProvider.select((features) => features.todoFocusEnabled),
+    );
+    final focusSeconds = focusOn
+        ? ref.watch(todoFocusSinceProvider(monday)).value ?? 0
+        : 0;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
@@ -90,6 +107,17 @@ class _TodoReviewSummaryState extends State<TodoReviewSummary>
                   color: scheme.onSurfaceVariant,
                 ),
               ),
+              if (focusSeconds >= 60)
+                Text(
+                  l10n.todoReviewFocusWeek(
+                    TodoFocusFormat.duration(l10n, focusSeconds),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ),
         ),

@@ -11,7 +11,7 @@ import '../models/todo_view.dart';
 /// - ↑ / ↓：在当前列表里移动焦点行，并把它滚进视野（[rowKey] 挂在焦点行
 ///   上）；
 /// - 空格：勾选 / 取消；回车：打开详情；Delete / Backspace：删除（可撤销）；
-///   Ctrl / ⌘ + D：改期；
+///   Ctrl / ⌘ + D：改期；F：为焦点行开始专注（专注计时开着时）；
 /// - Alt + 1…6：切到第 n 个智能视图（Ctrl / ⌘ + 数字留给首页切 Tab）；
 /// - Esc：先退出多选，再关详情栏，最后放下焦点行。
 ///
@@ -93,6 +93,7 @@ class TodoKeyboardActions {
     required this.reschedule,
     required this.selectView,
     required this.escape,
+    this.focus,
   });
 
   final ValueChanged<int> move;
@@ -101,6 +102,9 @@ class TodoKeyboardActions {
   final VoidCallback delete;
   final VoidCallback reschedule;
   final ValueChanged<TodoView> selectView;
+
+  /// 为焦点行开始专注；null 时 F 不处理（专注计时关着）。
+  final VoidCallback? focus;
 
   /// 返回是否处理了（没有可退出的东西时不吞掉 Esc）。
   final bool Function() escape;
@@ -149,6 +153,8 @@ class TodoKeyboardActions {
       delete();
     } else if (key == LogicalKeyboardKey.escape) {
       return escape() ? KeyEventResult.handled : KeyEventResult.ignored;
+    } else if (key == LogicalKeyboardKey.keyF && focus != null) {
+      focus!();
     } else {
       return KeyEventResult.ignored;
     }

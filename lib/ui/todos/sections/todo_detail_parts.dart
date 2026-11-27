@@ -36,6 +36,7 @@ class TodoDetailHeader extends StatefulWidget {
     required this.onToggle,
     required this.onDelete,
     required this.onDuplicate,
+    this.onFocus,
   });
 
   final TodoRow row;
@@ -45,6 +46,9 @@ class TodoDetailHeader extends StatefulWidget {
   final VoidCallback onToggle;
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
+
+  /// “开始专注”；null 时不出现（专注计时关着，或这条已完成）。
+  final VoidCallback? onFocus;
 
   @override
   State<TodoDetailHeader> createState() => _TodoDetailHeaderState();
@@ -153,6 +157,12 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
           tooltip: l10n.todoMore,
           icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 18),
           items: <Widget>[
+            if (widget.onFocus case final onFocus?)
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.stopwatch),
+                onPressed: onFocus,
+                child: Text(l10n.todoFocusAction),
+              ),
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.copy),
               onPressed: widget.onDuplicate,
@@ -258,11 +268,14 @@ class TodoDetailSectionCard extends StatelessWidget {
   }
 }
 
-/// 创建 / 完成时间，截止日往后推过时再写推迟了几次。
+/// 创建 / 完成时间，截止日往后推过时再写推迟了几次，专注过时写累计专注。
 class TodoDetailFooter extends StatelessWidget {
-  const TodoDetailFooter({super.key, required this.row});
+  const TodoDetailFooter({super.key, required this.row, this.focusTotal});
 
   final TodoRow row;
+
+  /// 写好的累计专注时长；null 时不写（没专注过，或专注计时关着）。
+  final String? focusTotal;
 
   @override
   Widget build(BuildContext context) {
@@ -289,6 +302,12 @@ class TodoDetailFooter extends StatelessWidget {
         if (postponed > 0)
           Text(
             l10n.todoPostponedCount(postponed),
+            style: style,
+            textAlign: TextAlign.center,
+          ),
+        if (focusTotal case final total?)
+          Text(
+            l10n.todoFocusTotal(total),
             style: style,
             textAlign: TextAlign.center,
           ),

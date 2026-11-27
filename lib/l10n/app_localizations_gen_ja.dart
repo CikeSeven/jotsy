@@ -17792,4 +17792,165 @@ class AppLocalizationsJa extends AppLocalizations {
   String todoAiKeep(String title) {
     return '「$title」を残す';
   }
+
+  @override
+  String get todoFocusTitle => '集中';
+
+  @override
+  String get todoFocusAction => '集中を始める';
+
+  @override
+  String todoFocusPhaseFocus(int round, int total) {
+    return '集中 · $round/$total 回目';
+  }
+
+  @override
+  String get todoFocusPhaseShortBreak => '短い休憩';
+
+  @override
+  String get todoFocusPhaseLongBreak => '長い休憩';
+
+  @override
+  String get todoFocusPaused => '一時停止中';
+
+  @override
+  String get todoFocusPause => '一時停止';
+
+  @override
+  String get todoFocusResume => '再開';
+
+  @override
+  String get todoFocusExtend => '5 分延長';
+
+  @override
+  String get todoFocusStop => '終了';
+
+  @override
+  String get todoFocusSkipBreak => '休憩をスキップ';
+
+  @override
+  String get todoFocusDoneTitle => '集中完了';
+
+  @override
+  String todoFocusDoneBody(int count) {
+    return '$count 分間集中しました';
+  }
+
+  @override
+  String todoFocusStartBreak(int count) {
+    return '$count 分休憩する';
+  }
+
+  @override
+  String get todoFocusAgain => 'もう 1 回集中';
+
+  @override
+  String get todoFocusCompleteTodo => 'この To-Do を完了';
+
+  @override
+  String get todoFocusBreakDoneTitle => '休憩終了';
+
+  @override
+  String todoFocusStart(int count) {
+    return '$count 分間集中する';
+  }
+
+  @override
+  String todoFocusStoppedNotice(int count) {
+    return '$count 分間の集中を記録しました';
+  }
+
+  @override
+  String todoFocusHoursMinutes(int hours, int minutes) {
+    return '$hours 時間 $minutes 分';
+  }
+
+  @override
+  String todoFocusMinutes(int count) {
+    return '$count 分';
+  }
+
+  @override
+  String todoFocusTotal(String duration) {
+    return '合計 $duration 集中';
+  }
+
+  @override
+  String todoReviewFocusWeek(String duration) {
+    return '今週の集中 $duration';
+  }
+
+  @override
+  String todoFocusBannerRunning(String time) {
+    return '集中中 · $time';
+  }
+
+  @override
+  String todoFocusBannerBreak(String time) {
+    return '休憩中 · $time';
+  }
+
+  @override
+  String get todoFocusBannerPaused => '集中を一時停止中';
+
+  @override
+  String get todoFocusBannerEnded => '時間です。タップして続ける';
+
+  @override
+  String get todoFocusChannelName => '集中タイマー';
+
+  @override
+  String get todoFocusChannelDescription => '集中と休憩のカウントダウンと終了通知';
+
+  @override
+  String todoFocusRunningTitle(String title) {
+    return '集中中 · $title';
+  }
+
+  @override
+  String get todoFocusRunningUntitled => '集中中';
+
+  @override
+  String get todoFocusBreakRunningTitle => '休憩中';
+
+  @override
+  String get todoFocusEndTitle => '集中終了';
+
+  @override
+  String todoFocusEndBody(int count) {
+    return '$count 分間集中しました。少し休みましょう';
+  }
+
+  @override
+  String get todoFocusBreakEndTitle => '休憩終了';
+
+  @override
+  String get todoFocusBreakEndBody => '準備ができたら次の集中を始めましょう';
+
+  @override
+  String get todoSettingsFocusGroup => '集中タイマー';
+
+  @override
+  String get todoSettingsFocusLength => '集中時間（分）';
+
+  @override
+  String get todoSettingsShortBreak => '短い休憩（分）';
+
+  @override
+  String get todoSettingsLongBreak => '長い休憩（分）';
+
+  @override
+  String get todoSettingsLongBreakEvery => '何回ごとに長い休憩';
+
+  @override
+  String get settingsFeaturesTodoFocus => '集中タイマー';
+
+  @override
+  String get settingsFeaturesTodoFocusSubtitle =>
+      'ポモドーロ式の集中と休憩。To-Do ごとの集中時間を記録';
+
+  @override
+  String todoFocusRounds(int count) {
+    return '$count 回';
+  }
 }

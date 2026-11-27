@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../pages/todo_focus_page.dart';
 import '../pages/todo_lists_page.dart';
 import '../pages/todo_search_page.dart';
 import '../pages/todo_settings_page.dart';
@@ -46,6 +47,15 @@ Future<void> openTodoSettings(BuildContext context) {
   return Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
       builder: (BuildContext context) => const TodoSettingsPage(),
+    ),
+  );
+}
+
+/// 打开专注计时页（正在进行的那一段；开始一段经 `startTodoFocus`）。
+Future<void> openTodoFocusPage(BuildContext context) {
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) => const TodoFocusPage(),
     ),
   );
 }

@@ -20804,4 +20804,215 @@ class AppLocalizationsRu extends AppLocalizations {
   String todoAiKeep(String title) {
     return 'Оставить «$title»';
   }
+
+  @override
+  String get todoFocusTitle => 'Фокус';
+
+  @override
+  String get todoFocusAction => 'Начать фокус';
+
+  @override
+  String todoFocusPhaseFocus(int round, int total) {
+    return 'Фокус · раунд $round из $total';
+  }
+
+  @override
+  String get todoFocusPhaseShortBreak => 'Короткий перерыв';
+
+  @override
+  String get todoFocusPhaseLongBreak => 'Длинный перерыв';
+
+  @override
+  String get todoFocusPaused => 'Пауза';
+
+  @override
+  String get todoFocusPause => 'Пауза';
+
+  @override
+  String get todoFocusResume => 'Продолжить';
+
+  @override
+  String get todoFocusExtend => 'Ещё 5 минут';
+
+  @override
+  String get todoFocusStop => 'Завершить';
+
+  @override
+  String get todoFocusSkipBreak => 'Пропустить перерыв';
+
+  @override
+  String get todoFocusDoneTitle => 'Фокус завершён';
+
+  @override
+  String todoFocusDoneBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Фокус $count минуты',
+      many: 'Фокус $count минут',
+      few: 'Фокус $count минуты',
+      one: 'Фокус $count минуту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoFocusStartBreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Перерыв $count минуты',
+      many: 'Перерыв $count минут',
+      few: 'Перерыв $count минуты',
+      one: 'Перерыв $count минуту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoFocusAgain => 'Ещё раунд';
+
+  @override
+  String get todoFocusCompleteTodo => 'Выполнить задачу';
+
+  @override
+  String get todoFocusBreakDoneTitle => 'Перерыв окончен';
+
+  @override
+  String todoFocusStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Фокус на $count минуты',
+      many: 'Фокус на $count минут',
+      few: 'Фокус на $count минуты',
+      one: 'Фокус на $count минуту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoFocusStoppedNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Записано $count минуты фокуса',
+      many: 'Записано $count минут фокуса',
+      few: 'Записаны $count минуты фокуса',
+      one: 'Записана $count минута фокуса',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoFocusHoursMinutes(int hours, int minutes) {
+    return '$hours ч $minutes мин';
+  }
+
+  @override
+  String todoFocusMinutes(int count) {
+    return '$count мин';
+  }
+
+  @override
+  String todoFocusTotal(String duration) {
+    return 'Всего фокуса: $duration';
+  }
+
+  @override
+  String todoReviewFocusWeek(String duration) {
+    return 'Фокус за неделю: $duration';
+  }
+
+  @override
+  String todoFocusBannerRunning(String time) {
+    return 'Фокус · $time';
+  }
+
+  @override
+  String todoFocusBannerBreak(String time) {
+    return 'Перерыв · $time';
+  }
+
+  @override
+  String get todoFocusBannerPaused => 'Фокус на паузе';
+
+  @override
+  String get todoFocusBannerEnded => 'Время вышло — нажмите, чтобы продолжить';
+
+  @override
+  String get todoFocusChannelName => 'Таймер фокуса';
+
+  @override
+  String get todoFocusChannelDescription =>
+      'Обратный отсчёт и сигналы окончания фокуса и перерывов';
+
+  @override
+  String todoFocusRunningTitle(String title) {
+    return 'Фокус · $title';
+  }
+
+  @override
+  String get todoFocusRunningUntitled => 'Фокус';
+
+  @override
+  String get todoFocusBreakRunningTitle => 'Перерыв';
+
+  @override
+  String get todoFocusEndTitle => 'Фокус завершён';
+
+  @override
+  String todoFocusEndBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count минуты фокуса — пора отдохнуть',
+      many: '$count минут фокуса — пора отдохнуть',
+      few: '$count минуты фокуса — пора отдохнуть',
+      one: '$count минута фокуса — пора отдохнуть',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoFocusBreakEndTitle => 'Перерыв окончен';
+
+  @override
+  String get todoFocusBreakEndBody =>
+      'Начните следующий раунд, когда будете готовы';
+
+  @override
+  String get todoSettingsFocusGroup => 'Таймер фокуса';
+
+  @override
+  String get todoSettingsFocusLength => 'Длительность фокуса (мин)';
+
+  @override
+  String get todoSettingsShortBreak => 'Короткий перерыв (мин)';
+
+  @override
+  String get todoSettingsLongBreak => 'Длинный перерыв (мин)';
+
+  @override
+  String get todoSettingsLongBreakEvery => 'Длинный перерыв каждые … раунда';
+
+  @override
+  String get settingsFeaturesTodoFocus => 'Таймер фокуса';
+
+  @override
+  String get settingsFeaturesTodoFocusSubtitle =>
+      'Фокус и перерывы по методу помидора с учётом времени по задачам';
+
+  @override
+  String todoFocusRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count раунда',
+      many: '$count раундов',
+      few: '$count раунда',
+      one: '$count раунд',
+    );
+    return '$_temp0';
+  }
 }

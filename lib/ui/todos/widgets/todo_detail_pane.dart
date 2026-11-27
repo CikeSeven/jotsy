@@ -4,12 +4,14 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../sections/todo_detail_body.dart';
 
 /// 宽窗口待办页的右栏（384 宽）：上、右、下各留 12，24 圆角、1dp
 /// `outlineVariant` 描边并裁切的卡片表面，顶部一行关闭按钮，下面是
-/// [TodoDetailBody]（按 [todoId] 换 key：换一条时上一条的防抖输入先写掉）。
+/// [TodoDetailBody]（按 [todoId] 换 key：换一条时上一条的防抖输入先写掉，
+/// 新旧内容交叉淡入）。
 class TodoDetailPane extends StatelessWidget {
   const TodoDetailPane({
     super.key,
@@ -57,10 +59,19 @@ class TodoDetailPane extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: TodoDetailBody(
-                key: ValueKey<String>('todo_detail_$todoId'),
-                todoId: todoId,
-                onDelete: onDelete,
+              // 换一条时新旧内容交叉淡入（`medium`）；栏本身不是玻璃。
+              child: AnimatedSwitcher(
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.medium,
+                ),
+                switchInCurve: ExpressiveMotion.effects,
+                switchOutCurve: ExpressiveMotion.exit,
+                child: TodoDetailBody(
+                  key: ValueKey<String>('todo_detail_$todoId'),
+                  todoId: todoId,
+                  onDelete: onDelete,
+                ),
               ),
             ),
           ],

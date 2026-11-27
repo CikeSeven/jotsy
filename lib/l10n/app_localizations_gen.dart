@@ -26114,6 +26114,72 @@ abstract class AppLocalizations {
   /// **'Swipe left'**
   String get todoSettingsSwipeLeft;
 
+  /// Title of the card in a repeating to-do's details showing past completions.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get todoStreakTitle;
+
+  /// Summary on the streak card: {total} completions in all, {streak} most recent ones done by their due date in a row.
+  ///
+  /// In en, this message translates to:
+  /// **'{total} done · {streak} on time in a row'**
+  String todoStreakSummary(int total, int streak);
+
+  /// Screen reader label of the streak grid; {weeks} is the number of weeks shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Completions over the last {weeks} weeks'**
+  String todoStreakGridLabel(int weeks);
+
+  /// Button under the steps once every step is ticked.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete this to-do too'**
+  String get todoStepsAllDoneComplete;
+
+  /// Tooltip of the menu button on a step row.
+  ///
+  /// In en, this message translates to:
+  /// **'Step actions'**
+  String get todoStepActions;
+
+  /// Step menu item that moves the step out into its own to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it a to-do'**
+  String get todoStepToTodo;
+
+  /// Notice after a step was turned into its own to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Turned into a to-do'**
+  String get todoStepToTodoNotice;
+
+  /// Screen reader label of a step's drag handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder the step'**
+  String get todoStepReorder;
+
+  /// Button under the note when it has '- [ ]' checklist lines; {count} is how many.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn checklist lines into steps ({count})'**
+  String todoNoteChecklistToSteps(int count);
+
+  /// Chip under the note for a link found in it; {host} is the site.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {host}'**
+  String todoNoteOpenLink(String host);
+
+  /// Footer of a to-do's details: how many times its due date was pushed later.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Postponed once} other{Postponed {count} times}}'**
+  String todoPostponedCount(int count);
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

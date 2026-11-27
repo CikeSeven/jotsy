@@ -14533,6 +14533,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoSettingsSwipeLeft => '左滑操作';
 
   @override
+  String get todoStreakTitle => '坚持记录';
+
+  @override
+  String todoStreakSummary(int total, int streak) {
+    return '累计 $total 次 · 准时连续 $streak 次';
+  }
+
+  @override
+  String todoStreakGridLabel(int weeks) {
+    return '最近 $weeks 周的完成情况';
+  }
+
+  @override
+  String get todoStepsAllDoneComplete => '顺便完成这条待办';
+
+  @override
+  String get todoStepActions => '步骤操作';
+
+  @override
+  String get todoStepToTodo => '转为独立待办';
+
+  @override
+  String get todoStepToTodoNotice => '已转为独立待办';
+
+  @override
+  String get todoStepReorder => '拖动以调整步骤顺序';
+
+  @override
+  String todoNoteChecklistToSteps(int count) {
+    return '把 $count 行清单转为步骤';
+  }
+
+  @override
+  String todoNoteOpenLink(String host) {
+    return '打开 $host';
+  }
+
+  @override
+  String todoPostponedCount(int count) {
+    return '已推迟 $count 次';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

@@ -4,7 +4,7 @@ part of 'app_database.dart';
 enum TodoBatchField {
   /// 截止日、截止时刻、提醒、重复与稍后提醒：批量改日期会连带去掉重复、
   /// 改为全天时去掉只对有时刻的待办有效的提醒、作废稍后提醒，撤销要一起
-  /// 写回。
+  /// 写回；推迟次数（`metadata` 里的一个键）也回到改之前。
   due,
 
   /// 所在清单与拖动顺序（移到别的清单时排到那里的最前）。
@@ -23,7 +23,7 @@ enum TodoBatchField {
 /// 1. 每个方法各在一个事务里执行（watch 流只推送一次，提醒只重排一次），
 ///    空列表直接返回、不开事务；
 /// 2. 每行的规则与单条方法完全一致，并复用单条方法的事务内写法
-///    （`_completeTodoRow`、`_todoDueChange`、`_topTodoOrder`）；
+///    （`_completeTodoRow`、`_todoDueChangeFor`、`_topTodoOrder`）；
 /// 3. 逐项修改每行只写这一组列外加 `updated_at`，不整行写回；值本来就相同
 ///    的行不写：局域网同步按整条记录“后写者胜”，平白刷新 `updated_at` 会让
 ///    这台设备上没改过的旧值盖掉另一台设备在别的字段上的编辑；
@@ -86,7 +86,7 @@ mixin _AppDatabaseTodoBatchOps
       final now = DateTime.now();
       final changed = <TodoRow>[];
       for (final row in await _todosByIds(ids)) {
-        var change = _todoDueChange(row, date: date, minute: minute);
+        var change = _todoDueChangeFor(row, date: date, minute: minute);
         var remindersChanged = false;
         if (allDay) {
           // 与详情页改日期时同一口径：按解码后的提醒过滤，条数变了才写。
@@ -202,6 +202,7 @@ mixin _AppDatabaseTodoBatchOps
             reminders: Value(row.reminders),
             repeat: Value(row.repeat),
             snoozedUntil: Value(row.snoozedUntil),
+            metadata: await _restoredPostponeCount(row),
           ),
           TodoBatchField.list => TodosCompanion(
             listId: Value(row.listId),
@@ -216,6 +217,24 @@ mixin _AppDatabaseTodoBatchOps
         );
       }
     });
+  }
+
+  /// 撤销改期时推迟次数回到改之前（只改这一个键，别的键以库里现在的为准）；
+  /// 次数本来就一样时不写。
+  Future<Value<String>> _restoredPostponeCount(TodoRow before) async {
+    final current = await getTodo(before.todoId);
+    if (current == null) return const Value.absent();
+    final was = decodeTodoMetadata(
+      before.metadata,
+    )[TodoMetadataKeys.postponeCount];
+    final map = decodeTodoMetadata(current.metadata);
+    if (map[TodoMetadataKeys.postponeCount] == was) return const Value.absent();
+    if (was == null) {
+      map.remove(TodoMetadataKeys.postponeCount);
+    } else {
+      map[TodoMetadataKeys.postponeCount] = was;
+    }
+    return Value(jsonEncode(map));
   }
 
   /// [rows] 所在的清单里仍然存在的那些（业务 id；收集箱不是一行，不在内）。

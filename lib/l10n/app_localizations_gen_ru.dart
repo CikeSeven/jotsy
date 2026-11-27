@@ -17241,6 +17241,57 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoSettingsSwipeLeft => 'Свайп влево';
 
   @override
+  String get todoStreakTitle => 'История выполнения';
+
+  @override
+  String todoStreakSummary(int total, int streak) {
+    return 'Всего: $total · вовремя подряд: $streak';
+  }
+
+  @override
+  String todoStreakGridLabel(int weeks) {
+    return 'Выполнение за последние недели: $weeks';
+  }
+
+  @override
+  String get todoStepsAllDoneComplete => 'Завершить и эту задачу';
+
+  @override
+  String get todoStepActions => 'Действия с шагом';
+
+  @override
+  String get todoStepToTodo => 'Сделать отдельной задачей';
+
+  @override
+  String get todoStepToTodoNotice => 'Шаг стал задачей';
+
+  @override
+  String get todoStepReorder => 'Перетащите, чтобы изменить порядок шага';
+
+  @override
+  String todoNoteChecklistToSteps(int count) {
+    return 'Превратить строки списка в шаги ($count)';
+  }
+
+  @override
+  String todoNoteOpenLink(String host) {
+    return 'Открыть $host';
+  }
+
+  @override
+  String todoPostponedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Перенесено $count раза',
+      many: 'Перенесено $count раз',
+      few: 'Перенесено $count раза',
+      one: 'Перенесено $count раз',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

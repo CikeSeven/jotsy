@@ -119,4 +119,7 @@ abstract final class TodoMetadataKeys {
 
   /// 重复待办：已经完成的次数（含已结束的那次），用于“一共重复 N 次”。
   static const String repeatDone = 'repeatDone';
+
+  /// 截止日被往后推过几次（改到比原来晚的日子才算，见 `_todoDueChangeFor`）。
+  static const String postponeCount = 'postponeCount';
 }

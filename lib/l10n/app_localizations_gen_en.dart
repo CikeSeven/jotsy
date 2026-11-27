@@ -16600,6 +16600,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoSettingsSwipeLeft => 'Swipe left';
 
   @override
+  String get todoStreakTitle => 'Streak';
+
+  @override
+  String todoStreakSummary(int total, int streak) {
+    return '$total done · $streak on time in a row';
+  }
+
+  @override
+  String todoStreakGridLabel(int weeks) {
+    return 'Completions over the last $weeks weeks';
+  }
+
+  @override
+  String get todoStepsAllDoneComplete => 'Complete this to-do too';
+
+  @override
+  String get todoStepActions => 'Step actions';
+
+  @override
+  String get todoStepToTodo => 'Make it a to-do';
+
+  @override
+  String get todoStepToTodoNotice => 'Turned into a to-do';
+
+  @override
+  String get todoStepReorder => 'Drag to reorder the step';
+
+  @override
+  String todoNoteChecklistToSteps(int count) {
+    return 'Turn checklist lines into steps ($count)';
+  }
+
+  @override
+  String todoNoteOpenLink(String host) {
+    return 'Open $host';
+  }
+
+  @override
+  String todoPostponedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Postponed $count times',
+      one: 'Postponed once',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

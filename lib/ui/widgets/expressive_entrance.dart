@@ -21,6 +21,7 @@ class ExpressiveEntrance extends StatelessWidget {
     this.offset = const Offset(0, 0.08),
     this.duration = ExpressiveMotion.medium,
     this.glass = false,
+    this.delay = Duration.zero,
   });
 
   final Widget child;
@@ -33,12 +34,22 @@ class ExpressiveEntrance extends StatelessWidget {
   /// 整块都在一块玻璃里时传 true；经典材质保持 false，照旧用 Opacity。
   final bool glass;
 
+  /// 插入后先等多久再开始（错峰入场：一组区块依次加大）。等待期间不可见；
+  /// 减少动画时忽略。
+  final Duration delay;
+
   @override
   Widget build(BuildContext context) {
+    final total = ExpressiveMotion.duration(context, duration + delay);
+    final wait = total == Duration.zero || delay == Duration.zero
+        ? 0.0
+        : delay.inMicroseconds / total.inMicroseconds;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: ExpressiveMotion.duration(context, duration),
-      curve: ExpressiveMotion.effects,
+      duration: total,
+      curve: wait == 0
+          ? ExpressiveMotion.effects
+          : Interval(wait, 1, curve: ExpressiveMotion.effects),
       child: child,
       builder: (BuildContext context, double progress, Widget? child) {
         final moved = FractionalTranslation(

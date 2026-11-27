@@ -6,7 +6,8 @@ import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/todo_check_box.dart';
 import 'todo_complete_motion.dart';
 
-/// 待办行左侧的勾选方框：48dp 触控格、22dp 方框。
+/// 待办的勾选方框：列表行左侧为 48dp 触控格里的 22dp 方框，详情头部为
+/// 28dp、贴起始边（[size]、[alignment]）。
 ///
 /// 按下时方框以真弹簧压到 [TodoCompleteMotion.pressedScale]，松手或取消时
 /// 带着速度弹回；勾选动效（[check]，见 [TodoCompleteMotion]）里再弹过
@@ -23,6 +24,8 @@ class TodoTileCheckButton extends StatefulWidget {
     required this.tint,
     required this.semanticsLabel,
     required this.onTap,
+    this.size = 22,
+    this.alignment = Alignment.center,
   });
 
   /// 勾选动效的进度（0~1，含停的一拍）。
@@ -34,6 +37,8 @@ class TodoTileCheckButton extends StatefulWidget {
   final Color? tint;
   final String? semanticsLabel;
   final VoidCallback onTap;
+  final double size;
+  final AlignmentGeometry alignment;
 
   @override
   State<TodoTileCheckButton> createState() => _TodoTileCheckButtonState();
@@ -84,15 +89,16 @@ class _TodoTileCheckButtonState extends State<TodoTileCheckButton>
             : null,
         onTapUp: enabled ? (_) => _pressTo(1) : null,
         onTapCancel: enabled ? () => _pressTo(1) : null,
-        radius: 22,
-        child: Center(
+        radius: widget.size,
+        child: Align(
+          alignment: widget.alignment,
           child: Opacity(
             opacity: enabled ? 1 : 0.38,
             child: ScaleTransition(
               scale: _scale,
               child: TodoCheckBoxVisual(
                 checked: widget.checked,
-                size: 22,
+                size: widget.size,
                 accent: widget.accent,
                 onAccent: widget.onAccent,
                 tint: widget.tint,

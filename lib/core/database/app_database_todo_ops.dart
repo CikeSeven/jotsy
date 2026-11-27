@@ -162,8 +162,28 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
   Future<void> setTodoSteps(String todoId, List<TodoStep> steps) =>
       _writeTodo(todoId, TodosCompanion(steps: Value(encodeTodoSteps(steps))));
 
-  Future<void> setTodoLinkedDiary(String todoId, String? diaryId) =>
-      _writeTodo(todoId, TodosCompanion(linkedDiaryId: Value(diaryId)));
+  /// 改关联日记。关联挂在整串重复待办上：原待办已完成的各次（副本）在同一
+  /// 事务里一起改，日记的“相关待办”才能把它们收进这一串（#382）；关联本来
+  /// 就相同的副本不写。改某一次的副本只改它自己。
+  Future<void> setTodoLinkedDiary(String todoId, String? diaryId) {
+    return transaction(() async {
+      await _writeTodo(todoId, TodosCompanion(linkedDiaryId: Value(diaryId)));
+      await (update(todos)..where(
+            (t) =>
+                _todoOccurrenceOf(t, todoId) &
+                (diaryId == null
+                    ? t.linkedDiaryId.isNotNull()
+                    : t.linkedDiaryId.isNull() |
+                          t.linkedDiaryId.equals(diaryId).not()),
+          ))
+          .write(
+            TodosCompanion(
+              linkedDiaryId: Value(diaryId),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
+    });
+  }
 
   /// 把待办拖到同一清单里 [aboveId] 与 [belowId] 之间（都可空：拖到最前 /
   /// 最后）。

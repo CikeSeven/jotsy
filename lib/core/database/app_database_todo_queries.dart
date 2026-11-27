@@ -179,6 +179,18 @@ mixin _AppDatabaseTodoQueries on _$AppDatabase {
   }
 }
 
+/// 重复待办 [todoId] 已完成的各次（已完成副本，`metadata.repeatOf` 指向它）。
+/// 副本的 metadata 由完成时整份写入且 repeatOf 是第一个键（见
+/// `_completeTodoRow`），`{"repeatOf":"<id>"}` 去掉花括号就是它的一段。取消
+/// 完成后的副本已是一条普通待办，不算。
+Expression<bool> _todoOccurrenceOf($TodosTable t, String todoId) {
+  final marker = jsonEncode(<String, Object?>{
+    TodoMetadataKeys.repeatOf: todoId,
+  });
+  return t.completedAt.isNotNull() &
+      t.metadata.like('%${marker.substring(1, marker.length - 1)}%');
+}
+
 /// 手动排序：按拖动顺序，新建的在前（新建时取所在清单最前的值再往前）。
 List<OrderClauseGenerator<$TodosTable>> _todoManualOrder() =>
     <OrderClauseGenerator<$TodosTable>>[

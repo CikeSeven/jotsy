@@ -49,6 +49,7 @@ class TodoDetailBody extends ConsumerStatefulWidget {
     super.key,
     required this.todoId,
     required this.onDelete,
+    required this.onOpenTodo,
     this.scrollController,
     this.onEditingFocus,
     this.padding = const EdgeInsets.fromLTRB(
@@ -61,6 +62,10 @@ class TodoDetailBody extends ConsumerStatefulWidget {
 
   final String todoId;
   final VoidCallback onDelete;
+
+  /// 打开另一条待办（重复待办某一次跳到原待办）：底部面板再叠一层面板，
+  /// 详情栏原地换成那一条。
+  final ValueChanged<String> onOpenTodo;
 
   /// 底部面板的 [DraggableScrollableSheet] 交来的滚动控制器。
   final ScrollController? scrollController;
@@ -225,7 +230,13 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
           ),
         ),
         const SizedBox(height: AppSpacing.m),
-        enter(TodoDetailPills(row: row, today: today)),
+        enter(
+          TodoDetailPills(
+            row: row,
+            today: today,
+            onOpenTodo: widget.onOpenTodo,
+          ),
+        ),
         const SizedBox(height: AppSpacing.xl),
         enter(
           TodoStepsCard(

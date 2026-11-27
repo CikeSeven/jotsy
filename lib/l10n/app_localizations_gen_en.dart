@@ -16646,6 +16646,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todoSeriesDoneCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Done $count times',
+      one: 'Done once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoSeriesOf(String title) {
+    return 'Part of “$title”';
+  }
+
+  @override
   String todoQuickAddedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

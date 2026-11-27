@@ -17289,6 +17289,24 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String todoSeriesDoneCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выполнено $count раза',
+      many: 'Выполнено $count раз',
+      few: 'Выполнено $count раза',
+      one: 'Выполнено $count раз',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoSeriesOf(String title) {
+    return 'Из серии «$title»';
+  }
+
+  @override
   String todoQuickAddedCount(int count) {
     return 'Добавлено: $count';
   }

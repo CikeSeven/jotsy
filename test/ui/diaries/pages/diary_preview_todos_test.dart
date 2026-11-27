@@ -115,6 +115,35 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('a repeating to-do is one row; its done occurrences fold in', (
+    tester,
+  ) async {
+    await setUpDiary(features: '{"todos":true}');
+    final today = DateTime.now();
+    await tester.runAsync(() async {
+      final id = await database.createTodo(
+        TodoInput(
+          title: '学刮痧',
+          dueDate: today.subtract(const Duration(days: 1)),
+          repeat: TodoRepeatRule(
+            frequency: TodoRepeatFrequency.daily,
+            anchor: today.subtract(const Duration(days: 1)),
+          ),
+          linkedDiaryId: diaryId,
+        ),
+      );
+      await database.completeTodo(id);
+      await database.completeTodo(id);
+    });
+    final l10n = await pumpPreview(tester);
+
+    final tile = tester.widget<TodoTile>(find.byType(TodoTile));
+    expect(tile.row.completedAt, isNull, reason: '只剩原待办这一行');
+    expect(tile.seriesDoneCount, 2);
+    expect(find.text(l10n.todoSeriesDoneCount(2)), findsOneWidget);
+    await unmount(tester);
+  });
+
   testWidgets('without checklist items only “add a to-do” is offered', (
     tester,
   ) async {

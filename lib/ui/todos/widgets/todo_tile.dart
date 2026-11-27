@@ -66,6 +66,7 @@ class TodoTile extends StatefulWidget {
     this.onToggleStep,
     this.semanticActions,
     this.highlights = const <String>[],
+    this.seriesDoneCount = 0,
   });
 
   final TodoRow row;
@@ -104,6 +105,10 @@ class TodoTile extends StatefulWidget {
   /// 搜索词（经 `splitSearchTerms` 拆好）：标题与备注里命中的地方高亮，
   /// 备注改为从第一个命中处摘录。
   final List<String> highlights;
+
+  /// 收进这一行的已完成次数（重复待办的已完成副本不单列时，见
+  /// `TodoSeriesRows`）；大于 0 时重复图标胶囊写出“已完成 N 次”。
+  final int seriesDoneCount;
 
   @override
   State<TodoTile> createState() => _TodoTileState();
@@ -197,6 +202,7 @@ class _TodoTileState extends State<TodoTile>
       list: widget.list,
       stepsExpanded: expanded,
       onStepsTap: onToggleSteps,
+      seriesDoneCount: widget.seriesDoneCount,
     );
     final highlights = widget.highlights;
     final note = highlights.isEmpty

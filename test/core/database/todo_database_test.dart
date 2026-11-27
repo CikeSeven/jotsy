@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -259,6 +260,51 @@ void main() {
       expect(await db.watchTodosLinkedToDiary(diaryId).first, hasLength(1));
       await db.hardDeleteDiary(diaryId);
       expect((await db.getTodo(todo))!.linkedDiaryId, isNull);
+    });
+
+    test('linking a repeating todo carries its done occurrences', () async {
+      final id = await db.createTodo(
+        TodoInput(
+          title: '浇花',
+          dueDate: DateTime(2026, 11, 2),
+          repeat: TodoRepeatRule(
+            frequency: TodoRepeatFrequency.daily,
+            anchor: DateTime(2026, 11, 2),
+          ),
+        ),
+      );
+      final first = (await db.completeTodo(
+        id,
+        now: DateTime(2026, 11, 2, 20),
+      ))!.copyId!;
+      final reopened = (await db.completeTodo(
+        id,
+        now: DateTime(2026, 11, 3, 20),
+      ))!.copyId!;
+      // 取消完成的那一次已是一条普通待办，不再跟着这一串。
+      await db.uncompleteTodo(reopened);
+
+      await db.setTodoLinkedDiary(id, 'diary-a');
+      expect((await db.getTodo(id))!.linkedDiaryId, 'diary-a');
+      expect((await db.getTodo(first))!.linkedDiaryId, 'diary-a');
+      expect((await db.getTodo(reopened))!.linkedDiaryId, isNull);
+
+      // 改某一次只改它自己。
+      await db.setTodoLinkedDiary(first, 'diary-b');
+      expect((await db.getTodo(id))!.linkedDiaryId, 'diary-a');
+
+      // 关联本来就相同的那一次不写（updated_at 不动，同步不会多发一条）。
+      final old = DateTime(2020);
+      await (db.update(db.todos)..where((t) => t.todoId.equals(first))).write(
+        TodosCompanion(updatedAt: Value(old)),
+      );
+      await db.setTodoLinkedDiary(id, 'diary-b');
+      expect((await db.getTodo(first))!.updatedAt, old);
+
+      // 取消关联同样带上各次。
+      await db.setTodoLinkedDiary(id, null);
+      expect((await db.getTodo(first))!.linkedDiaryId, isNull);
+      expect((await db.getTodo(first))!.updatedAt.isAfter(old), isTrue);
     });
   });
 

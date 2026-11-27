@@ -161,13 +161,8 @@ mixin _AppDatabaseTodoDetailOps
   /// 重复待办 [todoId] 每一次的完成记录（已完成副本，`metadata.repeatOf`
   /// 指向它），最近完成的在前，至多 [limit] 条。
   Stream<List<TodoRow>> watchTodoOccurrences(String todoId, {int limit = 400}) {
-    final marker = jsonEncode(<String, Object?>{
-      TodoMetadataKeys.repeatOf: todoId,
-    });
-    // 副本的 metadata 由完成时整份写入，`{"repeatOf":"<id>"}` 是它的一段。
-    final needle = '%${marker.substring(1, marker.length - 1)}%';
     return (select(todos)
-          ..where((t) => t.completedAt.isNotNull() & t.metadata.like(needle))
+          ..where((t) => _todoOccurrenceOf(t, todoId))
           ..orderBy(<OrderClauseGenerator<$TodosTable>>[
             (t) => OrderingTerm.desc(t.completedAt),
           ])

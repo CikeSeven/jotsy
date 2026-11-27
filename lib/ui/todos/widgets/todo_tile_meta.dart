@@ -20,7 +20,8 @@ import 'todo_tag_chips.dart';
 /// 清单（6dp 强调色圆点 + 名称，在分区里时写成“清单 · 分区”，只在跨清单的
 /// 视图里给出 [list]）、待办标签
 /// （`@名称` 微胶囊，至多两颗再加“+N”，见 [TodoTagChips]），以及只画图标的
-/// 提醒、重复、关联日记。都没有时返回空列表，调用方不占行。
+/// 提醒、重复、关联日记；[seriesDoneCount] 大于 0（已完成的各次收进了这一行）
+/// 时重复胶囊写出“已完成 N 次”。都没有时返回空列表，调用方不占行。
 List<Widget> buildTodoMetaPills(
   BuildContext context, {
   required TodoRow row,
@@ -28,6 +29,7 @@ List<Widget> buildTodoMetaPills(
   TodoListRow? list,
   bool stepsExpanded = false,
   VoidCallback? onStepsTap,
+  int seriesDoneCount = 0,
 }) {
   final l10n = context.l10n;
   final scheme = Theme.of(context).colorScheme;
@@ -126,16 +128,24 @@ List<Widget> buildTodoMetaPills(
   pills.addAll(
     TodoTagChips.forRow(context, TodoTags.ofMetadataText(row.metadata)),
   );
-  final icons = <FaIconData>[
+  final repeating = row.repeat != null && decodeTodoRepeat(row.repeat) != null;
+  final icons = <(FaIconData, String?)>[
     if (!done && decodeTodoReminders(row.reminders).isNotEmpty)
-      FontAwesomeIcons.bell,
-    if (row.repeat != null && decodeTodoRepeat(row.repeat) != null)
-      FontAwesomeIcons.repeat,
-    if (row.linkedDiaryId != null) FontAwesomeIcons.bookOpen,
+      (FontAwesomeIcons.bell, null),
+    if (seriesDoneCount > 0)
+      (FontAwesomeIcons.repeat, l10n.todoSeriesDoneCount(seriesDoneCount))
+    else if (repeating)
+      (FontAwesomeIcons.repeat, null),
+    if (row.linkedDiaryId != null) (FontAwesomeIcons.bookOpen, null),
   ];
-  for (final icon in icons) {
+  for (final (icon, text) in icons) {
     pills.add(
-      TodoMetaPill(icon: icon, background: neutralBg, foreground: neutralFg),
+      TodoMetaPill(
+        icon: icon,
+        text: text,
+        background: neutralBg,
+        foreground: neutralFg,
+      ),
     );
   }
   return pills;

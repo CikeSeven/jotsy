@@ -1,22 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
-import '../../widgets/todo_check_box.dart';
 import '../viewmodels/todo_priority_colors.dart';
 import '../widgets/todo_bare_input.dart';
+import '../widgets/todo_complete_motion.dart';
 import '../widgets/todo_progress_ring.dart';
+import '../widgets/todo_tile_check.dart';
 
 /// 待办详情（[TodoDetailBody] 所在的 `todo_detail_body.dart`）的几块版式：
 /// 头部、步骤 / 备注卡片与创建 / 完成时间。只负责排版，写库与状态都在
 /// 详情内容里。
 
-/// 头部：28dp 方框（勾选完成，按优先级着色同列表行）+ `titleLarge` w700 标题输入框 + “更多”。
-class TodoDetailHeader extends StatelessWidget {
+/// 头部：28dp 方框（勾选完成，按优先级着色同列表行）+ `titleLarge` w700
+/// 标题输入框 + “更多”。
+///
+/// 勾选未完成的这条时演勾选三拍的前两拍（按下压小、弹起、对勾描出，节拍
+/// 见 `TodoCompleteMotion`，轻震一次），播完才交给 [onToggle] 写库；取消
+/// 勾选直接交出。减少动画时直接交出。
+class TodoDetailHeader extends StatefulWidget {
   const TodoDetailHeader({
     super.key,
     required this.row,
@@ -37,11 +47,63 @@ class TodoDetailHeader extends StatelessWidget {
   final VoidCallback onDuplicate;
 
   @override
+  State<TodoDetailHeader> createState() => _TodoDetailHeaderState();
+}
+
+class _TodoDetailHeaderState extends State<TodoDetailHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _check = AnimationController(
+    vsync: this,
+    value: widget.row.completedAt != null ? 1 : 0,
+  );
+  bool _checking = false;
+
+  bool get _done => widget.row.completedAt != null;
+
+  @override
+  void didUpdateWidget(TodoDetailHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if ((oldWidget.row.completedAt != null) != _done ||
+        oldWidget.row.todoId != widget.row.todoId) {
+      _checking = false;
+      _check.value = _done ? 1 : 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _check.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggle() async {
+    if (_checking) return;
+    if (_done) {
+      widget.onToggle();
+      return;
+    }
+    unawaited(HapticFeedback.lightImpact());
+    final duration = ExpressiveMotion.duration(
+      context,
+      TodoCompleteMotion.check,
+    );
+    if (duration == Duration.zero) {
+      widget.onToggle();
+      return;
+    }
+    setState(() => _checking = true);
+    await _check.animateTo(1, duration: duration, curve: Curves.linear);
+    if (!mounted || !_checking) return;
+    widget.onToggle();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final done = row.completedAt != null;
+    final row = widget.row;
+    final done = _done;
     final priority = TodoPriorityColors.of(
       scheme,
       TodoPriority.of(row.priority),
@@ -49,35 +111,27 @@ class TodoDetailHeader extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Semantics(
-          checked: done,
-          button: true,
-          label: done ? l10n.todoMarkUndone : l10n.todoMarkDone,
-          excludeSemantics: true,
-          child: InkResponse(
-            onTap: onToggle,
-            radius: 24,
-            child: SizedBox(
-              width: 44,
-              height: 52,
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TodoCheckBoxVisual(
-                  checked: done,
-                  size: 28,
-                  accent: priority?.accent,
-                  onAccent: priority?.onAccent,
-                  tint: priority?.tint,
-                ),
-              ),
-            ),
+        SizedBox(
+          width: 44,
+          height: 52,
+          child: TodoTileCheckButton(
+            check: _check,
+            checked: done || _checking,
+            enabled: true,
+            accent: priority?.accent,
+            onAccent: priority?.onAccent,
+            tint: priority?.tint,
+            semanticsLabel: done ? l10n.todoMarkUndone : l10n.todoMarkDone,
+            onTap: () => unawaited(_toggle()),
+            size: 28,
+            alignment: AlignmentDirectional.centerStart,
           ),
         ),
         Expanded(
           child: TextField(
-            controller: controller,
-            focusNode: focusNode,
-            onChanged: (_) => onChanged(),
+            controller: widget.controller,
+            focusNode: widget.focusNode,
+            onChanged: (_) => widget.onChanged(),
             maxLength: 500,
             minLines: 1,
             maxLines: null,
@@ -101,13 +155,13 @@ class TodoDetailHeader extends StatelessWidget {
           items: <Widget>[
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.copy),
-              onPressed: onDuplicate,
+              onPressed: widget.onDuplicate,
               child: Text(l10n.todoDuplicate),
             ),
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
               destructive: true,
-              onPressed: onDelete,
+              onPressed: widget.onDelete,
               child: Text(l10n.todoDelete),
             ),
           ],
@@ -182,7 +236,7 @@ class TodoDetailSectionCard extends StatelessWidget {
   }
 }
 
-/// 创建 / 完成时间。
+/// 创建 / 完成时间，截止日往后推过时再写推迟了几次。
 class TodoDetailFooter extends StatelessWidget {
   const TodoDetailFooter({super.key, required this.row});
 
@@ -196,6 +250,7 @@ class TodoDetailFooter extends StatelessWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
     final completedAt = row.completedAt;
+    final postponed = todoPostponeCount(row);
     return Column(
       children: <Widget>[
         Text(
@@ -206,6 +261,12 @@ class TodoDetailFooter extends StatelessWidget {
         if (completedAt != null)
           Text(
             l10n.todoCompletedAt(l10n.formatDateTimeMinute(completedAt)),
+            style: style,
+            textAlign: TextAlign.center,
+          ),
+        if (postponed > 0)
+          Text(
+            l10n.todoPostponedCount(postponed),
             style: style,
             textAlign: TextAlign.center,
           ),

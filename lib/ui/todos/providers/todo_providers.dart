@@ -80,6 +80,13 @@ class TodoTodayNotifier extends Notifier<DateTime> {
   }
 }
 
+/// 重复待办每一次的完成记录（详情里的坚持记录），离开详情即释放。
+final todoOccurrencesProvider = StreamProvider.autoDispose
+    .family<List<TodoRow>, String>(
+      (Ref ref, String todoId) =>
+          ref.watch(appDatabaseProvider).watchTodoOccurrences(todoId),
+    );
+
 /// 整分的“此刻”：只给按分钟变化的说法（“还有 25 分钟”）用，别的界面
 /// 不要监听它，免得每分钟重建。
 ///
@@ -111,10 +118,7 @@ class TodoMinuteNotifier extends Notifier<DateTime> {
   void _scheduleAfter(DateTime now) {
     _tick?.cancel();
     final next = _floor(now).add(const Duration(minutes: 1));
-    _tick = Timer(
-      next.difference(now) + const Duration(seconds: 1),
-      _refresh,
-    );
+    _tick = Timer(next.difference(now) + const Duration(seconds: 1), _refresh);
   }
 
   static DateTime _floor(DateTime t) =>

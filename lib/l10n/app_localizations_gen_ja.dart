@@ -14790,6 +14790,49 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todoSettingsSwipeLeft => '左スワイプ';
 
   @override
+  String get todoStreakTitle => '継続記録';
+
+  @override
+  String todoStreakSummary(int total, int streak) {
+    return '合計 $total 回・期限内に連続 $streak 回';
+  }
+
+  @override
+  String todoStreakGridLabel(int weeks) {
+    return '直近 $weeks 週間の完了状況';
+  }
+
+  @override
+  String get todoStepsAllDoneComplete => 'このToDoも完了にする';
+
+  @override
+  String get todoStepActions => 'ステップの操作';
+
+  @override
+  String get todoStepToTodo => '独立したToDoにする';
+
+  @override
+  String get todoStepToTodoNotice => 'ToDoにしました';
+
+  @override
+  String get todoStepReorder => 'ドラッグしてステップを並べ替え';
+
+  @override
+  String todoNoteChecklistToSteps(int count) {
+    return 'チェックリスト $count 行をステップにする';
+  }
+
+  @override
+  String todoNoteOpenLink(String host) {
+    return '$host を開く';
+  }
+
+  @override
+  String todoPostponedCount(int count) {
+    return '$count 回延期';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

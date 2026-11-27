@@ -6,25 +6,31 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../diaries/controllers/diary_list_switch_motion.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/editing_session_blocker.dart';
 import '../../widgets/empty_hint.dart';
+import '../../widgets/expressive_entrance.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../controllers/todo_actions.dart';
 import '../controllers/todo_debounced_writer.dart';
 import '../controllers/todo_field_editors.dart';
 import '../providers/todo_providers.dart';
 import '../widgets/todo_detail_pills.dart';
+import '../widgets/todo_note_extras.dart';
+import '../widgets/todo_streak_card.dart';
 import 'todo_detail_parts.dart';
 import 'todo_steps_section.dart';
 import '../widgets/todo_bare_input.dart';
 
 /// 一条待办的详情内容（底部面板 [showTodoDetailSheet] 与宽窗口详情栏
-/// `TodoDetailPane` 共用）：大方框 + 标题、属性胶囊、步骤卡、备注卡与
-/// 创建 / 完成时间，改一项写一项。
+/// `TodoDetailPane` 共用）：大方框 + 标题、属性胶囊、步骤卡、备注卡（下面
+/// 是清单行转步骤与识别出的链接）、重复待办的坚持记录与创建 / 完成时间、
+/// 推迟次数，改一项写一项。打开时各块错峰入场。
 ///
 /// 标题与备注是逐字输入，防抖后写库（[TodoDebouncedWriter]），卸载时（面板
 /// 关闭、详情栏换到另一条）立即写掉还没写的；其余字段在各自的面板里选完即
@@ -183,60 +189,116 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
     }
     final today = ref.watch(todoTodayProvider);
     final steps = decodeTodoSteps(row.steps);
+    final doneSteps = steps.where((TodoStep s) => s.done).length;
+    final repeating = decodeTodoRepeat(row.repeat) != null;
+    // 内容错峰入场：每一块比上一块晚一点（只在打开时演一次，之后数据
+    // 变化不再演）。
+    var order = 0;
+    Widget enter(Widget child) =>
+        ExpressiveEntrance(delay: _stagger * order++, child: child);
     return ListView(
       controller: widget.scrollController,
       padding: widget.padding,
       children: <Widget>[
-        TodoDetailHeader(
-          row: row,
-          controller: _title,
-          focusNode: _titleFocus,
-          onChanged: () => _titleWriter.schedule(_title.text),
-          onToggle: () => unawaited(toggleTodoDone(context, _database, row)),
-          onDelete: _delete,
-          onDuplicate: () => unawaited(_duplicate(row, today)),
-        ),
-        const SizedBox(height: AppSpacing.m),
-        TodoDetailPills(row: row, today: today),
-        const SizedBox(height: AppSpacing.xl),
-        TodoDetailSectionCard(
-          title: steps.isEmpty
-              ? l10n.todoStepsTitle
-              : l10n.todoStepsTitleProgress(
-                  steps.where((s) => s.done).length,
-                  steps.length,
-                ),
-          progress: steps.isEmpty
-              ? null
-              : steps.where((s) => s.done).length / steps.length,
-          child: TodoStepsSection(
-            steps: steps,
-            onChanged: (List<TodoStep> next) =>
-                unawaited(_database.setTodoSteps(row.todoId, next)),
-            onToggle: (String stepId, bool value) =>
-                unawaited(_database.setTodoStepDone(row.todoId, stepId, value)),
+        enter(
+          TodoDetailHeader(
+            row: row,
+            controller: _title,
+            focusNode: _titleFocus,
+            onChanged: () => _titleWriter.schedule(_title.text),
+            onToggle: () => unawaited(toggleTodoDone(context, _database, row)),
+            onDelete: _delete,
+            onDuplicate: () => unawaited(_duplicate(row, today)),
           ),
         ),
         const SizedBox(height: AppSpacing.m),
-        TodoDetailSectionCard(
-          title: l10n.todoNoteTitle,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: TextField(
-              controller: _note,
-              focusNode: _noteFocus,
-              onChanged: _noteWriter.schedule,
-              minLines: 3,
-              maxLines: null,
-              keyboardType: TextInputType.multiline,
-              contextMenuBuilder: appTextContextMenuBuilder,
-              decoration: todoBareInputDecoration(hintText: l10n.todoNoteHint),
+        enter(TodoDetailPills(row: row, today: today)),
+        const SizedBox(height: AppSpacing.xl),
+        enter(
+          TodoDetailSectionCard(
+            title: steps.isEmpty
+                ? l10n.todoStepsTitle
+                : l10n.todoStepsTitleProgress(doneSteps, steps.length),
+            progress: steps.isEmpty ? null : doneSteps / steps.length,
+            child: TodoStepsSection(
+              steps: steps,
+              onChanged: (List<TodoStep> next) =>
+                  unawaited(_database.setTodoSteps(row.todoId, next)),
+              onToggle: (String stepId, bool value) => unawaited(
+                _database.setTodoStepDone(row.todoId, stepId, value),
+              ),
+              onConvert: (String stepId) => unawaited(_convertStep(stepId)),
+              onCompleteTodo: row.completedAt == null
+                  ? () => unawaited(toggleTodoDone(context, _database, row))
+                  : null,
             ),
           ),
         ),
+        const SizedBox(height: AppSpacing.m),
+        enter(
+          TodoDetailSectionCard(
+            title: l10n.todoNoteTitle,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+              child: TextField(
+                controller: _note,
+                focusNode: _noteFocus,
+                onChanged: _noteWriter.schedule,
+                minLines: 3,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                contextMenuBuilder: appTextContextMenuBuilder,
+                decoration: todoBareInputDecoration(
+                  hintText: l10n.todoNoteHint,
+                ),
+              ),
+            ),
+          ),
+        ),
+        AnimatedSize(
+          duration: ExpressiveMotion.durationNonZero(
+            context,
+            ExpressiveMotion.medium,
+          ),
+          curve: ExpressiveMotion.spatial,
+          alignment: AlignmentDirectional.topStart,
+          child: Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.s),
+            child: TodoNoteExtras(
+              note: row.note,
+              onChecklistToSteps: () => unawaited(_checklistToSteps()),
+            ),
+          ),
+        ),
+        if (repeating) ...<Widget>[
+          const SizedBox(height: AppSpacing.m),
+          enter(TodoStreakCard(todoId: row.todoId, today: today)),
+        ],
         const SizedBox(height: AppSpacing.l),
-        TodoDetailFooter(row: row),
+        enter(TodoDetailFooter(row: row)),
       ],
     );
+  }
+
+  /// 每一块入场比上一块晚多久：与列表整体切换的错峰同一节奏。
+  static final Duration _stagger = DiaryListSwitchMotion.stagger;
+
+  Future<void> _convertStep(String stepId) async {
+    final id = await _database.convertTodoStepToTodo(widget.todoId, stepId);
+    if (id == null || !mounted) return;
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(content: Text(context.l10n.todoStepToTodoNotice)),
+      ),
+    );
+  }
+
+  /// 备注里的清单行挪进步骤：先把输入框里还没写的写掉、放下焦点，挪完后
+  /// 输入框按库里的新备注跟上（见 [_sync]）。
+  Future<void> _checklistToSteps() async {
+    _noteFocus.unfocus();
+    _noteWriter.flush();
+    await _database.moveTodoNoteChecklistToSteps(widget.todoId);
   }
 }

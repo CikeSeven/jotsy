@@ -14640,6 +14640,28 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String todoReviewWeekDone(int count) {
+    return '本周完成 $count 件';
+  }
+
+  @override
+  String todoReviewStreak(int days) {
+    return '连续 $days 天';
+  }
+
+  @override
+  String get todoReviewChartLabel => '最近 7 天每天完成的件数';
+
+  @override
+  String get exploreModuleTodos => '待办';
+
+  @override
+  String get exploreModuleTodosDesc => '今天还剩几件、本周完成与连续天数';
+
+  @override
+  String get exploreTodosOpen => '打开待办';
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

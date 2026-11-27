@@ -37,7 +37,7 @@ class TodoViewHero extends StatelessWidget {
     this.progress,
     this.onEditList,
     this.onPlanToday,
-    this.weekStrip,
+    this.footer,
   });
 
   final TodoView view;
@@ -59,8 +59,8 @@ class TodoViewHero extends StatelessWidget {
   /// 今天视图：有可规划的待办时“规划今天”按钮（null 时不显示）。
   final VoidCallback? onPlanToday;
 
-  /// 计划视图：卡片下半部的一周日期条。
-  final Widget? weekStrip;
+  /// 智能视图卡片的下半部：计划视图为一周日期条，已完成视图为回顾。
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +79,7 @@ class TodoViewHero extends StatelessWidget {
         onEdit: onEditList,
       );
     } else {
-      final strip = weekStrip;
+      final strip = footer;
       child = strip == null
           ? _SmartHero(view: smart!, count: count)
           : Column(

@@ -8,6 +8,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_platform.dart';
 import '../../diaries/widgets/diary_swipe_action_item.dart';
 import '../models/todo_settings.dart';
+import '../widgets/todo_hover_actions.dart';
 import '../widgets/todo_row_drag.dart';
 import '../widgets/todo_tile.dart';
 import '../widgets/todo_tile_context_menu.dart';
@@ -17,8 +18,9 @@ import 'todo_list_callbacks.dart';
 ///
 /// - 手机：右滑完成 / 恢复；左滑按设置删除（滑出收起）或改期（弹截止日面板，
 ///   这一行弹回原位，改了日期后由列表动效滑到新的组）；
-/// - 桌面：右键菜单；按住拖动可把这一行（多选时是全部选中的）拖到左栏的
-///   今天、收集箱或清单上（[TodoRowDraggable]）；
+/// - 桌面：右键菜单；鼠标悬停时行尾浮出改期与删除（[TodoHoverActions]）；
+///   按住拖动可把这一行（多选时是全部选中的）拖到左栏的今天、收集箱或清单
+///   上（[TodoRowDraggable]）；键盘焦点行挂上 [TodoListRowState.cursorKey]；
 /// - 读屏：整行挂着完成 / 恢复、改期、删除三个动作，与滑动和右键菜单等价。
 ///
 /// 多选时不挂滑动、右键与读屏动作（点行只切换选中），桌面仍可拖动选中的。
@@ -79,7 +81,28 @@ class TodoListTile extends StatelessWidget {
       final dragged = selecting && state.selected.contains(row.todoId)
           ? state.selected.toList()
           : <String>[row.todoId];
+      final cursorKey = state.cursorKey;
+      if (cursorKey != null && state.highlightedId == row.todoId) {
+        child = KeyedSubtree(key: cursorKey, child: child);
+      }
       if (!selecting) {
+        child = TodoHoverActions(
+          endInset: trailing == null ? 0 : 48,
+          actions: <TodoHoverAction>[
+            if (!done)
+              TodoHoverAction(
+                icon: FontAwesomeIcons.calendarDay,
+                tooltip: l10n.todoReschedule,
+                onPressed: () => callbacks.onReschedule(row),
+              ),
+            TodoHoverAction(
+              icon: FontAwesomeIcons.trashCan,
+              tooltip: l10n.commonDelete,
+              onPressed: () => callbacks.onDelete(row),
+            ),
+          ],
+          child: child,
+        );
         child = TodoTileContextMenu(
           done: done,
           onToggle: () => callbacks.onSwipeToggle(row),

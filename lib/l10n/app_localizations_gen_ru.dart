@@ -17387,6 +17387,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get exploreTodosOpen => 'Открыть задачи';
 
   @override
+  String get todoSearchFilterOpen => 'Открытые';
+
+  @override
+  String get todoSearchFilterHigh => 'Высокий приоритет';
+
+  @override
+  String get todoSearchFilterDated => 'С датой';
+
+  @override
+  String get todoSearchFilterStatus => 'Статус';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

@@ -16762,6 +16762,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreTodosOpen => 'Open to-dos';
 
   @override
+  String get todoSearchFilterOpen => 'Open';
+
+  @override
+  String get todoSearchFilterHigh => 'High priority';
+
+  @override
+  String get todoSearchFilterDated => 'Has date';
+
+  @override
+  String get todoSearchFilterStatus => 'Status';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

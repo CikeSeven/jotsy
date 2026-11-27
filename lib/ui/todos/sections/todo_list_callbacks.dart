@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../../core/database/app_database.dart';
 import '../models/todo_settings.dart';
@@ -64,6 +64,7 @@ class TodoListRowState {
     this.highlightedId,
     this.expandedSteps = const <String>{},
     this.swipeLeft = TodoSwipeAction.delete,
+    this.cursorKey,
   });
 
   final bool selectionMode;
@@ -83,4 +84,8 @@ class TodoListRowState {
 
   /// 手机上左滑（RTL 右滑）的动作。
   final TodoSwipeAction swipeLeft;
+
+  /// 桌面键盘焦点行（即 [highlightedId] 那一行）上挂的键，移动后据此把它
+  /// 滚进视野；没有键盘焦点行时为 null。
+  final GlobalKey? cursorKey;
 }

@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../diaries/viewmodels/search_highlight.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/list_item_presence.dart';
 import '../../widgets/selectable_row_surface.dart';
@@ -64,6 +65,7 @@ class TodoTile extends StatefulWidget {
     this.onToggleSteps,
     this.onToggleStep,
     this.semanticActions,
+    this.highlights = const <String>[],
   });
 
   final TodoRow row;
@@ -98,6 +100,10 @@ class TodoTile extends StatefulWidget {
 
   /// 读屏的自定义动作。
   final Map<CustomSemanticsAction, VoidCallback>? semanticActions;
+
+  /// 搜索词（经 `splitSearchTerms` 拆好）：标题与备注里命中的地方高亮，
+  /// 备注改为从第一个命中处摘录。
+  final List<String> highlights;
 
   @override
   State<TodoTile> createState() => _TodoTileState();
@@ -192,7 +198,11 @@ class _TodoTileState extends State<TodoTile>
       stepsExpanded: expanded,
       onStepsTap: onToggleSteps,
     );
-    final note = _notePreview(row.note);
+    final highlights = widget.highlights;
+    final note = highlights.isEmpty
+        ? _notePreview(row.note)
+        : searchExcerpt(row.note, highlights, maxLength: 120) ??
+              _notePreview(row.note);
     final onToggleStep = widget.onToggleStep;
     final steps = _stepsBuilt && onToggleStep != null
         ? decodeTodoSteps(row.steps)
@@ -260,6 +270,7 @@ class _TodoTileState extends State<TodoTile>
                     return TodoTileText(
                       title: row.title,
                       note: note,
+                      highlights: highlights,
                       meta: meta,
                       strike: t,
                       strikeColor: scheme.onSurfaceVariant,

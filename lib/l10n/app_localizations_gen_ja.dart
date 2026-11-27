@@ -14919,6 +14919,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exploreTodosOpen => 'ToDoを開く';
 
   @override
+  String get todoSearchFilterOpen => '未完了';
+
+  @override
+  String get todoSearchFilterHigh => '優先度：高';
+
+  @override
+  String get todoSearchFilterDated => '日付あり';
+
+  @override
+  String get todoSearchFilterStatus => '状態';
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

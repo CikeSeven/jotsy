@@ -22,7 +22,8 @@ import 'todo_reorder.dart';
 
 /// 待办页列表行的交互交给哪里（页面持有的状态经参数传入）。
 ///
-/// - 点行：多选时切换选中；桌面按住 Ctrl / ⌘ 点按进入多选；否则打开详情
+/// - 点行：多选时切换选中；桌面按住 Ctrl / ⌘ 点按进入多选、按住 Shift 点按
+///   从上一次点选的一行连选到这一行（[visibleRows] 的顺序）；否则打开详情
 ///   （[openDetail]：宽窗口放进详情栏，窄窗口弹底部面板）；
 /// - 长按：进入或切换多选。iOS 补一次中等触觉；Android 由 InkWell 的长按
 ///   反馈负责，避免震两次；
@@ -44,16 +45,25 @@ TodoListCallbacks buildTodoPageCallbacks({
   required TodoCompletionUndo undo,
   required ValueChanged<TodoRow> openDetail,
   required ValueChanged<TodoRow> onToggleSteps,
+  required List<TodoRow> Function() visibleRows,
 }) {
   AppDatabase database() => ref.read(appDatabaseProvider);
   DateTime today() => ref.read(todoTodayProvider);
 
   void onTap(TodoRow row) {
     if (selection.active) {
-      selection.toggle(row.todoId);
+      if (AppPlatform.isDesktop && HardwareKeyboard.instance.isShiftPressed) {
+        selection.extendTo(row.todoId, visibleRows());
+      } else {
+        selection.toggle(row.todoId);
+      }
       return;
     }
     final keys = HardwareKeyboard.instance;
+    if (AppPlatform.isDesktop && keys.isShiftPressed) {
+      selection.extendTo(row.todoId, visibleRows());
+      return;
+    }
     if (AppPlatform.isDesktop &&
         (keys.isControlPressed || keys.isMetaPressed)) {
       selection.enter(row.todoId);

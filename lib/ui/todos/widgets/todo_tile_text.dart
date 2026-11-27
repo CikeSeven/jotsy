@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../diaries/viewmodels/search_highlight.dart';
+
 /// 待办行的文字列：标题（最多两行）、备注首行与一排元信息胶囊。
 ///
 /// 删除线不用 `TextDecoration`：它只能整行同时出现。这里按标题实际排出的
@@ -16,6 +18,7 @@ class TodoTileText extends StatelessWidget {
     required this.strike,
     required this.strikeColor,
     this.below,
+    this.highlights = const <String>[],
   });
 
   final String title;
@@ -30,12 +33,25 @@ class TodoTileText extends StatelessWidget {
   /// 胶囊下面的内容（就地展开的步骤）。
   final Widget? below;
 
+  /// 搜索词：标题与备注里命中的地方高亮。
+  final List<String> highlights;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final note = this.note;
     final below = this.below;
     final style = DefaultTextStyle.of(context).style.merge(titleStyle);
+    final scheme = theme.colorScheme;
+    // 与日记搜索同一配色，但不加粗：删除线按原样式排版，字宽一变断行就与
+    // 标题对不上。
+    final highlight = TextStyle(
+      color: scheme.onPrimaryContainer,
+      backgroundColor: scheme.primaryContainer,
+    );
+    final noteStyle = theme.textTheme.bodySmall?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -55,8 +71,10 @@ class TodoTileText extends StatelessWidget {
                     progress: strike,
                     color: strikeColor,
                   ),
-            child: Text(
-              title,
+            child: Text.rich(
+              TextSpan(
+                children: searchHighlightSpans(title, highlights, highlight),
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: titleStyle,
@@ -66,13 +84,13 @@ class TodoTileText extends StatelessWidget {
         if (note != null)
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              note,
+            child: Text.rich(
+              TextSpan(
+                children: searchHighlightSpans(note, highlights, highlight),
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              style: noteStyle,
             ),
           ),
         if (meta.isNotEmpty)

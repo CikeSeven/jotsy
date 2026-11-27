@@ -3,7 +3,8 @@ part of 'home_page.dart';
 /// 首页的键盘快捷键（所有窗口宽度都有效）：
 /// - Ctrl+N（macOS / iOS 为 ⌘+N）：新建日记，与侧边栏新建按钮同一入口；
 ///   在待办 Tab 时新建待办；
-/// - Ctrl+F（⌘+F）：打开日记搜索页（由日记页注册的入口执行）；
+/// - Ctrl+F（⌘+F）：打开日记搜索页（由日记页注册的入口执行）；在待办 Tab
+///   时打开待办搜索；
 /// - Ctrl+1…5（⌘+1…5）：切到第 n 个可见 Tab，超出可见数量时忽略。
 ///
 /// 生效范围：快捷键挂在首页 Scaffold 外层，只有焦点在首页子树内时才收到
@@ -64,6 +65,10 @@ extension _HomePageShortcuts on _HomePageState {
 
   /// 日记页还没注册入口（首帧之前）时什么也不做。
   void _searchFromShortcut() {
+    if (_effectiveTab == HomeTab.todos) {
+      unawaited(openTodoSearch(context));
+      return;
+    }
     _diariesSearchAction?.call();
   }
 }

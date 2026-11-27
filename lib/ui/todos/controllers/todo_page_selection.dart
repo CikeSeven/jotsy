@@ -10,6 +10,9 @@ import '../../../core/database/app_database.dart';
 /// [retain] 在每次构建时去掉已不在当前列表里的选中（被同步删掉、勾选完成
 /// 后离开视图），不通知。[onChanged] 只在进出多选或选中变化时调用，参数为
 /// 是否在多选。
+///
+/// 桌面 Shift + 点按（[extendTo]）从上一次点选的那一行（[anchor]）选到这一行，
+/// 不在多选时先进入多选。
 class TodoPageSelection {
   TodoPageSelection({required this.onChanged});
 
@@ -17,6 +20,10 @@ class TodoPageSelection {
 
   bool _active = false;
   final Set<String> _ids = <String>{};
+
+  /// 上一次进入多选或点选的那一行（Shift 连选的起点）。
+  String? _anchor;
+  String? get anchor => _anchor;
 
   bool get active => _active;
 
@@ -26,18 +33,39 @@ class TodoPageSelection {
   void enter(String todoId) {
     _active = true;
     _ids.add(todoId);
+    _anchor = todoId;
     onChanged(true);
   }
 
   void toggle(String todoId) {
     if (!_ids.remove(todoId)) _ids.add(todoId);
+    _anchor = todoId;
     onChanged(_active);
+  }
+
+  /// 从 [anchor] 选到 [todoId]（按 [rows] 的顺序，含两端）；没有起点或起点
+  /// 已不在列表里时只选这一行。
+  void extendTo(String todoId, List<TodoRow> rows) {
+    final ids = <String>[for (final row in rows) row.todoId];
+    final end = ids.indexOf(todoId);
+    if (end < 0) return;
+    final start = _anchor == null ? -1 : ids.indexOf(_anchor!);
+    final range = start < 0
+        ? <String>[todoId]
+        : ids.sublist(
+            start < end ? start : end,
+            (start < end ? end : start) + 1,
+          );
+    _active = true;
+    _ids.addAll(range);
+    onChanged(true);
   }
 
   void clear() {
     if (!_active) return;
     _active = false;
     _ids.clear();
+    _anchor = null;
     onChanged(false);
   }
 

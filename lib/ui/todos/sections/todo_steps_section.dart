@@ -145,10 +145,10 @@ class _TodoStepsSectionState extends State<TodoStepsSection> {
     setState(() => _removing[step.id] = Timer(duration, commit));
   }
 
+  /// [newIndex] 已按移走 [oldIndex] 那一项修正过（`onReorderItem`）。
   void _reorder(int oldIndex, int newIndex) {
     final next = <TodoStep>[...widget.steps];
-    final step = next.removeAt(oldIndex);
-    next.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, step);
+    next.insert(newIndex, next.removeAt(oldIndex));
     widget.onChanged(next);
   }
 
@@ -172,7 +172,7 @@ class _TodoStepsSectionState extends State<TodoStepsSection> {
       buildDefaultDragHandles: false,
       proxyDecorator: expressiveReorderProxyDecorator,
       itemCount: steps.length,
-      onReorder: _reorder,
+      onReorderItem: _reorder,
       itemBuilder: (BuildContext context, int index) {
         final step = steps[index];
         return ListItemPresence(

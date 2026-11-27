@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -5,6 +6,7 @@ import 'package:node_diary/ui/todos/sections/todo_detail_body.dart';
 import 'package:node_diary/ui/todos/widgets/todo_complete_motion.dart';
 import 'package:node_diary/ui/todos/widgets/todo_step_row.dart';
 import 'package:node_diary/ui/todos/widgets/todo_streak_card.dart';
+import 'package:node_diary/ui/widgets/reorder_handle.dart';
 import 'package:node_diary/ui/widgets/todo_check_box.dart';
 
 import 'todos_page_harness.dart';
@@ -131,6 +133,37 @@ void main() {
     );
     expect((await todoRowTitled(tester, db, '退押金')).completedAt, isNull);
     expect(find.text(l10n.todoStepToTodoNotice), findsOneWidget);
+    await unmountTodos(tester);
+  });
+
+  testWidgets('dragging a step handle reorders the steps', (tester) async {
+    final db = await openDetail(tester, '搬家', (db) async {
+      await db.createTodo(
+        TodoInput(
+          title: '搬家',
+          dueDate: todoToday,
+          steps: const <TodoStep>[
+            TodoStep(id: 's0', title: '打包'),
+            TodoStep(id: 's1', title: '叫车'),
+          ],
+        ),
+      );
+    });
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(ReorderHandle).first),
+    );
+    await tester.pump(kLongPressTimeout);
+    for (var i = 0; i < 6; i++) {
+      await gesture.moveBy(const Offset(0, 20));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await gesture.up();
+    await settle(tester);
+    final row = await todoRowTitled(tester, db, '搬家');
+    expect(decodeTodoSteps(row.steps).map((s) => s.title), <String>[
+      '叫车',
+      '打包',
+    ]);
     await unmountTodos(tester);
   });
 

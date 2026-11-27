@@ -14710,9 +14710,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todoGroupTomorrow => '明日';
 
   @override
-  String get todoGroupNextDays => '今後7日間';
-
-  @override
   String get todoGroupLater => 'それ以降';
 
   @override
@@ -14850,6 +14847,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get todoQuickKeepOne => '1件にする';
+
+  @override
+  String get todoDueThisWeekend => '今週末';
+
+  @override
+  String get todoDueInAWeek => '1週間後';
+
+  @override
+  String get todoPlanToday => '今日の計画';
+
+  @override
+  String get todoPlanOverdue => '期限切れ';
+
+  @override
+  String get todoPlanSoon => 'まもなく期限';
+
+  @override
+  String get todoPlanImportant => '重要・日付なし';
+
+  @override
+  String get todoPlanRecent => '最近追加';
+
+  @override
+  String get todoPlanAddToToday => '今日に追加';
+
+  @override
+  String get todoPlanEmpty => '計画することはもうありません';
+
+  @override
+  String todoPlanPostponedHint(int count) {
+    return '$count 回延期しています。分けるか、手放しますか？';
+  }
+
+  @override
+  String todoPlanAddedOn(String date) {
+    return '$dateに追加';
+  }
+
+  @override
+  String get todoWeekPrev => '前の週';
+
+  @override
+  String get todoWeekNext => '次の週';
+
+  @override
+  String todoWeekDaySummary(String date, int count) {
+    return '$date、$count 件';
+  }
 
   @override
   String todoSortLabel(String mode) {
@@ -15415,9 +15460,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get todoMoveOverdueToToday => 'すべて今日に';
-
-  @override
-  String get todoMoveToToday => '今日に移動';
 
   @override
   String get todoMoveToList => 'リストに移動…';

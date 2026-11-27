@@ -37,6 +37,7 @@ import '../sections/todos_wide_layout.dart';
 import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_model.dart';
 import '../widgets/todo_labels.dart';
+import '../widgets/todo_day_plan_sheet.dart';
 import '../widgets/todo_quick_add_sheet.dart';
 import '../widgets/todo_row_drag.dart';
 import '../widgets/todo_sidebar.dart';
@@ -287,6 +288,21 @@ class _TodosPageState extends ConsumerState<TodosPage>
             ),
       makeRoom: _makeRoom,
       switchMotion: _viewSwitch.motion,
+      onPlanToday: () => unawaited(showTodoDayPlanSheet(context)),
+      onPickDay: (DateTime day) => unawaited(
+        showTodoQuickAddSheet(
+          context,
+          preset: TodoQuickAddPreset(
+            listId: view.createListId(settings.defaultListId),
+            dueDate: day,
+          ),
+        ),
+      ),
+      onDropOnDay: AppPlatform.isDesktop
+          ? (DateTime day, TodoDragPayload payload) => unawaited(
+              dropTodosOnDay(context, ref, day: day, payload: payload),
+            )
+          : null,
     );
 
     // 按页面实际可用宽度（扣掉左右安全区）分档：窄窗口单栏，宽窗口左栏 +

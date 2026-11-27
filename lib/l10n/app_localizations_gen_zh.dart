@@ -14453,9 +14453,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoGroupTomorrow => '明天';
 
   @override
-  String get todoGroupNextDays => '未来七天';
-
-  @override
   String get todoGroupLater => '更晚';
 
   @override
@@ -14593,6 +14590,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoQuickKeepOne => '合成一条';
+
+  @override
+  String get todoDueThisWeekend => '本周末';
+
+  @override
+  String get todoDueInAWeek => '一周后';
+
+  @override
+  String get todoPlanToday => '规划今天';
+
+  @override
+  String get todoPlanOverdue => '已逾期';
+
+  @override
+  String get todoPlanSoon => '快到期了';
+
+  @override
+  String get todoPlanImportant => '重要但没日期';
+
+  @override
+  String get todoPlanRecent => '最近添加';
+
+  @override
+  String get todoPlanAddToToday => '加到今天';
+
+  @override
+  String get todoPlanEmpty => '没有要安排的了';
+
+  @override
+  String todoPlanPostponedHint(int count) {
+    return '已推迟 $count 次，拆小一点或放下？';
+  }
+
+  @override
+  String todoPlanAddedOn(String date) {
+    return '$date添加';
+  }
+
+  @override
+  String get todoWeekPrev => '上一周';
+
+  @override
+  String get todoWeekNext => '下一周';
+
+  @override
+  String todoWeekDaySummary(String date, int count) {
+    return '$date，$count 件';
+  }
 
   @override
   String todoSortLabel(String mode) {
@@ -15153,9 +15198,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoMoveOverdueToToday => '全部改到今天';
-
-  @override
-  String get todoMoveToToday => '改到今天';
 
   @override
   String get todoMoveToList => '移到清单…';

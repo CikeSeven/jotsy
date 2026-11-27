@@ -17159,9 +17159,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoGroupTomorrow => 'Завтра';
 
   @override
-  String get todoGroupNextDays => 'Ближайшие 7 дней';
-
-  @override
   String get todoGroupLater => 'Позже';
 
   @override
@@ -17309,6 +17306,62 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get todoQuickKeepOne => 'Оставить одной';
+
+  @override
+  String get todoDueThisWeekend => 'На выходных';
+
+  @override
+  String get todoDueInAWeek => 'Через неделю';
+
+  @override
+  String get todoPlanToday => 'Спланировать день';
+
+  @override
+  String get todoPlanOverdue => 'Просрочено';
+
+  @override
+  String get todoPlanSoon => 'Скоро срок';
+
+  @override
+  String get todoPlanImportant => 'Важное без даты';
+
+  @override
+  String get todoPlanRecent => 'Недавно добавлено';
+
+  @override
+  String get todoPlanAddToToday => 'На сегодня';
+
+  @override
+  String get todoPlanEmpty => 'Планировать больше нечего';
+
+  @override
+  String todoPlanPostponedHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Перенесено уже $count раза — разбить или отказаться?',
+      many: 'Перенесено уже $count раз — разбить или отказаться?',
+      few: 'Перенесено уже $count раза — разбить или отказаться?',
+      one: 'Перенесено уже $count раз — разбить или отказаться?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoPlanAddedOn(String date) {
+    return 'Добавлено: $date';
+  }
+
+  @override
+  String get todoWeekPrev => 'Предыдущая неделя';
+
+  @override
+  String get todoWeekNext => 'Следующая неделя';
+
+  @override
+  String todoWeekDaySummary(String date, int count) {
+    return '$date, задач: $count';
+  }
 
   @override
   String todoSortLabel(String mode) {
@@ -18030,9 +18083,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get todoMoveOverdueToToday => 'Всё на сегодня';
-
-  @override
-  String get todoMoveToToday => 'Перенести на сегодня';
 
   @override
   String get todoMoveToList => 'Переместить в список…';

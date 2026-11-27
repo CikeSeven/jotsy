@@ -29,8 +29,9 @@ import 'todo_reorder.dart';
 /// - 点方框：未完成的先收起再写库（[TodoCompletionQueue]），已完成的直接
 ///   恢复；右滑、右键菜单与读屏的完成 / 恢复直接写库（行已滑出，或桌面不
 ///   演收起）。接连完成的几条合并成一条撤销提示（[undo]）；
-/// - 删除、移到今天、移到清单与逾期组“全部改到今天”各自弹可撤销提示；
-/// - 改期（左滑设为改期、读屏动作）：截止日面板，选了就写库并可撤销；
+/// - 删除、移到清单与逾期组“全部改到今天”各自弹可撤销提示；
+/// - 改期（左滑设为改期、右键菜单、读屏动作）：改期面板，选了就写库并可
+///   撤销；
 /// - 步骤胶囊：就地展开 / 收起（[onToggleSteps]，页面持有展开的行），展开
 ///   后勾选某一步直接写库；
 /// - 拖动排序交给 [TodoReorder]。
@@ -82,8 +83,6 @@ TodoListCallbacks buildTodoPageCallbacks({
     onLongPress: onLongPress,
     onDelete: (TodoRow row) =>
         unawaited(deleteTodoWithUndo(context, database(), row.todoId)),
-    onMoveToToday: (TodoRow row) =>
-        unawaited(todoMoveRowsToDay(context, ref, <TodoRow>[row], today())),
     onMoveToList: (TodoRow row) =>
         unawaited(todoMoveRowsToList(context, ref, <TodoRow>[row])),
     onMoveOverdueToToday: (List<TodoRow> rows) =>
@@ -164,4 +163,21 @@ Future<void> dropTodosOnView(
     listId: listId,
     listName: name,
   );
+}
+
+/// 桌面上把待办拖到计划视图周条的某一天 [day] 上：改到那天（各自保留时刻），
+/// 可撤销。
+Future<void> dropTodosOnDay(
+  BuildContext context,
+  WidgetRef ref, {
+  required DateTime day,
+  required TodoDragPayload payload,
+}) async {
+  final ids = payload.ids.toSet();
+  final rows = <TodoRow>[
+    for (final row in ref.read(openTodosProvider).value ?? const <TodoRow>[])
+      if (ids.contains(row.todoId)) row,
+  ];
+  if (rows.isEmpty) return;
+  await todoMoveRowsToDay(context, ref, rows, day);
 }

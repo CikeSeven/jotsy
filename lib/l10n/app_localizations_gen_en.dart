@@ -16518,9 +16518,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoGroupTomorrow => 'Tomorrow';
 
   @override
-  String get todoGroupNextDays => 'Next 7 days';
-
-  @override
   String get todoGroupLater => 'Later';
 
   @override
@@ -16672,6 +16669,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoQuickKeepOne => 'Keep as one';
+
+  @override
+  String get todoDueThisWeekend => 'This weekend';
+
+  @override
+  String get todoDueInAWeek => 'In a week';
+
+  @override
+  String get todoPlanToday => 'Plan today';
+
+  @override
+  String get todoPlanOverdue => 'Overdue';
+
+  @override
+  String get todoPlanSoon => 'Due soon';
+
+  @override
+  String get todoPlanImportant => 'Important, no date';
+
+  @override
+  String get todoPlanRecent => 'Recently added';
+
+  @override
+  String get todoPlanAddToToday => 'Add to today';
+
+  @override
+  String get todoPlanEmpty => 'Nothing left to plan';
+
+  @override
+  String todoPlanPostponedHint(int count) {
+    return 'Postponed $count times — break it down or let it go?';
+  }
+
+  @override
+  String todoPlanAddedOn(String date) {
+    return 'Added $date';
+  }
+
+  @override
+  String get todoWeekPrev => 'Previous week';
+
+  @override
+  String get todoWeekNext => 'Next week';
+
+  @override
+  String todoWeekDaySummary(String date, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to-dos',
+      one: '1 to-do',
+      zero: 'nothing due',
+    );
+    return '$date, $_temp0';
+  }
 
   @override
   String todoSortLabel(String mode) {
@@ -17364,9 +17416,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoMoveOverdueToToday => 'Move all to today';
-
-  @override
-  String get todoMoveToToday => 'Move to today';
 
   @override
   String get todoMoveToList => 'Move to list…';

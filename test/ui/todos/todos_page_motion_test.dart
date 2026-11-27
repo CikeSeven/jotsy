@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/todos/models/todo_settings.dart';
+import 'package:node_diary/ui/todos/widgets/todo_labels.dart';
 import 'package:node_diary/ui/todos/widgets/todo_view_switcher.dart';
 import 'package:node_diary/ui/widgets/reorder_handle.dart';
 
@@ -54,9 +56,19 @@ void main() {
       () => db.setTodoDue(moving, date: tomorrow.add(const Duration(days: 1))),
     );
     await deliver(tester);
-    // 新数据到了（多出“未来七天”一组），但这一行仍从原位置画起，不是一下
+    // 新数据到了（多出后天那一组），但这一行仍从原位置画起，不是一下
     // 跳过去。
-    expect(find.text(todoL10n(tester).todoGroupNextDays), findsOneWidget);
+    final l10n = todoL10n(tester);
+    final later = tomorrow.add(const Duration(days: 1));
+    expect(
+      find.text(
+        l10n.todoHeroDate(
+          TodoLabels.weekdayName(l10n, later.weekday, short: false),
+          l10n.formatMonthDay(later),
+        ),
+      ),
+      findsOneWidget,
+    );
     expect(topOf(tester, '今天写完'), moreOrLessEquals(before, epsilon: 1));
 
     await tester.pump(const Duration(milliseconds: 120));

@@ -25958,12 +25958,6 @@ abstract class AppLocalizations {
   /// **'Tomorrow'**
   String get todoGroupTomorrow;
 
-  /// To-do group header: due within the next seven days (after tomorrow).
-  ///
-  /// In en, this message translates to:
-  /// **'Next 7 days'**
-  String get todoGroupNextDays;
-
   /// To-do group header: due later.
   ///
   /// In en, this message translates to:
@@ -26209,6 +26203,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep as one'**
   String get todoQuickKeepOne;
+
+  /// Due date quick option: the coming Saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'This weekend'**
+  String get todoDueThisWeekend;
+
+  /// Due date quick option: seven days from today.
+  ///
+  /// In en, this message translates to:
+  /// **'In a week'**
+  String get todoDueInAWeek;
+
+  /// Button on the Today overview card and title of the sheet that suggests what to do today.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan today'**
+  String get todoPlanToday;
+
+  /// Plan-today section: overdue to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get todoPlanOverdue;
+
+  /// Plan-today section: due in the next few days.
+  ///
+  /// In en, this message translates to:
+  /// **'Due soon'**
+  String get todoPlanSoon;
+
+  /// Plan-today section: high priority without a due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Important, no date'**
+  String get todoPlanImportant;
+
+  /// Plan-today section: added in the last few days, no due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get todoPlanRecent;
+
+  /// Plan-today row action: move this to-do to today.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to today'**
+  String get todoPlanAddToToday;
+
+  /// Plan-today sheet when there are no suggestions left.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing left to plan'**
+  String get todoPlanEmpty;
+
+  /// Hint on a plan-today row postponed many times; {count} is at least 3.
+  ///
+  /// In en, this message translates to:
+  /// **'Postponed {count} times — break it down or let it go?'**
+  String todoPlanPostponedHint(int count);
+
+  /// Plan-today row subtitle for a to-do without a date; {date} is a relative day like 'Yesterday'.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {date}'**
+  String todoPlanAddedOn(String date);
+
+  /// Tooltip of the week strip's back button in the Planned view.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week'**
+  String get todoWeekPrev;
+
+  /// Tooltip of the week strip's forward button in the Planned view.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get todoWeekNext;
+
+  /// Screen reader label of a day in the week strip.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}, {count, plural, =0{nothing due} =1{1 to-do} other{{count} to-dos}}'**
+  String todoWeekDaySummary(String date, int count);
 
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
@@ -27175,12 +27253,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move all to today'**
   String get todoMoveOverdueToToday;
-
-  /// Desktop context menu: move the to-do to today.
-  ///
-  /// In en, this message translates to:
-  /// **'Move to today'**
-  String get todoMoveToToday;
 
   /// Desktop context menu: move the to-do to another list.
   ///

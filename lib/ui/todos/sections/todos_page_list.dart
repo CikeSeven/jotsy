@@ -13,12 +13,15 @@ import '../../widgets/empty_hint.dart';
 import '../../widgets/expressive_entrance.dart';
 import '../../widgets/list_make_room.dart';
 import '../models/todo_view.dart';
+import '../viewmodels/todo_day_plan.dart';
 import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_entries.dart';
 import '../widgets/todo_inline_add_row.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_quick_add_sheet.dart';
+import '../widgets/todo_row_drag.dart';
 import '../widgets/todo_view_hero.dart';
+import '../widgets/todo_week_strip.dart';
 import 'todo_list_callbacks.dart';
 import 'todo_list_slivers.dart';
 
@@ -61,6 +64,9 @@ Widget buildTodosPageList({
   required VoidCallback? onEditList,
   required MakeRoomController makeRoom,
   required DiaryListSwitchMotion switchMotion,
+  required VoidCallback onPlanToday,
+  required ValueChanged<DateTime> onPickDay,
+  required void Function(DateTime day, TodoDragPayload payload)? onDropOnDay,
 }) {
   final l10n = context.l10n;
   final gutter = wide
@@ -109,6 +115,20 @@ Widget buildTodosPageList({
             list: listId == null ? null : listsById[listId],
             progress: view.isSingleList ? progress[listId] : null,
             onEditList: onEditList,
+            onPlanToday:
+                view.smart == TodoSmartView.today &&
+                    open != null &&
+                    !TodoDayPlan.build(open, today).isEmpty
+                ? onPlanToday
+                : null,
+            weekStrip: view.smart == TodoSmartView.planned
+                ? TodoWeekStrip(
+                    today: today,
+                    counts: TodoWeekStrip.countsOf(open ?? const <TodoRow>[]),
+                    onPickDay: onPickDay,
+                    onDrop: onDropOnDay,
+                  )
+                : null,
           ),
         ),
       ),

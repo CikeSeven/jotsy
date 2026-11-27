@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../viewmodels/todo_reschedule.dart';
 import 'todo_labels.dart';
 import 'todo_sheet.dart';
 
@@ -16,9 +17,10 @@ class TodoDueChoice {
   final int? minute;
 }
 
-/// 选截止日：今天 / 明天 / 下周一 / 选择日期…，已有日期时再给“设置时间”
-/// （或“全天”）与“移除日期”。选日期时保留原来的时刻。关闭面板不改动时为
-/// null。
+/// 选截止日（改期面板，滑动、右键、多选、详情与规划今天共用）：今天 / 明天
+/// / 本周末 / 下周一 / 一周后 / 选择日期…，每项写出具体的星期与日子
+/// （日子见 [TodoRescheduleDays]）；再给“设置时间”（或“全天”）与已有日期时
+/// 的“移除日期”。选日子时保留原来的时刻。关闭面板不改动时为 null。
 Future<TodoDueChoice?> showTodoDueSheet(
   BuildContext context, {
   required DateTime? date,
@@ -29,12 +31,10 @@ Future<TodoDueChoice?> showTodoDueSheet(
     context: context,
     builder: (BuildContext sheetContext) {
       final l10n = sheetContext.l10n;
-      final tomorrow = DateTime(today.year, today.month, today.day + 1);
-      final daysToMonday = (DateTime.monday - today.weekday + 7) % 7;
-      final nextMonday = DateTime(
-        today.year,
-        today.month,
-        today.day + (daysToMonday == 0 ? 7 : daysToMonday),
+      final days = TodoRescheduleDays.of(today);
+      String dayOf(DateTime day) => l10n.todoHeroDate(
+        TodoLabels.weekdayName(l10n, day.weekday),
+        l10n.formatMonthDay(day),
       );
       void pick(DateTime day) => Navigator.of(
         sheetContext,
@@ -69,37 +69,34 @@ Future<TodoDueChoice?> showTodoDueSheet(
       return TodoSheetBody(
         title: l10n.todoFieldDue,
         children: <Widget>[
-          TodoSheetOption(
-            icon: FontAwesomeIcons.solidSun,
-            label: l10n.todoDueToday,
-            detail: TodoLabels.weekdayName(l10n, today.weekday),
-            selected: same(today),
-            onTap: () => pick(today),
-          ),
-          TodoSheetOption(
-            icon: FontAwesomeIcons.arrowRight,
-            label: l10n.todoDueTomorrow,
-            detail: TodoLabels.weekdayName(l10n, tomorrow.weekday),
-            selected: same(tomorrow),
-            onTap: () => pick(tomorrow),
-          ),
-          TodoSheetOption(
-            icon: FontAwesomeIcons.forward,
-            label: l10n.todoDueNextWeek,
-            detail: l10n.formatMonthDay(nextMonday),
-            selected: same(nextMonday),
-            onTap: () => pick(nextMonday),
-          ),
+          for (final (icon, label, day) in <(FaIconData, String, DateTime)>[
+            (FontAwesomeIcons.solidSun, l10n.todoDueToday, days.today),
+            (FontAwesomeIcons.arrowRight, l10n.todoDueTomorrow, days.tomorrow),
+            (FontAwesomeIcons.mugHot, l10n.todoDueThisWeekend, days.weekend),
+            (FontAwesomeIcons.forward, l10n.todoDueNextWeek, days.nextMonday),
+            (FontAwesomeIcons.calendarWeek, l10n.todoDueInAWeek, days.inAWeek),
+          ])
+            TodoSheetOption(
+              icon: icon,
+              label: label,
+              detail: dayOf(day),
+              selected: same(day),
+              onTap: () => pick(day),
+            ),
           TodoSheetOption(
             icon: FontAwesomeIcons.calendarDays,
             label: l10n.todoDuePickDate,
             detail:
                 date == null ||
-                    same(today) ||
-                    same(tomorrow) ||
-                    same(nextMonday)
+                    <DateTime>[
+                      days.today,
+                      days.tomorrow,
+                      days.weekend,
+                      days.nextMonday,
+                      days.inAWeek,
+                    ].any(same)
                 ? null
-                : TodoLabels.relativeDay(l10n, date, today),
+                : dayOf(date),
             onTap: pickDate,
           ),
           const Divider(indent: 16, endIndent: 16),

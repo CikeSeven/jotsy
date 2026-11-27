@@ -15,7 +15,6 @@ class TodoListCallbacks {
     required this.onTap,
     required this.onLongPress,
     required this.onDelete,
-    required this.onMoveToToday,
     required this.onMoveToList,
     required this.onMoveOverdueToToday,
     required this.onReschedule,
@@ -34,11 +33,11 @@ class TodoListCallbacks {
   final ValueChanged<TodoRow> onTap;
   final ValueChanged<TodoRow> onLongPress;
   final ValueChanged<TodoRow> onDelete;
-  final ValueChanged<TodoRow> onMoveToToday;
   final ValueChanged<TodoRow> onMoveToList;
   final ValueChanged<List<TodoRow>> onMoveOverdueToToday;
 
-  /// 改期（左滑设为改期时、读屏动作）：弹截止日面板，这一行留在原位。
+  /// 改期（左滑设为改期时、右键菜单、读屏动作）：弹改期面板，这一行留在
+  /// 原位。
   final ValueChanged<TodoRow> onReschedule;
 
   /// 点步骤胶囊：就地展开 / 收起这一行的步骤。

@@ -83,7 +83,7 @@ class TodoListTile extends StatelessWidget {
         child = TodoTileContextMenu(
           done: done,
           onToggle: () => callbacks.onSwipeToggle(row),
-          onMoveToToday: () => callbacks.onMoveToToday(row),
+          onReschedule: () => callbacks.onReschedule(row),
           onMoveToList: () => callbacks.onMoveToList(row),
           onDelete: () => callbacks.onDelete(row),
           child: child,

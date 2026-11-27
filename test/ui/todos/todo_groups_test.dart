@@ -78,21 +78,29 @@ void main() {
     expect(_titles(result[1]), <String>['all day', 'later today']);
   });
 
-  test('planned buckets by time ranges', () {
+  test('planned groups each day within a week, then later', () {
     final result = groups(
       const TodoView.smart(TodoSmartView.planned),
       open: <TodoRow>[
         _todo('far', due: '2026-12-25'),
-        _todo('week', due: '2026-11-15'),
+        _todo('sunday', due: '2026-11-15'),
+        _todo('friday', due: '2026-11-13'),
+        _todo('friday too', due: '2026-11-13'),
         _todo('tomorrow', due: '2026-11-11'),
         _todo('none'),
       ],
     );
     expect(result.map((g) => g.kind), <TodoGroupKind>[
       TodoGroupKind.tomorrow,
-      TodoGroupKind.nextDays,
+      TodoGroupKind.day,
+      TodoGroupKind.day,
       TodoGroupKind.later,
     ]);
+    expect(result[1].day, DateTime(2026, 11, 13));
+    expect(_titles(result[1]), hasLength(2));
+    expect(result[2].day, DateTime(2026, 11, 15));
+    // 每天一组的键各不相同（折叠与动效按它对应）。
+    expect(result[1].key, isNot(result[2].key));
   });
 
   test('all groups by list with the inbox first and dangling lists in it', () {

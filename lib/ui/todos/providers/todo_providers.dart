@@ -111,10 +111,7 @@ class TodoMinuteNotifier extends Notifier<DateTime> {
   void _scheduleAfter(DateTime now) {
     _tick?.cancel();
     final next = _floor(now).add(const Duration(minutes: 1));
-    _tick = Timer(
-      next.difference(now) + const Duration(seconds: 1),
-      _refresh,
-    );
+    _tick = Timer(next.difference(now) + const Duration(seconds: 1), _refresh);
   }
 
   static DateTime _floor(DateTime t) =>

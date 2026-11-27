@@ -12,6 +12,7 @@ import '../widgets/todo_due_sheet.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reminder_sheet.dart';
 import '../widgets/todo_repeat_sheet.dart';
+import '../widgets/todo_section_picker_sheet.dart';
 import '../widgets/todo_tag_picker_sheet.dart';
 import 'todo_reminder_permission.dart';
 
@@ -122,6 +123,19 @@ class TodoFieldEditors {
     await database.setTodoListId(row.todoId, choice.listId);
   }
 
+  /// 选所在清单里的分区（只改 `metadata.sectionId`）。
+  Future<void> pickSection(List<TodoSection> sections) async {
+    final database = _database;
+    final current = TodoSections.of(row.metadata, sections)?.id;
+    final choice = await showTodoSectionPickerSheet(
+      context,
+      sections: sections,
+      current: current,
+    );
+    if (choice == null || choice.sectionId == current) return;
+    await database.setTodoSection(row.todoId, choice.sectionId);
+  }
+
   /// 选标签：面板里每点一下就写一次（只改 `metadata.tags`）。
   Future<void> pickTags() {
     final database = _database;
@@ -166,6 +180,7 @@ class TodoFieldEditors {
         ],
         linkedDiaryId: row.linkedDiaryId,
         tags: TodoTags.ofMetadataText(row.metadata),
+        sectionId: TodoSections.idOfTodo(row.metadata),
       ),
     );
   }

@@ -19,6 +19,10 @@ enum TodoGroupKind {
   /// “全部”视图里按清单分的一组（[TodoGroup.listId] 为 null 即收集箱）。
   list,
 
+  /// 清单视图里的一个分区（[TodoGroup.section]）；可折叠、可为空（标题
+  /// 照常出现，便于往里加）。
+  section,
+
   /// 清单底部可折叠的已完成。
   completed,
 
@@ -37,6 +41,7 @@ class TodoGroup {
     required this.rows,
     this.listId,
     this.day,
+    this.section,
   });
 
   final TodoGroupKind kind;
@@ -44,11 +49,15 @@ class TodoGroup {
   final String? listId;
   final DateTime? day;
 
+  /// [TodoGroupKind.section] 的分区。
+  final TodoSection? section;
+
   /// 稳定的键：切换视图、增删条目时分组标题与折叠状态按它对应。
   String get key => switch (kind) {
     TodoGroupKind.list => 'list:${listId ?? ''}',
     TodoGroupKind.completedDay => 'day:${day!.toIso8601String()}',
     TodoGroupKind.day => 'due:${day!.toIso8601String()}',
+    TodoGroupKind.section => 'section:${section!.id}',
     _ => kind.name,
   };
 }
@@ -65,6 +74,9 @@ class TodoGroup {
 /// - 重要：高优先级的一组；
 /// - 全部：按清单分组，收集箱在前，清单按拖动顺序，空清单不出现；
 /// - 收集箱与清单：未完成一组，[showCompleted] 时底部再加这个清单的已完成；
+///   清单有分区（[sections]）时，未分区的（含认不出分区的）在最上面一组，
+///   再是各分区一组（按分区顺序，空的也在）；[sectionOf] 给出拖动后还没
+///   推送回来的分区（没有时按行上的）；
 /// - 已完成：按完成日期分组（最近的在前）。
 List<TodoGroup> buildTodoGroups({
   required TodoView view,
@@ -74,6 +86,8 @@ List<TodoGroup> buildTodoGroups({
   required TodoSortMode sort,
   required DateTime today,
   required bool showCompleted,
+  List<TodoSection> sections = const <TodoSection>[],
+  String? Function(TodoRow row)? sectionOf,
 }) {
   final todayText = formatAnniversaryDate(today);
   final tomorrowText = formatAnniversaryDate(
@@ -211,11 +225,46 @@ List<TodoGroup> buildTodoGroups({
           for (final row in completed)
             if (inThisList(row)) row,
       ];
+      final doneGroup = done.isEmpty
+          ? null
+          : TodoGroup(
+              kind: TodoGroupKind.completed,
+              listId: listId,
+              rows: done,
+            );
+      if (listId == null || sections.isEmpty) {
+        return <TodoGroup>[
+          if (rows.isNotEmpty)
+            TodoGroup(
+              kind: TodoGroupKind.plain,
+              rows: sortTodoRows(rows, sort),
+            ),
+          ?doneGroup,
+        ];
+      }
+      final known = <String>{for (final section in sections) section.id};
+      final bySection = <String?, List<TodoRow>>{};
+      for (final row in rows) {
+        final id = sectionOf?.call(row) ?? TodoSections.idOfTodo(row.metadata);
+        bySection
+            .putIfAbsent(known.contains(id) ? id : null, () => <TodoRow>[])
+            .add(row);
+      }
+      final loose = bySection[null];
       return <TodoGroup>[
-        if (rows.isNotEmpty)
-          TodoGroup(kind: TodoGroupKind.plain, rows: sortTodoRows(rows, sort)),
-        if (done.isNotEmpty)
-          TodoGroup(kind: TodoGroupKind.completed, listId: listId, rows: done),
+        if (loose != null)
+          TodoGroup(kind: TodoGroupKind.plain, rows: sortTodoRows(loose, sort)),
+        for (final section in sections)
+          TodoGroup(
+            kind: TodoGroupKind.section,
+            listId: listId,
+            section: section,
+            rows: sortTodoRows(
+              bySection[section.id] ?? const <TodoRow>[],
+              sort,
+            ),
+          ),
+        ?doneGroup,
       ];
   }
 }

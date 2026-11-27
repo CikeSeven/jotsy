@@ -16,6 +16,9 @@ enum TodoBatchField {
   /// 标签（`metadata` 里的 `tags` 一个键；批量加标签、标签改名 / 合并 /
   /// 删除的撤销）。
   tags,
+
+  /// 所在分区（`metadata` 里的 `sectionId` 一个键；批量移到分区的撤销）。
+  section,
 }
 
 /// 待办的批量写入：多选后的完成、改日期 / 清单 / 优先级，以及它们的撤销。
@@ -221,9 +224,15 @@ mixin _AppDatabaseTodoBatchOps
           TodoBatchField.tags => TodosCompanion(
             metadata: await _restoredMetadataKey(row, TodoTags.metadataKey),
           ),
+          TodoBatchField.section => TodosCompanion(
+            metadata: await _restoredMetadataKey(row, TodoSections.todoKey),
+          ),
         };
         // 只回写 metadata 的一个键时，值本来就一样就不写（不刷新 updated_at）。
-        if (field == TodoBatchField.tags && !change.metadata.present) continue;
+        if ((field == TodoBatchField.tags || field == TodoBatchField.section) &&
+            !change.metadata.present) {
+          continue;
+        }
         await (update(todos)..where((t) => t.todoId.equals(row.todoId))).write(
           change.copyWith(updatedAt: Value(now)),
         );

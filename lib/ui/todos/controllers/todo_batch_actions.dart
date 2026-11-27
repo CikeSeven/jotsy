@@ -140,6 +140,25 @@ Future<void> addTagToTodosWithUndo(
   if (undone) await database.restoreTodoFields(before, TodoBatchField.tags);
 }
 
+/// 批量移到这个清单的分区 [sectionId]（null 为未分区），可撤销。
+Future<void> moveTodosToSectionWithUndo(
+  BuildContext context,
+  AppDatabase database,
+  Iterable<String> ids, {
+  required String? sectionId,
+  required String name,
+}) async {
+  final before = await database.setTodosSection(ids, sectionId);
+  if (before.isEmpty || !context.mounted) return;
+  final undone = await showTodoUndoHint(
+    context,
+    context.l10n.todoBatchSectionMoved(before.length, name),
+  );
+  if (undone) {
+    await database.restoreTodoFields(before, TodoBatchField.section);
+  }
+}
+
 /// 批量删除（硬删除，可撤销）。
 Future<void> deleteTodosWithUndo(
   BuildContext context,

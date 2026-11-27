@@ -15014,6 +15014,67 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get todoFieldSection => 'セクション';
+
+  @override
+  String get todoSectionNone => 'セクションなし';
+
+  @override
+  String get todoSectionAdd => 'セクションを追加';
+
+  @override
+  String get todoSectionNew => '新しいセクション';
+
+  @override
+  String get todoSectionRename => 'セクション名を変更';
+
+  @override
+  String get todoSectionNameHint => 'セクション名';
+
+  @override
+  String get todoSectionMoveUp => '上へ移動';
+
+  @override
+  String get todoSectionMoveDown => '下へ移動';
+
+  @override
+  String get todoSectionDelete => 'セクションを削除';
+
+  @override
+  String todoSectionDeleteTitle(String name) {
+    return 'セクション「$name」を削除しますか？';
+  }
+
+  @override
+  String get todoSectionDeleteBody => '中の To-Do は「セクションなし」に移ります。';
+
+  @override
+  String todoSectionDeleteWithTodos(int count) {
+    return '中の To-Do $count 件も削除する';
+  }
+
+  @override
+  String todoSectionDeletedNotice(String name) {
+    return 'セクション「$name」を削除しました';
+  }
+
+  @override
+  String todoSectionAddTo(String name) {
+    return '「$name」に追加';
+  }
+
+  @override
+  String get todoSectionActions => 'セクションの操作';
+
+  @override
+  String get todoBatchMoveToSection => 'セクションへ移動';
+
+  @override
+  String todoBatchSectionMoved(int count, String name) {
+    return '$count 件を「$name」へ移動しました';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

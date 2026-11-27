@@ -16883,6 +16883,79 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get todoFieldSection => 'Section';
+
+  @override
+  String get todoSectionNone => 'No section';
+
+  @override
+  String get todoSectionAdd => 'Add section';
+
+  @override
+  String get todoSectionNew => 'New section';
+
+  @override
+  String get todoSectionRename => 'Rename section';
+
+  @override
+  String get todoSectionNameHint => 'Section name';
+
+  @override
+  String get todoSectionMoveUp => 'Move up';
+
+  @override
+  String get todoSectionMoveDown => 'Move down';
+
+  @override
+  String get todoSectionDelete => 'Delete section';
+
+  @override
+  String todoSectionDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String get todoSectionDeleteBody => 'Its to-dos move to “No section”.';
+
+  @override
+  String todoSectionDeleteWithTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Also delete its $count to-dos',
+      one: 'Also delete its 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoSectionDeletedNotice(String name) {
+    return 'Deleted section “$name”';
+  }
+
+  @override
+  String todoSectionAddTo(String name) {
+    return 'Add to “$name”';
+  }
+
+  @override
+  String get todoSectionActions => 'Section options';
+
+  @override
+  String get todoBatchMoveToSection => 'Move to section';
+
+  @override
+  String todoBatchSectionMoved(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moved $count to-dos to “$name”',
+      one: 'Moved 1 to-do to “$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

@@ -5,7 +5,7 @@ summary: Turning on to-dos, lists and views, tags, due dates, reminders, repeats
 features: [todos]
 platforms: []
 destinations: [tab_todos, settings_todos, settings_features]
-keywords: [to-do, todo, to-dos, tasks, list, inbox, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
+keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
 ---
 To-dos are a task list separate from your diary, with due dates, reminders, repeats and priorities. Checkboxes inside a diary's text are unrelated to them.
 
@@ -14,6 +14,7 @@ To-dos are off by default: turn on "To-dos" in Settings → Features and a "To-d
 
 ## Views and lists
 Tap the page title (such as "Today ▾"; wide windows show them in the left column) to switch views: Today, Planned, Important, All, Inbox and Completed, followed by your lists. To-dos not in a list live in the Inbox. Use "New list" to create one with a name, color and icon. The page's "More" menu lets you edit or delete a list, "Manage lists", change the sort, show or hide completed items, and clear completed. Deleting a list deletes its to-dos too (undoable from the notice).
+- Sections: inside a list, "Add section" at the end splits the list into parts (such as "Design" and "Shopping"). Tap a section title to fold it; the "+" beside it adds a to-do to that section, and "⋯" renames, moves up or down, or deletes it (its to-dos go back to "No section", or tick the box to delete them too; undo from the notice). With manual sorting, drag a to-do past a section title to move it there; "Section" in the details and "More → Move to section" while selecting do the same. Smart views show "List · Section" on each to-do.
 - Sort by: Manual, Due date, Priority or Date created. With Manual, in the Inbox or a list you can hold the handle at the end of an open to-do and drag it to reorder (not while selecting).
 - Search: the magnifier "Search to-dos" in the page header looks through titles, notes and steps; completed to-dos are listed too (open ones first) and matches are highlighted. Below the search box you can filter by status, list, tag, high priority or having a date, even without typing a keyword. On a computer, Ctrl / ⌘ + F on the to-do tab opens to-do search.
 

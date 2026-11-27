@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../core/database/app_database.dart';
 import '../models/todo_settings.dart';
+import 'todo_section_callbacks.dart';
 
 /// 待办列表与页面之间的约定：列表把交互交给 [TodoListCallbacks]（写库、
 /// 导航与多选由页面与 controllers 处理），按 [TodoListRowState] 画各行的
@@ -23,6 +24,7 @@ class TodoListCallbacks {
     required this.onReorder,
     required this.onReorderStart,
     required this.onReorderEnd,
+    this.sections,
   });
 
   /// 点方框勾选 / 取消（行内动效已播完）。
@@ -51,6 +53,10 @@ class TodoListCallbacks {
   final void Function(List<TodoRow> rows, int oldIndex, int newIndex) onReorder;
   final ValueChanged<int> onReorderStart;
   final ValueChanged<int> onReorderEnd;
+
+  /// 分区的操作；只在单个清单视图里给出（其余为 null，不出分区相关的
+  /// 入口）。
+  final TodoSectionCallbacks? sections;
 }
 
 /// 列表行的临时状态（页面持有）：多选、正在收起、刚出现、详情栏正在看的、

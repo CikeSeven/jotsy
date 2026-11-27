@@ -15,11 +15,12 @@ import '../controllers/todo_batch_actions.dart';
 import '../controllers/todo_page_selection.dart';
 import '../widgets/todo_due_sheet.dart';
 import '../widgets/todo_labels.dart';
+import '../widgets/todo_section_picker_sheet.dart';
 import '../widgets/todo_tag_picker_sheet.dart';
 
 /// 多选时浮在列表底部的操作栏（卡片表面、带投影；升起与沉下由页面外框做）：完成、日期、
-/// 清单、优先级（4 项弹出菜单）、删除（error），以及“更多”（加标签）。没有选中时各按钮
-/// 停用。
+/// 清单、优先级（4 项弹出菜单）、删除（error），以及“更多”（加标签；清单有分区时还有
+/// 移到分区）。没有选中时各按钮停用。
 class TodoSelectionActionBar extends StatelessWidget {
   const TodoSelectionActionBar({
     super.key,
@@ -30,6 +31,7 @@ class TodoSelectionActionBar extends StatelessWidget {
     required this.onPriority,
     required this.onDelete,
     required this.onTag,
+    this.onSection,
   });
 
   final bool enabled;
@@ -39,6 +41,9 @@ class TodoSelectionActionBar extends StatelessWidget {
   final ValueChanged<TodoPriority> onPriority;
   final VoidCallback onDelete;
   final VoidCallback onTag;
+
+  /// 移到分区（只在有分区的清单视图里给出）。
+  final VoidCallback? onSection;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +120,12 @@ class TodoSelectionActionBar extends StatelessWidget {
                     onPressed: onTag,
                     child: Text(l10n.todoBatchAddTag),
                   ),
+                  if (onSection case final onSection?)
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.tableList),
+                      onPressed: onSection,
+                      child: Text(l10n.todoBatchMoveToSection),
+                    ),
                 ],
                 builder:
                     (
@@ -194,6 +205,7 @@ Widget buildTodoSelectionActionBar(
   required TodoPageSelection selection,
   required List<TodoRow> rows,
   required DateTime today,
+  List<TodoSection> sections = const <TodoSection>[],
 }) {
   final selected = selection.selectedRows(rows);
   final database = ref.read(appDatabaseProvider);
@@ -236,6 +248,30 @@ Widget buildTodoSelectionActionBar(
     ),
     onDelete: () =>
         unawaited(run(() => deleteTodosWithUndo(context, database, ids()))),
+    onSection: sections.isEmpty
+        ? null
+        : () => unawaited(() async {
+            final choice = await showTodoSectionPickerSheet(
+              context,
+              sections: sections,
+              current: '',
+            );
+            if (choice == null || !context.mounted) return;
+            await run(
+              () => moveTodosToSectionWithUndo(
+                context,
+                database,
+                ids(),
+                sectionId: choice.sectionId,
+                name:
+                    sections
+                        .where((s) => s.id == choice.sectionId)
+                        .firstOrNull
+                        ?.name ??
+                    context.l10n.todoSectionNone,
+              ),
+            );
+          }()),
     onTag: () => unawaited(() async {
       final tag = await showTodoTagPickOneSheet(context);
       if (tag == null || !context.mounted) return;

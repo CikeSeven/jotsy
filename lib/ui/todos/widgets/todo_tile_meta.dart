@@ -17,7 +17,8 @@ import 'todo_tag_chips.dart';
 /// 为 `primaryContainer`，其余与已完成的一律 `surfaceContainerHigh`；今天
 /// 还没到的时刻在一小时内改说“还有 25 分钟”，按整分刷新）、步骤进度“1/3”
 /// （给了 [onStepsTap] 时可点，带一个随 [stepsExpanded] 翻转的箭头）、所在
-/// 清单（6dp 强调色圆点 + 名称，只在跨清单的视图里给出 [list]）、待办标签
+/// 清单（6dp 强调色圆点 + 名称，在分区里时写成“清单 · 分区”，只在跨清单的
+/// 视图里给出 [list]）、待办标签
 /// （`@名称` 微胶囊，至多两颗再加“+N”，见 [TodoTagChips]），以及只画图标的
 /// 提醒、重复、关联日记。都没有时返回空列表，调用方不占行。
 List<Widget> buildTodoMetaPills(
@@ -109,10 +110,14 @@ List<Widget> buildTodoMetaPills(
     );
   }
   if (list != null) {
+    final section = TodoSections.of(
+      row.metadata,
+      TodoSections.ofList(list.metadata),
+    );
     pills.add(
       TodoMetaPill(
         dotColor: TodoListStyle.accentOf(list.colorKey, scheme).onContainer,
-        text: list.name,
+        text: section == null ? list.name : '${list.name} · ${section.name}',
         background: neutralBg,
         foreground: neutralFg,
       ),

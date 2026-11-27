@@ -38,7 +38,10 @@ class TodoListModelCache {
     required DateTime today,
     List<String>? localOrder,
     List<TodoRow> Function(List<TodoRow> open)? applyLocalOrder,
+    Map<String, String?> localSections = const <String, String?>{},
+    Set<String> collapsed = const <String>{},
   }) {
+    final collapsedKey = (collapsed.toList()..sort()).join('\n');
     final inputs = (
       view,
       open,
@@ -48,9 +51,20 @@ class TodoListModelCache {
       showCompleted,
       today,
       localOrder,
+      localSections,
+      collapsedKey,
     );
     final model = _model;
     if (model != null && inputs == _inputs) return model;
+    final listId = view.listId;
+    var sections = const <TodoSection>[];
+    if (listId != null) {
+      for (final list in lists) {
+        if (list.listId == listId) {
+          sections = TodoSections.ofList(list.metadata);
+        }
+      }
+    }
     final groups = buildTodoGroups(
       view: view,
       open: localOrder == null || applyLocalOrder == null
@@ -61,8 +75,17 @@ class TodoListModelCache {
       sort: sort,
       today: today,
       showCompleted: showCompleted,
+      sections: sections,
+      sectionOf: localSections.isEmpty
+          ? null
+          : (TodoRow row) => localSections.containsKey(row.todoId)
+                ? localSections[row.todoId]
+                : TodoSections.idOfTodo(row.metadata),
     );
     _inputs = inputs;
-    return _model = TodoListModel(groups, buildTodoListEntries(groups));
+    return _model = TodoListModel(
+      groups,
+      buildTodoListEntries(groups, collapsed: collapsed),
+    );
   }
 }

@@ -40,6 +40,7 @@ class TodoQuickAddPreset {
     this.title = '',
     this.linkedDiaryId,
     this.tags = const <String>[],
+    this.sectionId,
   });
 
   final String? listId;
@@ -50,6 +51,21 @@ class TodoQuickAddPreset {
 
   /// 预先带上的标签（在标签视图里新建时为这个标签）。
   final List<String> tags;
+
+  /// 预先放进的分区（点分区标题上的“+”时）；只在清单仍是 [listId] 时生效。
+  final String? sectionId;
+
+  /// 同样的预填，放进清单 [listId] 的分区 [sectionId]。
+  TodoQuickAddPreset withSection(String listId, String sectionId) =>
+      TodoQuickAddPreset(
+        listId: listId,
+        dueDate: dueDate,
+        priority: priority,
+        title: title,
+        linkedDiaryId: linkedDiaryId,
+        tags: tags,
+        sectionId: sectionId,
+      );
 }
 
 /// 快速新建待办：大号输入框（智能识别的片段高亮）+ 右侧主色圆形发送键，
@@ -97,6 +113,7 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
     dueDate: widget.preset.dueDate,
     priority: widget.preset.priority,
     tags: widget.preset.tags,
+    sectionId: widget.preset.sectionId,
   );
   bool _saving = false;
 

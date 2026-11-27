@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -20,6 +21,8 @@ import '../../support/expressive_test_theme.dart';
 /// 挂载待办页。返回库，测试可在运行中写数据。[todoSettings] 为打开前的
 /// 待办偏好（如“打开时显示”某个视图、手动排序）；[now] 给出时替换“此刻”
 /// （模拟跨过零点）；[disableAnimations] 模拟系统的减少动态效果。
+/// [prepare] 在挂载前拿到设置服务（如打开功能开关、写 AI 偏好），
+/// [overrides] 追加到 ProviderScope（如假的 AI 服务）。
 Future<AppDatabase> pumpTodosPage(
   WidgetTester tester, {
   Future<void> Function(AppDatabase db)? seed,
@@ -31,6 +34,8 @@ Future<AppDatabase> pumpTodosPage(
   TodoSettings? todoSettings,
   DateTime Function()? now,
   bool disableAnimations = false,
+  Future<void> Function(SettingsService settings)? prepare,
+  List<Override> overrides = const <Override>[],
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
@@ -42,6 +47,7 @@ Future<AppDatabase> pumpTodosPage(
   if (todoSettings != null) {
     await settings.setTodoSettingsRaw(todoSettings.encode());
   }
+  if (prepare != null) await prepare(settings);
   if (seed != null) await tester.runAsync(() => seed(database));
   Future<void> Function()? create;
   await tester.pumpWidget(
@@ -50,6 +56,7 @@ Future<AppDatabase> pumpTodosPage(
         appDatabaseProvider.overrideWithValue(database),
         settingsServiceProvider.overrideWith((ref) async => settings),
         if (now != null) todoNowProvider.overrideWithValue(now),
+        ...overrides,
       ],
       child: MaterialApp(
         locale: locale,

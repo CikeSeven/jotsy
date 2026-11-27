@@ -372,6 +372,9 @@ enum AiTaskKind {
   /// 图片理解（描述图片）。
   vision,
 
+  /// 待办：拆解步骤、把一段话整理成多条待办。
+  todos,
+
   /// 内部的小任务：给对话起标题、生成检索计划、长回顾的分块摘要。
   utility;
 
@@ -384,7 +387,7 @@ enum AiTaskKind {
 
   /// 没单独指定时优先用“快速模型”的任务：输出短、要快，不需要最强的模型。
   bool get prefersFastModel =>
-      this == suggest || this == prompts || this == utility;
+      this == suggest || this == prompts || this == todos || this == utility;
 }
 
 /// 对某个服务商下某个模型的引用。

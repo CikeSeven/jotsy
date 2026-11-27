@@ -17709,4 +17709,87 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settingsDefaultMediaThumbnailSubtitle =>
       '新しく挿入する画像と動画を最初から小さいサムネイルサイズで表示します';
+
+  @override
+  String get aiTaskTodos => 'To-Do の分解と整理';
+
+  @override
+  String get aiModuleTodos => 'To-Do アシスタント';
+
+  @override
+  String get aiModuleTodosSubtitle => 'To-Do をステップに分け、文章を複数の To-Do に整理します';
+
+  @override
+  String get aiPromptTodoSystem =>
+      '今回の作業はユーザーの To-Do の整理を手伝うことです。ユーザーが示した内容だけに基づき、細部を作り上げず、簡潔ですぐ取りかかれる形で書いてください。';
+
+  @override
+  String get aiPromptTodoStepsInstruction =>
+      '以下の To-Do を、具体的ですぐ実行できる 3〜8 個のステップに分け、行う順に並べてください。1 行に 1 ステップ、番号や記号や説明は付けず、各ステップは 30 文字以内にしてください。既にあるステップは繰り返さないでください。ステップだけを出力してください。';
+
+  @override
+  String get aiPromptTodoFieldTitle => 'To-Do';
+
+  @override
+  String get aiPromptTodoFieldNote => 'メモ';
+
+  @override
+  String aiPromptTodoExistingSteps(String steps) {
+    return '既にあるステップ：\n$steps';
+  }
+
+  @override
+  String get aiPromptTodoOrganizeInstruction =>
+      '以下の文章を、それぞれ具体的な 1 件ずつの To-Do に分け、元の順に並べてください。各 To-Do を 1 行に 1 つの JSON オブジェクト（JSON Lines）で書き、配列やコードブロックにまとめず、ほかの文字は出力しないでください。フィールド：title は日付・時刻・リスト名を含まない簡潔なタイトル。date は期限日 YYYY-MM-DD で、「明日」「来週の水曜」などは今日から計算し、言及がなければ省略。time は期限時刻 HH:mm（24 時間制）で、日付があるときだけ。priority は 0〜3 の整数（3 が最も重要）で、文章に緊急度が書かれているときだけ。list はユーザーのリストからそのまま 1 つ選び、合うものがなければ省略。tags は 0〜3 個の短いタグで、ユーザーの既存の To-Do タグを優先。各行の形式：';
+
+  @override
+  String aiPromptTodoToday(String date) {
+    return '今日は $date です。';
+  }
+
+  @override
+  String aiPromptTodoLists(String names) {
+    return 'ユーザーのリスト：$names';
+  }
+
+  @override
+  String aiPromptTodoTags(String names) {
+    return 'ユーザーの既存の To-Do タグ：$names';
+  }
+
+  @override
+  String get todoAiBreakdown => 'AI で分解';
+
+  @override
+  String get todoAiOrganize => 'AI で複数の To-Do に整理';
+
+  @override
+  String get todoAiStepsTitle => 'AI が提案したステップ';
+
+  @override
+  String get todoAiOrganizeTitle => 'AI が整理した To-Do';
+
+  @override
+  String get todoAiGenerating => '生成中…';
+
+  @override
+  String get todoAiDiscard => '破棄';
+
+  @override
+  String todoAiUseSteps(int count) {
+    return '$count 件のステップを追加';
+  }
+
+  @override
+  String todoAiAddTodos(int count) {
+    return '$count 件の To-Do を追加';
+  }
+
+  @override
+  String get todoAiNothing => '使える結果が得られませんでした。言い方を変えてもう一度お試しください。';
+
+  @override
+  String todoAiKeep(String title) {
+    return '「$title」を残す';
+  }
 }

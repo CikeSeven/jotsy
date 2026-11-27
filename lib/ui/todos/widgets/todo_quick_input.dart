@@ -172,7 +172,7 @@ class TodoParsedChips extends StatelessWidget {
         (t) => t.kind == TodoQuickTokenKind.date,
       );
       chips.add(
-        _ParsedChip(
+        TodoParsedChip(
           key: const ValueKey<String>('due'),
           icon: parse.minute == null
               ? FontAwesomeIcons.calendar
@@ -191,7 +191,7 @@ class TodoParsedChips extends StatelessWidget {
     final repeat = parse.repeatRule;
     if (repeat != null) {
       chips.add(
-        _ParsedChip(
+        TodoParsedChip(
           key: const ValueKey<String>('repeat'),
           icon: FontAwesomeIcons.repeat,
           label: TodoLabels.repeat(l10n, repeat),
@@ -206,7 +206,7 @@ class TodoParsedChips extends StatelessWidget {
     );
     if (reminder != null) {
       chips.add(
-        _ParsedChip(
+        TodoParsedChip(
           key: const ValueKey<String>('reminder'),
           icon: FontAwesomeIcons.bell,
           label: TodoLabels.reminder(context, reminder),
@@ -223,7 +223,7 @@ class TodoParsedChips extends StatelessWidget {
       }
       if (name != null) {
         chips.add(
-          _ParsedChip(
+          TodoParsedChip(
             key: const ValueKey<String>('list'),
             icon: FontAwesomeIcons.hashtag,
             label: name,
@@ -235,7 +235,7 @@ class TodoParsedChips extends StatelessWidget {
     }
     for (final tag in parse.tags) {
       chips.add(
-        _ParsedChip(
+        TodoParsedChip(
           key: ValueKey<String>('tag:${TodoTags.keyOf(tag)}'),
           icon: FontAwesomeIcons.at,
           label: tag,
@@ -247,7 +247,7 @@ class TodoParsedChips extends StatelessWidget {
     final priority = parse.priority;
     if (priority != null && priority != TodoPriority.none) {
       chips.add(
-        _ParsedChip(
+        TodoParsedChip(
           key: const ValueKey<String>('priority'),
           icon: FontAwesomeIcons.solidFlag,
           iconColor: TodoLabels.priorityColor(scheme, priority),
@@ -273,8 +273,10 @@ class TodoParsedChips extends StatelessWidget {
   }
 }
 
-class _ParsedChip extends StatelessWidget {
-  const _ParsedChip({
+/// 一颗识别胶囊：`secondaryContainer` 底、图标 + 值 + ×（[onDismiss]）。快速
+/// 新建的识别结果与 AI 整理出的待办共用。
+class TodoParsedChip extends StatelessWidget {
+  const TodoParsedChip({
     super.key,
     required this.icon,
     required this.label,

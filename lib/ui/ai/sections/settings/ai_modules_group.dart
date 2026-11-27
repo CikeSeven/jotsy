@@ -283,6 +283,7 @@ class AiModulesGroup extends ConsumerWidget {
             ),
           ],
         ),
+        module(AiModule.todos),
         module(
           AiModule.vision,
           options: <Widget>[

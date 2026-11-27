@@ -9,18 +9,26 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../ai/models/ai_preference_parts.dart';
+import '../../ai/providers/ai_providers.dart';
 import '../../widgets/list_item_presence.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../controllers/todo_ai_drafts.dart';
+import '../controllers/todo_ai_flow.dart';
 import '../controllers/todo_navigation.dart';
 import '../controllers/todo_reminder_permission.dart';
 import '../providers/todo_providers.dart';
+import '../viewmodels/todo_ai_output.dart';
 import '../viewmodels/todo_quick_add_draft.dart';
 import '../viewmodels/todo_quick_parse.dart';
 import '../viewmodels/todo_reminder_pick.dart';
 import 'todo_added_stack.dart';
+import 'todo_ai_organize_item.dart';
+import 'todo_ai_preview.dart';
 import 'todo_due_sheet.dart';
 import 'todo_list_picker_sheet.dart';
 import 'todo_quick_add_fields.dart';
+import 'todo_quick_add_preset.dart';
 import 'todo_quick_split_prompt.dart';
 import 'todo_quick_input.dart';
 import 'todo_reminder_sheet.dart';
@@ -28,45 +36,11 @@ import 'todo_repeat_sheet.dart';
 import 'todo_sheet.dart';
 import 'todo_tag_picker_sheet.dart';
 
+export 'todo_quick_add_preset.dart';
+
+part 'todo_quick_add_ai.dart';
 part 'todo_quick_add_pickers.dart';
-
-/// 快速新建待办时预先带上的字段（来自当前视图、日历选中日或日记）。
-@immutable
-class TodoQuickAddPreset {
-  const TodoQuickAddPreset({
-    this.listId,
-    this.dueDate,
-    this.priority = TodoPriority.none,
-    this.title = '',
-    this.linkedDiaryId,
-    this.tags = const <String>[],
-    this.sectionId,
-  });
-
-  final String? listId;
-  final DateTime? dueDate;
-  final TodoPriority priority;
-  final String title;
-  final String? linkedDiaryId;
-
-  /// 预先带上的标签（在标签视图里新建时为这个标签）。
-  final List<String> tags;
-
-  /// 预先放进的分区（点分区标题上的“+”时）；只在清单仍是 [listId] 时生效。
-  final String? sectionId;
-
-  /// 同样的预填，放进清单 [listId] 的分区 [sectionId]。
-  TodoQuickAddPreset withSection(String listId, String sectionId) =>
-      TodoQuickAddPreset(
-        listId: listId,
-        dueDate: dueDate,
-        priority: priority,
-        title: title,
-        linkedDiaryId: linkedDiaryId,
-        tags: tags,
-        sectionId: sectionId,
-      );
-}
+part 'todo_quick_add_submit.dart';
 
 /// 快速新建待办：大号输入框（智能识别的片段高亮）+ 右侧主色圆形发送键，
 /// 下面一排属性按钮（日期、提醒、重复、清单、优先级；设了值的为
@@ -77,7 +51,8 @@ class TodoQuickAddPreset {
 /// 识别出的片段高亮淡入。按回车或发送键即写库，面板留着、只清空标题，便于
 /// 连着记几条：刚添加的落进上方“已添加 N 条”的小堆栈（[TodoAddedStack]，
 /// 可点开、可撤销）；手动选的属性保留给下一条。粘贴了多行时提示“拆成 N 条
-/// 待办？”，拆开时每行各自识别。关掉面板就结束。
+/// 待办？”，拆开时每行各自识别。AI 助手的待办模块可用时，发送键旁多一个
+/// “AI 整理”（见 `todo_quick_add_ai.dart`）。关掉面板就结束。
 Future<void> showTodoQuickAddSheet(
   BuildContext context, {
   TodoQuickAddPreset preset = const TodoQuickAddPreset(),
@@ -123,6 +98,23 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
   /// 这次打开面板后添加的（“已添加”堆栈）。
   final List<TodoAddedItem> _added = <TodoAddedItem>[];
 
+  /// “AI 整理”的预览：按此刻的清单与今天逐行校验模型写的待办。
+  late final TodoAiDrafts<TodoAiItem> _ai = TodoAiDrafts<TodoAiItem>(
+    (String text, {required bool complete}) => parseTodoAiItems(
+      text,
+      complete: complete,
+      lists: ref.read(todoListsProvider).value ?? const <TodoListRow>[],
+      today: _today,
+    ),
+  )..addListener(_onAi);
+  bool _aiActive = false;
+
+  /// 预览自己听着逐条更新；这里只在出现 / 收起时重建。
+  void _onAi() {
+    if (_ai.active == _aiActive || !mounted) return;
+    setState(() => _aiActive = _ai.active);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -133,6 +125,9 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
   void dispose() {
     _title.removeListener(_onControllerChanged);
     _title.dispose();
+    _ai
+      ..removeListener(_onAi)
+      ..dispose();
     _highlightFade.dispose();
     _focus.dispose();
     super.dispose();
@@ -192,59 +187,6 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
     linkedDiaryId: widget.preset.linkedDiaryId,
   );
 
-  /// 写库：[inputs] 依次建好，记进“已添加”，清空输入接着记。
-  Future<void> _create(List<TodoInput> inputs) async {
-    if (inputs.isEmpty || _saving) return;
-    setState(() => _saving = true);
-    try {
-      final ids = await ref.read(appDatabaseProvider).createTodos(inputs);
-      if (inputs.any((TodoInput input) => input.reminders.isNotEmpty) &&
-          mounted) {
-        unawaited(ensureTodoReminderPermission(context, ref));
-      }
-      _added.addAll(<TodoAddedItem>[
-        for (var i = 0; i < ids.length; i++)
-          TodoAddedItem(id: ids[i], title: inputs[i].title),
-      ]);
-      _draft.resetIgnored();
-      _title.clear();
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
-    if (mounted) _focus.requestFocus();
-  }
-
-  Future<void> _submit() async {
-    final input = _inputFor(_title.text, _parse());
-    if (input != null) await _create(<TodoInput>[input]);
-  }
-
-  /// 输入里非空的几行（粘贴了多行时提示拆分）。
-  List<String> get _lines => <String>[
-    for (final line in _title.text.split('\n'))
-      if (line.trim().isNotEmpty) line.trim(),
-  ];
-
-  /// 每行各自识别、各建一条。
-  Future<void> _split() async {
-    await _create(<TodoInput>[
-      for (final line in _lines) ?_inputFor(line, _parseText(line)),
-    ]);
-  }
-
-  void _keepOne() {
-    final text = _lines.join(' ');
-    _title.value = TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
-  }
-
-  Future<void> _undoAdded(String id) async {
-    setState(() => _added.removeWhere((TodoAddedItem item) => item.id == id));
-    await ref.read(appDatabaseProvider).deleteTodo(id);
-  }
-
   /// 属性面板（part 文件里的扩展）改了手上的值后重建。
   void _update(VoidCallback fn) => setState(fn);
 
@@ -263,6 +205,10 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
       if (item.listId == listId) list = item;
     }
     final canSubmit = _title.text.trim().isNotEmpty && !_saving;
+    final aiButton = _aiButton(
+      available: ref.watch(aiModuleAvailableProvider(AiModule.todos)),
+      canSubmit: canSubmit,
+    );
     final lines = _lines.length;
     // 收起途中仍写上一次的行数，不闪成“拆成 0 条”。
     if (lines >= 2) _splitCount = lines;
@@ -314,20 +260,24 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
                 ),
               ),
               const SizedBox(width: AppSpacing.s),
+              ?aiButton,
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: IconButton.filled(
                   tooltip: l10n.todoQuickAddSubmit,
-                  onPressed: canSubmit ? () => unawaited(_submit()) : null,
+                  onPressed: canSubmit && !_aiActive
+                      ? () => unawaited(_submit())
+                      : null,
                   icon: const FaIcon(FontAwesomeIcons.arrowUp, size: 16),
                 ),
               ),
             ],
           ),
         ),
+        _aiPreview(lists, today),
         ListItemPresence(
-          visible: lines >= 2,
-          appearing: lines >= 2,
+          visible: lines >= 2 && !_aiActive,
+          appearing: lines >= 2 && !_aiActive,
           duration: duration,
           child: TodoQuickSplitPrompt(
             count: _splitCount,

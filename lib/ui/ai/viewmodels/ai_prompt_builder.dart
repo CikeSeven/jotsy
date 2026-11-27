@@ -137,7 +137,7 @@ class AiPromptKit {
     final base = prefs.creativity.temperature;
     final value = switch (task) {
       AiTaskKind.suggest || AiTaskKind.utility => 0.2,
-      AiTaskKind.vision => 0.3,
+      AiTaskKind.vision || AiTaskKind.todos => 0.3,
       AiTaskKind.recap => base - 0.1,
       AiTaskKind.reply => base + 0.1,
       AiTaskKind.prompts => base + 0.2,

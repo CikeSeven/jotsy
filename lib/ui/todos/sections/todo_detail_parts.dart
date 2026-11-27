@@ -171,48 +171,70 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
   }
 }
 
-/// 步骤与备注的卡片：小标题（可带细进度条）+ 内容，`surfaceContainerLow`
-/// 底、16 圆角（面板与详情栏本身已是卡片表面，里面不再叠投影与描边）。
+/// 步骤与备注的卡片：小标题（可带细进度条，行尾可放 [trailing]）+ 内容，
+/// `surfaceContainerLow` 底、16 圆角（面板与详情栏本身已是卡片表面，里面
+/// 不再叠投影与描边）。
 class TodoDetailSectionCard extends StatelessWidget {
   const TodoDetailSectionCard({
     super.key,
     required this.title,
     required this.child,
     this.progress,
+    this.trailing,
   });
 
   final String title;
   final double? progress;
   final Widget child;
 
+  /// 小标题行尾的按钮（步骤卡的“AI 拆解”）。按钮的 48dp 触控区比小标题
+  /// 高：有它时卡片上边距收窄，小标题仍落在原来的位置附近。
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final progress = this.progress;
+    final trailing = this.trailing;
+    final heading = Text(
+      title,
+      style: theme.textTheme.labelLarge?.copyWith(
+        color: scheme.onSurfaceVariant,
+        fontWeight: FontWeight.w700,
+      ),
+    );
     return DecoratedBox(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.only(
-          top: AppSpacing.m,
+        padding: EdgeInsets.only(
+          top: trailing == null ? AppSpacing.m : 0,
           bottom: AppSpacing.xs,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: Text(
-                title,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
+            if (trailing == null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: heading,
+              )
+            else
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: AppSpacing.l,
+                  end: AppSpacing.xs,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(child: heading),
+                    trailing,
+                  ],
                 ),
               ),
-            ),
             if (progress != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(

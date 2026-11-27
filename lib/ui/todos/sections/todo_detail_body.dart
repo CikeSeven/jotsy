@@ -24,11 +24,12 @@ import '../widgets/todo_detail_pills.dart';
 import '../widgets/todo_note_extras.dart';
 import '../widgets/todo_streak_card.dart';
 import 'todo_detail_parts.dart';
-import 'todo_steps_section.dart';
+import 'todo_steps_card.dart';
 import '../widgets/todo_bare_input.dart';
 
 /// 一条待办的详情内容（底部面板 [showTodoDetailSheet] 与宽窗口详情栏
-/// `TodoDetailPane` 共用）：大方框 + 标题、属性胶囊、步骤卡、备注卡（下面
+/// `TodoDetailPane` 共用）：大方框 + 标题、属性胶囊、步骤卡（AI 可用时可
+/// “AI 拆解”，见 [TodoStepsCard]）、备注卡（下面
 /// 是清单行转步骤与识别出的链接）、重复待办的坚持记录与创建 / 完成时间、
 /// 推迟次数，改一项写一项。打开时各块错峰入场。
 ///
@@ -189,7 +190,6 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
     }
     final today = ref.watch(todoTodayProvider);
     final steps = decodeTodoSteps(row.steps);
-    final doneSteps = steps.where((TodoStep s) => s.done).length;
     final repeating = decodeTodoRepeat(row.repeat) != null;
     // 内容错峰入场：每一块比上一块晚一点（只在打开时演一次，之后数据
     // 变化不再演）。
@@ -215,23 +215,17 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
         enter(TodoDetailPills(row: row, today: today)),
         const SizedBox(height: AppSpacing.xl),
         enter(
-          TodoDetailSectionCard(
-            title: steps.isEmpty
-                ? l10n.todoStepsTitle
-                : l10n.todoStepsTitleProgress(doneSteps, steps.length),
-            progress: steps.isEmpty ? null : doneSteps / steps.length,
-            child: TodoStepsSection(
-              steps: steps,
-              onChanged: (List<TodoStep> next) =>
-                  unawaited(_database.setTodoSteps(row.todoId, next)),
-              onToggle: (String stepId, bool value) => unawaited(
-                _database.setTodoStepDone(row.todoId, stepId, value),
-              ),
-              onConvert: (String stepId) => unawaited(_convertStep(stepId)),
-              onCompleteTodo: row.completedAt == null
-                  ? () => unawaited(toggleTodoDone(context, _database, row))
-                  : null,
-            ),
+          TodoStepsCard(
+            row: row,
+            steps: steps,
+            onChanged: (List<TodoStep> next) =>
+                unawaited(_database.setTodoSteps(row.todoId, next)),
+            onToggle: (String stepId, bool value) =>
+                unawaited(_database.setTodoStepDone(row.todoId, stepId, value)),
+            onConvert: (String stepId) => unawaited(_convertStep(stepId)),
+            onCompleteTodo: row.completedAt == null
+                ? () => unawaited(toggleTodoDone(context, _database, row))
+                : null,
           ),
         ),
         const SizedBox(height: AppSpacing.m),

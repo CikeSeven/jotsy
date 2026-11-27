@@ -17428,4 +17428,87 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get settingsDefaultMediaThumbnailSubtitle =>
       '新插入的图片和视频默认显示为小图，仍可手动恢复正常大小';
+
+  @override
+  String get aiTaskTodos => '待办拆解与整理';
+
+  @override
+  String get aiModuleTodos => '待办助手';
+
+  @override
+  String get aiModuleTodosSubtitle => '把一条待办拆成步骤，把一段话整理成多条待办';
+
+  @override
+  String get aiPromptTodoSystem =>
+      '这次的任务是帮用户安排待办：只依据用户给的内容，不编造细节，写得简洁、可以直接动手做。';
+
+  @override
+  String get aiPromptTodoStepsInstruction =>
+      '把下面这条待办拆成 3 到 8 个具体、可执行的步骤，按先后顺序排列。每行写一步，不加编号、符号或解释，每步不超过 30 个字；已有的步骤不要重复。只输出步骤本身。';
+
+  @override
+  String get aiPromptTodoFieldTitle => '待办';
+
+  @override
+  String get aiPromptTodoFieldNote => '备注';
+
+  @override
+  String aiPromptTodoExistingSteps(String steps) {
+    return '已有的步骤：\n$steps';
+  }
+
+  @override
+  String get aiPromptTodoOrganizeInstruction =>
+      '把下面这段话整理成若干条待办，每条是一件具体的事，按原文先后排列。每条写成一行 JSON 对象（JSON Lines），不要放进数组或代码块，也不要输出其他文字。字段：title 为简洁的待办标题，不含日期、时刻和清单名；date 为截止日期 YYYY-MM-DD，按“今天”推算“明天”“下周三”这类说法，没提到就不写；time 为截止时刻 HH:mm（24 小时制），只在有日期时写；priority 为 0 到 3 的整数（3 最重要），只在原文表明轻重缓急时写；list 只能从用户的清单里原样选一个，选不出就不写；tags 为 0 到 3 个简短标签，优先用用户已有的待办标签。每行的格式：';
+
+  @override
+  String aiPromptTodoToday(String date) {
+    return '今天是 $date。';
+  }
+
+  @override
+  String aiPromptTodoLists(String names) {
+    return '用户的清单：$names';
+  }
+
+  @override
+  String aiPromptTodoTags(String names) {
+    return '用户已有的待办标签：$names';
+  }
+
+  @override
+  String get todoAiBreakdown => 'AI 拆解';
+
+  @override
+  String get todoAiOrganize => 'AI 整理成多条待办';
+
+  @override
+  String get todoAiStepsTitle => 'AI 建议的步骤';
+
+  @override
+  String get todoAiOrganizeTitle => 'AI 整理出的待办';
+
+  @override
+  String get todoAiGenerating => '正在生成…';
+
+  @override
+  String get todoAiDiscard => '放弃';
+
+  @override
+  String todoAiUseSteps(int count) {
+    return '使用 $count 步';
+  }
+
+  @override
+  String todoAiAddTodos(int count) {
+    return '添加 $count 条';
+  }
+
+  @override
+  String get todoAiNothing => '没有得到可用的结果，换个说法再试试。';
+
+  @override
+  String todoAiKeep(String title) {
+    return '保留“$title”';
+  }
 }

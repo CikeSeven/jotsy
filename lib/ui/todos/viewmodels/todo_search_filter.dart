@@ -48,22 +48,29 @@ class TodoSearchFilter {
 
   TodoSearchFilter copyWith({
     TodoSearchStatus? status,
-    bool? listChosen,
-    String? listId,
-    bool clearList = false,
     bool? highOnly,
     bool? datedOnly,
   }) => TodoSearchFilter(
     status: status ?? this.status,
-    listChosen: clearList ? false : (listChosen ?? this.listChosen),
-    listId: clearList ? null : (listId ?? this.listId),
+    listChosen: listChosen,
+    listId: listId,
     highOnly: highOnly ?? this.highOnly,
     datedOnly: datedOnly ?? this.datedOnly,
   );
-}
 
-/// 搜索词按空白拆开（与库里的搜索同一口径），去掉空的，小写。
-List<String> todoSearchTerms(String keyword) => <String>[
-  for (final term in keyword.toLowerCase().split(RegExp(r'\s+')))
-    if (term.isNotEmpty) term,
-];
+  /// 只看某个清单（null 即收集箱）。
+  TodoSearchFilter withList(String? listId) => TodoSearchFilter(
+    status: status,
+    listChosen: true,
+    listId: listId,
+    highOnly: highOnly,
+    datedOnly: datedOnly,
+  );
+
+  /// 不再按清单筛。
+  TodoSearchFilter withoutList() => TodoSearchFilter(
+    status: status,
+    highOnly: highOnly,
+    datedOnly: datedOnly,
+  );
+}

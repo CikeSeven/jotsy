@@ -14674,6 +14674,89 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoSearchFilterStatus => '状态';
 
   @override
+  String get todoFieldTags => '标签';
+
+  @override
+  String get todoTagSearchHint => '搜索或新建标签';
+
+  @override
+  String todoTagCreate(String name) {
+    return '新建“$name”';
+  }
+
+  @override
+  String get todoTagRecent => '最近用过';
+
+  @override
+  String get todoTagsEmptyHint => '新建待办时输入 @标签，或在上面新建。';
+
+  @override
+  String todoTagLimitHint(int count) {
+    return '每条待办最多 $count 个标签';
+  }
+
+  @override
+  String get todoTagsManageTitle => '管理标签';
+
+  @override
+  String get todoTagsManageEmpty => '还没有标签';
+
+  @override
+  String todoTagUsage(int open, int total) {
+    return '$open 条未完成 · 共 $total 条';
+  }
+
+  @override
+  String get todoTagRename => '重命名标签';
+
+  @override
+  String get todoTagRenameHint => '改成已有的标签名会把两个标签合并。';
+
+  @override
+  String todoTagDeleteTitle(String name) {
+    return '删除“$name”？';
+  }
+
+  @override
+  String todoTagDeleteMessage(int count) {
+    return '将从 $count 条待办上去掉这个标签，待办本身保留。';
+  }
+
+  @override
+  String todoTagRenamedNotice(String name) {
+    return '已改名为“$name”';
+  }
+
+  @override
+  String todoTagMergedNotice(String name) {
+    return '已合并到“$name”';
+  }
+
+  @override
+  String todoTagDeletedNotice(String name) {
+    return '已删除“$name”';
+  }
+
+  @override
+  String get todoBatchAddTag => '加标签';
+
+  @override
+  String todoBatchTaggedNotice(int count, String name) {
+    return '已给 $count 条加上“$name”';
+  }
+
+  @override
+  String get todoEmptyTag => '这个标签下没有待办';
+
+  @override
+  String get todoEmptyTagHint => '在这里添加的待办会带上这个标签。';
+
+  @override
+  String todoTagsMoreLabel(int count) {
+    return '还有 $count 个标签';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

@@ -147,8 +147,15 @@ mixin _AppDatabaseTodoCompleteOps on _$AppDatabase, _AppDatabaseTodoQueries {
         completedAt: Value(at),
         linkedDiaryId: Value(row.linkedDiaryId),
         sortOrder: Value(row.sortOrder),
+        // 副本带着这一次的标签（按标签筛时完成记录也在）；repeatOf 必须
+        // 是第一个键，`watchTodoOccurrences` 按这一段匹配。
         metadata: Value(
-          jsonEncode(<String, Object?>{TodoMetadataKeys.repeatOf: row.todoId}),
+          jsonEncode(<String, Object?>{
+            TodoMetadataKeys.repeatOf: row.todoId,
+            if (TodoTags.fromMetadata(metadata) case final tags
+                when tags.isNotEmpty)
+              TodoTags.metadataKey: tags,
+          }),
         ),
         createdAt: at,
         updatedAt: at,

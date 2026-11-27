@@ -112,7 +112,9 @@ TodoQuickParse todoQuickParseOf(
   required bool enabled,
   required DateTime today,
   required List<TodoListRow> lists,
+  List<String> tags = const <String>[],
   Set<TodoQuickTokenKind> ignore = const <TodoQuickTokenKind>{},
+  Set<String> ignoreTags = const <String>{},
 }) {
   if (!enabled || text.trim().isEmpty) {
     return parseTodoQuickInput(
@@ -125,13 +127,16 @@ TodoQuickParse todoQuickParseOf(
     text,
     today: today,
     lists: <String, String>{for (final list in lists) list.listId: list.name},
+    tags: tags,
     ignore: ignore,
+    ignoreTags: ignoreTags,
   );
 }
 
 /// 识别结果的一排小胶囊（`secondaryContainer` 底、带 ×）：日期（含时刻）、
-/// 重复、提醒、清单、优先级各一个；点 × 经 [onDismiss] 交出这一种（调用方
-/// 把它加进忽略集合，原文留在标题里）。新出现的胶囊淡入上移（按种类认，
+/// 重复、提醒、清单、优先级各一个，标签每个一颗；点 × 经 [onDismiss] 交出
+/// 这一种（调用方把它加进忽略集合，原文留在标题里），标签经 [onDismissTag]
+/// 单个交出。新出现的胶囊淡入上移（按种类认，
 /// 值变了不重演）。没有识别出东西时为空。
 class TodoParsedChips extends StatelessWidget {
   const TodoParsedChips({
@@ -140,6 +145,7 @@ class TodoParsedChips extends StatelessWidget {
     required this.today,
     required this.lists,
     required this.onDismiss,
+    required this.onDismissTag,
     this.allDayMinute = 9 * 60,
   });
 
@@ -147,6 +153,7 @@ class TodoParsedChips extends StatelessWidget {
   final DateTime today;
   final List<TodoListRow> lists;
   final ValueChanged<TodoQuickTokenKind> onDismiss;
+  final ValueChanged<String> onDismissTag;
 
   /// 全天待办的默认提醒时刻（识别出“提前一天”时用）。
   final int allDayMinute;
@@ -225,6 +232,17 @@ class TodoParsedChips extends StatelessWidget {
           ),
         );
       }
+    }
+    for (final tag in parse.tags) {
+      chips.add(
+        _ParsedChip(
+          key: ValueKey<String>('tag:${TodoTags.keyOf(tag)}'),
+          icon: FontAwesomeIcons.at,
+          label: tag,
+          tooltip: l10n.todoQuickParseDismiss,
+          onDismiss: () => onDismissTag(tag),
+        ),
+      );
     }
     final priority = parse.priority;
     if (priority != null && priority != TodoPriority.none) {

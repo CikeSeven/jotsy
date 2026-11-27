@@ -82,6 +82,8 @@ Widget buildTodosPageList({
   final heroCount = switch (view.smart) {
     TodoSmartView.completed => completed?.length ?? 0,
     final smart? => counts[smart] ?? 0,
+    null when view.tag != null =>
+      groups?.fold<int>(0, (int sum, TodoGroup g) => sum + g.rows.length) ?? 0,
     null => 0,
   };
   final inlineAdd = inlinePreset == null
@@ -211,10 +213,13 @@ Widget _emptyHint(AppLocalizations l10n, TodoView view) {
       l10n.todoEmptyCompleted,
       l10n.todoEmptyCompletedHint,
     ),
+    null when view.tag != null => (l10n.todoEmptyTag, l10n.todoEmptyTagHint),
     null => (l10n.todoEmptyList, l10n.todoEmptyListHint),
   };
   return EmptyHint(
-    icon: view.smart == null
+    icon: view.tag != null
+        ? FontAwesomeIcons.tag
+        : view.smart == null
         ? FontAwesomeIcons.listCheck
         : TodoLabels.smartViewIcon(view.smart!),
     message: message,

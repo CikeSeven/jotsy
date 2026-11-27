@@ -158,6 +158,15 @@ Future<void> dropTodosOnView(
     await todoMoveRowsToDay(context, ref, rows, ref.read(todoTodayProvider));
     return;
   }
+  if (target.tag case final tag?) {
+    await addTagToTodosWithUndo(
+      context,
+      database,
+      rows.map((TodoRow row) => row.todoId),
+      tag,
+    );
+    return;
+  }
   final listId = target.listId;
   if (listId == null && target.smart != TodoSmartView.inbox) return;
   var name = context.l10n.todoViewInbox;

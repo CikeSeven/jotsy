@@ -24,6 +24,23 @@ abstract final class TodoLabels {
         TodoSmartView.completed => l10n.todoViewCompleted,
       };
 
+  /// 视图的名称：智能视图为其名称，清单为清单名（在 [lists] 里找不到时为
+  /// [missing]），标签为标签名。
+  static String viewName(
+    AppLocalizations l10n,
+    TodoView view,
+    Iterable<TodoListRow> lists, {
+    required String missing,
+  }) {
+    if (view.tag case final tag?) return tag;
+    final listId = view.listId;
+    if (listId == null) return smartView(l10n, view.smart!);
+    for (final list in lists) {
+      if (list.listId == listId) return list.name;
+    }
+    return missing;
+  }
+
   static FaIconData smartViewIcon(TodoSmartView view) => switch (view) {
     TodoSmartView.today => FontAwesomeIcons.solidSun,
     TodoSmartView.planned => FontAwesomeIcons.solidCalendar,

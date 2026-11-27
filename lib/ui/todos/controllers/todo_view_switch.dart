@@ -38,13 +38,15 @@ class TodoViewSwitch {
   TodoView? get target => _target;
 
   /// 从 [from] 换到 [to] 的方向：在视图面板里往后为 +1、往前为 -1、同一个
-  /// 为 0。智能视图按 [kTodoSmartViews] 在前，清单按拖动顺序（[lists]）在后。
+  /// 为 0。智能视图按 [kTodoSmartViews] 在前，清单按拖动顺序（[lists]）在后，
+  /// 标签都在最后（标签之间为 0，只淡入淡出）。
   static int directionOf(TodoView from, TodoView to, List<TodoListRow> lists) =>
       (_orderOf(to, lists) - _orderOf(from, lists)).sign;
 
   static int _orderOf(TodoView view, List<TodoListRow> lists) {
     final smart = view.smart;
     if (smart != null) return kTodoSmartViews.indexOf(smart);
+    if (view.tag != null) return kTodoSmartViews.length + lists.length + 1;
     final index = lists.indexWhere((list) => list.listId == view.listId);
     return kTodoSmartViews.length + (index < 0 ? lists.length : index);
   }

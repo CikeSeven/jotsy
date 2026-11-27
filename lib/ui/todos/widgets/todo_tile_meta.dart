@@ -9,6 +9,7 @@ import '../../../core/database/app_database.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_list_style.dart';
 import 'todo_labels.dart';
+import 'todo_tag_chips.dart';
 
 /// 待办行标题下的一排元信息胶囊（`labelSmall` w600、高 20、10 圆角）。
 ///
@@ -16,8 +17,9 @@ import 'todo_labels.dart';
 /// 为 `primaryContainer`，其余与已完成的一律 `surfaceContainerHigh`；今天
 /// 还没到的时刻在一小时内改说“还有 25 分钟”，按整分刷新）、步骤进度“1/3”
 /// （给了 [onStepsTap] 时可点，带一个随 [stepsExpanded] 翻转的箭头）、所在
-/// 清单（6dp 强调色圆点 + 名称，只在跨清单的视图里给出 [list]），以及只画
-/// 图标的提醒、重复、关联日记。都没有时返回空列表，调用方不占行。
+/// 清单（6dp 强调色圆点 + 名称，只在跨清单的视图里给出 [list]）、待办标签
+/// （`@名称` 微胶囊，至多两颗再加“+N”，见 [TodoTagChips]），以及只画图标的
+/// 提醒、重复、关联日记。都没有时返回空列表，调用方不占行。
 List<Widget> buildTodoMetaPills(
   BuildContext context, {
   required TodoRow row,
@@ -116,6 +118,9 @@ List<Widget> buildTodoMetaPills(
       ),
     );
   }
+  pills.addAll(
+    TodoTagChips.forRow(context, TodoTags.ofMetadataText(row.metadata)),
+  );
   final icons = <FaIconData>[
     if (!done && decodeTodoReminders(row.reminders).isNotEmpty)
       FontAwesomeIcons.bell,

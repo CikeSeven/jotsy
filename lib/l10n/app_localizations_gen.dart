@@ -26348,6 +26348,132 @@ abstract class AppLocalizations {
   /// **'Status'**
   String get todoSearchFilterStatus;
 
+  /// To-do tags: detail pill, picker title, sidebar group header and search filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get todoFieldTags;
+
+  /// Hint of the field at the top of the to-do tag picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Find or create a tag'**
+  String get todoTagSearchHint;
+
+  /// To-do tag picker row that creates the typed tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Create “{name}”'**
+  String todoTagCreate(String name);
+
+  /// To-do tag picker: header of the recently used tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently used'**
+  String get todoTagRecent;
+
+  /// To-do tag picker when there are no tags yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Type @tag while adding a to-do, or create one above.'**
+  String get todoTagsEmptyHint;
+
+  /// To-do tag picker when the to-do already has the maximum number of tags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Up to 1 tag per to-do} other{Up to {count} tags per to-do}}'**
+  String todoTagLimitHint(int count);
+
+  /// Title of the to-do tag management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage tags'**
+  String get todoTagsManageTitle;
+
+  /// To-do tag management page when there are no tags.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags yet'**
+  String get todoTagsManageEmpty;
+
+  /// To-do tag management row subtitle: open and total to-dos with the tag.
+  ///
+  /// In en, this message translates to:
+  /// **'{open} open · {total} in all'**
+  String todoTagUsage(int open, int total);
+
+  /// Menu item / dialog title: rename a to-do tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename tag'**
+  String get todoTagRename;
+
+  /// Rename dialog note: using an existing name merges the two to-do tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Using an existing tag\'s name merges the two.'**
+  String get todoTagRenameHint;
+
+  /// Title of the confirm dialog for deleting a to-do tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String todoTagDeleteTitle(String name);
+
+  /// Body of the confirm dialog for deleting a to-do tag.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{It is removed from 1 to-do. The to-do stays.} other{It is removed from {count} to-dos. The to-dos stay.}}'**
+  String todoTagDeleteMessage(int count);
+
+  /// Snack bar after renaming a to-do tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Renamed to “{name}”'**
+  String todoTagRenamedNotice(String name);
+
+  /// Snack bar after renaming a to-do tag into an existing one.
+  ///
+  /// In en, this message translates to:
+  /// **'Merged into “{name}”'**
+  String todoTagMergedNotice(String name);
+
+  /// Snack bar after deleting a to-do tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted “{name}”'**
+  String todoTagDeletedNotice(String name);
+
+  /// Multi-select bar overflow item: add a tag to the selected to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tag'**
+  String get todoBatchAddTag;
+
+  /// Snack bar after adding a tag to several to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added “{name}” to 1 to-do} other{Added “{name}” to {count} to-dos}}'**
+  String todoBatchTaggedNotice(int count, String name);
+
+  /// Empty state of a to-do tag view.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing with this tag'**
+  String get todoEmptyTag;
+
+  /// Second line of the empty state of a to-do tag view.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos you add here get this tag.'**
+  String get todoEmptyTagHint;
+
+  /// Screen reader label of the '+N' chip after the first to-do tags on a row.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more tag} other{{count} more tags}}'**
+  String todoTagsMoreLabel(int count);
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

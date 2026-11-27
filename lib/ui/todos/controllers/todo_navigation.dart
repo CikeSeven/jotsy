@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../pages/todo_lists_page.dart';
 import '../pages/todo_search_page.dart';
 import '../pages/todo_settings_page.dart';
+import '../pages/todo_tags_page.dart';
 import '../sections/todo_detail_sheet.dart';
 
 /// 待办相关页面的统一导航入口（待办页、日历、日记预览页、通知点开共用）；
@@ -27,6 +28,15 @@ Future<void> openTodoListsManage(BuildContext context) {
   return Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
       builder: (BuildContext context) => const TodoListsPage(),
+    ),
+  );
+}
+
+/// 打开待办标签管理页（改名 / 合并、删除）。
+Future<void> openTodoTagsManage(BuildContext context) {
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) => const TodoTagsPage(),
     ),
   );
 }

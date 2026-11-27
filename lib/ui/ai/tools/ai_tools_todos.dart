@@ -44,7 +44,7 @@ class ListTodosTool extends AiTool {
       'List to-dos with their steps, reminders and repeat rule: open '
       '(default), completed or all. Optional filters: due date range '
       '(inclusive), keywords (title, note, steps), list name ("" = inbox), '
-      'priority.';
+      'priority, to-do tag (to-do tags are separate from diary tags).';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -57,6 +57,7 @@ class ListTodosTool extends AiTool {
       'query': AiStringSchema(),
       'list': AiStringSchema(allowEmpty: true),
       'priority': AiStringSchema(enumValues: aiTodoPriorities),
+      'tag': AiStringSchema(),
       'limit': AiIntegerSchema(minimum: 1, maximum: 200),
     },
   );
@@ -85,6 +86,10 @@ class ListTodosTool extends AiTool {
     final (byList, listId) = await _listFilter(database, args['list']);
     final priority = switch (args['priority']) {
       final String name => TodoPriority.values.byName(name),
+      _ => null,
+    };
+    final tag = switch (args['tag']) {
+      final String name => TodoTags.normalize(name),
       _ => null,
     };
     // 先按最窄的条件从库里取，其余条件在内存里叠加（关键词搜索不带日期
@@ -122,7 +127,9 @@ class ListTodosTool extends AiTool {
                 (status == 'open') == (row.completedAt == null)) &&
             dueInRange(row) &&
             (!byList || row.listId == listId) &&
-            (priority == null || TodoPriority.of(row.priority) == priority))
+            (priority == null || TodoPriority.of(row.priority) == priority) &&
+            (tag == null ||
+                TodoTags.contains(TodoTags.ofMetadataText(row.metadata), tag)))
           row,
     ];
     final lists = <String, String>{

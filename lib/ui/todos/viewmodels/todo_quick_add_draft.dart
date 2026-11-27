@@ -5,7 +5,7 @@ import 'todo_quick_parse.dart';
 /// 被手动值盖住了。生效的值一律“手动选的 > 识别出的 > 视图预填的”。
 ///
 /// - 输入：每次按键的识别结果（由面板按 [ignore] 解析）；
-/// - 输出：此刻生效的日期、时刻、清单、优先级、重复与提醒，以及要写库的
+/// - 输出：此刻生效的日期、时刻、清单、标签、优先级、重复与提醒，以及要写库的
 ///   [TodoInput]；
 /// - 无副作用（不写库、不弹面板），面板负责交互，测试可直接驱动。
 ///
@@ -13,8 +13,13 @@ import 'todo_quick_parse.dart';
 /// 加提醒 / 重复时把此刻生效的日期定下来（[adoptDue]）：之后再改标题里的
 /// 日期词不能让它们悄悄换了参照。
 class TodoQuickAddDraft {
-  TodoQuickAddDraft({this.listId, this.dueDate, TodoPriority? priority})
-    : priority = priority ?? TodoPriority.none;
+  TodoQuickAddDraft({
+    this.listId,
+    this.dueDate,
+    TodoPriority? priority,
+    List<String> tags = const <String>[],
+  }) : priority = priority ?? TodoPriority.none,
+       tags = TodoTags.normalizeAll(tags);
 
   String? listId;
   bool listPicked = false;
@@ -26,8 +31,20 @@ class TodoQuickAddDraft {
   List<TodoReminder> reminders = const <TodoReminder>[];
   TodoRepeatRule? repeat;
 
+  /// 视图预填与手动选的标签（与识别出的合在一起生效，见 [effTags]）。
+  List<String> tags;
+
   /// 点 × 去掉的识别种类（输入清空时复位）。
   final Set<TodoQuickTokenKind> ignored = <TodoQuickTokenKind>{};
+
+  /// 单个点掉的识别标签（[TodoTags.keyOf] 键，输入清空时复位）。
+  final Set<String> ignoredTags = <String>{};
+
+  /// 输入清空、或添加了一条之后：点掉的识别种类与标签都复位。
+  void resetIgnored() {
+    ignored.clear();
+    ignoredTags.clear();
+  }
 
   /// 解析时要忽略的种类：点掉的，加上被手动值盖住的。
   Set<TodoQuickTokenKind> get ignore => <TodoQuickTokenKind>{
@@ -45,6 +62,25 @@ class TodoQuickAddDraft {
   String? effList(TodoQuickParse p) => p.listId ?? listId;
   TodoPriority effPriority(TodoQuickParse p) => p.priority ?? priority;
   TodoRepeatRule? effRepeat(TodoQuickParse p) => repeat ?? p.repeatRule;
+
+  /// 手上的标签在前，识别出的接在后面（同名只算一个）。
+  List<String> effTags(TodoQuickParse p) =>
+      TodoTags.normalizeAll(<String>[...tags, ...p.tags]);
+
+  /// 在标签面板里选成了 [next]：识别出、但这次没留下的不再识别，留下的
+  /// 成为手上的值（之后删掉标题里的 `@标签` 也还在）。
+  void pickTags(List<String> next, TodoQuickParse p) {
+    for (final tag in p.tags) {
+      if (!TodoTags.contains(next, tag)) ignoredTags.add(TodoTags.keyOf(tag));
+    }
+    tags = TodoTags.normalizeAll(next);
+  }
+
+  /// 清除标签：手上的去掉，这一行也不再识别标签。
+  void clearTags() {
+    tags = const <String>[];
+    ignored.add(TodoQuickTokenKind.tag);
+  }
 
   List<TodoReminder> effReminders(TodoQuickParse p, int allDayMinute) {
     if (reminders.isNotEmpty) return reminders;
@@ -78,6 +114,7 @@ class TodoQuickAddDraft {
           : effReminders(p, allDayMinute),
       repeat: date == null ? null : effRepeat(p),
       linkedDiaryId: linkedDiaryId,
+      tags: effTags(p),
     );
   }
 

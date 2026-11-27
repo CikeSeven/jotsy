@@ -8,6 +8,7 @@ import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_groups.dart';
 import '../widgets/todo_sheet.dart';
+import '../widgets/todo_tag_nav.dart';
 import '../widgets/todo_view_switcher.dart';
 
 /// 视图面板的结果：选了一个视图，或要新建 / 管理清单（由页面接着处理，
@@ -30,9 +31,14 @@ final class TodoViewManageLists extends TodoViewSheetResult {
   const TodoViewManageLists();
 }
 
+final class TodoViewManageTags extends TodoViewSheetResult {
+  const TodoViewManageTags();
+}
+
 /// 窄窗口点页头“今天 ▾”弹出的视图面板（经 [showTodoSheet]，按内容高度
 /// 展开，清单多时在面板内滚动）：3 列智能视图方块 + “我的清单”（各带进度
-/// 条）+ 新建清单。面板内容自己订阅数据，开着时数字照常更新。
+/// 条）+ 新建清单 + 待办标签（有标签时）。面板内容自己订阅数据，开着时数字
+/// 照常更新。
 Future<TodoViewSheetResult?> showTodoViewSheet(
   BuildContext context, {
   required TodoView current,
@@ -57,6 +63,7 @@ class _TodoViewSheet extends ConsumerWidget {
         ref.watch(todoListProgressProvider).value ??
         const <String?, TodoListProgress>{};
     final counts = todoSmartViewCounts(open, ref.watch(todoTodayProvider));
+    final tags = ref.watch(todoTagsProvider).value ?? const <TodoTagUsage>[];
     void pop(TodoViewSheetResult result) => Navigator.of(context).pop(result);
     return TodoSheetBody(
       title: l10n.todoViewSheetTitle,
@@ -84,6 +91,13 @@ class _TodoViewSheet extends ConsumerWidget {
             onTap: () => pop(TodoViewPicked(TodoView.list(list.listId))),
           ),
         TodoNewListRow(onTap: () => pop(const TodoViewCreateList())),
+        TodoTagNavSection(
+          tags: tags,
+          view: current,
+          headerPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+          onSelected: (TodoView view) => pop(TodoViewPicked(view)),
+          onManage: () => pop(const TodoViewManageTags()),
+        ),
       ],
     );
   }

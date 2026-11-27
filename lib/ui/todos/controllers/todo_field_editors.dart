@@ -12,6 +12,7 @@ import '../widgets/todo_due_sheet.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reminder_sheet.dart';
 import '../widgets/todo_repeat_sheet.dart';
+import '../widgets/todo_tag_picker_sheet.dart';
 import 'todo_reminder_permission.dart';
 
 /// 详情（底部面板与宽窗口详情栏共用）里改一项写一项的流程：打开对应的
@@ -121,6 +122,17 @@ class TodoFieldEditors {
     await database.setTodoListId(row.todoId, choice.listId);
   }
 
+  /// 选标签：面板里每点一下就写一次（只改 `metadata.tags`）。
+  Future<void> pickTags() {
+    final database = _database;
+    return showTodoTagPickerSheet(
+      context,
+      selected: TodoTags.ofMetadataText(row.metadata),
+      onChanged: (List<String> next) =>
+          unawaited(database.setTodoTags(row.todoId, next)),
+    );
+  }
+
   Future<void> setPriority(TodoPriority priority) =>
       _database.setTodoPriority(row.todoId, priority);
 
@@ -153,6 +165,7 @@ class TodoFieldEditors {
             step.copyWith(done: false),
         ],
         linkedDiaryId: row.linkedDiaryId,
+        tags: TodoTags.ofMetadataText(row.metadata),
       ),
     );
   }

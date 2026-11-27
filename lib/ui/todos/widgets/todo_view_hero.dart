@@ -81,11 +81,11 @@ class TodoViewHero extends StatelessWidget {
     } else {
       final strip = footer;
       child = strip == null
-          ? _SmartHero(view: smart!, count: count)
+          ? _SmartHero(view: smart, tag: view.tag, count: count)
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                _SmartHero(view: smart!, count: count),
+                _SmartHero(view: smart, tag: view.tag, count: count),
                 const SizedBox(height: AppSpacing.m),
                 strip,
               ],
@@ -193,10 +193,14 @@ class _ListHero extends StatelessWidget {
   }
 }
 
+/// 智能视图与标签视图的概览：图标方块 + 名称 + 一句条数（数字逐位滚动）。
+/// [view] 为 null 时是标签视图（`tag` 图标、`tertiaryContainer`，名称为
+/// [tag]）。
 class _SmartHero extends StatelessWidget {
-  const _SmartHero({required this.view, required this.count});
+  const _SmartHero({required this.view, required this.count, this.tag});
 
-  final TodoSmartView view;
+  final TodoSmartView? view;
+  final String? tag;
   final int count;
 
   @override
@@ -204,14 +208,16 @@ class _SmartHero extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final (Color container, Color onContainer) = TodoLabels.smartViewColors(
-      scheme,
-      view,
-    );
+    final view = this.view;
+    final (Color container, Color onContainer) = view == null
+        ? (scheme.tertiaryContainer, scheme.onTertiaryContainer)
+        : TodoLabels.smartViewColors(scheme, view);
     return Row(
       children: <Widget>[
         TodoIconBlock(
-          icon: TodoLabels.smartViewIcon(view),
+          icon: view == null
+              ? FontAwesomeIcons.tag
+              : TodoLabels.smartViewIcon(view),
           background: container,
           foreground: onContainer,
         ),
@@ -221,7 +227,7 @@ class _SmartHero extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                TodoLabels.smartView(l10n, view),
+                view == null ? tag ?? '' : TodoLabels.smartView(l10n, view),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleLarge?.copyWith(

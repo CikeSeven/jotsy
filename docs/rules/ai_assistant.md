@@ -28,7 +28,7 @@
 - 必须：AI 能改的设置只登记在 `aiSettingSpecs`，经该设置自己的保存函数只改这一项；新增用户可见设置须评估登记。
 - 必须：改动类工具一律可撤销（`ai_write_tools_test.dart` 往返兜底）；撤销前日记又被改过时先问再强制。
 - 必须：删除类执行前在对话里确认；“允许 AI 改动数据”关掉时改动类工具不出现；有编辑页登记时改动类工具不执行。
-- 必须：写日记只经 `aiWritableDiary`，批量有一条不合规整批不做；只动手动、非私密的日记本；待办写法同待办页（见 `todos.md`）。
+- 必须：写日记只经 `aiWritableDiary`，批量有一条不合规整批不做；只动手动、非私密的日记本；待办写法同待办页（见 `todos.md`）；待办工具的 `tags` / `tag` 只指待办标签，工具说明里写明与日记标签无关，禁止经日记标签工具读写待办标签。
 - 必须：模板工具正文只经模板 Markdown 进出，禁止让模型写块文档 JSON；模板白名单扩充时在 `ai_template_markdown_test.dart` 覆盖往返。
 - 必须：智能体读写日记正文只经正文 Markdown（`ai_diary_markdown.dart` 写出、`aiEditDiaryMarkdown` 改写；`read_diaries`、对话固定的那篇、`create_diary`、`edit_diary` 同一写法）：改正文只重读改到的行、其余块原样保留，写前全部校验、有一处不对整次不写，媒体只按标记保留 / 删除 / 挪动；新增块类型须在写法里有表达或标记，并在 `ai_diary_markdown_edit_test.dart` 覆盖。撤下的工具在 `ai_tool_registry.dart` 的 `_retiredTools` 交给接手的工具，旧对话的卡片与撤销照常。
 - 禁止：给智能体彻底删除、清空回收站、备份 / 恢复 / 导入 / 导出 / 分享、网盘、同步配对、应用锁、私密设置、AI 自身设置、存储清理的工具，只给 `open_page`。

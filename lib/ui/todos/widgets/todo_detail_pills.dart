@@ -44,6 +44,7 @@ class TodoDetailPills extends ConsumerWidget {
     final reminders = decodeTodoReminders(row.reminders);
     final repeat = decodeTodoRepeat(row.repeat);
     final priority = TodoPriority.of(row.priority);
+    final tags = TodoTags.ofMetadataText(row.metadata);
     TodoListRow? list;
     for (final item in lists) {
       if (item.listId == row.listId) list = item;
@@ -134,6 +135,15 @@ class TodoDetailPills extends ConsumerWidget {
           label: list?.name ?? l10n.todoViewInbox,
           set: true,
           onTap: () => unawaited(editors.pickList()),
+        ),
+        TodoFieldPill(
+          icon: FontAwesomeIcons.tag,
+          iconColor: tags.isEmpty ? null : scheme.tertiary,
+          label: tags.isEmpty
+              ? l10n.todoFieldTags
+              : tags.map((String tag) => '@$tag').join(' '),
+          set: tags.isNotEmpty,
+          onTap: () => unawaited(editors.pickTags()),
         ),
         TodoFieldPill(
           icon: FontAwesomeIcons.bookOpen,

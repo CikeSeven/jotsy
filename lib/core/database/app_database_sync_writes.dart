@@ -252,6 +252,20 @@ mixin _AppDatabaseSyncWrites
   Future<void> syncDeleteTodo(String todoId) =>
       (delete(todos)..where((t) => t.todoId.equals(todoId))).go();
 
+  /// 专注记录不可变，正常只会新增；同一条已在时照原值覆盖（坏数据修复）。
+  Future<void> syncWriteTodoFocus(TodoFocusSessionsCompanion row) async {
+    final count = await (update(
+      todoFocusSessions,
+    )..where((t) => t.sessionId.equals(row.sessionId.value))).write(row);
+    if (count == 0) await into(todoFocusSessions).insert(row);
+  }
+
+  /// 应用里没有删除专注记录的入口，只在对方的墓碑覆盖时（例如对方覆盖恢复
+  /// 后又同步过）才会删。
+  Future<void> syncDeleteTodoFocus(String sessionId) => (delete(
+    todoFocusSessions,
+  )..where((t) => t.sessionId.equals(sessionId))).go();
+
   Future<void> syncWriteDayMood(DayMoodsCompanion row) =>
       into(dayMoods).insertOnConflictUpdate(row);
 

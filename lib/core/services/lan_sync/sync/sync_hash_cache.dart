@@ -210,6 +210,18 @@ String syncTodoListFingerprint(SyncRawTodoList row) =>
           ..integer(row.updatedAt))
         .finish();
 
+String syncTodoFocusFingerprint(SyncRawTodoFocus row) =>
+    (SyncFingerprint()
+          ..string(row.sessionId)
+          ..string(row.todoId)
+          ..integer(row.startedAt)
+          ..integer(row.endedAt)
+          ..integer(row.plannedSeconds)
+          ..integer(row.focusedSeconds)
+          ..string(row.outcome)
+          ..string(row.metadata))
+        .finish();
+
 String syncTodoFingerprint(SyncRawTodo row) =>
     (SyncFingerprint()
           ..string(row.todoId)

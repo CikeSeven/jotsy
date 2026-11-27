@@ -4,6 +4,7 @@ import 'sync_canonical_misc.dart';
 import 'sync_canonical_notebook.dart';
 import 'sync_canonical_settings.dart';
 import 'sync_canonical_todo.dart';
+import 'sync_canonical_todo_focus.dart';
 import 'sync_hash_cache.dart';
 import 'sync_model.dart';
 import 'sync_state_model.dart';
@@ -275,6 +276,14 @@ class _SyncRowIndex {
         SyncKey(SyncEntity.todo, todo.todoId),
         fingerprint: () => syncTodoFingerprint(todo),
         cached: () => syncTodoRecord(todo).facets,
+        fresh: _none,
+      );
+    }
+    for (final focus in rows.todoFocusSessions) {
+      yield _SyncSource(
+        SyncKey(SyncEntity.todoFocus, focus.sessionId),
+        fingerprint: () => syncTodoFocusFingerprint(focus),
+        cached: () => syncTodoFocusRecord(focus).facets,
         fresh: _none,
       );
     }

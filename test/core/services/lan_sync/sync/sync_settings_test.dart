@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/backup_settings.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_canonical_settings.dart';
 import 'package:node_diary/core/services/lan_sync/sync/sync_manifest_builder.dart';
@@ -196,6 +197,46 @@ void main() {
         'ai': false,
       },
     });
+  });
+
+  test('专注计时开关：默认时不写进规范值，关掉才写；读回时没有即默认', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    final rows = await a.db.readSyncRows();
+    final defaults = settingsRecord(rows, capture(settings));
+    expect(
+      (defaults.facets['appFeaturesRaw']! as Map)['value'],
+      isNot(contains('todoFocus')),
+      reason: '已有设备的开关分面不变，历史哈希仍有效',
+    );
+    await settings.setAppFeaturesRaw(
+      jsonEncode(<String, Object?>{'todos': true, 'todoFocus': false}),
+    );
+    final off = settingsRecord(rows, capture(settings));
+    expect(
+      (off.facets['appFeaturesRaw']! as Map)['value'],
+      containsPair('todoFocus', false),
+    );
+    // 对方关掉 → 本机跟着关；对方开回默认（分面里没有）→ 本机跟着开。
+    final localOn = AppFeatures.defaults.copyWith(todos: true).encode();
+    final turnedOff = syncSettingsRestoreNode(
+      off,
+      facets: const <String>['appFeaturesRaw'],
+      dataRoot: '/data',
+      localAppFeaturesRaw: localOn,
+    );
+    final offRaw = turnedOff['appFeaturesRaw']! as String;
+    expect(AppFeatures.decode(offRaw).todoFocus, isFalse);
+    final turnedOn = syncSettingsRestoreNode(
+      defaults,
+      facets: const <String>['appFeaturesRaw'],
+      dataRoot: '/data',
+      localAppFeaturesRaw: offRaw,
+    );
+    expect(
+      AppFeatures.decode(turnedOn['appFeaturesRaw'] as String?).todoFocus,
+      isTrue,
+    );
   });
 
   test('心情符号在 prefs（不开同步设置也同步）：默认为 null，改过为 10 个符号', () async {

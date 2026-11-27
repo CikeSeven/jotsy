@@ -285,6 +285,31 @@ class SyncRawTodo {
   final int updatedAt;
 }
 
+/// `todo_focus_sessions` 表的一行。时间为 Unix 秒。
+class SyncRawTodoFocus {
+  const SyncRawTodoFocus({
+    required this.localId,
+    required this.sessionId,
+    required this.todoId,
+    required this.startedAt,
+    required this.endedAt,
+    required this.plannedSeconds,
+    required this.focusedSeconds,
+    required this.outcome,
+    required this.metadata,
+  });
+
+  final int localId;
+  final String sessionId;
+  final String? todoId;
+  final int startedAt;
+  final int endedAt;
+  final int plannedSeconds;
+  final int focusedSeconds;
+  final String outcome;
+  final String metadata;
+}
+
 /// 同一个事务里读出的全部原始行（一致的快照）。
 class SyncRawSnapshot {
   const SyncRawSnapshot({
@@ -299,6 +324,7 @@ class SyncRawSnapshot {
     required this.dayMoods,
     required this.todoLists,
     required this.todos,
+    this.todoFocusSessions = const <SyncRawTodoFocus>[],
   });
 
   final List<SyncRawDiary> diaries;
@@ -312,4 +338,5 @@ class SyncRawSnapshot {
   final List<SyncRawDayMood> dayMoods;
   final List<SyncRawTodoList> todoLists;
   final List<SyncRawTodo> todos;
+  final List<SyncRawTodoFocus> todoFocusSessions;
 }

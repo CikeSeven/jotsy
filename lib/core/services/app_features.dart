@@ -1,7 +1,7 @@
 // 功能管理开关（设置 → 功能管理）。
 //
 // 职责：描述用户可整体关闭的功能——日历 Tab、待办 Tab、探索 Tab、日记本、
-// 纪念日、日记模板、时间胶囊、侧滑归档、留言、AI 助手、思维导图——是否开启；待办、
+// 纪念日、日记模板、时间胶囊、侧滑归档、留言、AI 助手、思维导图、专注计时——是否开启；待办、
 // 纪念日、留言与 AI 助手默认关闭（让初始界面简洁，AI 还需要用户自己的
 // 接口），其余默认开启。关闭只是在各处隐藏入口与展示，数据一律保留，重新开启即恢复原样。
 //
@@ -27,6 +27,7 @@ class AppFeatures {
     this.comments = false,
     this.ai = false,
     this.mindMaps = true,
+    this.todoFocus = true,
   });
 
   /// 默认开关（待办、纪念日、留言与 AI 助手关闭，其余开启）：从未设置、读不出或恢复默认时都是它。
@@ -74,6 +75,13 @@ class AppFeatures {
   /// 已有的导图日记与正文里的导图照常显示、照常编辑（它们就是日记内容）。
   final bool mindMaps;
 
+  /// 专注计时的用户开关值（依附待办）；界面判断是否可用请读
+  /// [todoFocusEnabled]。关闭只隐藏专注入口与累计时长，专注记录照常保留。
+  final bool todoFocus;
+
+  /// 专注计时依附待办：待办关闭时一并关闭（与纪念日依附日历同理）。
+  bool get todoFocusEnabled => todos && todoFocus;
+
   /// 纪念日依附日历（列表只能从日历顶栏进入），日历关闭时一并关闭；界面一律
   /// 读这个 getter 判断纪念日是否可用，不直接读 [anniversaries]（它只是用户
   /// 自己的开关值，日历重新开启时恢复）。
@@ -90,6 +98,7 @@ class AppFeatures {
   static const _keyComments = 'comments';
   static const _keyAi = 'ai';
   static const _keyMindMaps = 'mindMaps';
+  static const _keyTodoFocus = 'todoFocus';
 
   /// 解析设置原文。空值、坏 JSON 或不是对象时回到 [defaults]；每个字段
   /// 单独读取，类型不对只让这一项回到默认，认不出的键忽略——这样新旧版本
@@ -121,6 +130,7 @@ class AppFeatures {
       comments: read(_keyComments, defaults.comments),
       ai: read(_keyAi, defaults.ai),
       mindMaps: read(_keyMindMaps, defaults.mindMaps),
+      todoFocus: read(_keyTodoFocus, defaults.todoFocus),
     );
   }
 
@@ -139,6 +149,7 @@ class AppFeatures {
       _keyComments: comments,
       _keyAi: ai,
       _keyMindMaps: mindMaps,
+      _keyTodoFocus: todoFocus,
     });
   }
 
@@ -154,6 +165,7 @@ class AppFeatures {
     bool? comments,
     bool? ai,
     bool? mindMaps,
+    bool? todoFocus,
   }) {
     return AppFeatures(
       calendar: calendar ?? this.calendar,
@@ -167,6 +179,7 @@ class AppFeatures {
       comments: comments ?? this.comments,
       ai: ai ?? this.ai,
       mindMaps: mindMaps ?? this.mindMaps,
+      todoFocus: todoFocus ?? this.todoFocus,
     );
   }
 
@@ -183,7 +196,8 @@ class AppFeatures {
       other.swipeArchive == swipeArchive &&
       other.comments == comments &&
       other.ai == ai &&
-      other.mindMaps == mindMaps;
+      other.mindMaps == mindMaps &&
+      other.todoFocus == todoFocus;
 
   @override
   int get hashCode => Object.hash(
@@ -198,6 +212,7 @@ class AppFeatures {
     comments,
     ai,
     mindMaps,
+    todoFocus,
   );
 
   @override
@@ -206,5 +221,5 @@ class AppFeatures {
       'notebooks: $notebooks, anniversaries: $anniversaries, '
       'templates: $templates, timeCapsules: $timeCapsules, '
       'swipeArchive: $swipeArchive, comments: $comments, ai: $ai, '
-      'mindMaps: $mindMaps)';
+      'mindMaps: $mindMaps, todoFocus: $todoFocus)';
 }

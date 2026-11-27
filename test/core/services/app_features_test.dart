@@ -54,6 +54,7 @@ void main() {
         'comments': false,
         'ai': false,
         'mindMaps': true,
+        'todoFocus': true,
       });
       expect(AppFeatures.decode(raw), AppFeatures.defaults);
     });
@@ -68,6 +69,7 @@ void main() {
         comments: true,
         ai: true,
         mindMaps: false,
+        todoFocus: false,
       );
       final raw = features.encode();
 
@@ -83,8 +85,21 @@ void main() {
         'comments',
         'ai',
         'mindMaps',
+        'todoFocus',
       ]);
       expect(AppFeatures.decode(raw), features);
+    });
+  });
+
+  group('AppFeatures.todoFocusEnabled', () {
+    test('follows the to-do tab and its own toggle', () {
+      expect(AppFeatures.defaults.todoFocus, isTrue);
+      expect(AppFeatures.defaults.todoFocusEnabled, isFalse, reason: '待办默认关');
+      expect(const AppFeatures(todos: true).todoFocusEnabled, isTrue);
+      expect(
+        const AppFeatures(todos: true, todoFocus: false).todoFocusEnabled,
+        isFalse,
+      );
     });
   });
 

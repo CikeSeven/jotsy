@@ -126,6 +126,10 @@ _PreparedWrite _prepareWrite(
       if (record == null) return op((db) => db.syncDeleteTodo(id));
       final columns = SyncTodoColumns.fromRecord(record);
       return op((db) => db.syncWriteTodo(columns.toCompanion()));
+    case SyncEntity.todoFocus:
+      if (record == null) return op((db) => db.syncDeleteTodoFocus(id));
+      final columns = SyncTodoFocusColumns.fromRecord(record);
+      return op((db) => db.syncWriteTodoFocus(columns.toCompanion()));
     case SyncEntity.settings:
     case SyncEntity.prefs:
       // 设置不在数据库里：事务里只核对前置条件，提交之后再应用（sync_apply

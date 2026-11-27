@@ -90,6 +90,7 @@ int simApply(SimReplica replica, SyncSidePlan plan) {
             : _putTodo(replica, record);
       case SyncEntity.template ||
           SyncEntity.dayMood ||
+          SyncEntity.todoFocus ||
           SyncEntity.settings ||
           SyncEntity.prefs:
         throw UnsupportedError('模拟里没有 ${write.key.entity}');

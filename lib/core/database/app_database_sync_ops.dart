@@ -13,7 +13,7 @@ part of 'app_database.dart';
 /// [DateTime] 与数据类的开销。日记不读 `content_text`（由正文推出，不参与哈希）。
 mixin _AppDatabaseSyncOps on _$AppDatabase {
   /// 在一个事务里读出日记、标签、标签关联、日记本、成员关系、留言、模板、
-  /// 纪念日、这天的心情、待办清单与待办的原始行。草稿不同步，不读。
+  /// 纪念日、这天的心情、待办清单、待办与专注记录的原始行。草稿不同步，不读。
   Future<SyncRawSnapshot> readSyncRows() {
     return transaction(() async {
       final diaryRows = await customSelect(
@@ -60,6 +60,11 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
         'due_minute, reminders, "repeat", steps, completed_at, snoozed_until, '
         'linked_diary_id, sort_order, metadata, created_at, updated_at '
         'FROM todos',
+      ).get();
+      final focusRows = await customSelect(
+        'SELECT id, session_id, todo_id, started_at, ended_at, '
+        'planned_seconds, focused_seconds, outcome, metadata '
+        'FROM todo_focus_sessions',
       ).get();
 
       return SyncRawSnapshot(
@@ -213,6 +218,20 @@ mixin _AppDatabaseSyncOps on _$AppDatabase {
               metadata: row.data['metadata'] as String,
               createdAt: _syncInt(row.data['created_at']),
               updatedAt: _syncInt(row.data['updated_at']),
+            ),
+        ],
+        todoFocusSessions: <SyncRawTodoFocus>[
+          for (final row in focusRows)
+            SyncRawTodoFocus(
+              localId: _syncInt(row.data['id']),
+              sessionId: row.data['session_id'] as String,
+              todoId: row.data['todo_id'] as String?,
+              startedAt: _syncInt(row.data['started_at']),
+              endedAt: _syncInt(row.data['ended_at']),
+              plannedSeconds: _syncInt(row.data['planned_seconds']),
+              focusedSeconds: _syncInt(row.data['focused_seconds']),
+              outcome: row.data['outcome'] as String,
+              metadata: row.data['metadata'] as String,
             ),
         ],
       );

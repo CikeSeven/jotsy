@@ -86,4 +86,71 @@ extension _TodosPageViews on _TodosPageState {
       unawaited(openTodoDetail(context, row.todoId));
     }
   }
+
+  /// 桌面：页面的键盘焦点节点接住方向键等（见 [TodoKeyboardActions]）；点到
+  /// 列表里任何地方先把焦点交给它（点进输入框时随后由输入框接过去）。
+  Widget _withKeyboard(Widget child) {
+    final callbacks = buildTodoPageCallbacks(
+      context: context,
+      ref: ref,
+      selection: _selection,
+      queue: _queue,
+      reorder: _reorder,
+      undo: _completionUndo,
+      openDetail: _openDetail,
+      onToggleSteps: (_) {},
+      visibleRows: () => _visibleRows,
+    );
+    final actions = TodoKeyboardActions(
+      move: (int delta) {
+        _cursor.move(_visibleRows, delta);
+        // 宽窗口详情栏开着时跟着焦点行换。
+        final id = _cursor.id;
+        if (_threePane && _detailId != null && id != null) {
+          _update(() => _detailId = id);
+        }
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _cursor.reveal(context, delta),
+        );
+      },
+      toggle: () => _onCursor(callbacks.onToggle),
+      open: () => _onCursor(_openDetail),
+      delete: () => _onCursor(callbacks.onDelete),
+      reschedule: () => _onCursor(callbacks.onReschedule),
+      selectView: _select,
+      escape: () {
+        if (_selection.active) {
+          _selection.clear();
+        } else if (_threePane && _detailId != null) {
+          _update(() => _detailId = null);
+        } else if (_cursor.id != null) {
+          _cursor.clear();
+        } else {
+          return false;
+        }
+        return true;
+      },
+    );
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) {
+        if (!_keys.hasFocus) _keys.requestFocus();
+      },
+      child: Focus(
+        focusNode: _keys,
+        includeSemantics: false,
+        onKeyEvent: (FocusNode node, KeyEvent event) =>
+            // 只在页面自己拿着焦点时处理：输入框里的按键归输入框。
+            node.hasPrimaryFocus
+            ? actions.handle(event)
+            : KeyEventResult.ignored,
+        child: child,
+      ),
+    );
+  }
+
+  void _onCursor(ValueChanged<TodoRow> action) {
+    final row = _cursor.rowIn(_visibleRows);
+    if (row != null) action(row);
+  }
 }

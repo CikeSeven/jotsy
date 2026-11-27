@@ -26324,6 +26324,30 @@ abstract class AppLocalizations {
   /// **'Open to-dos'**
   String get exploreTodosOpen;
 
+  /// To-do search filter: only unfinished to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get todoSearchFilterOpen;
+
+  /// To-do search filter chip: only high priority.
+  ///
+  /// In en, this message translates to:
+  /// **'High priority'**
+  String get todoSearchFilterHigh;
+
+  /// To-do search filter chip: only to-dos with a due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Has date'**
+  String get todoSearchFilterDated;
+
+  /// Screen reader label of the status choice in to-do search.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get todoSearchFilterStatus;
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

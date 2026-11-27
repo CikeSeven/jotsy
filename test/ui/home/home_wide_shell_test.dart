@@ -14,6 +14,7 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/todos/pages/todo_search_page.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style_enums.dart';
@@ -37,6 +38,7 @@ Future<void> _pumpHome(
   Size size = _desktop,
   int diaryCount = 0,
   String? homeBarRaw,
+  String? appFeaturesRaw,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -45,6 +47,7 @@ Future<void> _pumpHome(
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.diary_layout_mode': 'list',
     'app.settings.home_bar_style': ?homeBarRaw,
+    'app.settings.app_features': ?appFeaturesRaw,
   });
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -410,6 +413,17 @@ void main() {
     await _pressShortcut(tester, LogicalKeyboardKey.digit3);
     await tester.pumpAndSettle();
     expect(_homePage(tester), 2);
+    await _unmount(tester);
+  });
+
+  testWidgets('Ctrl+F on the to-do tab opens to-do search', (tester) async {
+    await _pumpHome(tester, appFeaturesRaw: '{"todos":true}');
+    await tester.tap(_railItem(_l10n(tester).navTodos));
+    await tester.pumpAndSettle();
+    await _pressShortcut(tester, LogicalKeyboardKey.keyF);
+    await tester.pumpAndSettle();
+    expect(find.byType(TodoSearchPage), findsOneWidget);
+    expect(find.byType(DiarySearchPage), findsNothing);
     await _unmount(tester);
   });
 

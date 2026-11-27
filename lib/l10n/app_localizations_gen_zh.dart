@@ -14662,6 +14662,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exploreTodosOpen => '打开待办';
 
   @override
+  String get todoSearchFilterOpen => '未完成';
+
+  @override
+  String get todoSearchFilterHigh => '高优先级';
+
+  @override
+  String get todoSearchFilterDated => '有日期';
+
+  @override
+  String get todoSearchFilterStatus => '状态';
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

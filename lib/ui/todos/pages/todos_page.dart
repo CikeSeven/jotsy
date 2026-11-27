@@ -17,6 +17,7 @@ import '../controllers/todo_actions.dart';
 import '../controllers/todo_appearance_tracker.dart';
 import '../controllers/todo_completion_queue.dart';
 import '../controllers/todo_completion_undo.dart';
+import '../controllers/todo_keyboard.dart';
 import '../controllers/todo_list_actions.dart';
 import '../controllers/todo_navigation.dart';
 import '../controllers/todo_page_rows.dart';
@@ -133,6 +134,18 @@ class _TodosPageState extends ConsumerState<TodosPage>
   int _titleDirection = 0;
   final TodoListModelCache _model = TodoListModelCache();
 
+  /// 桌面的键盘焦点行与它的焦点节点（见 [TodoKeyboardCursor]）。
+  late final TodoKeyboardCursor _cursor = TodoKeyboardCursor(
+    onChanged: _rebuild,
+  );
+  final FocusNode _keys = FocusNode(
+    debugLabel: 'todos_keyboard',
+    skipTraversal: true,
+  );
+
+  /// 当前列表里的行（按显示顺序），键盘与 Shift 连选用。
+  List<TodoRow> _visibleRows = const <TodoRow>[];
+
   /// 回到前台时校正“今天”：零点的计时器在后台可能被系统推迟或冻结。
   late final AppLifecycleListener _lifecycle;
 
@@ -140,6 +153,13 @@ class _TodosPageState extends ConsumerState<TodosPage>
   void initState() {
     super.initState();
     widget.onCreateActionChanged?.call(_create);
+    if (AppPlatform.isDesktop) {
+      // 打开待办 Tab 即可用方向键：页面的键盘焦点节点先拿到焦点（首页的
+      // 快捷键在外层，按键照样冒泡过去）。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _keys.requestFocus();
+      });
+    }
     _lifecycle = AppLifecycleListener(
       onResume: () => ref.read(todoTodayProvider.notifier).refresh(),
     );
@@ -159,6 +179,7 @@ class _TodosPageState extends ConsumerState<TodosPage>
     _reorder.dispose();
     _queue.dispose();
     _lifecycle.dispose();
+    _keys.dispose();
     _viewSwitch.dispose();
     _makeRoom.dispose();
     super.dispose();
@@ -222,6 +243,7 @@ class _TodosPageState extends ConsumerState<TodosPage>
       for (final group in groups ?? const <TodoGroup>[]) ...group.rows,
     ];
     _selection.retain(visibleRows);
+    _visibleRows = visibleRows;
 
     Widget list(double width, {required bool wide}) => buildTodosPageList(
       context: context,
@@ -251,7 +273,8 @@ class _TodosPageState extends ConsumerState<TodosPage>
         selected: _selection.ids,
         leaving: _queue.leaving.toSet(),
         appearing: _appearance.appearing,
-        highlightedId: _threePane ? _detailId : null,
+        highlightedId: _cursor.id ?? (_threePane ? _detailId : null),
+        cursorKey: _cursor.id == null ? null : _cursor.rowKey,
         expandedSteps: _expandedSteps,
         swipeLeft: settings.swipeLeft,
       ),
@@ -263,6 +286,7 @@ class _TodosPageState extends ConsumerState<TodosPage>
         reorder: _reorder,
         undo: _completionUndo,
         openDetail: _openDetail,
+        visibleRows: () => _visibleRows,
         onToggleSteps: (TodoRow row) => setState(
           () =>
               _expandedSteps.remove(row.todoId) ||
@@ -352,7 +376,7 @@ class _TodosPageState extends ConsumerState<TodosPage>
     return WidthLayoutBuilder(
       builder: (BuildContext context, double fullWidth) {
         final width = fullWidth - MediaQuery.paddingOf(context).horizontal;
-        return TodosPageFrame(
+        final frame = TodosPageFrame(
           selecting: selecting,
           onExitSelection: _selection.clear,
           bottomInset: bottomInset,
@@ -392,6 +416,7 @@ class _TodosPageState extends ConsumerState<TodosPage>
                 )
               : null,
         );
+        return AppPlatform.isDesktop ? _withKeyboard(frame) : frame;
       },
     );
   }

@@ -964,6 +964,26 @@ void main() {
     });
 
     test(
+      'change_settings turns the daily digest on, sets its time and off',
+      () async {
+        TodoSettings todos() =>
+            TodoSettings.decode(settings.todoSettingsRawNotifier.value);
+
+        await run('change_settings', {'todo_daily_digest': true});
+        expect(todos().digestMinute, TodoSettings.defaultDigestMinute);
+
+        await run('change_settings', {'todo_daily_digest_time': '07:30'});
+        expect(todos().digestMinute, 7 * 60 + 30);
+
+        await run('change_settings', {'todo_daily_digest': true});
+        expect(todos().digestMinute, 7 * 60 + 30, reason: '已开着时保留时间');
+
+        await run('change_settings', {'todo_daily_digest': false});
+        expect(todos().digestMinute, isNull);
+      },
+    );
+
+    test(
       'features toggle and undo; notebooks with private ones stay on',
       () async {
         final toggled = await run('set_feature_enabled', {

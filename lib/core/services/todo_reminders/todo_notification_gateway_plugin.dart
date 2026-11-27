@@ -68,19 +68,19 @@ Future<bool> _invokeSettingsMethod(
 }
 
 /// 一条待办通知在各平台上的外观：渠道、优先级、锁屏可见性与两个按钮。
-/// iOS / 桌面排提醒与后台排“稍后提醒”共用，保证外观一致。
+/// iOS / 桌面排提醒与后台排“稍后提醒”共用，保证外观一致。每日摘要不对应
+/// 某条待办，不带按钮（[actions] 为 false）。
 NotificationDetails todoNotificationDetails({
   required TodoNotificationTexts texts,
   required int snoozeMinutes,
   required bool hideOnLockScreen,
+  bool actions = true,
 }) {
-  final actions = <AndroidNotificationAction>[
-    AndroidNotificationAction(kTodoCompleteActionId, texts.complete),
-    AndroidNotificationAction(
-      todoNotificationActionId(snoozeMinutes),
-      texts.snooze,
-    ),
-  ];
+  final darwin = actions
+      ? const DarwinNotificationDetails(
+          categoryIdentifier: kTodoDarwinCategoryId,
+        )
+      : const DarwinNotificationDetails();
   return NotificationDetails(
     android: AndroidNotificationDetails(
       kTodoNotificationChannelId,
@@ -93,36 +93,44 @@ NotificationDetails todoNotificationDetails({
       visibility: hideOnLockScreen
           ? NotificationVisibility.private
           : NotificationVisibility.public,
-      actions: actions,
+      actions: <AndroidNotificationAction>[
+        if (actions) ...<AndroidNotificationAction>[
+          AndroidNotificationAction(kTodoCompleteActionId, texts.complete),
+          AndroidNotificationAction(
+            todoNotificationActionId(snoozeMinutes),
+            texts.snooze,
+          ),
+        ],
+      ],
     ),
-    iOS: const DarwinNotificationDetails(
-      categoryIdentifier: kTodoDarwinCategoryId,
-    ),
-    macOS: const DarwinNotificationDetails(
-      categoryIdentifier: kTodoDarwinCategoryId,
-    ),
+    iOS: darwin,
+    macOS: darwin,
     linux: LinuxNotificationDetails(
       actions: <LinuxNotificationAction>[
-        LinuxNotificationAction(
-          key: kTodoCompleteActionId,
-          label: texts.complete,
-        ),
-        LinuxNotificationAction(
-          key: todoNotificationActionId(snoozeMinutes),
-          label: texts.snooze,
-        ),
+        if (actions) ...<LinuxNotificationAction>[
+          LinuxNotificationAction(
+            key: kTodoCompleteActionId,
+            label: texts.complete,
+          ),
+          LinuxNotificationAction(
+            key: todoNotificationActionId(snoozeMinutes),
+            label: texts.snooze,
+          ),
+        ],
       ],
     ),
     windows: WindowsNotificationDetails(
       actions: <WindowsAction>[
-        WindowsAction(
-          content: texts.complete,
-          arguments: kTodoCompleteActionId,
-        ),
-        WindowsAction(
-          content: texts.snooze,
-          arguments: todoNotificationActionId(snoozeMinutes),
-        ),
+        if (actions) ...<WindowsAction>[
+          WindowsAction(
+            content: texts.complete,
+            arguments: kTodoCompleteActionId,
+          ),
+          WindowsAction(
+            content: texts.snooze,
+            arguments: todoNotificationActionId(snoozeMinutes),
+          ),
+        ],
       ],
     ),
   );
@@ -370,6 +378,7 @@ class PluginTodoNotificationGateway
       texts: texts,
       snoozeMinutes: request.snoozeMinutes,
       hideOnLockScreen: request.hideOnLockScreen,
+      actions: !request.reminder.digest,
     );
     // 规划器已用本地日期计算出绝对时刻。传 UTC 可防止平台在夏令时回拨
     // 的重叠时段重新解释本地时刻。
@@ -423,6 +432,8 @@ class PluginTodoNotificationGateway
           'channelDescription': texts.channelDescription,
           'completeLabel': texts.complete,
           'snoozeLabel': texts.snooze,
+          // 每日摘要没有对应的待办，原生通知不加“完成 / 稍后提醒”按钮。
+          'actions': !request.reminder.digest,
         });
 
     final exact = request.androidExact ?? true;

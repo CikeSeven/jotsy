@@ -18116,6 +18116,34 @@ class AppLocalizationsRu extends AppLocalizations {
       'На экране блокировки видно только, что есть напоминание; текст — после разблокировки';
 
   @override
+  String get todoSettingsDigest => 'Ежедневная сводка';
+
+  @override
+  String get todoSettingsDigestSubtitle =>
+      'Уведомление каждый день: сколько задач на сегодня и сколько просрочено';
+
+  @override
+  String get todoSettingsDigestTime => 'Время сводки';
+
+  @override
+  String todoDigestTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count задачи на сегодня',
+      many: '$count задач на сегодня',
+      few: '$count задачи на сегодня',
+      one: '$count задача на сегодня',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoDigestOverdue(int count) {
+    return 'Просрочено: $count';
+  }
+
+  @override
   String get todoSettingsDesktopNote =>
       'На компьютере напоминания появляются, только пока Jotsy открыт. Пока приложение закрыто, напоминания не всплывают.';
 

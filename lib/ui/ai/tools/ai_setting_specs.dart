@@ -586,6 +586,36 @@ final List<AiSettingSpec> aiSettingSpecs = <AiSettingSpec>[
         value is int ? l10n.todoSettingsSnoozeMinutes(value) : null,
   ),
   _todo(
+    'todo_daily_digest',
+    const AiBooleanSchema(
+      description:
+          'Daily digest notification: how many to-dos are due today and how '
+          'many are overdue (off by default; turning it on uses 08:00 '
+          'unless a time was set).',
+    ),
+    name: (l10n) => l10n.todoSettingsDigest,
+    get: (settings) => settings.digestMinute != null,
+    set: (settings, value) => value == true
+        ? settings.copyWith(
+            digestMinute:
+                settings.digestMinute ?? TodoSettings.defaultDigestMinute,
+          )
+        : settings.copyWith(clearDigest: true),
+    onPlatform: () => AppPlatform.supportsReminders,
+  ),
+  _todo(
+    'todo_daily_digest_time',
+    const AiTimeSchema(
+      description:
+          'Time of the daily digest, HH:MM; setting it also turns the '
+          'digest on.',
+    ),
+    name: (l10n) => l10n.todoSettingsDigestTime,
+    get: (settings) => settings.digestMinute,
+    set: (settings, value) => settings.copyWith(digestMinute: value! as int),
+    onPlatform: () => AppPlatform.supportsReminders,
+  ),
+  _todo(
     'todo_hide_on_lock_screen',
     const AiBooleanSchema(
       description: 'Reminders on the lock screen hide the to-do text.',

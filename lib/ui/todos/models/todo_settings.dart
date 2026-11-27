@@ -58,9 +58,13 @@ class TodoSettings {
     this.smartParse = true,
     this.swipeLeft = TodoSwipeAction.delete,
     this.focus = TodoFocusSettings.defaults,
+    this.digestMinute,
   });
 
   static const TodoSettings defaults = TodoSettings();
+
+  /// 打开每日摘要时默认的时刻（8:00）。
+  static const int defaultDigestMinute = 8 * 60;
 
   /// 稍后提醒可选的时长（分钟）。
   static const List<int> snoozeChoices = <int>[5, 10, 15, 30, 60];
@@ -96,6 +100,10 @@ class TodoSettings {
   /// 专注计时的节奏（存在 `focus` 对象里，见 [TodoFocusSettings]）。
   final TodoFocusSettings focus;
 
+  /// 每日摘要的时刻（一天中的分钟数）；null 为关（默认）。见
+  /// `planTodoDigests`。
+  final int? digestMinute;
+
   /// 打开时显示的视图；认不出（含清单已删）时由调用方回到“今天”。
   TodoView get defaultView => TodoView.parse(defaultViewKey) ?? TodoView.today;
 
@@ -112,6 +120,7 @@ class TodoSettings {
   static const _keySmartParse = 'smartParse';
   static const _keySwipeLeft = 'swipeLeft';
   static const _keyFocus = 'focus';
+  static const _keyDigest = 'digestMinute';
 
   static TodoSettings decode(String? raw) {
     if (raw == null || raw.trim().isEmpty) return defaults;
@@ -127,6 +136,7 @@ class TodoSettings {
     final snooze = map[_keySnooze];
     final list = map[_keyDefaultList];
     final view = map[_keyDefaultView];
+    final digest = map[_keyDigest];
     return TodoSettings(
       showCompleted: map[_keyShowCompleted] is bool
           ? map[_keyShowCompleted] as bool
@@ -152,6 +162,9 @@ class TodoSettings {
           TodoSwipeAction.values.asNameMap()[map[_keySwipeLeft]] ??
           defaults.swipeLeft,
       focus: TodoFocusSettings.fromJson(map[_keyFocus]),
+      digestMinute: digest is int && digest >= 0 && digest < 24 * 60
+          ? digest
+          : null,
     );
   }
 
@@ -180,6 +193,8 @@ class TodoSettings {
       _keySmartParse: smartParse,
       _keySwipeLeft: swipeLeft.name,
       if (focus != TodoFocusSettings.defaults) _keyFocus: focus.toJson(),
+      // 关着时不写：旧版本写出的设置与升级后逐字节相同。
+      if (digestMinute != null) _keyDigest: digestMinute,
     });
   }
 
@@ -195,6 +210,8 @@ class TodoSettings {
     bool? smartParse,
     TodoSwipeAction? swipeLeft,
     TodoFocusSettings? focus,
+    int? digestMinute,
+    bool clearDigest = false,
   }) {
     return TodoSettings(
       showCompleted: showCompleted ?? this.showCompleted,
@@ -210,6 +227,7 @@ class TodoSettings {
       smartParse: smartParse ?? this.smartParse,
       swipeLeft: swipeLeft ?? this.swipeLeft,
       focus: focus ?? this.focus,
+      digestMinute: clearDigest ? null : (digestMinute ?? this.digestMinute),
     );
   }
 
@@ -225,7 +243,8 @@ class TodoSettings {
       other.hideContentOnLockScreen == hideContentOnLockScreen &&
       other.smartParse == smartParse &&
       other.swipeLeft == swipeLeft &&
-      other.focus == focus;
+      other.focus == focus &&
+      other.digestMinute == digestMinute;
 
   @override
   int get hashCode => Object.hash(
@@ -239,5 +258,6 @@ class TodoSettings {
     smartParse,
     swipeLeft,
     focus,
+    digestMinute,
   );
 }

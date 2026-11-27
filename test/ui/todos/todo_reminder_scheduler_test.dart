@@ -252,6 +252,44 @@ void main() {
     expect(request.hideOnLockScreen, isTrue);
   });
 
+  test(
+    'the daily digest is scheduled without buttons and follows the setting',
+    () async {
+      await addTodo(reminders: const <TodoReminder>[]);
+      scheduler.enabled = true;
+      await Future<void>.delayed(Duration.zero);
+      await feed();
+      expect(gateway.scheduled, isEmpty, reason: '默认关');
+
+      scheduler.settings = const TodoSettings(digestMinute: 9 * 60);
+      await scheduler.replanNow();
+      // 今天 9 点还没到；待办截止在明天，所以今天的件数为 0、不排。
+      final digests = gateway.scheduled.values.toList()
+        ..sort((a, b) => a.reminder.fireAt.compareTo(b.reminder.fireAt));
+      expect(digests, isNotEmpty);
+      final first = digests.first;
+      expect(first.reminder.digest, isTrue);
+      expect(first.reminder.todoId, isEmpty);
+      expect(first.reminder.fireAt, DateTime(2026, 11, 11, 9));
+      expect(first.reminder.title, '今天有 1 件待办');
+      expect(first.body, '交周报');
+      expect(digests[1].body, startsWith('其中 1 件已逾期'));
+
+      gateway.emit(
+        const TodoNotificationEvent(
+          action: TodoNotificationAction.open,
+          todoId: '',
+          occurrence: '2026-11-11',
+        ),
+      );
+      expect(opened, <String>[''], reason: '首页据此切到“今天”');
+
+      scheduler.settings = TodoSettings.defaults;
+      await scheduler.replanNow();
+      expect(gateway.scheduled, isEmpty);
+    },
+  );
+
   test('notification taps open the todo; buttons write the database', () async {
     final id = await addTodo();
     scheduler.enabled = true;

@@ -343,8 +343,11 @@ object TodoReminderManager {
         },
       )
       .setContentIntent(contentIntent)
-      .addAction(0, record.completeLabel, completeIntent)
-      .addAction(0, record.snoozeLabel, snoozeIntent)
+    if (record.actions) {
+      builder
+        .addAction(0, record.completeLabel, completeIntent)
+        .addAction(0, record.snoozeLabel, snoozeIntent)
+    }
     if (record.body.isNotEmpty()) {
       builder.setStyle(NotificationCompat.BigTextStyle().bigText(record.body))
     }

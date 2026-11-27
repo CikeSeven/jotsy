@@ -61,6 +61,7 @@ class DesktopTodoNotificationGateway extends PluginTodoNotificationGateway {
           texts: texts,
           snoozeMinutes: request.snoozeMinutes,
           hideOnLockScreen: request.hideOnLockScreen,
+          actions: !request.reminder.digest,
         ),
         payload: request.payload,
       );

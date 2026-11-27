@@ -15487,6 +15487,25 @@ class AppLocalizationsJa extends AppLocalizations {
       'ロック画面にはリマインダーがあることだけを表示し、内容はロック解除後に表示します';
 
   @override
+  String get todoSettingsDigest => '毎日のまとめ';
+
+  @override
+  String get todoSettingsDigestSubtitle => '今日のToDoの件数と期限切れの件数を毎日決まった時刻に通知します';
+
+  @override
+  String get todoSettingsDigestTime => 'まとめの時刻';
+
+  @override
+  String todoDigestTitle(int count) {
+    return '今日のToDo：$count 件';
+  }
+
+  @override
+  String todoDigestOverdue(int count) {
+    return 'うち $count 件が期限切れ';
+  }
+
+  @override
   String get todoSettingsDesktopNote =>
       'パソコンではJotsyを開いている間だけ通知します。閉じている間に来たリマインダーは表示されません。';
 

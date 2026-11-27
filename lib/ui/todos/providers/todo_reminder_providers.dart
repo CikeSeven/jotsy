@@ -12,6 +12,7 @@ import '../../../core/services/todo_reminders/todo_notification_gateway_plugin.d
 import '../../settings/providers/app_features_provider.dart';
 import '../controllers/todo_reminder_scheduler.dart';
 import '../models/todo_settings.dart';
+import '../models/todo_view.dart';
 import 'todo_providers.dart';
 
 /// 系统通知的实现：手机交给系统定时，桌面在进程里计时；不支持的平台为 null。
@@ -25,7 +26,7 @@ final todoNotificationGatewayProvider = Provider<TodoNotificationGateway?>((
       : DesktopTodoNotificationGateway();
 });
 
-/// 点通知要打开的待办（业务 id）；首页消费后置回 null。
+/// 点通知要打开的待办（业务 id；每日摘要为空字符串）；首页消费后置回 null。
 final todoNotificationOpenRequestProvider =
     NotifierProvider<TodoNotificationOpenRequest, String?>(
       TodoNotificationOpenRequest.new,
@@ -54,6 +55,21 @@ class TodoNotificationOpenRequest extends Notifier<String?> {
   String? build() => null;
 
   void request(String todoId) => state = todoId;
+
+  void consume() => state = null;
+}
+
+/// 要待办页换到的视图（点每日摘要通知时为“今天”，由首页发出）；待办页
+/// 消费后置回 null。待办页还没建好时请求留着，建好时接住。
+final todoViewRequestProvider = NotifierProvider<TodoViewRequest, TodoView?>(
+  TodoViewRequest.new,
+);
+
+class TodoViewRequest extends Notifier<TodoView?> {
+  @override
+  TodoView? build() => null;
+
+  void request(TodoView view) => state = view;
 
   void consume() => state = null;
 }

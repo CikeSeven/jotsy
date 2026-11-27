@@ -27284,6 +27284,36 @@ abstract class AppLocalizations {
   /// **'The lock screen only shows that there\'s a reminder; unlock to see what it is'**
   String get todoSettingsHideContentSubtitle;
 
+  /// To-do settings: switch for the daily digest notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily digest'**
+  String get todoSettingsDigest;
+
+  /// Subtitle of the daily digest switch.
+  ///
+  /// In en, this message translates to:
+  /// **'A notification each day with how many to-dos are due and how many are overdue'**
+  String get todoSettingsDigestSubtitle;
+
+  /// To-do settings: time of day the daily digest is sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Digest time'**
+  String get todoSettingsDigestTime;
+
+  /// Title of the daily digest notification: how many open to-dos are due on that day or earlier.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to-do for today} other{{count} to-dos for today}}'**
+  String todoDigestTitle(int count);
+
+  /// Daily digest notification body line: how many of those are overdue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} overdue'**
+  String todoDigestOverdue(int count);
+
   /// Footer of the reminders group in to-do settings (desktop).
   ///
   /// In en, this message translates to:

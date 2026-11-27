@@ -5,7 +5,7 @@ summary: Turning on to-dos, lists and views, tags, due dates, reminders, repeats
 features: [todos]
 platforms: []
 destinations: [tab_todos, settings_todos, settings_features]
-keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, AI breakdown, organize with AI, focus, focus timer, pomodoro, break, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
+keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, AI breakdown, organize with AI, focus, focus timer, pomodoro, break, snooze, daily digest, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
 ---
 To-dos are a task list separate from your diary, with due dates, reminders, repeats and priorities. Checkboxes inside a diary's text are unrelated to them.
 
@@ -55,7 +55,8 @@ To-dos have their own tags, completely separate from diary tags: diary tag manag
 - If you don't need it, turn off "Focus timer" (under "To-dos") in Settings → Features; existing records are kept.
 
 ## Settings and notes
-Go to Settings → To-dos (in the "Organize" group) for Show completed, Open to, New to-dos go to, Smart recognition, Notification permission, All-day reminder time and Snooze for.
+Go to Settings → To-dos (in the "Organize" group) for Show completed, Open to, New to-dos go to, Smart recognition, Notification permission, All-day reminder time, Snooze for and Daily digest.
+- Daily digest (off by default): once on, a notification arrives every day at "Digest time" (8:00 by default) saying how many to-dos are due today, how many of them are overdue, and the first few to do; nothing is sent on days with nothing due, and tapping it opens the to-dos' Today view.
 - On phones, reminders are delivered by the system on time; the app asks for notification permission the first time you add a reminder. Android also has "Hide content on the lock screen", and "Reminders late or missing?" explains what to do if reminders are often late.
 - On computers, reminders only appear while Jotsy is open; reminders that come due while it's closed won't pop up.
 - Deleted to-dos don't go to the recycle bin; you can only undo from the notice.

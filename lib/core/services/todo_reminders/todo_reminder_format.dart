@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'todo_digest_planner.dart';
 import 'todo_reminder_planner.dart';
 
 /// 待办提醒文案与通知偏好的纯核心辅助，供主调度器、后台 isolate 与界面共用。
@@ -43,6 +44,19 @@ String formatTodoReminderNotificationBody(
     l10n.localeName,
   ).format(DateTime(2000, 1, 1, minute ~/ 60, minute % 60));
   return l10n.todoDueWithTime(date, time);
+}
+
+/// 每日摘要的标题与正文：标题写件数；正文先写逾期了几件（有的话），再写
+/// 最该先做的几条标题。展开前只看得到第一行，所以逾期放在标题之前。
+({String title, String body}) formatTodoDigestNotification(
+  AppLocalizations l10n,
+  PlannedTodoDigest digest,
+) {
+  final lines = <String>[
+    if (digest.overdue > 0) l10n.todoDigestOverdue(digest.overdue),
+    if (digest.titles.isNotEmpty) digest.titles.join(' · '),
+  ];
+  return (title: l10n.todoDigestTitle(digest.count), body: lines.join('\n'));
 }
 
 /// 从 `app.settings.todos` 原始 JSON 读取后台排程所需字段，避免 core 层反向依赖 ui 模型。

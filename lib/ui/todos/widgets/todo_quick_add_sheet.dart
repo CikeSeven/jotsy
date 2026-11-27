@@ -6,21 +6,22 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
-import '../../widgets/desktop_horizontal_scroll.dart';
-import '../../widgets/expressive_menu/expressive_menu.dart';
+import '../../widgets/list_item_presence.dart';
 import '../../widgets/text_selection_menu/app_text_context_menu.dart';
+import '../controllers/todo_navigation.dart';
 import '../controllers/todo_reminder_permission.dart';
-import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
-import '../viewmodels/todo_list_style.dart';
+import '../viewmodels/todo_quick_add_draft.dart';
 import '../viewmodels/todo_quick_parse.dart';
 import '../viewmodels/todo_reminder_pick.dart';
+import 'todo_added_stack.dart';
 import 'todo_due_sheet.dart';
-import 'todo_field_pill.dart';
-import 'todo_labels.dart';
 import 'todo_list_picker_sheet.dart';
+import 'todo_quick_add_fields.dart';
+import 'todo_quick_split_prompt.dart';
 import 'todo_quick_input.dart';
 import 'todo_reminder_sheet.dart';
 import 'todo_repeat_sheet.dart';
@@ -48,10 +49,12 @@ class TodoQuickAddPreset {
 /// 下面一排属性按钮（日期、提醒、重复、清单、优先级；设了值的为
 /// `secondaryContainer` 底并写出值，带 × 清除）。
 ///
-/// 识别出的日期 / 清单 / 优先级直接落在属性按钮上（与手动选的一样显示，
-/// 手动选的优先；点 × 清除时同时不再识别这一种）。按回车或发送键即写库，
-/// 面板留着、只清空标题，便于连着记几条；手动选的属性保留给下一条。关掉
-/// 面板就结束。
+/// 识别出的日期 / 重复 / 提醒 / 清单 / 优先级直接落在属性按钮上（与手动
+/// 选的一样显示，手动选的优先；点 × 清除时同时不再识别这一种），输入框里
+/// 识别出的片段高亮淡入。按回车或发送键即写库，面板留着、只清空标题，便于
+/// 连着记几条：刚添加的落进上方“已添加 N 条”的小堆栈（[TodoAddedStack]，
+/// 可点开、可撤销）；手动选的属性保留给下一条。粘贴了多行时提示“拆成 N 条
+/// 待办？”，拆开时每行各自识别。关掉面板就结束。
 Future<void> showTodoQuickAddSheet(
   BuildContext context, {
   TodoQuickAddPreset preset = const TodoQuickAddPreset(),
@@ -71,99 +74,108 @@ class _QuickAddSheet extends ConsumerStatefulWidget {
   ConsumerState<_QuickAddSheet> createState() => _QuickAddSheetState();
 }
 
-class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
+class _QuickAddSheetState extends ConsumerState<_QuickAddSheet>
+    with SingleTickerProviderStateMixin {
   late final TodoQuickInputController _title = TodoQuickInputController(
     text: widget.preset.title,
+  )..fade = _highlightFade;
+  late final AnimationController _highlightFade = AnimationController(
+    vsync: this,
+    value: 1,
   );
   final FocusNode _focus = FocusNode();
-  final Set<TodoQuickTokenKind> _ignored = <TodoQuickTokenKind>{};
 
-  // 日期、清单、优先级：起初是视图预填的值（识别出的会盖过它），手动选过
-  // （[_duePicked] 等）之后以手动的为准、这一种不再识别。
-  late String? _listId = widget.preset.listId;
-  bool _listPicked = false;
-  late DateTime? _dueDate = widget.preset.dueDate;
-  int? _dueMinute;
-  bool _duePicked = false;
-  late TodoPriority _priority = widget.preset.priority;
-  bool _priorityPicked = false;
-  List<TodoReminder> _reminders = const <TodoReminder>[];
-  TodoRepeatRule? _repeat;
+  late final TodoQuickAddDraft _draft = TodoQuickAddDraft(
+    listId: widget.preset.listId,
+    dueDate: widget.preset.dueDate,
+    priority: widget.preset.priority,
+  );
   bool _saving = false;
+
+  /// 拆分提示上写的行数（最近一次有多行时的）。
+  int _splitCount = 2;
+
+  /// 这次打开面板后添加的（“已添加”堆栈）。
+  final List<TodoAddedItem> _added = <TodoAddedItem>[];
 
   @override
   void initState() {
     super.initState();
-    _title.addListener(_onChanged);
+    _title.addListener(_onControllerChanged);
   }
 
   @override
   void dispose() {
-    _title.removeListener(_onChanged);
+    _title.removeListener(_onControllerChanged);
     _title.dispose();
+    _highlightFade.dispose();
     _focus.dispose();
     super.dispose();
   }
 
-  DateTime get _today {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
+  DateTime get _today => ref.read(todoTodayProvider);
 
-  TodoQuickParse _parse() => todoQuickParseOf(
-    _title.text,
+  int get _allDayMinute => ref.read(todoSettingsProvider).allDayReminderMinute;
+
+  TodoQuickParse _parseText(String text) => todoQuickParseOf(
+    text,
     enabled: ref.read(todoSettingsProvider).smartParse,
     today: _today,
     lists: ref.read(todoListsProvider).value ?? const <TodoListRow>[],
-    ignore: <TodoQuickTokenKind>{
-      ..._ignored,
-      // 手动选过的种类不再识别，原文留在标题里。
-      if (_duePicked) ...<TodoQuickTokenKind>{
-        TodoQuickTokenKind.date,
-        TodoQuickTokenKind.time,
-      },
-      if (_listPicked) TodoQuickTokenKind.list,
-      if (_priorityPicked) TodoQuickTokenKind.priority,
-    },
+    ignore: _draft.ignore,
   );
 
-  // 生效的值：手动选的 > 识别出的 > 视图预填的。
-  DateTime? _effDate(TodoQuickParse p) => p.date ?? _dueDate;
-  int? _effMinute(TodoQuickParse p) => p.date != null ? p.minute : _dueMinute;
-  String? _effList(TodoQuickParse p) => p.listId ?? _listId;
-  TodoPriority _effPriority(TodoQuickParse p) => p.priority ?? _priority;
+  TodoQuickParse _parse() => _parseText(_title.text);
+
+  /// 控制器的通知里只有文字或选区变了才重新识别：高亮淡入的每一帧也会
+  /// 通知（让输入框重画），不能拿来重算。
+  TextEditingValue? _lastValue;
+
+  void _onControllerChanged() {
+    if (_title.value == _lastValue) return;
+    _lastValue = _title.value;
+    _onChanged();
+  }
 
   void _onChanged() {
-    if (_title.text.isEmpty) _ignored.clear();
-    _title.highlights = <TextRange>[
+    if (_title.text.isEmpty) _draft.ignored.clear();
+    final ranges = <TextRange>[
       for (final token in _parse().tokens) token.range,
     ];
+    final gained = _title.gainsHighlights(ranges);
+    _title.highlights = ranges;
+    if (gained) {
+      _highlightFade.duration = ExpressiveMotion.duration(
+        context,
+        ExpressiveMotion.fast,
+      );
+      unawaited(_highlightFade.forward(from: 0));
+    }
     setState(() {});
   }
 
-  Future<void> _submit() async {
-    final parse = _parse();
-    final raw = _title.text.trim();
-    final title = parse.title.isNotEmpty ? parse.title : raw;
-    if (title.isEmpty || _saving) return;
-    final dueDate = _effDate(parse);
+  TodoInput? _inputFor(String raw, TodoQuickParse parse) => _draft.inputFor(
+    raw,
+    parse,
+    allDayMinute: _allDayMinute,
+    linkedDiaryId: widget.preset.linkedDiaryId,
+  );
+
+  /// 写库：[inputs] 依次建好，记进“已添加”，清空输入接着记。
+  Future<void> _create(List<TodoInput> inputs) async {
+    if (inputs.isEmpty || _saving) return;
     setState(() => _saving = true);
     try {
-      await ref
-          .read(appDatabaseProvider)
-          .createTodo(
-            TodoInput(
-              title: title,
-              listId: _effList(parse),
-              priority: _effPriority(parse),
-              dueDate: dueDate,
-              dueMinute: dueDate == null ? null : _effMinute(parse),
-              reminders: dueDate == null ? const [] : _reminders,
-              repeat: dueDate == null ? null : _repeat,
-              linkedDiaryId: widget.preset.linkedDiaryId,
-            ),
-          );
-      _ignored.clear();
+      final ids = await ref.read(appDatabaseProvider).createTodos(inputs);
+      if (inputs.any((TodoInput input) => input.reminders.isNotEmpty) &&
+          mounted) {
+        unawaited(ensureTodoReminderPermission(context, ref));
+      }
+      _added.addAll(<TodoAddedItem>[
+        for (var i = 0; i < ids.length; i++)
+          TodoAddedItem(id: ids[i], title: inputs[i].title),
+      ]);
+      _draft.ignored.clear();
       _title.clear();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -171,119 +183,98 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
     if (mounted) _focus.requestFocus();
   }
 
+  Future<void> _submit() async {
+    final input = _inputFor(_title.text, _parse());
+    if (input != null) await _create(<TodoInput>[input]);
+  }
+
+  /// 输入里非空的几行（粘贴了多行时提示拆分）。
+  List<String> get _lines => <String>[
+    for (final line in _title.text.split('\n'))
+      if (line.trim().isNotEmpty) line.trim(),
+  ];
+
+  /// 每行各自识别、各建一条。
+  Future<void> _split() async {
+    await _create(<TodoInput>[
+      for (final line in _lines) ?_inputFor(line, _parseText(line)),
+    ]);
+  }
+
+  void _keepOne() {
+    final text = _lines.join(' ');
+    _title.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+
+  Future<void> _undoAdded(String id) async {
+    setState(() => _added.removeWhere((TodoAddedItem item) => item.id == id));
+    await ref.read(appDatabaseProvider).deleteTodo(id);
+  }
+
   Future<void> _pickDue(TodoQuickParse parse) async {
     final choice = await showTodoDueSheet(
       context,
-      date: _effDate(parse),
-      minute: _effMinute(parse),
+      date: _draft.effDate(parse),
+      minute: _draft.effMinute(parse),
       today: _today,
     );
     if (choice == null || !mounted) return;
-    setState(() {
-      _dueDate = choice.date;
-      _dueMinute = choice.minute;
-      _duePicked = true;
-      if (choice.date == null) {
-        // 去掉日期时提醒与重复一起失效，识别出的日期也不再要。
-        _reminders = const <TodoReminder>[];
-        _repeat = null;
-        _ignored.addAll(<TodoQuickTokenKind>{
-          TodoQuickTokenKind.date,
-          TodoQuickTokenKind.time,
-        });
-      } else if (choice.minute == null) {
-        // 全天时只对有时刻的待办有效的提醒随之去掉。
-        _reminders = <TodoReminder>[
-          for (final r in _reminders)
-            if (r.kind == TodoReminderKind.onDay) r,
-        ];
-      }
-      final repeat = _repeat;
-      if (repeat != null && choice.date != null) {
-        _repeat = repeat.copyWith(anchor: choice.date);
-      }
-    });
+    setState(
+      () => _draft.pickDue(
+        choice.date,
+        choice.minute,
+        parse,
+        allDayMinute: _allDayMinute,
+      ),
+    );
     _onChanged();
   }
 
-  /// 加提醒 / 重复时把此刻生效的日期定下来（成为手动的值）：提醒与重复
-  /// 都相对它，之后再改标题里的日期词不能让它们悄悄换了参照。没有日期时
-  /// 取 [fallback]。
-  void _adoptDue(TodoQuickParse parse, DateTime fallback) {
-    _dueDate = _effDate(parse) ?? fallback;
-    _dueMinute = _effDate(parse) == null ? null : _effMinute(parse);
-    _duePicked = true;
-  }
-
   Future<void> _pickReminders(TodoQuickParse parse) async {
-    final settings = ref.read(todoSettingsProvider);
-    final due = _effDate(parse) ?? _today;
-    final minute = _effDate(parse) == null ? null : _effMinute(parse);
+    final due = _draft.effDate(parse) ?? _today;
     await showTodoReminderSheet(
       context,
-      reminders: _reminders,
+      reminders: _draft.effReminders(parse, _allDayMinute),
       dueDate: due,
-      dueMinute: minute,
-      allDayMinute: settings.allDayReminderMinute,
+      dueMinute: _draft.effDate(parse) == null ? null : _draft.effMinute(parse),
+      allDayMinute: _allDayMinute,
       onChanged: (List<TodoReminder> next) {
-        setState(() {
-          _reminders = next;
-          if (next.isNotEmpty && !_duePicked) _adoptDue(parse, due);
-        });
+        setState(() => _draft.setReminders(next, parse, due));
         if (next.isNotEmpty) {
           unawaited(ensureTodoReminderPermission(context, ref));
         }
       },
-      onDueMoved: (TodoDueMove move) {
-        // 自定义提醒选在截止时间之后：截止时间顺延过去，成为手动选的值。
-        setState(() {
-          _dueDate = move.date;
-          _dueMinute = move.minute;
-          _duePicked = true;
-          final repeat = _repeat;
-          if (repeat != null) _repeat = repeat.copyWith(anchor: move.date);
-        });
-      },
+      onDueMoved: (TodoDueMove move) =>
+          setState(() => _draft.moveDue(move.date, move.minute)),
     );
     _onChanged();
   }
 
   Future<void> _pickRepeat(TodoQuickParse parse) async {
-    final anchor = _effDate(parse) ?? _today;
+    final anchor = _draft.effDate(parse) ?? _today;
     final choice = await showTodoRepeatSheet(
       context,
-      current: _repeat,
+      current: _draft.effRepeat(parse),
       anchor: anchor,
     );
     if (choice == null || !mounted) return;
-    setState(() {
-      _repeat = choice.rule;
-      if (choice.rule != null && !_duePicked) _adoptDue(parse, anchor);
-    });
+    setState(() => _draft.setRepeat(choice.rule, parse, anchor));
     _onChanged();
   }
 
   Future<void> _pickList() async {
-    final choice = await showTodoListPickerSheet(context, current: _listId);
+    final choice = await showTodoListPickerSheet(
+      context,
+      current: _draft.listId,
+    );
     if (choice == null || !mounted) return;
     setState(() {
-      _listId = choice.listId;
-      _listPicked = true;
-    });
-    _onChanged();
-  }
-
-  void _clearDue() {
-    setState(() {
-      _dueDate = null;
-      _dueMinute = null;
-      _duePicked = true;
-      _reminders = const <TodoReminder>[];
-      _repeat = null;
-      _ignored.addAll(<TodoQuickTokenKind>{
-        TodoQuickTokenKind.date,
-        TodoQuickTokenKind.time,
-      });
+      _draft
+        ..listId = choice.listId
+        ..listPicked = true;
     });
     _onChanged();
   }
@@ -292,24 +283,41 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final lists = ref.watch(todoListsProvider).value ?? const <TodoListRow>[];
     ref.watch(todoSettingsProvider.select((s) => s.smartParse));
+    final today = ref.watch(todoTodayProvider);
     final parse = _parse();
-    final today = _today;
-    final dueDate = _effDate(parse);
-    final dueMinute = dueDate == null ? null : _effMinute(parse);
-    final listId = _effList(parse);
+    final dueDate = _draft.effDate(parse);
+    final listId = _draft.effList(parse);
     TodoListRow? list;
     for (final item in lists) {
       if (item.listId == listId) list = item;
     }
-    final priority = _effPriority(parse);
     final canSubmit = _title.text.trim().isNotEmpty && !_saving;
+    final lines = _lines.length;
+    // 收起途中仍写上一次的行数，不闪成“拆成 0 条”。
+    if (lines >= 2) _splitCount = lines;
+    final duration = ExpressiveMotion.duration(
+      context,
+      ExpressiveMotion.medium,
+    );
 
     return TodoSheetBody(
       title: l10n.todoNew,
       children: <Widget>[
+        AnimatedSize(
+          duration: ExpressiveMotion.durationNonZero(
+            context,
+            ExpressiveMotion.medium,
+          ),
+          curve: ExpressiveMotion.spatial,
+          alignment: AlignmentDirectional.topStart,
+          child: TodoAddedStack(
+            items: _added,
+            onOpen: (String id) => unawaited(openTodoDetail(context, id)),
+            onUndo: (String id) => unawaited(_undoAdded(id)),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.l, 0, AppSpacing.s, 0),
           child: Row(
@@ -348,133 +356,54 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.s),
-        SizedBox(
-          height: 40,
-          child: DesktopHorizontalScroll(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              children: <Widget>[
-                _pill(
-                  icon: dueMinute == null
-                      ? FontAwesomeIcons.calendar
-                      : FontAwesomeIcons.clock,
-                  label: dueDate == null
-                      ? l10n.todoFieldDue
-                      : TodoLabels.due(context, dueDate, dueMinute, today),
-                  set: dueDate != null,
-                  onTap: () => unawaited(_pickDue(parse)),
-                  onClear: dueDate == null ? null : _clearDue,
-                ),
-                _pill(
-                  icon: FontAwesomeIcons.bell,
-                  label: _reminders.isEmpty
-                      ? l10n.todoFieldReminders
-                      : _reminders.length == 1
-                      ? TodoLabels.reminder(context, _reminders.single)
-                      : l10n.todoRemindersCount(_reminders.length),
-                  set: _reminders.isNotEmpty,
-                  onTap: () => unawaited(_pickReminders(parse)),
-                  onClear: _reminders.isEmpty
-                      ? null
-                      : () =>
-                            setState(() => _reminders = const <TodoReminder>[]),
-                ),
-                _pill(
-                  icon: FontAwesomeIcons.repeat,
-                  label: _repeat == null
-                      ? l10n.todoFieldRepeat
-                      : TodoLabels.repeat(l10n, _repeat),
-                  set: _repeat != null,
-                  onTap: () => unawaited(_pickRepeat(parse)),
-                  onClear: _repeat == null
-                      ? null
-                      : () => setState(() => _repeat = null),
-                ),
-                _pill(
-                  icon: list == null
-                      ? TodoLabels.smartViewIcon(TodoSmartView.inbox)
-                      : TodoListStyle.iconOfRow(list),
-                  iconColor: list == null
-                      ? null
-                      : TodoListStyle.accentOf(
-                          list.colorKey,
-                          scheme,
-                        ).onContainer,
-                  label: list?.name ?? l10n.todoViewInbox,
-                  set: list != null,
-                  onTap: () => unawaited(_pickList()),
-                ),
-                ExpressiveMenuAnchor(
-                  menuChildren: <Widget>[
-                    for (final value in TodoPriority.values.reversed)
-                      ExpressiveMenuItem(
-                        selected: value == priority,
-                        leadingIcon: FaIcon(
-                          FontAwesomeIcons.solidFlag,
-                          color:
-                              TodoLabels.priorityColor(scheme, value) ??
-                              scheme.onSurfaceVariant,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _priority = value;
-                            _priorityPicked = true;
-                          });
-                          _onChanged();
-                        },
-                        child: Text(TodoLabels.priority(l10n, value)),
-                      ),
-                  ],
-                  builder:
-                      (
-                        BuildContext context,
-                        ExpressiveMenuAnchorState menu,
-                        Widget? _,
-                      ) => _pill(
-                        icon: priority == TodoPriority.none
-                            ? FontAwesomeIcons.flag
-                            : FontAwesomeIcons.solidFlag,
-                        iconColor: TodoLabels.priorityColor(scheme, priority),
-                        label: priority == TodoPriority.none
-                            ? l10n.todoFieldPriority
-                            : TodoLabels.priority(l10n, priority),
-                        set: priority != TodoPriority.none,
-                        onTap: menu.toggle,
-                      ),
-                ),
-              ],
-            ),
+        ListItemPresence(
+          visible: lines >= 2,
+          appearing: lines >= 2,
+          duration: duration,
+          child: TodoQuickSplitPrompt(
+            count: _splitCount,
+            onSplit: () => unawaited(_split()),
+            onKeepOne: _keepOne,
           ),
+        ),
+        const SizedBox(height: AppSpacing.s),
+        TodoQuickAddFields(
+          today: today,
+          dueDate: dueDate,
+          dueMinute: dueDate == null ? null : _draft.effMinute(parse),
+          reminders: _draft.effReminders(parse, _allDayMinute),
+          repeat: dueDate == null ? null : _draft.effRepeat(parse),
+          list: list,
+          priority: _draft.effPriority(parse),
+          onPickDue: () => unawaited(_pickDue(parse)),
+          onClearDue: () {
+            setState(_draft.clearDue);
+            _onChanged();
+          },
+          onPickReminders: () => unawaited(_pickReminders(parse)),
+          onClearReminders: () => setState(
+            () => _draft
+              ..reminders = const <TodoReminder>[]
+              ..ignored.add(TodoQuickTokenKind.reminder),
+          ),
+          onPickRepeat: () => unawaited(_pickRepeat(parse)),
+          onClearRepeat: () => setState(
+            () => _draft
+              ..repeat = null
+              ..ignored.add(TodoQuickTokenKind.repeat),
+          ),
+          onPickList: () => unawaited(_pickList()),
+          onPriority: (TodoPriority value) {
+            setState(() {
+              _draft
+                ..priority = value
+                ..priorityPicked = true;
+            });
+            _onChanged();
+          },
         ),
         const SizedBox(height: AppSpacing.s),
       ],
     );
   }
-}
-
-/// 属性按钮排成一行时彼此留 8 的间隔，在 40 高的横向列表里竖直居中。
-Widget _pill({
-  required FaIconData icon,
-  required String label,
-  required bool set,
-  required VoidCallback onTap,
-  VoidCallback? onClear,
-  Color? iconColor,
-}) {
-  return Padding(
-    padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
-    child: Center(
-      child: TodoFieldPill(
-        icon: icon,
-        label: label,
-        set: set,
-        onTap: onTap,
-        onClear: onClear,
-        iconColor: iconColor,
-        maxLabelWidth: 180,
-      ),
-    ),
-  );
 }

@@ -26180,6 +26180,36 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Postponed once} other{Postponed {count} times}}'**
   String todoPostponedCount(int count);
 
+  /// Header of the stack of to-dos just added in the quick add sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 added} other{{count} added}}'**
+  String todoQuickAddedCount(int count);
+
+  /// Button on a just-added to-do in the quick add sheet that deletes it again.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo add'**
+  String get todoQuickAddedUndo;
+
+  /// Prompt in the quick add sheet when the text has several lines; {count} is the number of lines.
+  ///
+  /// In en, this message translates to:
+  /// **'Split into {count} to-dos?'**
+  String todoQuickSplitPrompt(int count);
+
+  /// Button: turn each line into its own to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get todoQuickSplit;
+
+  /// Button: join the lines into one to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep as one'**
+  String get todoQuickKeepOne;
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

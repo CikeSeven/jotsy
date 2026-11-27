@@ -8,11 +8,15 @@
 ///
 /// 中 / 英 / 日 / 俄四种写法同时生效，与界面语言无关。每种只取第一个、与清单
 /// 和优先级片段是否重叠，都由 `todo_quick_parse.dart` 决定。本文件放公共部分与
-/// 日期规则，时刻规则在 `todo_quick_parse_time_rules.dart`。
+/// 日期规则，时刻规则在 `todo_quick_parse_time_rules.dart`，重复与提醒在
+/// `todo_quick_parse_repeat_rules.dart`。
 library;
 
 import 'package:flutter/foundation.dart';
 
+import '../../../core/database/app_database.dart';
+
+part 'todo_quick_parse_repeat_rules.dart';
 part 'todo_quick_parse_time_rules.dart';
 
 /// 原文里一处候选片段 `[start, end)` 与它解析出的值。

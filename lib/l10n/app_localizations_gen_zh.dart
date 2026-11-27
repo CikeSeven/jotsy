@@ -14576,6 +14576,25 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String todoQuickAddedCount(int count) {
+    return '已添加 $count 条';
+  }
+
+  @override
+  String get todoQuickAddedUndo => '撤销添加';
+
+  @override
+  String todoQuickSplitPrompt(int count) {
+    return '拆成 $count 条待办？';
+  }
+
+  @override
+  String get todoQuickSplit => '拆分';
+
+  @override
+  String get todoQuickKeepOne => '合成一条';
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

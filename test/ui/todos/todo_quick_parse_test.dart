@@ -69,7 +69,8 @@ void main() {
       expect(weekly.isEmpty, isTrue);
       expect(weekly.title, '周一例会');
       expect(_parse('一周一次').isEmpty, isTrue);
-      expect(_parse('每周一 例会').isEmpty, isTrue);
+      // “每周一”是重复（见 todo_quick_parse_repeat_test），不当下周一的日期。
+      expect(_parse('每周一 例会').repeat?.weekdays, <int>[1]);
 
       final parse = _parse('周五下午3点开会');
       expect(parse.date, DateTime(2026, 11, 13));
@@ -215,7 +216,7 @@ void main() {
       expect(parse.date, DateTime(2026, 11, 9));
       expect(parse.title, '提出');
       expect(_parse('金曜日に 飲み会').date, DateTime(2026, 11, 13));
-      expect(_parse('毎週月曜 ゴミ出し').isEmpty, isTrue);
+      expect(_parse('毎週月曜 ゴミ出し').repeat?.weekdays, <int>[1]);
       expect(_parse('午前10時半 歯医者').minute, _hm(10, 30));
       expect(_parse('15時30分 打ち合わせ').minute, _hm(15, 30));
       expect(_parse('3時間 勉強').isEmpty, isTrue);

@@ -14757,6 +14757,67 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get todoFieldSection => '分区';
+
+  @override
+  String get todoSectionNone => '未分区';
+
+  @override
+  String get todoSectionAdd => '添加分区';
+
+  @override
+  String get todoSectionNew => '新建分区';
+
+  @override
+  String get todoSectionRename => '重命名分区';
+
+  @override
+  String get todoSectionNameHint => '分区名称';
+
+  @override
+  String get todoSectionMoveUp => '上移';
+
+  @override
+  String get todoSectionMoveDown => '下移';
+
+  @override
+  String get todoSectionDelete => '删除分区';
+
+  @override
+  String todoSectionDeleteTitle(String name) {
+    return '删除分区“$name”？';
+  }
+
+  @override
+  String get todoSectionDeleteBody => '其中的待办会移到“未分区”。';
+
+  @override
+  String todoSectionDeleteWithTodos(int count) {
+    return '连同其中的 $count 条待办一起删除';
+  }
+
+  @override
+  String todoSectionDeletedNotice(String name) {
+    return '已删除分区“$name”';
+  }
+
+  @override
+  String todoSectionAddTo(String name) {
+    return '添加到“$name”';
+  }
+
+  @override
+  String get todoSectionActions => '分区操作';
+
+  @override
+  String get todoBatchMoveToSection => '移到分区';
+
+  @override
+  String todoBatchSectionMoved(int count, String name) {
+    return '已把 $count 条移到“$name”';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

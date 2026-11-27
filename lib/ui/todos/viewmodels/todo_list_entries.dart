@@ -57,14 +57,21 @@ bool isCollapsibleTodoGroup(TodoGroupKind kind) =>
 
 /// 把各组拍平成列表项：有标题的组先出标题，无标题的组先出一段间隙，再出
 /// 各行；可折叠的已完成组只出行（标题由已完成区块画，折叠时行仍在列表里，
-/// 只是不挂载）。
-List<TodoListEntry> buildTodoListEntries(List<TodoGroup> groups) {
+/// 只是不挂载）。折起来的分区（[collapsed] 里有它的键）只出标题：行从
+/// 列表里拿掉，列表的数据变化动效让它们原地收起、展开时原地长出来。
+List<TodoListEntry> buildTodoListEntries(
+  List<TodoGroup> groups, {
+  Set<String> collapsed = const <String>{},
+}) {
   final entries = <TodoListEntry>[];
   for (final group in groups) {
     if (group.kind == TodoGroupKind.plain) {
       entries.add(TodoGapEntry(group));
     } else if (!isCollapsibleTodoGroup(group.kind)) {
       entries.add(TodoHeaderEntry(group));
+    }
+    if (group.kind == TodoGroupKind.section && collapsed.contains(group.key)) {
+      continue;
     }
     for (final row in group.rows) {
       entries.add(TodoRowEntry(group, row));

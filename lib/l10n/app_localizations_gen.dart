@@ -26474,6 +26474,108 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 more tag} other{{count} more tags}}'**
   String todoTagsMoreLabel(int count);
 
+  /// To-do section inside a list: detail pill and picker title.
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get todoFieldSection;
+
+  /// The 'no section' choice / label for to-dos outside any section of their list.
+  ///
+  /// In en, this message translates to:
+  /// **'No section'**
+  String get todoSectionNone;
+
+  /// Row at the end of a list view that adds a section.
+  ///
+  /// In en, this message translates to:
+  /// **'Add section'**
+  String get todoSectionAdd;
+
+  /// Title of the dialog creating a section.
+  ///
+  /// In en, this message translates to:
+  /// **'New section'**
+  String get todoSectionNew;
+
+  /// Section menu item and dialog title: rename the section.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename section'**
+  String get todoSectionRename;
+
+  /// Hint of the section name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Section name'**
+  String get todoSectionNameHint;
+
+  /// Section menu item: move the section up.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get todoSectionMoveUp;
+
+  /// Section menu item: move the section down.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get todoSectionMoveDown;
+
+  /// Section menu item: delete the section.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete section'**
+  String get todoSectionDelete;
+
+  /// Title of the confirm dialog for deleting a section.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String todoSectionDeleteTitle(String name);
+
+  /// Body of the confirm dialog for deleting a section.
+  ///
+  /// In en, this message translates to:
+  /// **'Its to-dos move to “No section”.'**
+  String get todoSectionDeleteBody;
+
+  /// Checkbox in the delete-section dialog: also delete the to-dos in it.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Also delete its 1 to-do} other{Also delete its {count} to-dos}}'**
+  String todoSectionDeleteWithTodos(int count);
+
+  /// Snack bar after deleting a section.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted section “{name}”'**
+  String todoSectionDeletedNotice(String name);
+
+  /// Tooltip of the + button on a section header: add a to-do to it.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to “{name}”'**
+  String todoSectionAddTo(String name);
+
+  /// Tooltip of the ⋯ button on a section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Section options'**
+  String get todoSectionActions;
+
+  /// Multi-select overflow item: move the selected to-dos to a section of this list.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to section'**
+  String get todoBatchMoveToSection;
+
+  /// Snack bar after moving several to-dos to a section.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moved 1 to-do to “{name}”} other{Moved {count} to-dos to “{name}”}}'**
+  String todoBatchSectionMoved(int count, String name);
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

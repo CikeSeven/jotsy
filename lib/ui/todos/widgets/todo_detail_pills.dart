@@ -49,6 +49,9 @@ class TodoDetailPills extends ConsumerWidget {
     for (final item in lists) {
       if (item.listId == row.listId) list = item;
     }
+    final sections = list == null
+        ? const <TodoSection>[]
+        : TodoSections.ofList(list.metadata);
     final overdue =
         due != null &&
         row.completedAt == null &&
@@ -136,6 +139,15 @@ class TodoDetailPills extends ConsumerWidget {
           set: true,
           onTap: () => unawaited(editors.pickList()),
         ),
+        if (sections.isNotEmpty)
+          TodoFieldPill(
+            icon: FontAwesomeIcons.tableList,
+            label:
+                TodoSections.of(row.metadata, sections)?.name ??
+                l10n.todoSectionNone,
+            set: true,
+            onTap: () => unawaited(editors.pickSection(sections)),
+          ),
         TodoFieldPill(
           icon: FontAwesomeIcons.tag,
           iconColor: tags.isEmpty ? null : scheme.tertiary,

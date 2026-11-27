@@ -10,6 +10,7 @@ import '../../../core/services/app_platform.dart';
 import '../../../core/services/app_service.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
+import '../sections/todo_section_callbacks.dart';
 import '../sections/todo_list_callbacks.dart';
 import '../widgets/todo_due_sheet.dart';
 import '../widgets/todo_row_drag.dart';
@@ -35,7 +36,7 @@ import 'todo_reorder.dart';
 ///   撤销；
 /// - 步骤胶囊：就地展开 / 收起（[onToggleSteps]，页面持有展开的行），展开
 ///   后勾选某一步直接写库；
-/// - 拖动排序交给 [TodoReorder]。
+/// - 拖动排序交给 [TodoReorder]；清单视图的分区操作 [sections] 原样交给列表。
 TodoListCallbacks buildTodoPageCallbacks({
   required BuildContext context,
   required WidgetRef ref,
@@ -46,6 +47,7 @@ TodoListCallbacks buildTodoPageCallbacks({
   required ValueChanged<TodoRow> openDetail,
   required ValueChanged<TodoRow> onToggleSteps,
   required List<TodoRow> Function() visibleRows,
+  TodoSectionCallbacks? sections,
 }) {
   AppDatabase database() => ref.read(appDatabaseProvider);
   DateTime today() => ref.read(todoTodayProvider);
@@ -110,6 +112,7 @@ TodoListCallbacks buildTodoPageCallbacks({
     ),
     onReorderStart: reorder.start,
     onReorderEnd: reorder.dropped,
+    sections: sections,
   );
 }
 

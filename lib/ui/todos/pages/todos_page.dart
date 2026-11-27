@@ -23,6 +23,7 @@ import '../controllers/todo_navigation.dart';
 import '../controllers/todo_page_rows.dart';
 import '../controllers/todo_page_selection.dart';
 import '../controllers/todo_reorder.dart';
+import '../controllers/todo_section_actions.dart';
 import '../controllers/todo_view_switch.dart';
 import '../models/todo_settings.dart';
 import '../models/todo_view.dart';
@@ -237,6 +238,10 @@ class _TodosPageState extends ConsumerState<TodosPage>
             today: today,
             localOrder: manualOrder ? _reorder.order : null,
             applyLocalOrder: _reorder.apply,
+            localSections: manualOrder
+                ? _reorder.sections
+                : const <String, String?>{},
+            collapsed: _collapsed,
           );
     final groups = model?.groups;
     final visibleRows = <TodoRow>[
@@ -287,6 +292,18 @@ class _TodosPageState extends ConsumerState<TodosPage>
         undo: _completionUndo,
         openDetail: _openDetail,
         visibleRows: () => _visibleRows,
+        sections: switch (view.listId) {
+          final String id when listsById[id] != null =>
+            buildTodoSectionCallbacks(
+              context: context,
+              ref: ref,
+              listId: id,
+              sections: TodoSections.ofList(listsById[id]!.metadata),
+              reorder: _reorder,
+              preset: () => _presetFor(view),
+            ),
+          _ => null,
+        },
         onToggleSteps: (TodoRow row) => setState(
           () =>
               _expandedSteps.remove(row.todoId) ||
@@ -418,6 +435,9 @@ class _TodosPageState extends ConsumerState<TodosPage>
                   selection: _selection,
                   rows: visibleRows,
                   today: today,
+                  sections: listId == null || listsById[listId] == null
+                      ? const <TodoSection>[]
+                      : TodoSections.ofList(listsById[listId]!.metadata),
                 )
               : null,
         );

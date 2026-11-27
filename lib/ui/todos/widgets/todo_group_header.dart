@@ -20,6 +20,8 @@ import 'todo_labels.dart';
 /// - 已完成（清单底部 / 今天已完成）可点按折叠，箭头随折叠旋转
 ///   （`fast` + effects，减少动画时直接到位），下面的行整块收起 / 展开
 ///   （见 `TodoDoneSection`）；
+/// - 清单里的分区可点按折叠（同上），行尾 [trailing] 放“添加到分区”与
+///   分区菜单；
 /// - 没有标题的一组（[TodoGroupKind.plain]）不画。
 class TodoGroupHeader extends StatelessWidget {
   const TodoGroupHeader({
@@ -30,6 +32,7 @@ class TodoGroupHeader extends StatelessWidget {
     this.collapsed = false,
     this.onToggleCollapsed,
     this.onMoveOverdueToToday,
+    this.trailing,
   });
 
   final TodoGroup group;
@@ -42,6 +45,9 @@ class TodoGroupHeader extends StatelessWidget {
 
   /// 逾期组行尾“全部改到今天”；null 时不显示。
   final VoidCallback? onMoveOverdueToToday;
+
+  /// 标题行尾的操作（分区的“+”与菜单）。
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +77,7 @@ class TodoGroupHeader extends StatelessWidget {
             ? TodoLabels.smartViewIcon(TodoSmartView.inbox)
             : TodoListStyle.iconOfRow(list!),
       ),
+      TodoGroupKind.section => (group.section?.name ?? '', null),
       TodoGroupKind.completed => (l10n.todoGroupCompletedTitle, null),
       TodoGroupKind.completedToday => (l10n.todoGroupCompletedToday, null),
       TodoGroupKind.completedDay => (
@@ -144,6 +151,17 @@ class TodoGroupHeader extends StatelessWidget {
               child: content,
             ),
           );
+    if (trailing case final trailing?) {
+      return Row(
+        children: <Widget>[
+          Expanded(child: header),
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.s),
+            child: trailing,
+          ),
+        ],
+      );
+    }
     if (move == null) return header;
     // 标题与按钮按需分宽：长文案（英 / 俄）时按钮文字省略，不挤爆标题。
     return Row(

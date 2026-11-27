@@ -104,6 +104,7 @@ mixin _AppDatabaseTodoDetailOps
           title: step.title,
           listId: row.listId,
           tags: TodoTags.ofMetadataText(row.metadata),
+          sectionId: TodoSections.idOfTodo(row.metadata),
         ),
       );
       if (step.done) await completeTodo(id);

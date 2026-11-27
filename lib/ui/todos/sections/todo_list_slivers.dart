@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -17,6 +19,7 @@ import '../viewmodels/todo_list_entries.dart';
 import 'todo_done_section.dart';
 import 'todo_list_callbacks.dart';
 import 'todo_list_items.dart';
+import 'todo_section_callbacks.dart';
 
 /// 待办列表的各组（一个 sliver）：开放区（各组标题与行）→ 内联新建 →
 /// 可折叠的已完成区块（[TodoDoneSection]）。
@@ -31,7 +34,9 @@ import 'todo_list_items.dart';
 ///   入场。
 ///
 /// [reorderable] 为 true 时（收集箱或清单、手动排序，且不在多选），开放区
-/// 是可拖动排序的列表（手柄按住即拖，拿起时给一次触觉）。手机上右滑完成 /
+/// 是可拖动排序的列表（手柄按住即拖，拿起时给一次触觉）；清单有分区时分区
+/// 标题也在这个列表里（不能拖），行拖过标题就换进那个分区。清单视图末尾
+/// 有“添加分区”（[TodoListCallbacks.sections] 给出时）。手机上右滑完成 /
 /// 恢复、左滑删除（松手越过阈值才生效，多选时关闭）；桌面不提供滑动，改为
 /// 右键菜单。
 class TodoListSlivers extends StatelessWidget {
@@ -164,6 +169,14 @@ class TodoListSlivers extends StatelessWidget {
                 ),
               ),
             ),
+          if (callbacks.sections case final sections?)
+            SliverToBoxAdapter(
+              child: MakeRoomItem(
+                tag: 'add_section',
+                controller: makeRoom,
+                child: items.reveal(index++, TodoAddSectionRow(sections)),
+              ),
+            ),
           if (doneKind != null)
             TodoDoneSection(
               key: ValueKey<String>('done_${doneKind.name}'),
@@ -201,12 +214,16 @@ class TodoListSlivers extends StatelessWidget {
   }
 
   /// 可手动排序时的开放区：只有一组无标题的行，间隙在列表之外（不参与
-  /// 拖动），行带拖动手柄。
+  /// 拖动），行带拖动手柄。清单有分区时走 [_sectionedZone]。
   Widget _reorderableZone(
     TodoListItems items,
     List<TodoListEntry> open,
     int first,
   ) {
+    final sectionCallbacks = callbacks.sections;
+    if (sectionCallbacks != null && open.any((e) => e is TodoHeaderEntry)) {
+      return _sectionedZone(items, open, first, sectionCallbacks);
+    }
     final gaps = <TodoGapEntry>[
       for (final entry in open)
         if (entry is TodoGapEntry) entry,
@@ -237,6 +254,110 @@ class TodoListSlivers extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// 有分区时的可排序开放区：未分区的行、各分区标题与行排在同一个可拖动
+  /// 列表里（标题没有手柄、拖不动）。松手时往上找最近的分区标题，就是这一
+  /// 行的新分区（上面没有标题即未分区）；顺序按行的先后（不算标题）写。
+  Widget _sectionedZone(
+    TodoListItems items,
+    List<TodoListEntry> open,
+    int first,
+    TodoSectionCallbacks sections,
+  ) {
+    final gaps = <TodoGapEntry>[
+      for (final entry in open)
+        if (entry is TodoGapEntry) entry,
+    ];
+    final zone = <TodoListEntry>[
+      for (final entry in open)
+        if (entry is! TodoGapEntry) entry,
+    ];
+    final rows = <TodoRow>[
+      for (final entry in zone)
+        if (entry is TodoRowEntry) entry.row,
+    ];
+    final handleOf = <String, int>{
+      for (var i = 0; i < zone.length; i++) zone[i].key: i,
+    };
+    void drop(int oldIndex, int newIndex) {
+      final moved = zone[oldIndex];
+      if (moved is! TodoRowEntry) return;
+      final next = List<TodoListEntry>.of(zone)..removeAt(oldIndex);
+      next.insert(newIndex, moved);
+      String? sectionId;
+      for (var i = newIndex - 1; i >= 0; i--) {
+        if (next[i] case final TodoHeaderEntry header) {
+          sectionId = header.group.section?.id;
+          break;
+        }
+      }
+      final after = <TodoRow>[
+        for (final entry in next)
+          if (entry is TodoRowEntry) entry.row,
+      ];
+      sections.onReorder(
+        rows,
+        rows.indexOf(moved.row),
+        after.indexOf(moved.row),
+        sectionId,
+      );
+    }
+
+    return SliverMainAxisGroup(
+      slivers: <Widget>[
+        for (final gap in gaps)
+          SliverToBoxAdapter(child: items.gap(gap, first)),
+        SliverReorderableList(
+          itemCount: zone.length,
+          proxyDecorator: cardRowReorderProxyDecorator,
+          onReorderStart: (int index) {
+            callbacks.onReorderStart(index);
+            unawaited(HapticFeedback.mediumImpact());
+          },
+          onReorderEnd: callbacks.onReorderEnd,
+          onReorderItem: drop,
+          itemBuilder: (BuildContext context, int index) =>
+              switch (zone[index]) {
+                final TodoHeaderEntry entry => items.header(
+                  entry,
+                  first + gaps.length + index,
+                ),
+                final TodoRowEntry entry => items.row(
+                  entry,
+                  first + gaps.length + index,
+                  trailing: ReorderHandle(index: handleOf[entry.key]!),
+                ),
+                final TodoGapEntry entry => items.gap(entry, first),
+              },
+        ),
+      ],
+    );
+  }
+}
+
+/// 清单视图末尾的“添加分区”（文字按钮，`plus` 图标）。分区满了不出现。
+class TodoAddSectionRow extends StatelessWidget {
+  const TodoAddSectionRow(this.sections, {super.key});
+
+  final TodoSectionCallbacks sections;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sections.sections.length >= TodoSections.maxPerList) {
+      return const SizedBox.shrink();
+    }
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.s),
+        child: TextButton.icon(
+          onPressed: sections.onCreate,
+          icon: const FaIcon(FontAwesomeIcons.plus, size: 13),
+          label: Text(context.l10n.todoSectionAdd),
+        ),
+      ),
     );
   }
 }

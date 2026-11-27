@@ -10,6 +10,7 @@ import '../../widgets/list_make_room.dart';
 import '../viewmodels/todo_groups.dart';
 import '../viewmodels/todo_list_entries.dart';
 import '../widgets/todo_group_header.dart';
+import '../widgets/todo_section_header_actions.dart';
 import 'todo_list_callbacks.dart';
 import 'todo_list_tile.dart';
 
@@ -142,8 +143,22 @@ class TodoListItems {
   }
 
   Widget _groupHeader(TodoGroup group, {required bool interactive}) {
-    final collapsible = isCollapsibleTodoGroup(group.kind);
+    final isSection = group.kind == TodoGroupKind.section;
+    final collapsible = isCollapsibleTodoGroup(group.kind) || isSection;
+    final sectionCallbacks = callbacks.sections;
+    final section = group.section;
     return TodoGroupHeader(
+      trailing:
+          isSection &&
+              section != null &&
+              sectionCallbacks != null &&
+              interactive &&
+              !state.selectionMode
+          ? TodoSectionHeaderActions(
+              section: section,
+              callbacks: sectionCallbacks,
+            )
+          : null,
       group: group,
       today: today,
       list: group.kind == TodoGroupKind.list && group.listId != null

@@ -15,6 +15,7 @@ class TodoInput {
     this.linkedDiaryId,
     this.sourceDiaryId,
     this.tags = const <String>[],
+    this.sectionId,
   });
 
   final String title;
@@ -37,6 +38,9 @@ class TodoInput {
 
   /// 待办标签（规整后写进 `metadata.tags`，见 [TodoTags]）。
   final List<String> tags;
+
+  /// 所在清单里的分区（写进 `metadata.sectionId`，见 [TodoSections]）。
+  final String? sectionId;
 }
 
 /// 待办写入：新建、逐项修改、拖动排序与删除（查询见 `_AppDatabaseTodoQueries`）。
@@ -92,6 +96,8 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
                 if (input.sourceDiaryId != null)
                   TodoMetadataKeys.sourceDiaryId: input.sourceDiaryId,
                 if (tags.isNotEmpty) TodoTags.metadataKey: tags,
+                if (input.sectionId != null && input.listId != null)
+                  TodoSections.todoKey: input.sectionId,
               }),
             ),
             createdAt: now,

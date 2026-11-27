@@ -18,8 +18,10 @@ class TodoQuickAddDraft {
     this.dueDate,
     TodoPriority? priority,
     List<String> tags = const <String>[],
+    this.sectionId,
   }) : priority = priority ?? TodoPriority.none,
-       tags = TodoTags.normalizeAll(tags);
+       tags = TodoTags.normalizeAll(tags),
+       _sectionListId = listId;
 
   String? listId;
   bool listPicked = false;
@@ -33,6 +35,14 @@ class TodoQuickAddDraft {
 
   /// 视图预填与手动选的标签（与识别出的合在一起生效，见 [effTags]）。
   List<String> tags;
+
+  /// 预填的分区（点分区标题上的“+”时）：只属于预填的清单，清单换了（手动
+  /// 选或识别出别的）就不带。
+  final String? sectionId;
+  final String? _sectionListId;
+
+  String? effSection(TodoQuickParse p) =>
+      sectionId != null && effList(p) == _sectionListId ? sectionId : null;
 
   /// 点 × 去掉的识别种类（输入清空时复位）。
   final Set<TodoQuickTokenKind> ignored = <TodoQuickTokenKind>{};
@@ -115,6 +125,7 @@ class TodoQuickAddDraft {
       repeat: date == null ? null : effRepeat(p),
       linkedDiaryId: linkedDiaryId,
       tags: effTags(p),
+      sectionId: effSection(p),
     );
   }
 

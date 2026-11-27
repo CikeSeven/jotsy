@@ -17517,6 +17517,76 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get todoFieldSection => 'Раздел';
+
+  @override
+  String get todoSectionNone => 'Без раздела';
+
+  @override
+  String get todoSectionAdd => 'Добавить раздел';
+
+  @override
+  String get todoSectionNew => 'Новый раздел';
+
+  @override
+  String get todoSectionRename => 'Переименовать раздел';
+
+  @override
+  String get todoSectionNameHint => 'Название раздела';
+
+  @override
+  String get todoSectionMoveUp => 'Переместить выше';
+
+  @override
+  String get todoSectionMoveDown => 'Переместить ниже';
+
+  @override
+  String get todoSectionDelete => 'Удалить раздел';
+
+  @override
+  String todoSectionDeleteTitle(String name) {
+    return 'Удалить раздел «$name»?';
+  }
+
+  @override
+  String get todoSectionDeleteBody =>
+      'Задачи из него перейдут в «Без раздела».';
+
+  @override
+  String todoSectionDeleteWithTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалить и $count задачи в нём',
+      many: 'Удалить и $count задач в нём',
+      few: 'Удалить и $count задачи в нём',
+      one: 'Удалить и $count задачу в нём',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoSectionDeletedNotice(String name) {
+    return 'Раздел «$name» удалён';
+  }
+
+  @override
+  String todoSectionAddTo(String name) {
+    return 'Добавить в «$name»';
+  }
+
+  @override
+  String get todoSectionActions => 'Действия с разделом';
+
+  @override
+  String get todoBatchMoveToSection => 'Переместить в раздел';
+
+  @override
+  String todoBatchSectionMoved(int count, String name) {
+    return 'Перемещено в «$name»: $count';
+  }
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

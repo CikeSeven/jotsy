@@ -16,6 +16,9 @@ import '../../../core/services/editing_session_registry.dart';
 ///   构建时经 [apply] 排），库里的顺序跟上了（[settle] 看到推送来的顺序已一
 ///   致），或写完之后又来了一次推送（写失败、别处也改了顺序），就撤掉本地
 ///   顺序、以库为准；换视图时 [clear]。
+/// - 清单有分区时拖过了分区：顺序与分区在同一个事务里写
+///   （`moveTodoToSection`），松手时同样先按新的分区排（[sections]），库里
+///   的分区也跟上了才撤掉。
 class TodoReorder {
   TodoReorder({required this.onChanged});
 
@@ -25,6 +28,7 @@ class TodoReorder {
   final ReorderEditingGuard _drag = ReorderEditingGuard('todos-reorder');
 
   List<String>? _order;
+  Map<String, String?> _sections = const <String, String?>{};
   bool _written = false;
 
   /// 写完时看到的那份未完成列表；之后来了别的一份即以库为准。
@@ -34,6 +38,10 @@ class TodoReorder {
   /// 页面可按它的实例判断要不要重新分组。
   List<String>? get order => _order;
 
+  /// 拖过分区、库里还没跟上的行：待办 id → 新的分区（null 为未分区）。实例
+  /// 只在松手时换新。
+  Map<String, String?> get sections => _sections;
+
   /// 拿起第 [index] 行。
   void start(int index) => _drag.start(index);
 
@@ -42,13 +50,15 @@ class TodoReorder {
 
   /// 把 [rows]（这一组此刻显示的顺序）里第 [oldIndex] 条拖到 [newIndex]
   /// （已修正的插入位置）：先按新顺序排，再写库。[readOpen] 读此刻库里的
-  /// 未完成待办。
+  /// 未完成待办。[section] 给出时（清单有分区）同时放进这个分区（值为
+  /// null 即未分区）。
   void drop(
     AppDatabase database,
     List<TodoRow> rows,
     int oldIndex,
     int newIndex, {
     required List<TodoRow>? Function() readOpen,
+    ({String? id})? section,
   }) {
     final live = <String>{
       for (final row in readOpen() ?? const <TodoRow>[]) row.todoId,
@@ -69,17 +79,29 @@ class TodoReorder {
         if (live.contains(row.todoId)) row.todoId,
     ]);
     _order = held;
+    _sections = section == null
+        ? const <String, String?>{}
+        : <String, String?>{moved.todoId: section.id};
     _written = false;
     _seenWhenWritten = null;
     onChanged();
+    final aboveId = neighbor(newIndex - 1, -1);
+    final belowId = neighbor(newIndex + 1, 1);
     unawaited(
       _drag
           .holdUntil(
-            database.moveTodo(
-              moved.todoId,
-              aboveId: neighbor(newIndex - 1, -1),
-              belowId: neighbor(newIndex + 1, 1),
-            ),
+            section == null
+                ? database.moveTodo(
+                    moved.todoId,
+                    aboveId: aboveId,
+                    belowId: belowId,
+                  )
+                : database.moveTodoToSection(
+                    moved.todoId,
+                    section.id,
+                    aboveId: aboveId,
+                    belowId: belowId,
+                  ),
           )
           .whenComplete(() {
             if (!identical(_order, held)) return;
@@ -91,6 +113,7 @@ class TodoReorder {
 
   void clear() {
     _order = null;
+    _sections = const <String, String?>{};
     _written = false;
     _seenWhenWritten = null;
   }
@@ -111,8 +134,14 @@ class TodoReorder {
       if (at == null) continue;
       if (at < last) return;
       last = at;
+      // 拖过分区的：库里的分区也要跟上（只换了分区、先后没变时，只看顺序
+      // 会过早撤掉，这一行先回到原分区再跳过去）。
+      if (_sections.containsKey(row.todoId) &&
+          TodoSections.idOfTodo(row.metadata) != _sections[row.todoId]) {
+        return;
+      }
     }
-    // 库里的先后已与本地顺序一致。
+    // 库里的先后与分区已与本地一致。
     clear();
   }
 

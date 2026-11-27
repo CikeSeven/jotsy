@@ -14573,6 +14573,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String todoSeriesDoneCount(int count) {
+    return '已完成 $count 次';
+  }
+
+  @override
+  String todoSeriesOf(String title) {
+    return '属于「$title」';
+  }
+
+  @override
   String todoQuickAddedCount(int count) {
     return '已添加 $count 条';
   }

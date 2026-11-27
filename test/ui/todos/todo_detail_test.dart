@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/ui/todos/models/todo_settings.dart';
 import 'package:node_diary/ui/todos/sections/todo_detail_body.dart';
 import 'package:node_diary/ui/todos/widgets/todo_complete_motion.dart';
 import 'package:node_diary/ui/todos/widgets/todo_step_row.dart';
@@ -217,6 +218,56 @@ void main() {
     expect(find.text(l10n.todoPostponedCount(1)), findsOneWidget);
     await unmountTodos(tester);
   });
+
+  Future<String> seedDoneOccurrence(AppDatabase db) async {
+    final id = await db.createTodo(
+      TodoInput(
+        title: '浇花',
+        dueDate: todoToday,
+        repeat: TodoRepeatRule(
+          frequency: TodoRepeatFrequency.daily,
+          anchor: todoToday,
+        ),
+      ),
+    );
+    await db.completeTodo(id);
+    return id;
+  }
+
+  for (final (label, width) in <(String, double)>[
+    ('a stacked sheet', 400),
+    ('the detail pane', 1400),
+  ]) {
+    testWidgets('a done occurrence opens its series in $label', (tester) async {
+      late String seriesId;
+      await pumpTodosPage(
+        tester,
+        width: width,
+        height: 1200,
+        todoSettings: const TodoSettings(defaultViewKey: 'completed'),
+        seed: (db) async => seriesId = await seedDoneOccurrence(db),
+      );
+      final l10n = todoL10n(tester);
+      // 已完成视图里只有这一次（原待办已推到明天）。
+      await tester.tap(find.text('浇花'));
+      await settle(tester);
+      final copy = tester.widget<TodoDetailBody>(find.byType(TodoDetailBody));
+      expect(copy.todoId, isNot(seriesId));
+      expect(find.text(l10n.todoFieldRepeat), findsNothing);
+
+      await tester.tap(find.text(l10n.todoSeriesOf('浇花')));
+      await settle(tester);
+      final bodies = tester
+          .widgetList<TodoDetailBody>(find.byType(TodoDetailBody))
+          .map((body) => body.todoId)
+          .toList();
+      // 手机在这一次的面板上再叠一层；宽窗口的详情栏原地换成原待办。
+      expect(bodies.last, seriesId);
+      expect(bodies, hasLength(width < 1024 ? 2 : 1));
+      expect(find.byType(TodoStreakCard), findsOneWidget);
+      await unmountTodos(tester);
+    });
+  }
 
   testWidgets('the big checkbox plays before it writes', (tester) async {
     final db = await openDetail(tester, '写周报', (db) async {

@@ -9,6 +9,7 @@
 - 必须：逐项修改只写那一列，不整行写回；批量在一个事务里，值本来相同的行不写。
 - 禁止：为待办另加同步顺序列表；拖动只改被拖的那一行。
 - 必须：完成重复待办只经 `completeTodo`：原行推到下一次，另插已完成副本（id 只经 `todoOccurrenceId`，两台设备完成同一次只得一条）。
+- 必须：关联日记挂在整串重复待办上：改原待办的关联只经 `setTodoLinkedDiary`，同一事务里带上它已完成的各次（关联本来相同的不写）；改某一次只改它自己，取消完成后的副本是普通待办、不再跟随（#382）。
 - 必须：删除为硬删除并可撤销；删清单在同一事务连其中待办删掉（确认框写明条数）；彻底删除日记时清空待办的关联。
 - 必须：随完整备份导出与覆盖恢复，合并按业务 id，清单缺失的落回收集箱；日记包不带。局域网同步见 `lan_sync.md`。
 - 必须：偏好只存 `app.settings.todos`，随备份导出（失败回滚）；排序默认按优先级，智能识别默认开。
@@ -55,6 +56,7 @@
 - 必须：专注的通知只经 `TodoNotificationGateway.showFocus` / `cancelFocus`（payload 前缀 `kTodoFocusPayloadPrefix`，提醒对账不碰它）：Android 常驻一条 chronometer 倒计时（安静渠道 `todo_focus`，走完自己收起）并在结束时刻经 `alarmClock` 模式弹一次（渠道 `todo_focus_end`，不许准时闹钟时退回不精确）；iOS 只排结束提醒；桌面只在应用运行时弹结束提醒。开始、继续、加时时重排，暂停与提前结束时撤下，走完时不撤；排不上时计时照常。
 - 必须：AI 入口只有详情步骤卡的“AI 拆解”与快速新建的“AI 整理”，只在 `aiModuleAvailableProvider(AiModule.todos)` 时出现（AI 规则见 `ai_assistant.md`）；流式生成与预览只经 `TodoAiDrafts`，模型输出只经 `parseTodoAiSteps` / `parseTodoAiItems` 逐行、逐字段校验，生成中只认收完的整行。建议一律先预览、可勾掉与改写，确认后才写库：拆解经 `setTodoSteps` 一次接在已有步骤后（去掉已有的、不超过 `TodoStep.maxSteps`），整理经 `createTodos` 一次建好（自带的值优先，没带的按 `TodoQuickAddDraft.inputForAi` 取面板上手动选的 / 预填的，整段原文的识别结果不算）；放弃不写任何东西。
 - 必须：日记互通只有“添加待办”“转为独立待办”与正文后的“相关待办”；功能关闭时不订阅、不占位。
+- 必须：日记“相关待办”把已完成的各次收进同在列表里的原待办（只经 `TodoSeriesRows.collapse`），行上写“已完成 N 次”；原待办不在列表里的照常单列。已完成某一次的详情里，重复胶囊换成“属于「原待办」”，点按打开原待办（手机叠一层面板，宽窗口详情栏原地换）。
 - 必须：日历上的待办只经 `todoCalendarIndexProvider`，待办开启且 `showTodos` 时才订阅；AI 工具口径见 `ai_assistant.md`。
 - 必须：日历选中日的待办与日记排在同一条时间线，排序只经 `CalendarDayAgenda`（全天在前，定时按时刻穿插，已完成留在原处）；逾期只在选中今天时列在时间线之上，逾期的重复待办在今天的投影不重复列出。
 

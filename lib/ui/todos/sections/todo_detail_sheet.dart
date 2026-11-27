@@ -101,6 +101,8 @@ class _TodoDetailSheetState extends State<_TodoDetailSheet> {
                   todoId: widget.todoId,
                   scrollController: scrollController,
                   onDelete: widget.onDelete,
+                  onOpenTodo: (String id) =>
+                      unawaited(showTodoDetailSheet(context, id)),
                   onEditingFocus: _expand,
                 ),
               ),

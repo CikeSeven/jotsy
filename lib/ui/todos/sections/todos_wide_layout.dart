@@ -18,6 +18,7 @@ class TodosWideLayout extends StatelessWidget {
     required this.detailId,
     required this.onCloseDetail,
     required this.onDeleteDetail,
+    required this.onOpenDetail,
   });
 
   static const double sidebarWidth = 264;
@@ -39,6 +40,9 @@ class TodosWideLayout extends StatelessWidget {
   final String? detailId;
   final VoidCallback onCloseDetail;
   final ValueChanged<String> onDeleteDetail;
+
+  /// 详情栏换成另一条（详情里的跳转，如重复待办某一次跳到原待办）。
+  final ValueChanged<String> onOpenDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +66,7 @@ class TodosWideLayout extends StatelessWidget {
                 todoId: detailId,
                 onClose: onCloseDetail,
                 onDelete: () => onDeleteDetail(detailId),
+                onOpenTodo: onOpenDetail,
               ),
             ),
         ],

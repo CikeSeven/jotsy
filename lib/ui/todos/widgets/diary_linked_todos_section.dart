@@ -10,11 +10,15 @@ import '../../settings/providers/app_features_provider.dart';
 import '../controllers/todo_actions.dart';
 import '../controllers/todo_navigation.dart';
 import '../providers/todo_providers.dart';
+import '../viewmodels/todo_series_rows.dart';
 import 'todo_tile.dart';
 
 /// 日记预览页正文之后的“相关待办”：关联了这篇日记的待办（未完成的在前），
 /// 可直接勾选，点行打开详情。待办功能关闭或没有关联的待办时不占位（连同
 /// 上方的间距一起不出现）。
+///
+/// 关联的是整串重复待办：已完成的各次收进原待办那一行（[TodoSeriesRows]），
+/// 行上写“已完成 N 次”，不再一次一张卡（#382）。
 ///
 /// 功能关闭时先返回、不订阅数据库：预览页的其他测试与默认关闭的用户都
 /// 不会因此多开一条查询。
@@ -57,13 +61,14 @@ class DiaryLinkedTodosSection extends ConsumerWidget {
               ),
             ),
           ),
-          for (final row in rows)
+          for (final (:row, :doneCount) in TodoSeriesRows.collapse(rows))
             Padding(
               key: ValueKey<String>('linked_todo_${row.todoId}'),
               padding: const EdgeInsets.only(bottom: AppSpacing.s),
               child: TodoTile(
                 row: row,
                 today: today,
+                seriesDoneCount: doneCount,
                 onToggle: () =>
                     unawaited(toggleTodoDone(context, database, row)),
                 onTap: () => unawaited(openTodoDetail(context, row.todoId)),

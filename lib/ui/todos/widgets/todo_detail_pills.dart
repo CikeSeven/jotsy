@@ -13,6 +13,7 @@ import '../controllers/todo_field_editors.dart';
 import '../models/todo_view.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_list_style.dart';
+import '../viewmodels/todo_series_rows.dart';
 import 'todo_field_pill.dart';
 import 'todo_labels.dart';
 
@@ -22,11 +23,23 @@ import 'todo_labels.dart';
 /// 设了值的胶囊为 `secondaryContainer` 底（逾期的日期为 `errorContainer`、
 /// 优先级的旗子取强调色），没设的为 `outlineVariant` 描边、只写名称的占位；
 /// 关联了日记时后面多一个“打开”按钮。
+///
+/// 重复待办已完成的某一次（副本）的重复胶囊换成“属于「原待办」”，点按经
+/// [onOpenTodo] 打开原待办，让各次与这一串连在一起（#382）；原待办已被删除
+/// 时仍是普通的重复胶囊。
 class TodoDetailPills extends ConsumerWidget {
-  const TodoDetailPills({super.key, required this.row, required this.today});
+  const TodoDetailPills({
+    super.key,
+    required this.row,
+    required this.today,
+    required this.onOpenTodo,
+  });
 
   final TodoRow row;
   final DateTime today;
+
+  /// 打开另一条待办的详情（业务 id）。
+  final ValueChanged<String> onOpenTodo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,6 +74,10 @@ class TodoDetailPills extends ConsumerWidget {
         ? null
         : ref.watch(todoLinkedDiaryProvider(linkedDiaryId));
     final diary = linkedDiary?.value;
+    final seriesId = TodoSeriesRows.seriesOf(row);
+    final series = seriesId == null
+        ? null
+        : ref.watch(todoProvider(seriesId)).value;
 
     return Wrap(
       spacing: AppSpacing.s,
@@ -88,14 +105,22 @@ class TodoDetailPills extends ConsumerWidget {
           set: reminders.isNotEmpty,
           onTap: () => unawaited(editors.pickReminders()),
         ),
-        TodoFieldPill(
-          icon: FontAwesomeIcons.repeat,
-          label: repeat == null
-              ? l10n.todoFieldRepeat
-              : TodoLabels.repeat(l10n, repeat),
-          set: repeat != null,
-          onTap: () => unawaited(editors.pickRepeat()),
-        ),
+        if (series != null)
+          TodoFieldPill(
+            icon: FontAwesomeIcons.repeat,
+            label: l10n.todoSeriesOf(series.title),
+            set: true,
+            onTap: () => onOpenTodo(series.todoId),
+          )
+        else
+          TodoFieldPill(
+            icon: FontAwesomeIcons.repeat,
+            label: repeat == null
+                ? l10n.todoFieldRepeat
+                : TodoLabels.repeat(l10n, repeat),
+            set: repeat != null,
+            onTap: () => unawaited(editors.pickRepeat()),
+          ),
         ExpressiveMenuAnchor(
           menuChildren: <Widget>[
             for (final value in TodoPriority.values.reversed)

@@ -397,6 +397,7 @@ class _TodosPageState extends ConsumerState<TodosPage>
         ),
         list: (double listWidth) => list(listWidth, wide: true),
         onCloseDetail: () => setState(() => _detailId = null),
+        onOpenDetail: (String id) => setState(() => _detailId = id),
         onDeleteDetail: (String id) {
           setState(() => _detailId = null);
           unawaited(deleteTodoWithUndo(context, _db, id));

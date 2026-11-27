@@ -18,6 +18,7 @@ class TodoDetailPane extends StatelessWidget {
     required this.todoId,
     required this.onClose,
     required this.onDelete,
+    required this.onOpenTodo,
   });
 
   /// 栏宽。
@@ -26,6 +27,9 @@ class TodoDetailPane extends StatelessWidget {
   final String todoId;
   final VoidCallback onClose;
   final VoidCallback onDelete;
+
+  /// 在这一栏里换成另一条待办（重复待办某一次跳到原待办）。
+  final ValueChanged<String> onOpenTodo;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +75,7 @@ class TodoDetailPane extends StatelessWidget {
                   key: ValueKey<String>('todo_detail_$todoId'),
                   todoId: todoId,
                   onDelete: onDelete,
+                  onOpenTodo: onOpenTodo,
                 ),
               ),
             ),

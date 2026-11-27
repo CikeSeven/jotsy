@@ -14830,6 +14830,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String todoSeriesDoneCount(int count) {
+    return '$count 回完了';
+  }
+
+  @override
+  String todoSeriesOf(String title) {
+    return '「$title」の繰り返し';
+  }
+
+  @override
   String todoQuickAddedCount(int count) {
     return '$count 件追加しました';
   }

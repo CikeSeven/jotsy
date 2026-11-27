@@ -26174,6 +26174,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Postponed once} other{Postponed {count} times}}'**
   String todoPostponedCount(int count);
 
+  /// Pill on a repeating to-do in a diary's related to-dos: how many of its occurrences are done (they are folded into this row instead of listed one by one).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Done once} other{Done {count} times}}'**
+  String todoSeriesDoneCount(int count);
+
+  /// Pill in the details of one done occurrence of a repeating to-do; tapping it opens the repeating to-do itself.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of “{title}”'**
+  String todoSeriesOf(String title);
+
   /// Header of the stack of to-dos just added in the quick add sheet.
   ///
   /// In en, this message translates to:

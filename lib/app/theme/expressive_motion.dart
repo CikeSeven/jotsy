@@ -20,6 +20,11 @@ abstract final class ExpressiveMotion {
   static const standard = Duration(milliseconds: 350);
   static const long = Duration(milliseconds: 500);
 
+  /// 一段动效做完、下一段开始前停的一拍（不是过渡时长）：让人看清结果再
+  /// 继续，如待办勾选的对勾与删除线画完之后、这一行收起之前。经 [duration]
+  /// 解析，减少动画时为 0。
+  static const beat = Duration(milliseconds: 150);
+
   /// 循环动画的周期（不是一次过渡的时长）：减少动画时这些循环一律不启动，
   /// 也不经 [duration] 解析。
   /// - [pulseLoop]：雷达波纹一圈（局域网同步英雄卡，三圈各差三分之一周期）；

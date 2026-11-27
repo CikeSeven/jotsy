@@ -40,8 +40,7 @@ class DiaryLinkedTodosSection extends ConsumerWidget {
     if (rows == null || rows.isEmpty) return const SizedBox.shrink();
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = ref.watch(todoTodayProvider);
     final database = ref.read(appDatabaseProvider);
     return Padding(
       padding: const EdgeInsets.only(top: 28),

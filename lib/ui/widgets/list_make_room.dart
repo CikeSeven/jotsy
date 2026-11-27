@@ -35,13 +35,23 @@ part 'list_make_room_slivers.dart';
 /// 让位途中列表 sliver 若用 [MakeRoomSliverList] / [MakeRoomSliverMasonryGrid]，
 /// 预构建区里的项也会画出来（滑进、滑出屏幕的卡片不会凭空出现或消失），
 /// 并按位移从小到大绘制（换位最远的那张压在上面）。
+///
+/// [acrossSlivers] 为 true 时 [animateLayoutChange] 改按整个滚动视图的内容
+/// 坐标记位置：一项从一个 sliver 换到另一个（待办从“今天”组移到“明天”组、
+/// 从已完成组回到未完成）也能滑过去，前面的 sliver 改了高度时后面的项同样
+/// 滑到新位置。默认按所属 sliver 记（日记列表），前面的区块变高时不动。
 class MakeRoomController extends ChangeNotifier {
-  MakeRoomController({required TickerProvider vsync})
-    : _progress = AnimationController.unbounded(vsync: vsync, value: 1) {
+  MakeRoomController({
+    required TickerProvider vsync,
+    this.acrossSlivers = false,
+  }) : _progress = AnimationController.unbounded(vsync: vsync, value: 1) {
     _progress
       ..addListener(notifyListeners)
       ..addStatusListener(_handleStatus);
   }
+
+  /// 是否按整个滚动视图（而不是所属 sliver）的内容坐标记位置，见类注释。
+  final bool acrossSlivers;
 
   /// 弹簧停稳的判定：进度是 0–1 的比例，按像素量级的默认容差太粗。
   static const Tolerance _tolerance = Tolerance(distance: 1e-3, velocity: 1e-2);
@@ -302,9 +312,14 @@ class _RenderMakeRoomItem extends RenderProxyBox {
 
   /// 本项左上角在所属 sliver 内容坐标里的位置（不含自己的位移，也不含
   /// 滚动偏移）；还没排版时为 null。不在 sliver 里、或 sliver 不是自上而下
-  /// / 自左而右排时退回全局坐标。
+  /// / 自左而右排时退回全局坐标。控制器 [MakeRoomController.acrossSlivers]
+  /// 时改按所在滚动视图的内容坐标（[_viewportContentOrigin]）。
   Offset? contentOrigin() {
     if (!attached || !hasSize) return null;
+    if (_controller.acrossSlivers) {
+      final origin = _viewportContentOrigin();
+      if (origin != null) return origin;
+    }
     RenderObject? node = parent;
     while (node != null && node is! RenderSliver) {
       node = node.parent;
@@ -322,6 +337,28 @@ class _RenderMakeRoomItem extends RenderProxyBox {
       AxisDirection.down => origin.translate(0, constraints.scrollOffset),
       AxisDirection.right => origin.translate(constraints.scrollOffset, 0),
       _ => localToGlobal(Offset.zero),
+    };
+  }
+
+  /// 本项左上角在所在滚动视图内容坐标里的位置：相对视口的位置加上视口
+  /// 此刻的滚动量（变化恰逢滚动时不把滚动量当成位移）。各 sliver 共用这一
+  /// 套坐标，换了 sliver 的项也能量出位移。不在视口里、或视口不是自上而下
+  /// / 自左而右排时为 null（退回按所属 sliver 记）。
+  Offset? _viewportContentOrigin() {
+    RenderObject? node = parent;
+    while (node != null && node is! RenderViewportBase) {
+      node = node.parent;
+    }
+    if (node is! RenderViewportBase) return null;
+    final origin = MatrixUtils.transformPoint(
+      getTransformTo(node),
+      Offset.zero,
+    );
+    final pixels = node.offset.hasPixels ? node.offset.pixels : 0.0;
+    return switch (node.axisDirection) {
+      AxisDirection.down => origin.translate(0, pixels),
+      AxisDirection.right => origin.translate(pixels, 0),
+      _ => null,
     };
   }
 

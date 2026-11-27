@@ -25,7 +25,6 @@ import '../widgets/todo_labels.dart';
 import '../widgets/todo_list_picker_sheet.dart';
 import '../widgets/todo_reliability_sheet.dart';
 import '../widgets/todo_sheet.dart';
-import '../widgets/todo_view_switcher.dart';
 
 /// 设置 → 待办：显示偏好、提醒与清单管理入口。
 ///

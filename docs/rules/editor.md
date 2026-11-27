@@ -70,6 +70,7 @@
 - 必须：语言只存每个代码块的 `data.language`：缺省为自动识别，`plain` 为纯文本，其余为 22 种语言。
 - 必须：高亮只经 `DiaryCodeHighlighter`，禁止导入整个 highlight 包；超过 20000 字或 600 行不高亮（`diary_code_block_source_test.dart` 兜底）。
 - 必须：块尾连续第二个空行回车退出代码块，其余回车沿用缩进；导出高亮只经 `DiaryExportCodeTheme`。
+- 必须：代码块由顶层块组件挂载 `node.key`（禁止在外层另套外壳，以免与 `layerLink` 脱节导致选区把手错位）；行号直接读取正文 `RenderParagraph` 纵坐标并按位数动态加宽槽宽（#381）。
 
 ## 内容配色例外
 - 例外：代码块配色主题须有浅 / 深两套，经 `ensureContrast` 兜底（正文 ≥ 4.5:1，注释与行号 ≥ 3:1，`diary_code_theme_test.dart`）。

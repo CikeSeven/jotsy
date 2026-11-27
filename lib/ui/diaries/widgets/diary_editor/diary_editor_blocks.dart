@@ -125,7 +125,7 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
               },
       ),
     ),
-    'code': af.ParagraphBlockComponentBuilder(
+    'code': DiaryCodeBlockBuilder(
       configuration: text.copyWith(
         padding: (_) => EdgeInsets.zero,
         textStyle: (_, {textSpan}) => code.codeTextStyle,
@@ -133,6 +133,8 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
         // 代码按原文排版，不随两端对齐拉开空格。
         textAlign: (_) => TextAlign.start,
       ),
+      look: code,
+      tracker: tracker,
     ),
     // 独占一行的 1dp 细线，上下各留 12dp（DESIGN §3.2）。
     'divider': DiaryDividerBlockBuilder(
@@ -156,44 +158,5 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     'table/cell': DiaryTableCellBlockBuilder(editorState: controller.state),
     ...overrides,
   };
-  return {
-    for (final entry in builders.entries)
-      entry.key: entry.key == 'code'
-          ? _CodeBuilder(entry.value, code, tracker)
-          : entry.value,
-  };
-}
-
-class _CodeBuilder extends af.BlockComponentBuilder {
-  _CodeBuilder(this.delegate, this.look, this.tracker);
-  final af.BlockComponentBuilder delegate;
-  final DiaryCodeBlockLook look;
-  final DiaryBlockLanguageTracker tracker;
-  @override
-  af.BlockComponentWidget build(af.BlockComponentContext context) =>
-      _CodeWidget(
-        node: context.node,
-        look: look,
-        tracker: tracker,
-        child: delegate.build(context) as Widget,
-      );
-}
-
-class _CodeWidget extends af.BlockComponentStatelessWidget {
-  const _CodeWidget({
-    required super.node,
-    required this.look,
-    required this.tracker,
-    required this.child,
-  }) : super(configuration: const af.BlockComponentConfiguration());
-  final DiaryCodeBlockLook look;
-  final DiaryBlockLanguageTracker tracker;
-  final Widget child;
-  @override
-  Widget build(BuildContext context) => DiaryCodeBlockSurface(
-    node: node,
-    look: look,
-    tracker: tracker,
-    child: child,
-  );
+  return builders;
 }

@@ -19967,4 +19967,100 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsDefaultMediaThumbnailSubtitle =>
       'Newly added images and videos use compact thumbnail size by default';
+
+  @override
+  String get aiTaskTodos => 'To-do breakdown & organizing';
+
+  @override
+  String get aiModuleTodos => 'To-do helper';
+
+  @override
+  String get aiModuleTodosSubtitle =>
+      'Break a to-do into steps, and turn a paragraph into several to-dos';
+
+  @override
+  String get aiPromptTodoSystem =>
+      'This task is helping the user plan their to-dos: rely only on what they give you, do not invent details, and keep it short and directly actionable.';
+
+  @override
+  String get aiPromptTodoStepsInstruction =>
+      'Break the to-do below into 3 to 8 concrete, actionable steps in the order they should be done. Write one step per line with no numbering, bullets or explanations, each at most 12 words; do not repeat existing steps. Output only the steps.';
+
+  @override
+  String get aiPromptTodoFieldTitle => 'To-do';
+
+  @override
+  String get aiPromptTodoFieldNote => 'Note';
+
+  @override
+  String aiPromptTodoExistingSteps(String steps) {
+    return 'Existing steps:\n$steps';
+  }
+
+  @override
+  String get aiPromptTodoOrganizeInstruction =>
+      'Turn the text below into separate to-dos, one concrete thing each, in the original order. Write each to-do as one JSON object per line (JSON Lines); do not wrap them in an array or a code block, and output nothing else. Fields: title is a short to-do title without the date, time or list name; date is the due date as YYYY-MM-DD, working out phrases like \"tomorrow\" or \"next Wednesday\" from today, omitted if not mentioned; time is the due time as HH:mm (24-hour), only when there is a date; priority is an integer from 0 to 3 (3 is the most important), only when the text says how urgent it is; list must be one of the user\'s lists copied exactly, omitted if none fits; tags are 0 to 3 short tags, preferring the user\'s existing to-do tags. Each line looks like:';
+
+  @override
+  String aiPromptTodoToday(String date) {
+    return 'Today is $date.';
+  }
+
+  @override
+  String aiPromptTodoLists(String names) {
+    return 'The user\'s lists: $names';
+  }
+
+  @override
+  String aiPromptTodoTags(String names) {
+    return 'The user\'s existing to-do tags: $names';
+  }
+
+  @override
+  String get todoAiBreakdown => 'AI breakdown';
+
+  @override
+  String get todoAiOrganize => 'Organize into to-dos with AI';
+
+  @override
+  String get todoAiStepsTitle => 'Suggested steps';
+
+  @override
+  String get todoAiOrganizeTitle => 'Suggested to-dos';
+
+  @override
+  String get todoAiGenerating => 'Generating…';
+
+  @override
+  String get todoAiDiscard => 'Discard';
+
+  @override
+  String todoAiUseSteps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count steps',
+      one: 'Add 1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoAiAddTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count to-dos',
+      one: 'Add 1 to-do',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoAiNothing => 'Nothing usable came back. Try rewording it.';
+
+  @override
+  String todoAiKeep(String title) {
+    return 'Keep “$title”';
+  }
 }

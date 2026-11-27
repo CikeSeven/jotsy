@@ -5,7 +5,7 @@ summary: Turn on the AI assistant and add a provider and models; what each modul
 features: [ai]
 platforms: []
 destinations: [ai_settings, ai_recap, settings_features]
-keywords: [AI, AI assistant, provider, model, API key, DeepSeek, OpenAI, Claude, Gemini, Ollama, proxy, writing assistant, continue, polish, smart fill, reflections, writing prompts, recap, chat, persona, writing commands, about me, answer language, describe image, undo, privacy, clear AI records, usage]
+keywords: [AI, AI assistant, provider, model, API key, DeepSeek, OpenAI, Claude, Gemini, Ollama, proxy, writing assistant, continue, polish, smart fill, to-do helper, AI breakdown, organize with AI, reflections, writing prompts, recap, chat, persona, writing commands, about me, answer language, describe image, undo, privacy, clear AI records, usage]
 ---
 The AI assistant uses an AI service you set up yourself to help you write, respond to your entries and write recaps; in chat it can also look things up and organize for you. Jotsy doesn't provide an AI service: requests go straight from this device to your provider, and costs follow the provider's billing.
 
@@ -25,6 +25,7 @@ Each can be turned on or off in the "Features" group, which also holds its optio
 - **Writing prompts**: "Need a writing prompt?" under the title of a new blank entry; nothing is generated until you tap it.
 - **Recaps & insights**: recaps for this week, this month, this year or a custom range, optionally for one notebook; old ones are under "Earlier recaps" and can be saved with "Save as entry". Explore has an "AI insights" card.
 - **Chat & actions**: tap the AI icon in the Diaries tab's top bar for a new chat; answers cite related entries. The clock icon opens "Chats" (on the left in wide windows) to search, rename, pin or delete; the pencil starts a new chat. Under an answer you can copy or "Regenerate" it, and "More" has "Save as entry" and delete; your question has "Edit and resend". When you scroll up to older messages, a down arrow appears at the bottom; tap it to jump back to the latest message. "Export chat" in the ⋮ menu exports the messages you tick as Markdown, plain text or JSON. The + button under the input box sends photos (on phones you can also take one) and changes the "Scope" and "Persona"; the button next to it opens "Model and thinking" (the model, and thinking Auto, Off, Low, Medium or High), remembered per chat. A changed scope or persona shows above the input box, with × to reset it. A message takes up to 9 photos, with or without text; if the current model can't see photos a note says so, the photos are still kept and the AI can still add them to entries.
+- **To-do helper**: "AI breakdown" on the Steps card of a to-do's details splits it into steps; the sparkle button "Organize with AI" next to the send button in the new to-do panel turns a paragraph into several to-dos. Both show suggestions first and write nothing until you confirm; see "To-dos".
 - **Image understanding**: sends photos from entries and photos you send in chat to the model; with it off, none of them are sent. In chat the AI looks at an entry's photos when it needs to, and can pick which ones; it sends at most "Photos per request" at a time and continues with the rest. While editing, tap a photo and choose "Describe with AI" to insert a description below it.
 
 ## Personal touch
@@ -45,6 +46,7 @@ The AI can't permanently delete or empty the recycle bin, back up, restore, impo
 
 ## Privacy
 - Requests are sent when you use an AI feature. Two switches, both off by default, also send: "Suggest on the publish page" once each time you open the publish page, and "Respond after publishing" once for each new entry you publish.
+- The to-do helper sends only that to-do's title, note and existing steps, or the paragraph you typed in the new to-do panel, plus your list names and to-do tag names (to pick a list and tags); no entries are sent.
 - Titles and text are always sent; under "Sent with entries", date, mood, tags and weather are on and location is off by default.
 - Private notebooks, the recycle bin and sealed time capsules are never sent. Under "Chats and recaps" you can turn off "Include archived entries" and exclude notebooks and tags; "Send at most" is 100,000 words by default and can be set from 10,000 to 1,000,000.
 - "Allow AI on private entries" is off by default; when on, the writing assistant, smart fill, reflections and "Describe with AI" work on private entries. Entries the AI looks up in chats, and recaps, still never include them.

@@ -31090,6 +31090,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Newly added images and videos use compact thumbnail size by default'**
   String get settingsDefaultMediaThumbnailSubtitle;
+
+  /// Model routing: name of the to-do task (break a to-do into steps, organize text into to-dos).
+  ///
+  /// In en, this message translates to:
+  /// **'To-do breakdown & organizing'**
+  String get aiTaskTodos;
+
+  /// AI settings: switch for the to-do helper module.
+  ///
+  /// In en, this message translates to:
+  /// **'To-do helper'**
+  String get aiModuleTodos;
+
+  /// AI settings: subtitle of the to-do helper module switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Break a to-do into steps, and turn a paragraph into several to-dos'**
+  String get aiModuleTodosSubtitle;
+
+  /// AI prompt (sent to the model): task line of the system prompt for the to-do helper.
+  ///
+  /// In en, this message translates to:
+  /// **'This task is helping the user plan their to-dos: rely only on what they give you, do not invent details, and keep it short and directly actionable.'**
+  String get aiPromptTodoSystem;
+
+  /// AI prompt (sent to the model): asks to break a to-do into steps, one per line.
+  ///
+  /// In en, this message translates to:
+  /// **'Break the to-do below into 3 to 8 concrete, actionable steps in the order they should be done. Write one step per line with no numbering, bullets or explanations, each at most 12 words; do not repeat existing steps. Output only the steps.'**
+  String get aiPromptTodoStepsInstruction;
+
+  /// AI prompt (sent to the model): label before the to-do title.
+  ///
+  /// In en, this message translates to:
+  /// **'To-do'**
+  String get aiPromptTodoFieldTitle;
+
+  /// AI prompt (sent to the model): label before the to-do note.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get aiPromptTodoFieldNote;
+
+  /// AI prompt (sent to the model): the steps the to-do already has, one per line.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing steps:\n{steps}'**
+  String aiPromptTodoExistingSteps(String steps);
+
+  /// AI prompt (sent to the model): asks to turn a paragraph into to-dos as JSON Lines; the line format follows it.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the text below into separate to-dos, one concrete thing each, in the original order. Write each to-do as one JSON object per line (JSON Lines); do not wrap them in an array or a code block, and output nothing else. Fields: title is a short to-do title without the date, time or list name; date is the due date as YYYY-MM-DD, working out phrases like \"tomorrow\" or \"next Wednesday\" from today, omitted if not mentioned; time is the due time as HH:mm (24-hour), only when there is a date; priority is an integer from 0 to 3 (3 is the most important), only when the text says how urgent it is; list must be one of the user\'s lists copied exactly, omitted if none fits; tags are 0 to 3 short tags, preferring the user\'s existing to-do tags. Each line looks like:'**
+  String get aiPromptTodoOrganizeInstruction;
+
+  /// AI prompt (sent to the model): today's date, to resolve relative dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Today is {date}.'**
+  String aiPromptTodoToday(String date);
+
+  /// AI prompt (sent to the model): the names of the user's to-do lists.
+  ///
+  /// In en, this message translates to:
+  /// **'The user\'s lists: {names}'**
+  String aiPromptTodoLists(String names);
+
+  /// AI prompt (sent to the model): the user's existing to-do tags (not diary tags).
+  ///
+  /// In en, this message translates to:
+  /// **'The user\'s existing to-do tags: {names}'**
+  String aiPromptTodoTags(String names);
+
+  /// To-do details: button on the steps card that asks AI to break the to-do into steps.
+  ///
+  /// In en, this message translates to:
+  /// **'AI breakdown'**
+  String get todoAiBreakdown;
+
+  /// Quick add: tooltip of the button that asks AI to turn the typed text into several to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize into to-dos with AI'**
+  String get todoAiOrganize;
+
+  /// To-do details: heading of the AI step suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested steps'**
+  String get todoAiStepsTitle;
+
+  /// Quick add: heading of the to-dos organized by AI.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested to-dos'**
+  String get todoAiOrganizeTitle;
+
+  /// To-do AI suggestions: shown while the model is still writing.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating…'**
+  String get todoAiGenerating;
+
+  /// To-do AI suggestions: button that throws the suggestions away.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get todoAiDiscard;
+
+  /// To-do details: button that adds the ticked AI steps to the to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 step} other{Add {count} steps}}'**
+  String todoAiUseSteps(int count);
+
+  /// Quick add: button that creates the ticked AI to-dos at once.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 to-do} other{Add {count} to-dos}}'**
+  String todoAiAddTodos(int count);
+
+  /// To-do AI suggestions: the model finished without anything usable.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing usable came back. Try rewording it.'**
+  String get todoAiNothing;
+
+  /// To-do AI suggestions: screen reader label of the checkbox that keeps one suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep “{title}”'**
+  String todoAiKeep(String title);
 }
 
 class _AppLocalizationsDelegate

@@ -5,7 +5,7 @@ summary: Turning on to-dos, lists and views, tags, due dates, reminders, repeats
 features: [todos]
 platforms: []
 destinations: [tab_todos, settings_todos, settings_features]
-keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
+keywords: [to-do, todo, to-dos, tasks, list, inbox, sections, list sections, to-do tags, manage tags, due date, reminder, notification, repeat, priority, steps, AI breakdown, organize with AI, snooze, smart recognition, copy to to-dos, related to-dos, to-dos for this day, search to-dos, sort to-dos, reorder, last day of the month]
 ---
 To-dos are a task list separate from your diary, with due dates, reminders, repeats and priorities. Checkboxes inside a diary's text are unrelated to them.
 
@@ -29,10 +29,12 @@ To-dos have their own tags, completely separate from diary tags: diary tag manag
 - Tap "New to-do" at the bottom right, type in "What needs doing?" and press Enter. The panel stays open so you can keep adding; the buttons below set Date, Reminders, Repeat, List and Priority.
 - You can also type directly into "Add a to-do" at the end of the list.
 - Smart recognition: typing "tomorrow 3pm #Work !!!" picks out the date and time, the list and the priority (! / !! / !!! mean low / medium / high).
+- Organize with AI: with the AI assistant on (and "To-do helper" on under Features), a sparkle button sits next to the send button. Write a paragraph (such as "pay rent tomorrow, book the dentist before Friday") and tap it: the AI turns it into several to-dos, each showing its date, list, tags and priority. Untick the ones you don't want, edit titles, tap × to drop a value, then tap "Add N to-dos" to create them all at once.
 
 ## Completing, editing and deleting
 - Tap the checkbox to complete a to-do; you can undo from the notice. On a phone, swipe right to complete and left to delete.
 - Tap a to-do to open its details: edit the title, set date, reminders, repeat, priority, list and linked diary, and add steps and notes. "More" lets you duplicate or delete it.
+- AI breakdown: with the AI assistant on, the Steps card in the details has "AI breakdown" at the top right. The AI suggests steps from the title and note without repeating existing ones; untick the ones you don't want and tap "Add N steps" to put them after the existing steps. You can stop it at any time while it writes.
 - Long-press to start selecting; the bottom bar can complete, change the date, move to a list, set priority or delete in bulk. The Overdue group has "Move all to today".
 - On a computer, right-click a to-do for Mark as done, Reschedule…, Move to list… and Delete.
 

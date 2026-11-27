@@ -20703,4 +20703,105 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get settingsDefaultMediaThumbnailSubtitle =>
       'Новые изображения и видео по умолчанию вставляются в виде компактных миниатюр';
+
+  @override
+  String get aiTaskTodos => 'Разбор и упорядочивание задач';
+
+  @override
+  String get aiModuleTodos => 'Помощник для задач';
+
+  @override
+  String get aiModuleTodosSubtitle =>
+      'Разбить задачу на шаги и превратить абзац в несколько задач';
+
+  @override
+  String get aiPromptTodoSystem =>
+      'Задача — помочь пользователю с задачами: опирайся только на то, что он дал, не придумывай подробностей, пиши кратко и так, чтобы можно было сразу приступить.';
+
+  @override
+  String get aiPromptTodoStepsInstruction =>
+      'Разбей задачу ниже на 3–8 конкретных выполнимых шагов в том порядке, в каком их нужно делать. По одному шагу в строке, без нумерации, маркеров и пояснений, не длиннее 12 слов; не повторяй уже существующие шаги. Выведи только сами шаги.';
+
+  @override
+  String get aiPromptTodoFieldTitle => 'Задача';
+
+  @override
+  String get aiPromptTodoFieldNote => 'Заметка';
+
+  @override
+  String aiPromptTodoExistingSteps(String steps) {
+    return 'Уже есть шаги:\n$steps';
+  }
+
+  @override
+  String get aiPromptTodoOrganizeInstruction =>
+      'Преврати текст ниже в отдельные задачи — по одному конкретному делу в каждой, в исходном порядке. Каждую задачу запиши одним JSON-объектом в строке (JSON Lines); не оборачивай их в массив или блок кода и ничего больше не выводи. Поля: title — короткое название задачи без даты, времени и названия списка; date — срок в формате YYYY-MM-DD, выражения вроде «завтра» или «в следующую среду» считай от сегодняшнего дня, если срок не упомянут — не пиши; time — время срока HH:mm (24 часа), только если есть дата; priority — целое число от 0 до 3 (3 — самое важное), только если в тексте сказано о срочности; list — ровно одно название из списков пользователя, если ничего не подходит — не пиши; tags — от 0 до 3 коротких меток, лучше из уже существующих меток задач пользователя. Формат каждой строки:';
+
+  @override
+  String aiPromptTodoToday(String date) {
+    return 'Сегодня $date.';
+  }
+
+  @override
+  String aiPromptTodoLists(String names) {
+    return 'Списки пользователя: $names';
+  }
+
+  @override
+  String aiPromptTodoTags(String names) {
+    return 'Существующие метки задач пользователя: $names';
+  }
+
+  @override
+  String get todoAiBreakdown => 'Разбить с ИИ';
+
+  @override
+  String get todoAiOrganize => 'Разложить на задачи с ИИ';
+
+  @override
+  String get todoAiStepsTitle => 'Предложенные шаги';
+
+  @override
+  String get todoAiOrganizeTitle => 'Предложенные задачи';
+
+  @override
+  String get todoAiGenerating => 'Генерация…';
+
+  @override
+  String get todoAiDiscard => 'Отбросить';
+
+  @override
+  String todoAiUseSteps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count шага',
+      many: 'Добавить $count шагов',
+      few: 'Добавить $count шага',
+      one: 'Добавить $count шаг',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoAiAddTodos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count задачи',
+      many: 'Добавить $count задач',
+      few: 'Добавить $count задачи',
+      one: 'Добавить $count задачу',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoAiNothing =>
+      'Ничего подходящего не получилось. Попробуйте сформулировать иначе.';
+
+  @override
+  String todoAiKeep(String title) {
+    return 'Оставить «$title»';
+  }
 }

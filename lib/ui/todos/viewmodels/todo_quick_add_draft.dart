@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import 'todo_ai_output.dart';
 import 'todo_quick_parse.dart';
 
 /// 快速新建面板手上的值：视图预填的、手动选的，以及哪些识别种类被点掉 /
@@ -126,6 +127,28 @@ class TodoQuickAddDraft {
       linkedDiaryId: linkedDiaryId,
       tags: effTags(p),
       sectionId: effSection(p),
+    );
+  }
+
+  /// AI 整理出的一条 [item] 要写的待办：它自己带的值优先，没带的按面板上
+  /// 手动选的 / 视图预填的。整段原文的识别结果不算：一段话里认出的日期、
+  /// 清单多半只属于其中一件事。手动选的提醒与重复跟着手动的日期走，只给
+  /// 没有自己日期的那几条。
+  TodoInput inputForAi(TodoAiItem item, {String? linkedDiaryId}) {
+    final ownDate = item.date != null;
+    final date = item.date ?? dueDate;
+    final list = item.listId ?? listId;
+    return TodoInput(
+      title: item.title,
+      listId: list,
+      priority: item.priority != TodoPriority.none ? item.priority : priority,
+      dueDate: date,
+      dueMinute: date == null ? null : (ownDate ? item.minute : dueMinute),
+      reminders: date == null || ownDate ? const <TodoReminder>[] : reminders,
+      repeat: date == null || ownDate ? null : repeat,
+      linkedDiaryId: linkedDiaryId,
+      tags: TodoTags.normalizeAll(<String>[...tags, ...item.tags]),
+      sectionId: sectionId != null && list == _sectionListId ? sectionId : null,
     );
   }
 

@@ -51,6 +51,7 @@ String aiTaskLabel(AppLocalizations l10n, AiTaskKind task) => switch (task) {
   AiTaskKind.recap => l10n.aiTaskRecap,
   AiTaskKind.chat => l10n.aiTaskChat,
   AiTaskKind.vision => l10n.aiTaskVision,
+  AiTaskKind.todos => l10n.aiTaskTodos,
   AiTaskKind.utility => l10n.aiTaskUtility,
 };
 
@@ -62,6 +63,7 @@ String aiModuleLabel(AppLocalizations l10n, AiModule module) =>
       AiModule.prompts => l10n.aiModulePrompts,
       AiModule.recap => l10n.aiModuleRecap,
       AiModule.chat => l10n.aiModuleChat,
+      AiModule.todos => l10n.aiModuleTodos,
       AiModule.vision => l10n.aiModuleVision,
     };
 
@@ -73,6 +75,7 @@ String aiModuleSubtitle(AppLocalizations l10n, AiModule module) =>
       AiModule.prompts => l10n.aiModulePromptsSubtitle,
       AiModule.recap => l10n.aiModuleRecapSubtitle,
       AiModule.chat => l10n.aiModuleChatSubtitle,
+      AiModule.todos => l10n.aiModuleTodosSubtitle,
       AiModule.vision => l10n.aiModuleVisionSubtitle,
     };
 

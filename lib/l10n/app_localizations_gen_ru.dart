@@ -17364,6 +17364,29 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String todoReviewWeekDone(int count) {
+    return 'Выполнено за неделю: $count';
+  }
+
+  @override
+  String todoReviewStreak(int days) {
+    return 'Дней подряд: $days';
+  }
+
+  @override
+  String get todoReviewChartLabel => 'Выполнено по дням за последние 7 дней';
+
+  @override
+  String get exploreModuleTodos => 'Задачи';
+
+  @override
+  String get exploreModuleTodosDesc =>
+      'Что осталось на сегодня, выполнено за неделю и серия дней';
+
+  @override
+  String get exploreTodosOpen => 'Открыть задачи';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

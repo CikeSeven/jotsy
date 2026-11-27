@@ -16726,6 +16726,42 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todoReviewWeekDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count done this week',
+      one: '1 done this week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoReviewStreak(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days-day streak',
+      one: '1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoReviewChartLabel =>
+      'To-dos done each day over the last 7 days';
+
+  @override
+  String get exploreModuleTodos => 'To-dos';
+
+  @override
+  String get exploreModuleTodosDesc =>
+      'What\'s left today, done this week and your streak';
+
+  @override
+  String get exploreTodosOpen => 'Open to-dos';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

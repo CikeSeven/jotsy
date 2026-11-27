@@ -14897,6 +14897,28 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String todoReviewWeekDone(int count) {
+    return '今週 $count 件完了';
+  }
+
+  @override
+  String todoReviewStreak(int days) {
+    return '$days 日連続';
+  }
+
+  @override
+  String get todoReviewChartLabel => '直近 7 日間の毎日の完了数';
+
+  @override
+  String get exploreModuleTodos => 'ToDo';
+
+  @override
+  String get exploreModuleTodosDesc => '今日の残り、今週の完了数と連続日数';
+
+  @override
+  String get exploreTodosOpen => 'ToDoを開く';
+
+  @override
   String todoSortLabel(String mode) {
     return '並べ替え：$mode';
   }

@@ -15,10 +15,12 @@ import '../../widgets/list_make_room.dart';
 import '../models/todo_view.dart';
 import '../viewmodels/todo_day_plan.dart';
 import '../viewmodels/todo_groups.dart';
+import '../viewmodels/todo_review_stats.dart';
 import '../viewmodels/todo_list_entries.dart';
 import '../widgets/todo_inline_add_row.dart';
 import '../widgets/todo_labels.dart';
 import '../widgets/todo_quick_add_sheet.dart';
+import '../widgets/todo_review_summary.dart';
 import '../widgets/todo_row_drag.dart';
 import '../widgets/todo_view_hero.dart';
 import '../widgets/todo_week_strip.dart';
@@ -121,14 +123,20 @@ Widget buildTodosPageList({
                     !TodoDayPlan.build(open, today).isEmpty
                 ? onPlanToday
                 : null,
-            weekStrip: view.smart == TodoSmartView.planned
-                ? TodoWeekStrip(
-                    today: today,
-                    counts: TodoWeekStrip.countsOf(open ?? const <TodoRow>[]),
-                    onPickDay: onPickDay,
-                    onDrop: onDropOnDay,
-                  )
-                : null,
+            footer: switch (view.smart) {
+              TodoSmartView.planned => TodoWeekStrip(
+                today: today,
+                counts: TodoWeekStrip.countsOf(open ?? const <TodoRow>[]),
+                onPickDay: onPickDay,
+                onDrop: onDropOnDay,
+              ),
+              TodoSmartView.completed when completed != null =>
+                TodoReviewSummary(
+                  stats: TodoReviewStats.build(completed, today),
+                  today: today,
+                ),
+              _ => null,
+            },
           ),
         ),
       ),

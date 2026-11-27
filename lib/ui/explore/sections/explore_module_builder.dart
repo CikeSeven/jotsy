@@ -22,6 +22,7 @@ import 'explore_overview_card.dart';
 import 'explore_random_card.dart';
 import 'explore_recap_card.dart';
 import 'explore_rhythm_card.dart';
+import 'explore_todos_card.dart';
 
 /// 按卡片设置与聚合数据建出一张卡片（探索页与自定义页的预览共用）。
 ///
@@ -144,6 +145,8 @@ Widget? buildExploreModule(
       return ExploreNotebooksCard(config: config);
     case ExploreModuleId.drafts:
       return const ExploreDraftsCard();
+    case ExploreModuleId.todos:
+      return const ExploreTodosCard();
     case ExploreModuleId.comments:
       return ExploreCommentsCard(config: config);
     case ExploreModuleId.aiInsight:

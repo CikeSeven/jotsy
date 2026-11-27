@@ -26288,6 +26288,42 @@ abstract class AppLocalizations {
   /// **'{date}, {count, plural, =0{nothing due} =1{1 to-do} other{{count} to-dos}}'**
   String todoWeekDaySummary(String date, int count);
 
+  /// Review card: to-dos completed since Monday.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 done this week} other{{count} done this week}}'**
+  String todoReviewWeekDone(int count);
+
+  /// Review card: days in a row with at least one completed to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1-day streak} other{{days}-day streak}}'**
+  String todoReviewStreak(int days);
+
+  /// Screen reader label of the 7-day completion bars.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos done each day over the last 7 days'**
+  String get todoReviewChartLabel;
+
+  /// Explore card name: to-do progress.
+  ///
+  /// In en, this message translates to:
+  /// **'To-dos'**
+  String get exploreModuleTodos;
+
+  /// Explore card description in the customize page.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s left today, done this week and your streak'**
+  String get exploreModuleTodosDesc;
+
+  /// Button on the explore to-do card that switches to the To-dos tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to-dos'**
+  String get exploreTodosOpen;
+
   /// Sort item in the To-dos menu; {mode} is the current sort.
   ///
   /// In en, this message translates to:

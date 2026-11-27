@@ -18,6 +18,8 @@ import '../../diaries/controllers/diary_open_flow.dart';
 import '../../diaries/controllers/diary_tag_search_flow.dart';
 import '../../diaries/pages/diary_drafts_page.dart';
 import '../../diaries/pages/diary_preview_page.dart';
+import '../../home/models/home_tab.dart';
+import '../../home/providers/home_tab_request_provider.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/controllers/notebook_navigation.dart';
 import '../../notebooks/pages/notebooks_page.dart';
@@ -89,6 +91,9 @@ abstract class ExploreModuleActions {
 
   /// 打开 AI 助手主页（问问我的日记）。
   void openAiHub() {}
+
+  /// 切到待办 Tab。默认什么都不做（预览与测试）。
+  void openTodos() {}
 }
 
 /// 把 [ExploreModuleActions] 交给探索页里的卡片。
@@ -255,6 +260,10 @@ class ExplorePageActions extends ExploreModuleActions {
 
   @override
   void createDiary() => unawaited(runDiaryCreateEntryFlow(context, ref));
+
+  @override
+  void openTodos() =>
+      ref.read(homeTabRequestProvider.notifier).request(HomeTab.todos);
 
   @override
   void openDrafts() {

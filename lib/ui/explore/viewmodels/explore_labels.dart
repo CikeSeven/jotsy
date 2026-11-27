@@ -29,6 +29,7 @@ abstract final class ExploreLabels {
         ExploreModuleId.capsules => l10n.exploreModuleCapsules,
         ExploreModuleId.notebooks => l10n.exploreModuleNotebooks,
         ExploreModuleId.drafts => l10n.exploreModuleDrafts,
+        ExploreModuleId.todos => l10n.exploreModuleTodos,
         ExploreModuleId.comments => l10n.exploreModuleComments,
         ExploreModuleId.aiInsight => l10n.exploreModuleAi,
       };
@@ -55,6 +56,7 @@ abstract final class ExploreLabels {
         ExploreModuleId.capsules => l10n.exploreModuleCapsulesDesc,
         ExploreModuleId.notebooks => l10n.exploreModuleNotebooksDesc,
         ExploreModuleId.drafts => l10n.exploreModuleDraftsDesc,
+        ExploreModuleId.todos => l10n.exploreModuleTodosDesc,
         ExploreModuleId.comments => l10n.exploreModuleCommentsDesc,
         ExploreModuleId.aiInsight => l10n.exploreModuleAiDesc,
       };

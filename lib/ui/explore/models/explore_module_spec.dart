@@ -13,6 +13,7 @@ enum ExploreModuleFeature {
   timeCapsules,
   notebooks,
   comments,
+  todos,
   ai,
 }
 
@@ -53,6 +54,7 @@ class ExploreModuleSpec {
     ExploreModuleFeature.timeCapsules => features.timeCapsules,
     ExploreModuleFeature.notebooks => features.notebooks,
     ExploreModuleFeature.comments => features.comments,
+    ExploreModuleFeature.todos => features.todos,
     ExploreModuleFeature.ai => features.ai,
   };
 
@@ -88,6 +90,14 @@ class ExploreModuleSpec {
       icon: FontAwesomeIcons.filePen,
       visibleByDefault: true,
       halfByDefault: true,
+    ),
+    ExploreModuleSpec(
+      ExploreModuleId.todos,
+      group: ExploreModuleGroup.linked,
+      icon: FontAwesomeIcons.solidSquareCheck,
+      visibleByDefault: true,
+      halfByDefault: true,
+      feature: ExploreModuleFeature.todos,
     ),
     ExploreModuleSpec(
       ExploreModuleId.overview,

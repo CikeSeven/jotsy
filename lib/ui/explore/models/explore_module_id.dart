@@ -28,6 +28,7 @@ enum ExploreModuleId {
   notebooks,
   drafts,
   comments,
+  todos,
   aiInsight;
 
   /// 按枚举名查找；认不出时为 null。

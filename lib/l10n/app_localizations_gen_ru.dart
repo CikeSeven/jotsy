@@ -17189,6 +17189,58 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todoEmptySearch => 'Подходящих задач нет';
 
   @override
+  String get todoEmptyTodayHint => 'Здесь появятся задачи на сегодня';
+
+  @override
+  String get todoEmptyPlanned => 'Нет запланированных задач';
+
+  @override
+  String get todoEmptyPlannedHint => 'Задачи с датой появятся здесь по дням';
+
+  @override
+  String get todoEmptyImportant => 'Нет задач с высоким приоритетом';
+
+  @override
+  String get todoEmptyImportantHint =>
+      'Добавьте !!! при вводе или выберите высокий приоритет';
+
+  @override
+  String get todoEmptyAll => 'Всё сделано';
+
+  @override
+  String get todoEmptyAllHint => 'Здесь появятся все невыполненные задачи';
+
+  @override
+  String get todoEmptyInbox => 'Входящие пусты';
+
+  @override
+  String get todoEmptyInboxHint => 'Сюда попадают задачи без списка';
+
+  @override
+  String get todoEmptyCompletedHint =>
+      'Выполненные задачи хранятся здесь по дням';
+
+  @override
+  String get todoEmptyListHint => 'Добавьте первую задачу выше';
+
+  @override
+  String todoDueInMinutes(int minutes) {
+    return 'Через $minutes мин';
+  }
+
+  @override
+  String get todoStepsExpand => 'Показать шаги';
+
+  @override
+  String get todoStepsCollapse => 'Скрыть шаги';
+
+  @override
+  String get todoReschedule => 'Перенести';
+
+  @override
+  String get todoSettingsSwipeLeft => 'Свайп влево';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Сортировка: $mode';
   }

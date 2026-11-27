@@ -4,13 +4,15 @@ import 'package:flutter/widgets.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../widgets/todo_complete_motion.dart';
 import 'todo_actions.dart';
+import 'todo_completion_undo.dart';
 
 /// 列表里勾选完成的“先收起、再写库”队列（待办页持有）。
 ///
-/// 时序：行内勾选动效播完 → [start] 把这一行记进 [leaving]（列表据此经
-/// `ListItemPresence` 收起，`medium`）→ 收起结束后经 [toggleTodoDone] 写库并
-/// 弹可撤销提示 → 页面拿到新数据时 [prune] 把已经写进去的去掉：这一行已
+/// 时序（见 `TodoCompleteMotion`）：行内勾选动效播完 → [start] 把这一行记进
+/// [leaving]（列表据此经 `ListItemPresence` 收起）→ 收起结束后经
+/// [toggleTodoDone] 写库并弹可撤销提示（经 [undo] 与接连完成的合并） → 页面拿到新数据时 [prune] 把已经写进去的去掉：这一行已
 /// 不在未完成里，或（重复待办推到下一次）`updated_at` 变了。不在写完的那
 /// 一刻去掉：drift 的推送晚一帧到，旧数据里这一行还在，会先展开回来再消失。
 /// 减少动画时收起时长为 0，直接写库。
@@ -18,10 +20,13 @@ import 'todo_actions.dart';
 /// 页面卸载（切走 Tab 不会卸载，关掉功能或退出首页会）时 [dispose] 把还在
 /// 计时的直接写库（不再弹提示），勾掉的待办不会因为离开而没完成。
 class TodoCompletionQueue {
-  TodoCompletionQueue({required this.onChanged});
+  TodoCompletionQueue({required this.onChanged, required this.undo});
 
   /// [leaving] 变化时通知页面重建。
   final VoidCallback onChanged;
+
+  /// 接连完成的几条合并成一条撤销提示。
+  final TodoCompletionUndo undo;
 
   /// 收起中的行 → 开始时这一行的 `updated_at`。
   final Map<String, DateTime> _leaving = <String, DateTime>{};
@@ -41,7 +46,7 @@ class TodoCompletionQueue {
     if (_leaving.containsKey(id)) return;
     final collapse = ExpressiveMotion.duration(
       context,
-      ExpressiveMotion.medium,
+      TodoCompleteMotion.collapse,
     );
     _leaving[id] = row.updatedAt;
     onChanged();
@@ -54,7 +59,13 @@ class TodoCompletionQueue {
 
         try {
           if (context.mounted) {
-            await toggleTodoDone(context, database, row, onWritten: written);
+            await toggleTodoDone(
+              context,
+              database,
+              row,
+              onWritten: written,
+              undo: undo,
+            );
           } else {
             await database.completeTodo(id);
           }

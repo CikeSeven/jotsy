@@ -80,6 +80,44 @@ class TodoTodayNotifier extends Notifier<DateTime> {
   }
 }
 
+/// 整分的“此刻”：只给按分钟变化的说法（“还有 25 分钟”）用，别的界面
+/// 不要监听它，免得每分钟重建。
+///
+/// autoDispose：没有行需要倒数时不留计时器。计时器对齐到下一个整分（多等
+/// 一秒，免得早几毫秒触发落在上一分）；退后台时计时器可能被推迟，回到前台
+/// 后的第一次触发即校正。
+final todoMinuteProvider =
+    NotifierProvider.autoDispose<TodoMinuteNotifier, DateTime>(
+      TodoMinuteNotifier.new,
+    );
+
+class TodoMinuteNotifier extends Notifier<DateTime> {
+  Timer? _tick;
+
+  @override
+  DateTime build() {
+    final now = ref.watch(todoNowProvider)();
+    ref.onDispose(() => _tick?.cancel());
+    _scheduleAfter(now);
+    return _floor(now);
+  }
+
+  void _refresh() {
+    final now = ref.read(todoNowProvider)();
+    state = _floor(now);
+    _scheduleAfter(now);
+  }
+
+  void _scheduleAfter(DateTime now) {
+    _tick?.cancel();
+    final next = _floor(now).add(const Duration(minutes: 1));
+    _tick = Timer(next.difference(now) + const Duration(seconds: 1), _refresh);
+  }
+
+  static DateTime _floor(DateTime t) =>
+      DateTime(t.year, t.month, t.day, t.hour, t.minute);
+}
+
 /// 日历用的按日索引。重新加载期间沿用上一份数据，日期格上的角标不会闪
 /// 一下消失；还没有数据时为空索引。只在待办功能开启、日历显示待办时订阅。
 final todoCalendarIndexProvider = Provider<TodoCalendarIndex>((Ref ref) {

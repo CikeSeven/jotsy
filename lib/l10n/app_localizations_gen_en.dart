@@ -16548,6 +16548,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoEmptySearch => 'No matching to-dos';
 
   @override
+  String get todoEmptyTodayHint => 'To-dos due today show up here';
+
+  @override
+  String get todoEmptyPlanned => 'Nothing scheduled';
+
+  @override
+  String get todoEmptyPlannedHint =>
+      'Give a to-do a date and it lands here, sorted by day';
+
+  @override
+  String get todoEmptyImportant => 'No high-priority to-dos';
+
+  @override
+  String get todoEmptyImportantHint =>
+      'Add !!! while typing, or set High priority in details';
+
+  @override
+  String get todoEmptyAll => 'All clear';
+
+  @override
+  String get todoEmptyAllHint => 'Every unfinished to-do shows up here';
+
+  @override
+  String get todoEmptyInbox => 'Your inbox is empty';
+
+  @override
+  String get todoEmptyInboxHint => 'To-dos without a list land here';
+
+  @override
+  String get todoEmptyCompletedHint => 'Finished to-dos are kept here by day';
+
+  @override
+  String get todoEmptyListHint => 'Add your first to-do above';
+
+  @override
+  String todoDueInMinutes(int minutes) {
+    return 'In $minutes min';
+  }
+
+  @override
+  String get todoStepsExpand => 'Show steps';
+
+  @override
+  String get todoStepsCollapse => 'Hide steps';
+
+  @override
+  String get todoReschedule => 'Reschedule';
+
+  @override
+  String get todoSettingsSwipeLeft => 'Swipe left';
+
+  @override
   String todoSortLabel(String mode) {
     return 'Sort: $mode';
   }

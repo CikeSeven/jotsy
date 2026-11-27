@@ -61,6 +61,7 @@ class DiarySwipeActionItem extends StatefulWidget {
     required this.onSwiped,
     this.startAction,
     this.releaseStartDrags = false,
+    this.collapseOnSwipe = true,
     required this.child,
   });
 
@@ -99,6 +100,10 @@ class DiarySwipeActionItem extends StatefulWidget {
   /// 没有 [startAction] 时，朝行首动作方向起手的拖动不接手、让给外层；
   /// 默认 false（卡片照旧接住，停在原位）。
   final bool releaseStartDrags;
+
+  /// 行尾动作生效后条目是否滑出并收起（默认是）。为 false 时（不移走条目
+  /// 的动作，如待办改期）松手即调用 [onSwiped]，卡片弹回原位、保持可拖。
+  final bool collapseOnSwipe;
   final Widget child;
 
   @override
@@ -314,12 +319,23 @@ class _DiarySwipeActionItemState extends State<DiarySwipeActionItem>
   }
 
   /// 生效：卡片滑出 → 条目收起 → 回调生效一侧的动作。动画被打断（页面销毁）
-  /// 时 TickerFuture 不会完成，后续步骤与回调都不会执行。
+  /// 时 TickerFuture 不会完成，后续步骤与回调都不会执行。行尾动作不收起
+  /// （[DiarySwipeActionItem.collapseOnSwipe] 为 false）时立即回调、卡片弹回。
   void _commit() {
     // 武装时已越过阈值，符号即生效的一侧。卡片只在有行首动作时才会停在负侧
     // （宿主撤掉行首动作时 didUpdateWidget 已把卡片放回、清掉武装），所以
     // 这里负侧一定拿得到行首动作。
     final startAction = _slide.value < 0 ? widget.startAction! : null;
+    if (startAction == null && !widget.collapseOnSwipe) {
+      _setArmed(false);
+      widget.onSwiped();
+      _slide.animateBack(
+        0,
+        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+        curve: ExpressiveMotion.spatial,
+      );
+      return;
+    }
     setState(() {
       _phase = _SwipePhase.leaving;
       _leavingStartAction = startAction;

@@ -207,8 +207,14 @@ void main() {
       snoozeMinutes: 30,
       hideContentOnLockScreen: true,
       smartParse: false,
+      swipeLeft: TodoSwipeAction.reschedule,
     );
     expect(TodoSettings.decode(custom.encode()), custom);
+    expect(
+      TodoSettings.decode('{"swipeLeft":"archive"}').swipeLeft,
+      TodoSwipeAction.delete,
+      reason: '认不出的左滑动作退回删除',
+    );
     expect(
       TodoSettings.decode('{"smartParse":"off"}').smartParse,
       isTrue,

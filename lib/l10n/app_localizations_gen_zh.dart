@@ -14483,6 +14483,56 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todoEmptySearch => '没有找到相关的待办';
 
   @override
+  String get todoEmptyTodayHint => '今天到期的待办会出现在这里';
+
+  @override
+  String get todoEmptyPlanned => '还没有安排日期的待办';
+
+  @override
+  String get todoEmptyPlannedHint => '给待办设上日期，它就会按日子排在这里';
+
+  @override
+  String get todoEmptyImportant => '没有高优先级的待办';
+
+  @override
+  String get todoEmptyImportantHint => '输入时加上 !!!，或在详情里设为高优先级';
+
+  @override
+  String get todoEmptyAll => '全部做完了';
+
+  @override
+  String get todoEmptyAllHint => '所有没做完的待办都会出现在这里';
+
+  @override
+  String get todoEmptyInbox => '收集箱是空的';
+
+  @override
+  String get todoEmptyInboxHint => '不属于任何清单的待办先放在这里';
+
+  @override
+  String get todoEmptyCompletedHint => '勾掉的待办会按完成的日子排在这里';
+
+  @override
+  String get todoEmptyListHint => '在上面记下第一条';
+
+  @override
+  String todoDueInMinutes(int minutes) {
+    return '还有 $minutes 分钟';
+  }
+
+  @override
+  String get todoStepsExpand => '展开步骤';
+
+  @override
+  String get todoStepsCollapse => '收起步骤';
+
+  @override
+  String get todoReschedule => '改期';
+
+  @override
+  String get todoSettingsSwipeLeft => '左滑操作';
+
+  @override
   String todoSortLabel(String mode) {
     return '排序：$mode';
   }

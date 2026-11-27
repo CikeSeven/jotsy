@@ -10,49 +10,13 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../app_surface/widgets/app_card_surface.dart';
-import '../../widgets/expressive_entrance.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
-import '../../widgets/page_header.dart';
-import '../../widgets/select_all_button.dart';
 import '../controllers/todo_batch_actions.dart';
 import '../controllers/todo_page_selection.dart';
 import '../widgets/todo_due_sheet.dart';
 import '../widgets/todo_labels.dart';
 
-/// 多选时的页头：标题“已选 N”，右侧全选 / 取消全选与退出（`xmark`）。
-/// 与 [PageHeader] 同一底（实色 / 玻璃随首页顶栏）。
-class TodoSelectionHeader extends StatelessWidget {
-  const TodoSelectionHeader({
-    super.key,
-    required this.count,
-    required this.allSelected,
-    required this.onToggleAll,
-    required this.onClose,
-  });
-
-  final int count;
-  final bool allSelected;
-  final VoidCallback onToggleAll;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageHeader(
-      title: l10n.todoSelectedCount(count),
-      actions: <Widget>[
-        SelectAllButton(allSelected: allSelected, onPressed: onToggleAll),
-        IconButton(
-          tooltip: l10n.todoSelectionExit,
-          onPressed: onClose,
-          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-        ),
-      ],
-    );
-  }
-}
-
-/// 多选时浮在列表底部的操作栏（卡片表面、带投影、自下滑入）：完成、日期、
+/// 多选时浮在列表底部的操作栏（卡片表面、带投影；升起与沉下由页面外框做）：完成、日期、
 /// 清单、优先级（4 项弹出菜单）、删除（error）。没有选中时各按钮停用。
 class TodoSelectionActionBar extends StatelessWidget {
   const TodoSelectionActionBar({
@@ -76,74 +40,70 @@ class TodoSelectionActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    return ExpressiveEntrance(
-      offset: const Offset(0, 0.4),
-      glass: AppCardSurface.isGlass(context),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: AppEffects.softShadow(scheme),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: AppEffects.softShadow(scheme),
+      ),
+      child: AppCardSurface(
+        shadow: false,
+        borderRadius: const BorderRadius.all(Radius.circular(28)),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.xs,
         ),
-        child: AppCardSurface(
-          shadow: false,
-          borderRadius: const BorderRadius.all(Radius.circular(28)),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xs,
-            vertical: AppSpacing.xs,
-          ),
-          child: Row(
-            children: <Widget>[
-              _BarAction(
-                icon: FontAwesomeIcons.circleCheck,
-                label: l10n.todoBatchActionComplete,
-                onPressed: enabled ? onComplete : null,
-              ),
-              _BarAction(
-                icon: FontAwesomeIcons.calendar,
-                label: l10n.todoFieldDue,
-                onPressed: enabled ? onDue : null,
-              ),
-              _BarAction(
-                icon: FontAwesomeIcons.folderOpen,
-                label: l10n.todoFieldList,
-                onPressed: enabled ? onList : null,
-              ),
-              Expanded(
-                child: ExpressiveMenuAnchor(
-                  menuChildren: <Widget>[
-                    for (final priority in TodoPriority.values.reversed)
-                      ExpressiveMenuItem(
-                        leadingIcon: FaIcon(
-                          FontAwesomeIcons.solidFlag,
-                          color:
-                              TodoLabels.priorityColor(scheme, priority) ??
-                              scheme.onSurfaceVariant,
-                        ),
-                        onPressed: () => onPriority(priority),
-                        child: Text(TodoLabels.priority(l10n, priority)),
+        child: Row(
+          children: <Widget>[
+            _BarAction(
+              icon: FontAwesomeIcons.circleCheck,
+              label: l10n.todoBatchActionComplete,
+              onPressed: enabled ? onComplete : null,
+            ),
+            _BarAction(
+              icon: FontAwesomeIcons.calendar,
+              label: l10n.todoFieldDue,
+              onPressed: enabled ? onDue : null,
+            ),
+            _BarAction(
+              icon: FontAwesomeIcons.folderOpen,
+              label: l10n.todoFieldList,
+              onPressed: enabled ? onList : null,
+            ),
+            Expanded(
+              child: ExpressiveMenuAnchor(
+                menuChildren: <Widget>[
+                  for (final priority in TodoPriority.values.reversed)
+                    ExpressiveMenuItem(
+                      leadingIcon: FaIcon(
+                        FontAwesomeIcons.solidFlag,
+                        color:
+                            TodoLabels.priorityColor(scheme, priority) ??
+                            scheme.onSurfaceVariant,
                       ),
-                  ],
-                  builder:
-                      (
-                        BuildContext context,
-                        ExpressiveMenuAnchorState menu,
-                        Widget? _,
-                      ) => _BarAction(
-                        icon: FontAwesomeIcons.flag,
-                        label: l10n.todoFieldPriority,
-                        expand: false,
-                        onPressed: enabled ? menu.toggle : null,
-                      ),
-                ),
+                      onPressed: () => onPriority(priority),
+                      child: Text(TodoLabels.priority(l10n, priority)),
+                    ),
+                ],
+                builder:
+                    (
+                      BuildContext context,
+                      ExpressiveMenuAnchorState menu,
+                      Widget? _,
+                    ) => _BarAction(
+                      icon: FontAwesomeIcons.flag,
+                      label: l10n.todoFieldPriority,
+                      expand: false,
+                      onPressed: enabled ? menu.toggle : null,
+                    ),
               ),
-              _BarAction(
-                icon: FontAwesomeIcons.trashCan,
-                label: l10n.commonDelete,
-                color: scheme.error,
-                onPressed: enabled ? onDelete : null,
-              ),
-            ],
-          ),
+            ),
+            _BarAction(
+              icon: FontAwesomeIcons.trashCan,
+              label: l10n.commonDelete,
+              color: scheme.error,
+              onPressed: enabled ? onDelete : null,
+            ),
+          ],
         ),
       ),
     );

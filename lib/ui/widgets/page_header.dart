@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_radii.dart';
 import '../../app/theme/app_spacing.dart';
+import '../../app/theme/expressive_motion.dart';
 import '../app_surface/widgets/app_page_backdrop.dart';
 import '../home/widgets/home_bar/home_top_bar_surface.dart';
 
@@ -23,6 +24,7 @@ class PageHeader extends StatelessWidget {
     this.onTitleTap,
     this.titleTooltip,
     this.titleChild,
+    this.contentKey,
   });
 
   // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
@@ -48,6 +50,11 @@ class PageHeader extends StatelessWidget {
   /// 标题的字样与单行省略（经 DefaultTextStyle），点按与 [titleTrailing]
   /// 照常；为 null 时显示 [title]，与原来完全一致。
   final Widget? titleChild;
+
+  /// 页头内容（标题行与右侧按钮）的身份：变化时新旧内容交叉淡入
+  /// （`medium`），底板（实色 / 玻璃）不动——同一处页头换成另一套内容
+  /// （如进入多选）时用；为 null 时直接换。
+  final Object? contentKey;
 
   /// 标题字样：各 Tab 的页头标题同一字号字重。
   static TextStyle? titleStyleOf(BuildContext context) =>
@@ -82,12 +89,23 @@ class PageHeader extends StatelessWidget {
                   AppSpacing.l,
                   AppSpacing.s,
                 ),
-                child: _buildTitleRow(context),
+                child: _switchContent(context, _buildTitleRow(context)),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _switchContent(BuildContext context, Widget row) {
+    final key = contentKey;
+    if (key == null) return row;
+    return AnimatedSwitcher(
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      switchInCurve: ExpressiveMotion.effects,
+      switchOutCurve: ExpressiveMotion.exit,
+      child: KeyedSubtree(key: ValueKey<Object>(key), child: row),
     );
   }
 

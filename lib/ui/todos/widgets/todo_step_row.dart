@@ -9,7 +9,7 @@ import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../../widgets/todo_check_box.dart';
 import 'todo_bare_input.dart';
 
-/// 详情里的一步：48dp 方框格 + 可直接改的标题 + “⋯”菜单（转为独立待办、
+/// 详情里的一步：48dp 方框格 + 可直接改的标题 + ⋮ 菜单（转为独立待办、
 /// 删除）+ 拖动手柄（第 [index] 项）。勾掉的标题变灰并加删除线。标题在
 /// 失去焦点或回车时经 [onRename] 提交；别处改了标题（同步、撤销）而这里
 /// 没在编辑时跟上。
@@ -104,7 +104,7 @@ class _TodoStepRowState extends State<TodoStepRow> {
         ),
         ExpressiveMenuButton(
           tooltip: l10n.todoStepActions,
-          icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 14),
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 14),
           items: <Widget>[
             ExpressiveMenuItem(
               leadingIcon: const FaIcon(

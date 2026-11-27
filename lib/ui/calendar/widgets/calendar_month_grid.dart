@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -14,6 +13,7 @@ import '../viewmodels/calendar_day_summary.dart';
 import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
 import 'calendar_day_cell.dart';
+import 'calendar_weekday_bar.dart';
 
 /// 日历网格（月/周）：TableCalendar 的配置与日期格装配。
 ///
@@ -119,126 +119,135 @@ class CalendarMonthGrid extends StatefulWidget {
     final photoStyle = options.cellStyle == CalendarCellStyle.photo;
     final lunar = showsLunar(options.lunarMode, l10n.localeName);
     final holidays = showsHolidays(options.holidayMode, l10n.localeName);
+    final materialL10n = MaterialLocalizations.of(context);
+    final startingDayOfWeek = resolveStartingDayOfWeek(
+      options.weekStart,
+      materialL10n,
+    );
+    final firstWeekday = firstWeekdayOf(options.weekStart, materialL10n);
+    final weekNumberStyle = textTheme.labelSmall!.copyWith(
+      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+    );
+    // 星期栏画在 TableCalendar 之外（固定不随翻月滑动，并带分隔线），显示周数时
+    // 两侧共享同一列宽，保证 7 列星期与下方日期格逐像素对齐。
+    final weekNumberWidth = options.showWeekNumbers
+        ? _measureWeekNumberWidth(context, weekNumberStyle)
+        : 0.0;
 
-    return TableCalendar<DiaryCalendarMarker>(
-      locale: l10n.localeName,
-      firstDay: firstDay,
-      lastDay: lastDay,
-      focusedDay: focusedDay,
-      currentDay: today,
-      calendarFormat: format,
-      startingDayOfWeek: resolveStartingDayOfWeek(
-        options.weekStart,
-        MaterialLocalizations.of(context),
-      ),
-      sixWeekMonthsEnforced: options.fixedSixWeeks,
-      rowHeight: gridWidth == null
-          ? (lunar ? lunarRowHeight : rowHeight)
-          : wideRowHeight(gridWidth, lunar: lunar),
-      weekNumbersVisible: options.showWeekNumbers,
-      selectedDayPredicate: (DateTime day) => isSameDay(day, selectedDay),
-      headerVisible: false,
-      availableGestures: AvailableGestures.all,
-      availableCalendarFormats: <CalendarFormat, String>{
-        CalendarFormat.month: l10n.autoT0178,
-        CalendarFormat.week: l10n.autoT0179,
-      },
-      onFormatChanged: onFormatChanged,
-      onDaySelected: onDaySelected,
-      onPageChanged: onPageChanged,
-      onDayLongPressed: onDayLongPressed == null
-          ? null
-          : (DateTime day, DateTime focusedDay) => onDayLongPressed!(day),
-      // 翻页与月/周切换动画统一走 Expressive token；减少动画时直接跳转。
-      pageAnimationEnabled: !ExpressiveMotion.reduceMotion(context),
-      pageAnimationDuration: ExpressiveMotion.medium,
-      pageAnimationCurve: ExpressiveMotion.effects,
-      // table_calendar 用 AnimatedSize 过渡月/周高度，减少动画时不能传 0。
-      formatAnimationDuration: ExpressiveMotion.durationNonZero(
-        context,
-        ExpressiveMotion.medium,
-      ),
-      formatAnimationCurve: ExpressiveMotion.effects,
-      calendarStyle: CalendarStyle(
-        weekNumberTextStyle: textTheme.labelSmall!.copyWith(
-          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        CalendarWeekdayBar(
+          firstWeekday: firstWeekday,
+          highlightWeekends: options.highlightWeekends,
+          leadingSpace: weekNumberWidth,
+          highlightMaxWidth: gridWidth == null
+              ? null
+              : wideHighlightMaxWidth + 4,
         ),
-      ),
-      calendarBuilders: CalendarBuilders<DiaryCalendarMarker>(
-        prioritizedBuilder:
-            (BuildContext context, DateTime day, DateTime focusedDay) {
-              final dayKey = DateUtils.dateOnly(day);
-              final summary = summaries[dayKey];
-              final range = this.range;
-              final rangeRole = range?.roleOf(day) ?? CalendarRangeRole.none;
-              return CalendarDayCell(
-                day: day,
-                options: options,
-                isToday: dayKey == today,
-                isSelected: range == null
-                    ? isSameDay(day, selectedDay)
-                    : rangeRole == CalendarRangeRole.endpoint,
-                inRange: rangeRole == CalendarRangeRole.inside,
-                isOutside: day.month != focusedDay.month,
-                isWeekend:
-                    day.weekday == DateTime.saturday ||
-                    day.weekday == DateTime.sunday,
-                summary: summary,
-                image: photoStyle
-                    ? summary?.representativeImage(inlineImages)
-                    : null,
-                lunar: lunar ? CalendarLunarDay.of(day) : null,
-                holiday: holidays ? CalendarHolidayDay.of(day) : null,
-                anniversary: anniversaryIndex?.titleOn(day),
-                hasOpenTodo: todoIndex?.hasOpenOn(day) ?? false,
-                dayMood: dayMoods[dayKey],
-                highlightMaxWidth: gridWidth == null
-                    ? null
-                    : wideHighlightMaxWidth,
-              );
-            },
-        dowBuilder: (BuildContext context, DateTime day) {
-          // 独立窄星期（ccccc）：中文“一…日”、英文“M…S”，
-          // 由 intl 语言数据提供，新增语言无需改代码。
-          final label = DateFormat('ccccc', l10n.localeName).format(day);
-          final shaded =
-              options.highlightWeekends &&
-              (day.weekday == DateTime.saturday ||
-                  day.weekday == DateTime.sunday);
-          // 周末着色时星期栏的“六、日”也铺同样的灰底，与下方日期格连成
-          // 一条竖向色带。
-          // 宽窗口下周末色带与日期格高亮同宽，上下连成一条。
-          final band = Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: shaded
-                    ? CalendarDayCell.weekendColor(colorScheme)
-                    : null,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text(
-                  label,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: shaded
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
+        TableCalendar<DiaryCalendarMarker>(
+          locale: l10n.localeName,
+          firstDay: firstDay,
+          lastDay: lastDay,
+          focusedDay: focusedDay,
+          currentDay: today,
+          calendarFormat: format,
+          startingDayOfWeek: startingDayOfWeek,
+          sixWeekMonthsEnforced: options.fixedSixWeeks,
+          rowHeight: gridWidth == null
+              ? (lunar ? lunarRowHeight : rowHeight)
+              : wideRowHeight(gridWidth, lunar: lunar),
+          weekNumbersVisible: options.showWeekNumbers,
+          selectedDayPredicate: (DateTime day) => isSameDay(day, selectedDay),
+          headerVisible: false,
+          daysOfWeekVisible: false,
+          availableGestures: AvailableGestures.all,
+          availableCalendarFormats: <CalendarFormat, String>{
+            CalendarFormat.month: l10n.autoT0178,
+            CalendarFormat.week: l10n.autoT0179,
+          },
+          onFormatChanged: onFormatChanged,
+          onDaySelected: onDaySelected,
+          onPageChanged: onPageChanged,
+          onDayLongPressed: onDayLongPressed == null
+              ? null
+              : (DateTime day, DateTime focusedDay) => onDayLongPressed!(day),
+          // 翻页与月/周切换动画统一走 Expressive token；减少动画时直接跳转。
+          pageAnimationEnabled: !ExpressiveMotion.reduceMotion(context),
+          pageAnimationDuration: ExpressiveMotion.medium,
+          pageAnimationCurve: ExpressiveMotion.effects,
+          // table_calendar 用 AnimatedSize 过渡月/周高度，减少动画时不能传 0。
+          formatAnimationDuration: ExpressiveMotion.durationNonZero(
+            context,
+            ExpressiveMotion.medium,
+          ),
+          formatAnimationCurve: ExpressiveMotion.effects,
+          calendarStyle: CalendarStyle(weekNumberTextStyle: weekNumberStyle),
+          calendarBuilders: CalendarBuilders<DiaryCalendarMarker>(
+            weekNumberBuilder: (BuildContext context, int weekNumber) {
+              return SizedBox(
+                width: weekNumberWidth,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('$weekNumber', style: weekNumberStyle),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
-          return gridWidth == null
-              ? band
-              : CalendarDayCell.limitWidth(
-                  band,
-                  maxWidth: wideHighlightMaxWidth + 4,
-                );
-        },
-      ),
+              );
+            },
+            prioritizedBuilder:
+                (BuildContext context, DateTime day, DateTime focusedDay) {
+                  final dayKey = DateUtils.dateOnly(day);
+                  final summary = summaries[dayKey];
+                  final range = this.range;
+                  final rangeRole =
+                      range?.roleOf(day) ?? CalendarRangeRole.none;
+                  return CalendarDayCell(
+                    day: day,
+                    options: options,
+                    isToday: dayKey == today,
+                    isSelected: range == null
+                        ? isSameDay(day, selectedDay)
+                        : rangeRole == CalendarRangeRole.endpoint,
+                    inRange: rangeRole == CalendarRangeRole.inside,
+                    isOutside: day.month != focusedDay.month,
+                    isWeekend:
+                        day.weekday == DateTime.saturday ||
+                        day.weekday == DateTime.sunday,
+                    summary: summary,
+                    image: photoStyle
+                        ? summary?.representativeImage(inlineImages)
+                        : null,
+                    lunar: lunar ? CalendarLunarDay.of(day) : null,
+                    holiday: holidays ? CalendarHolidayDay.of(day) : null,
+                    anniversary: anniversaryIndex?.titleOn(day),
+                    hasOpenTodo: todoIndex?.hasOpenOn(day) ?? false,
+                    dayMood: dayMoods[dayKey],
+                    highlightMaxWidth: gridWidth == null
+                        ? null
+                        : wideHighlightMaxWidth,
+                  );
+                },
+          ),
+        ),
+      ],
     );
+  }
+
+  /// 按当前字体与缩放量出两位数周数（最大 53）的列宽，外加左右各 4dp 留白。
+  static double _measureWeekNumberWidth(BuildContext context, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: '53', style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width.ceilToDouble() + 8;
+    painter.dispose();
+    return width;
   }
 
   /// 是否显示农历：跟随语言时只在中文下显示。农历、节气名称来自换算库，

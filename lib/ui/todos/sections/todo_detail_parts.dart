@@ -155,7 +155,7 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
         ),
         ExpressiveMenuButton(
           tooltip: l10n.todoMore,
-          icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 18),
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
           items: <Widget>[
             if (widget.onFocus case final onFocus?)
               ExpressiveMenuItem(

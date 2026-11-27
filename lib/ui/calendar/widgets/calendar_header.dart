@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/app_surface/widgets/app_glass_field.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/page_header.dart';
 
 /// 日历页头：与其他 Tab 同一个 [PageHeader]（64dp，铺到状态栏，叠在内容
@@ -10,10 +11,11 @@ import 'package:node_diary/ui/widgets/page_header.dart';
 ///
 /// - 点标题：月 / 周视图进入年视图，年视图打开日期选择器（[onPickDate]）；
 ///   标题随翻月方向滑入，与下方网格翻页同向；
-/// - 翻月：手机上左右滑网格，页头不放箭头（窄屏放不下标题 + 箭头 + 四个
-///   操作）；[showArrows] 为 true（宽窗口、桌面键鼠）时在操作前放上一页 /
-///   下一页；
-/// - 右侧依次为纪念日、筛选、显示选项与回到今天。
+/// - 翻月：手机上左右滑网格，页头不放箭头；[showArrows] 为 true（宽窗口、
+///   桌面键鼠）时在操作前放上一页 / 下一页；
+/// - 右侧保留独立的“回到今天”，其余操作（纪念日、筛选、调整日历）统一收进
+///   最右侧的竖向“更多”（⋮）弹出菜单，为月份标题预留充足空间并与首页、待办
+///   页头保持一致。
 ///
 /// 仅组合 UI，月份切换与选日仍由调用方负责。
 class CalendarHeader extends StatelessWidget {
@@ -56,8 +58,8 @@ class CalendarHeader extends StatelessWidget {
   /// 打开纪念日列表；为 null 时不显示该按钮。
   final VoidCallback? onOpenAnniversaries;
 
-  /// 筛选生效中：按钮切换为选中态并带一个小圆点，离开卡片也能看出网格
-  /// 是筛选后的结果。
+  /// 筛选生效中：最右侧“更多”按钮带一个小圆点，菜单内的“筛选”项标为选中，
+  /// 离开日历卡片也能看出网格是筛选后的结果。
   final bool filterActive;
 
   /// 标题的提示（月视图下为“查看全年”，年视图下为“选择日期”）。
@@ -74,6 +76,27 @@ class CalendarHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final moreItems = <Widget>[
+      if (onOpenAnniversaries != null)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.heart),
+          onPressed: onOpenAnniversaries,
+          child: Text(l10n.anniversaryListTitle),
+        ),
+      if (onOpenFilter != null)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.filter),
+          selected: filterActive ? true : null,
+          onPressed: onOpenFilter,
+          child: Text(l10n.calendarFilterTooltip),
+        ),
+      if (onOpenDisplayOptions != null)
+        ExpressiveMenuItem(
+          leadingIcon: const FaIcon(FontAwesomeIcons.sliders),
+          onPressed: onOpenDisplayOptions,
+          child: Text(l10n.calendarDisplayOptionsTooltip),
+        ),
+    ];
     return PageHeader(
       title: title,
       titleChild: _MonthTitle(title: title, month: month),
@@ -98,39 +121,23 @@ class CalendarHeader extends StatelessWidget {
           ),
           const SizedBox(width: 4),
         ],
-        if (onOpenAnniversaries != null)
-          IconButton(
-            tooltip: l10n.anniversaryListTitle,
-            onPressed: onOpenAnniversaries,
-            icon: const FaIcon(FontAwesomeIcons.heart, size: 17),
-          ),
-        if (onOpenFilter != null)
-          IconButton(
-            tooltip: l10n.calendarFilterTooltip,
-            isSelected: filterActive,
-            onPressed: onOpenFilter,
-            icon: Badge(
-              isLabelVisible: filterActive,
-              smallSize: 7,
-              // 选中态图标已是 primary，圆点用 tertiary 才分得开。
-              backgroundColor: theme.colorScheme.tertiary,
-              child: const FaIcon(FontAwesomeIcons.filter, size: 17),
-            ),
-          ),
-        if (onOpenDisplayOptions != null) ...<Widget>[
-          IconButton(
-            tooltip: l10n.calendarDisplayOptionsTooltip,
-            onPressed: onOpenDisplayOptions,
-            icon: const FaIcon(FontAwesomeIcons.sliders, size: 18),
-          ),
-          const SizedBox(width: 4),
-        ],
         IconButton.filledTonal(
           style: AppGlassField.tonalButtonStyle(context),
           tooltip: l10n.autoT0180,
           onPressed: onJumpToToday,
           icon: const FaIcon(FontAwesomeIcons.calendarDay, size: 18),
         ),
+        if (moreItems.isNotEmpty)
+          ExpressiveMenuButton(
+            tooltip: l10n.autoT0125,
+            icon: Badge(
+              isLabelVisible: filterActive,
+              smallSize: 7,
+              backgroundColor: theme.colorScheme.tertiary,
+              child: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+            ),
+            items: moreItems,
+          ),
       ],
     );
   }

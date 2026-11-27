@@ -187,7 +187,7 @@ class MindMapDock extends StatelessWidget {
                     ),
                   ],
                   builder: (context, menu, _) => _DockButton(
-                    icon: FontAwesomeIcons.ellipsis,
+                    icon: FontAwesomeIcons.ellipsisVertical,
                     label: l10n.mindMapMore,
                     onPressed: menu.toggle,
                   ),

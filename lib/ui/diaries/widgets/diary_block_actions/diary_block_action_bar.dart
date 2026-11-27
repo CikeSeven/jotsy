@@ -370,7 +370,7 @@ class _DiaryBlockActionBarState extends State<DiaryBlockActionBar>
         onTap: () => DiaryBlockActions.delete(context, controller),
       ),
       _tool(
-        icon: FontAwesomeIcons.ellipsis,
+        icon: FontAwesomeIcons.ellipsisVertical,
         label: l10n.diaryEditorMoreActions,
         selected: _panel == _BlockPanel.more,
         onTap: () => _toggle(_BlockPanel.more),

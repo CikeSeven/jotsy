@@ -194,7 +194,7 @@ class AppTextToolbarMoreButton extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: <Widget>[
-                face(!expanded, FontAwesomeIcons.ellipsis, moreLabel),
+                face(!expanded, FontAwesomeIcons.ellipsisVertical, moreLabel),
                 face(expanded, FontAwesomeIcons.angleUp, lessLabel),
               ],
             ),

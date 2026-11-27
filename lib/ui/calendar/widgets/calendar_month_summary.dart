@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../viewmodels/calendar_month_stats.dart';
+import 'calendar_weekday_bar.dart';
 
 /// 概览统计的时间段：决定无记录时的文案。
 enum CalendarSummaryPeriod { month, year, range }
@@ -91,13 +92,7 @@ class CalendarMonthSummary extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Divider(
-            height: 1,
-            thickness: 0.6,
-            color: colorScheme.outlineVariant.withValues(
-              alpha: colorScheme.brightness == Brightness.light ? 0.35 : 0.18,
-            ),
-          ),
+          const CalendarPanelDivider(),
           const SizedBox(height: AppSpacing.xs),
           ?header,
           AnimatedSwitcher(

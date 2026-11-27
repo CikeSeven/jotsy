@@ -9,7 +9,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [todoNowProvider.overrideWithValue(() => now)],
     );
-    addTearDown(container.dispose);
     final days = <DateTime>[];
     container.listen<DateTime>(
       todoTodayProvider,
@@ -21,6 +20,9 @@ void main() {
     now = DateTime(2026, 3, 2, 0, 0, 1);
     await tester.pump(const Duration(seconds: 31));
     expect(days, <DateTime>[DateTime(2026, 3, 1), DateTime(2026, 3, 2)]);
+    // 在测试体里释放：零点计时器随之取消。放进 tearDown 的话，CI 上的
+    // flutter_test 先查“还有计时器没走”，再跑 tearDown。
+    container.dispose();
   });
 
   testWidgets('refresh catches up after the device slept past midnight', (
@@ -30,7 +32,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [todoNowProvider.overrideWithValue(() => now)],
     );
-    addTearDown(container.dispose);
     expect(container.read(todoTodayProvider), DateTime(2026, 3, 1));
 
     // 系统冻结了计时器：零点没有触发，回到前台时校正。
@@ -42,5 +43,6 @@ void main() {
     now = DateTime(2026, 3, 3, 9);
     container.read(todoTodayProvider.notifier).refresh();
     expect(container.read(todoTodayProvider), DateTime(2026, 3, 3));
+    container.dispose();
   });
 }

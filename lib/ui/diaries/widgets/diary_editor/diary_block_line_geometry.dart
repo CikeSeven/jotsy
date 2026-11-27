@@ -85,8 +85,7 @@ class DiaryBlockLineGeometry {
 
   /// 块（含子块）在 [box] 里的矩形；块不在布局里时为 null。左边界按结构
   /// 算：顶层块为页面左边距 [contentLeft]，子块为父块左边界加缩进
-  /// [childIndent]。代码块等组件的节点几何只覆盖内部文字区（行号右侧），
-  /// 直接取它的 left 会把底板压进块里面。
+  /// [childIndent]，确保左缘不因块内部缩进而压进内容。
   static Rect? blockRect(
     af.Node node,
     RenderBox box, {

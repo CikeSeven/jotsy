@@ -1,4 +1,5 @@
-/// 快速新建待办的“智能识别”：从一行输入里认出日期、时刻、清单与优先级。
+/// 快速新建待办的“智能识别”：从一行输入里认出日期、时刻、清单、优先级、
+/// 重复与提醒。
 ///
 /// - 输入：用户正在输入的原文、“今天”（本地零点）、已有清单（id → 名称，按
 ///   显示顺序）、用户点掉不要识别的种类。
@@ -6,10 +7,12 @@
 ///   原文里的位置（界面据此高亮、做成可点掉的标签）。
 /// - 副作用：无。每次按键都会重新解析，纯函数、不缓存。
 ///
-/// 取舍：每种最多取一个片段（原文里第一个合法的）；清单 → 优先级 → 日期 →
-/// 时刻依次识别，后识别的不与先识别的重叠——“#明天要做”整体是清单，
-/// “at 5 Jan”里日期先占了“5 Jan”，“at”不再当时刻。日期 / 时刻的词表与正则在
-/// `todo_quick_parse_rules.dart`。
+/// 取舍：每种最多取一个片段（原文里第一个合法的）；清单 → 优先级 → 重复 →
+/// 提醒 → 日期 → 时刻依次识别，后识别的不与先识别的重叠——“#明天要做”整体
+/// 是清单，“每周一”整体是重复（不再把“周一”当日期），“前一天晚上8点”整体
+/// 是提醒（不再把“晚上8点”当截止时刻），“at 5 Jan”里日期先占了“5 Jan”，
+/// “at”不再当时刻。识别出重复而没写日期时，截止日取今天起第一个符合的日子。
+/// 词表与正则在 `todo_quick_parse_rules.dart` 及其 part 文件。
 library;
 
 import 'package:flutter/foundation.dart';
@@ -18,8 +21,10 @@ import 'package:flutter/services.dart' show TextRange;
 import '../../../core/database/app_database.dart';
 import 'todo_quick_parse_rules.dart';
 
+export 'todo_quick_parse_rules.dart' show TodoQuickRepeat, TodoQuickReminder;
+
 /// 识别出的片段种类。
-enum TodoQuickTokenKind { date, time, list, priority }
+enum TodoQuickTokenKind { date, time, list, priority, repeat, reminder }
 
 /// 原文里被识别的一段。
 @immutable
@@ -51,6 +56,8 @@ class TodoQuickParse {
     this.minute,
     this.listId,
     this.priority,
+    this.repeat,
+    this.reminder,
     this.tokens = const [],
   });
 
@@ -72,6 +79,19 @@ class TodoQuickParse {
   final String? listId;
   final TodoPriority? priority;
 
+  /// 识别出的重复（有它时 [date] 一定有值）。
+  final TodoQuickRepeat? repeat;
+
+  /// 识别出的提醒（落成哪条提醒要看截止时刻，见 [TodoQuickReminder.resolve]）。
+  final TodoQuickReminder? reminder;
+
+  /// 以截止日 [date] 为起点的重复规则；没识别出重复时为 null。
+  TodoRepeatRule? get repeatRule {
+    final repeat = this.repeat;
+    final date = this.date;
+    return repeat == null || date == null ? null : repeat.ruleFrom(date);
+  }
+
   /// 识别出的片段，按 `range.start` 升序。
   final List<TodoQuickToken> tokens;
 
@@ -85,6 +105,8 @@ class TodoQuickParse {
       other.minute == minute &&
       other.listId == listId &&
       other.priority == priority &&
+      other.repeat == repeat &&
+      other.reminder == reminder &&
       listEquals(other.tokens, tokens);
 
   @override
@@ -94,6 +116,8 @@ class TodoQuickParse {
     minute,
     listId,
     priority,
+    repeat,
+    reminder,
     Object.hashAll(tokens),
   );
 }
@@ -143,6 +167,26 @@ TodoQuickParse parseTodoQuickInput(
     }
   }
 
+  TodoQuickRepeat? repeat;
+  if (!ignore.contains(TodoQuickTokenKind.repeat)) {
+    for (final c in findQuickRepeatCandidates(text, day)) {
+      if (!isFree(c.start, c.end)) continue;
+      repeat = c.value;
+      take(TodoQuickTokenKind.repeat, c.start, c.end);
+      break;
+    }
+  }
+
+  TodoQuickReminder? reminder;
+  if (!ignore.contains(TodoQuickTokenKind.reminder)) {
+    for (final c in findQuickReminderCandidates(text, day)) {
+      if (!isFree(c.start, c.end)) continue;
+      reminder = c.value;
+      take(TodoQuickTokenKind.reminder, c.start, c.end);
+      break;
+    }
+  }
+
   DateTime? date;
   if (!ignore.contains(TodoQuickTokenKind.date)) {
     for (final c in findQuickDateCandidates(text, day)) {
@@ -163,14 +207,24 @@ TodoQuickParse parseTodoQuickInput(
     }
   }
 
+  final due = date ?? repeat?.firstDue(day) ?? (minute != null ? day : null);
+  // 提醒要有截止日才成立，按分钟提前的还要有截止时刻；不成立时不算识别，
+  // 原文留在标题里。
+  if (reminder != null &&
+      (due == null || (reminder.minutesBefore != null && minute == null))) {
+    reminder = null;
+    tokens.removeWhere((t) => t.kind == TodoQuickTokenKind.reminder);
+  }
   if (tokens.isEmpty) return TodoQuickParse.plain(text);
   tokens.sort((a, b) => a.range.start.compareTo(b.range.start));
   return TodoQuickParse(
     title: _titleWithout(text, tokens),
-    date: date ?? (minute != null ? day : null),
+    date: due,
     minute: minute,
     listId: listId,
     priority: priority,
+    repeat: repeat,
+    reminder: reminder,
     tokens: List.unmodifiable(tokens),
   );
 }

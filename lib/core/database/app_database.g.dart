@@ -8480,6 +8480,574 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
   }
 }
 
+class $TodoFocusSessionsTable extends TodoFocusSessions
+    with TableInfo<$TodoFocusSessionsTable, TodoFocusRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodoFocusSessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _todoIdMeta = const VerificationMeta('todoId');
+  @override
+  late final GeneratedColumn<String> todoId = GeneratedColumn<String>(
+    'todo_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _plannedSecondsMeta = const VerificationMeta(
+    'plannedSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> plannedSeconds = GeneratedColumn<int>(
+    'planned_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _focusedSecondsMeta = const VerificationMeta(
+    'focusedSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> focusedSeconds = GeneratedColumn<int>(
+    'focused_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _outcomeMeta = const VerificationMeta(
+    'outcome',
+  );
+  @override
+  late final GeneratedColumn<String> outcome = GeneratedColumn<String>(
+    'outcome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _metadataMeta = const VerificationMeta(
+    'metadata',
+  );
+  @override
+  late final GeneratedColumn<String> metadata = GeneratedColumn<String>(
+    'metadata',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sessionId,
+    todoId,
+    startedAt,
+    endedAt,
+    plannedSeconds,
+    focusedSeconds,
+    outcome,
+    metadata,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todo_focus_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TodoFocusRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('todo_id')) {
+      context.handle(
+        _todoIdMeta,
+        todoId.isAcceptableOrUnknown(data['todo_id']!, _todoIdMeta),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endedAtMeta);
+    }
+    if (data.containsKey('planned_seconds')) {
+      context.handle(
+        _plannedSecondsMeta,
+        plannedSeconds.isAcceptableOrUnknown(
+          data['planned_seconds']!,
+          _plannedSecondsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_plannedSecondsMeta);
+    }
+    if (data.containsKey('focused_seconds')) {
+      context.handle(
+        _focusedSecondsMeta,
+        focusedSeconds.isAcceptableOrUnknown(
+          data['focused_seconds']!,
+          _focusedSecondsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_focusedSecondsMeta);
+    }
+    if (data.containsKey('outcome')) {
+      context.handle(
+        _outcomeMeta,
+        outcome.isAcceptableOrUnknown(data['outcome']!, _outcomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_outcomeMeta);
+    }
+    if (data.containsKey('metadata')) {
+      context.handle(
+        _metadataMeta,
+        metadata.isAcceptableOrUnknown(data['metadata']!, _metadataMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodoFocusRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoFocusRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      todoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}todo_id'],
+      ),
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      )!,
+      plannedSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}planned_seconds'],
+      )!,
+      focusedSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focused_seconds'],
+      )!,
+      outcome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outcome'],
+      )!,
+      metadata: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metadata'],
+      )!,
+    );
+  }
+
+  @override
+  $TodoFocusSessionsTable createAlias(String alias) {
+    return $TodoFocusSessionsTable(attachedDatabase, alias);
+  }
+}
+
+class TodoFocusRow extends DataClass implements Insertable<TodoFocusRow> {
+  final int id;
+  final String sessionId;
+
+  /// 专注的待办业务 id；NULL 为没有关联待办。
+  final String? todoId;
+  final DateTime startedAt;
+  final DateTime endedAt;
+
+  /// 计划时长（秒，含中途加时）。
+  final int plannedSeconds;
+
+  /// 实际专注的秒数（扣掉暂停）。
+  final int focusedSeconds;
+
+  /// 结束方式（[TodoFocusOutcome] 的名字）。
+  final String outcome;
+
+  /// 扩展字段（JSON 对象字符串）。
+  final String metadata;
+  const TodoFocusRow({
+    required this.id,
+    required this.sessionId,
+    this.todoId,
+    required this.startedAt,
+    required this.endedAt,
+    required this.plannedSeconds,
+    required this.focusedSeconds,
+    required this.outcome,
+    required this.metadata,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['session_id'] = Variable<String>(sessionId);
+    if (!nullToAbsent || todoId != null) {
+      map['todo_id'] = Variable<String>(todoId);
+    }
+    map['started_at'] = Variable<DateTime>(startedAt);
+    map['ended_at'] = Variable<DateTime>(endedAt);
+    map['planned_seconds'] = Variable<int>(plannedSeconds);
+    map['focused_seconds'] = Variable<int>(focusedSeconds);
+    map['outcome'] = Variable<String>(outcome);
+    map['metadata'] = Variable<String>(metadata);
+    return map;
+  }
+
+  TodoFocusSessionsCompanion toCompanion(bool nullToAbsent) {
+    return TodoFocusSessionsCompanion(
+      id: Value(id),
+      sessionId: Value(sessionId),
+      todoId: todoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(todoId),
+      startedAt: Value(startedAt),
+      endedAt: Value(endedAt),
+      plannedSeconds: Value(plannedSeconds),
+      focusedSeconds: Value(focusedSeconds),
+      outcome: Value(outcome),
+      metadata: Value(metadata),
+    );
+  }
+
+  factory TodoFocusRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoFocusRow(
+      id: serializer.fromJson<int>(json['id']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      todoId: serializer.fromJson<String?>(json['todoId']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime>(json['endedAt']),
+      plannedSeconds: serializer.fromJson<int>(json['plannedSeconds']),
+      focusedSeconds: serializer.fromJson<int>(json['focusedSeconds']),
+      outcome: serializer.fromJson<String>(json['outcome']),
+      metadata: serializer.fromJson<String>(json['metadata']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'todoId': serializer.toJson<String?>(todoId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime>(endedAt),
+      'plannedSeconds': serializer.toJson<int>(plannedSeconds),
+      'focusedSeconds': serializer.toJson<int>(focusedSeconds),
+      'outcome': serializer.toJson<String>(outcome),
+      'metadata': serializer.toJson<String>(metadata),
+    };
+  }
+
+  TodoFocusRow copyWith({
+    int? id,
+    String? sessionId,
+    Value<String?> todoId = const Value.absent(),
+    DateTime? startedAt,
+    DateTime? endedAt,
+    int? plannedSeconds,
+    int? focusedSeconds,
+    String? outcome,
+    String? metadata,
+  }) => TodoFocusRow(
+    id: id ?? this.id,
+    sessionId: sessionId ?? this.sessionId,
+    todoId: todoId.present ? todoId.value : this.todoId,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt ?? this.endedAt,
+    plannedSeconds: plannedSeconds ?? this.plannedSeconds,
+    focusedSeconds: focusedSeconds ?? this.focusedSeconds,
+    outcome: outcome ?? this.outcome,
+    metadata: metadata ?? this.metadata,
+  );
+  TodoFocusRow copyWithCompanion(TodoFocusSessionsCompanion data) {
+    return TodoFocusRow(
+      id: data.id.present ? data.id.value : this.id,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      todoId: data.todoId.present ? data.todoId.value : this.todoId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      plannedSeconds: data.plannedSeconds.present
+          ? data.plannedSeconds.value
+          : this.plannedSeconds,
+      focusedSeconds: data.focusedSeconds.present
+          ? data.focusedSeconds.value
+          : this.focusedSeconds,
+      outcome: data.outcome.present ? data.outcome.value : this.outcome,
+      metadata: data.metadata.present ? data.metadata.value : this.metadata,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoFocusRow(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('todoId: $todoId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('plannedSeconds: $plannedSeconds, ')
+          ..write('focusedSeconds: $focusedSeconds, ')
+          ..write('outcome: $outcome, ')
+          ..write('metadata: $metadata')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sessionId,
+    todoId,
+    startedAt,
+    endedAt,
+    plannedSeconds,
+    focusedSeconds,
+    outcome,
+    metadata,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoFocusRow &&
+          other.id == this.id &&
+          other.sessionId == this.sessionId &&
+          other.todoId == this.todoId &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.plannedSeconds == this.plannedSeconds &&
+          other.focusedSeconds == this.focusedSeconds &&
+          other.outcome == this.outcome &&
+          other.metadata == this.metadata);
+}
+
+class TodoFocusSessionsCompanion extends UpdateCompanion<TodoFocusRow> {
+  final Value<int> id;
+  final Value<String> sessionId;
+  final Value<String?> todoId;
+  final Value<DateTime> startedAt;
+  final Value<DateTime> endedAt;
+  final Value<int> plannedSeconds;
+  final Value<int> focusedSeconds;
+  final Value<String> outcome;
+  final Value<String> metadata;
+  const TodoFocusSessionsCompanion({
+    this.id = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.todoId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.plannedSeconds = const Value.absent(),
+    this.focusedSeconds = const Value.absent(),
+    this.outcome = const Value.absent(),
+    this.metadata = const Value.absent(),
+  });
+  TodoFocusSessionsCompanion.insert({
+    this.id = const Value.absent(),
+    required String sessionId,
+    this.todoId = const Value.absent(),
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required int plannedSeconds,
+    required int focusedSeconds,
+    required String outcome,
+    this.metadata = const Value.absent(),
+  }) : sessionId = Value(sessionId),
+       startedAt = Value(startedAt),
+       endedAt = Value(endedAt),
+       plannedSeconds = Value(plannedSeconds),
+       focusedSeconds = Value(focusedSeconds),
+       outcome = Value(outcome);
+  static Insertable<TodoFocusRow> custom({
+    Expression<int>? id,
+    Expression<String>? sessionId,
+    Expression<String>? todoId,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<int>? plannedSeconds,
+    Expression<int>? focusedSeconds,
+    Expression<String>? outcome,
+    Expression<String>? metadata,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionId != null) 'session_id': sessionId,
+      if (todoId != null) 'todo_id': todoId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (plannedSeconds != null) 'planned_seconds': plannedSeconds,
+      if (focusedSeconds != null) 'focused_seconds': focusedSeconds,
+      if (outcome != null) 'outcome': outcome,
+      if (metadata != null) 'metadata': metadata,
+    });
+  }
+
+  TodoFocusSessionsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? sessionId,
+    Value<String?>? todoId,
+    Value<DateTime>? startedAt,
+    Value<DateTime>? endedAt,
+    Value<int>? plannedSeconds,
+    Value<int>? focusedSeconds,
+    Value<String>? outcome,
+    Value<String>? metadata,
+  }) {
+    return TodoFocusSessionsCompanion(
+      id: id ?? this.id,
+      sessionId: sessionId ?? this.sessionId,
+      todoId: todoId ?? this.todoId,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      plannedSeconds: plannedSeconds ?? this.plannedSeconds,
+      focusedSeconds: focusedSeconds ?? this.focusedSeconds,
+      outcome: outcome ?? this.outcome,
+      metadata: metadata ?? this.metadata,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (todoId.present) {
+      map['todo_id'] = Variable<String>(todoId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (plannedSeconds.present) {
+      map['planned_seconds'] = Variable<int>(plannedSeconds.value);
+    }
+    if (focusedSeconds.present) {
+      map['focused_seconds'] = Variable<int>(focusedSeconds.value);
+    }
+    if (outcome.present) {
+      map['outcome'] = Variable<String>(outcome.value);
+    }
+    if (metadata.present) {
+      map['metadata'] = Variable<String>(metadata.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoFocusSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('todoId: $todoId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('plannedSeconds: $plannedSeconds, ')
+          ..write('focusedSeconds: $focusedSeconds, ')
+          ..write('outcome: $outcome, ')
+          ..write('metadata: $metadata')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8500,6 +9068,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AiResultsTable aiResults = $AiResultsTable(this);
   late final $TodoListsTable todoLists = $TodoListsTable(this);
   late final $TodosTable todos = $TodosTable(this);
+  late final $TodoFocusSessionsTable todoFocusSessions =
+      $TodoFocusSessionsTable(this);
   late final Index idxDiariesUpdatedAt = Index(
     'idx_diaries_updated_at',
     'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
@@ -8556,6 +9126,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_todos_list',
     'CREATE INDEX idx_todos_list ON todos (list_id)',
   );
+  late final Index idxTodoFocusTodo = Index(
+    'idx_todo_focus_todo',
+    'CREATE INDEX idx_todo_focus_todo ON todo_focus_sessions (todo_id)',
+  );
+  late final Index idxTodoFocusStarted = Index(
+    'idx_todo_focus_started',
+    'CREATE INDEX idx_todo_focus_started ON todo_focus_sessions (started_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8576,6 +9154,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     aiResults,
     todoLists,
     todos,
+    todoFocusSessions,
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
@@ -8590,6 +9169,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxAiResultsKind,
     idxTodosCompletedDue,
     idxTodosList,
+    idxTodoFocusTodo,
+    idxTodoFocusStarted,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -13280,6 +13861,298 @@ typedef $$TodosTableProcessedTableManager =
       TodoRow,
       PrefetchHooks Function()
     >;
+typedef $$TodoFocusSessionsTableCreateCompanionBuilder =
+    TodoFocusSessionsCompanion Function({
+      Value<int> id,
+      required String sessionId,
+      Value<String?> todoId,
+      required DateTime startedAt,
+      required DateTime endedAt,
+      required int plannedSeconds,
+      required int focusedSeconds,
+      required String outcome,
+      Value<String> metadata,
+    });
+typedef $$TodoFocusSessionsTableUpdateCompanionBuilder =
+    TodoFocusSessionsCompanion Function({
+      Value<int> id,
+      Value<String> sessionId,
+      Value<String?> todoId,
+      Value<DateTime> startedAt,
+      Value<DateTime> endedAt,
+      Value<int> plannedSeconds,
+      Value<int> focusedSeconds,
+      Value<String> outcome,
+      Value<String> metadata,
+    });
+
+class $$TodoFocusSessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $TodoFocusSessionsTable> {
+  $$TodoFocusSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get todoId => $composableBuilder(
+    column: $table.todoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get plannedSeconds => $composableBuilder(
+    column: $table.plannedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get focusedSeconds => $composableBuilder(
+    column: $table.focusedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metadata => $composableBuilder(
+    column: $table.metadata,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TodoFocusSessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodoFocusSessionsTable> {
+  $$TodoFocusSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get todoId => $composableBuilder(
+    column: $table.todoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get plannedSeconds => $composableBuilder(
+    column: $table.plannedSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get focusedSeconds => $composableBuilder(
+    column: $table.focusedSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metadata => $composableBuilder(
+    column: $table.metadata,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TodoFocusSessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodoFocusSessionsTable> {
+  $$TodoFocusSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
+  GeneratedColumn<String> get todoId =>
+      $composableBuilder(column: $table.todoId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get plannedSeconds => $composableBuilder(
+    column: $table.plannedSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get focusedSeconds => $composableBuilder(
+    column: $table.focusedSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get outcome =>
+      $composableBuilder(column: $table.outcome, builder: (column) => column);
+
+  GeneratedColumn<String> get metadata =>
+      $composableBuilder(column: $table.metadata, builder: (column) => column);
+}
+
+class $$TodoFocusSessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodoFocusSessionsTable,
+          TodoFocusRow,
+          $$TodoFocusSessionsTableFilterComposer,
+          $$TodoFocusSessionsTableOrderingComposer,
+          $$TodoFocusSessionsTableAnnotationComposer,
+          $$TodoFocusSessionsTableCreateCompanionBuilder,
+          $$TodoFocusSessionsTableUpdateCompanionBuilder,
+          (
+            TodoFocusRow,
+            BaseReferences<
+              _$AppDatabase,
+              $TodoFocusSessionsTable,
+              TodoFocusRow
+            >,
+          ),
+          TodoFocusRow,
+          PrefetchHooks Function()
+        > {
+  $$TodoFocusSessionsTableTableManager(
+    _$AppDatabase db,
+    $TodoFocusSessionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodoFocusSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodoFocusSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodoFocusSessionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> sessionId = const Value.absent(),
+                Value<String?> todoId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime> endedAt = const Value.absent(),
+                Value<int> plannedSeconds = const Value.absent(),
+                Value<int> focusedSeconds = const Value.absent(),
+                Value<String> outcome = const Value.absent(),
+                Value<String> metadata = const Value.absent(),
+              }) => TodoFocusSessionsCompanion(
+                id: id,
+                sessionId: sessionId,
+                todoId: todoId,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                plannedSeconds: plannedSeconds,
+                focusedSeconds: focusedSeconds,
+                outcome: outcome,
+                metadata: metadata,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String sessionId,
+                Value<String?> todoId = const Value.absent(),
+                required DateTime startedAt,
+                required DateTime endedAt,
+                required int plannedSeconds,
+                required int focusedSeconds,
+                required String outcome,
+                Value<String> metadata = const Value.absent(),
+              }) => TodoFocusSessionsCompanion.insert(
+                id: id,
+                sessionId: sessionId,
+                todoId: todoId,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                plannedSeconds: plannedSeconds,
+                focusedSeconds: focusedSeconds,
+                outcome: outcome,
+                metadata: metadata,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TodoFocusSessionsTable, TodoFocusRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $TodoFocusSessionsTable,
+                    TodoFocusRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TodoFocusSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodoFocusSessionsTable,
+      TodoFocusRow,
+      $$TodoFocusSessionsTableFilterComposer,
+      $$TodoFocusSessionsTableOrderingComposer,
+      $$TodoFocusSessionsTableAnnotationComposer,
+      $$TodoFocusSessionsTableCreateCompanionBuilder,
+      $$TodoFocusSessionsTableUpdateCompanionBuilder,
+      (
+        TodoFocusRow,
+        BaseReferences<_$AppDatabase, $TodoFocusSessionsTable, TodoFocusRow>,
+      ),
+      TodoFocusRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13313,4 +14186,6 @@ class $AppDatabaseManager {
       $$TodoListsTableTableManager(_db, _db.todoLists);
   $$TodosTableTableManager get todos =>
       $$TodosTableTableManager(_db, _db.todos);
+  $$TodoFocusSessionsTableTableManager get todoFocusSessions =>
+      $$TodoFocusSessionsTableTableManager(_db, _db.todoFocusSessions);
 }

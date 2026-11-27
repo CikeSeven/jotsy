@@ -222,6 +222,15 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     }
   }
 
+  /// v24 专注记录表。表已在时跳过（降级后再升级），索引照常重建。
+  Future<void> _migrateAddTodoFocus(Migrator migrator) async {
+    await _createTableIfMissing(migrator, todoFocusSessions);
+    for (final index in <Index>[idxTodoFocusTodo, idxTodoFocusStarted]) {
+      await migrator.drop(index);
+      await migrator.createIndex(index);
+    }
+  }
+
   /// v15 日记本表加 `parent_id`（上级日记本的业务 id）。
   ///
   /// 列已存在时跳过：从 v13 之前升级时 [_migrateAddNotebooks] 按最新定义

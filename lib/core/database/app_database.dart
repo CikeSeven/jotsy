@@ -18,6 +18,7 @@ import 'diary_search_terms.dart';
 import 'local_date_text.dart';
 import 'notebook_payload.dart';
 import 'sync_rows.dart';
+import 'todo_focus.dart';
 import 'todo_recurrence.dart';
 import 'todo_rules.dart';
 import 'todo_sections.dart';
@@ -34,6 +35,7 @@ export 'notebook_cover_style.dart';
 export 'notebook_payload.dart';
 export 'notebook_rules.dart';
 export 'sync_rows.dart';
+export 'todo_focus.dart';
 export 'todo_recurrence.dart';
 export 'todo_rules.dart';
 export 'todo_sections.dart';
@@ -86,6 +88,7 @@ part 'app_database_todo_batch_ops.dart';
 part 'app_database_todo_detail_ops.dart';
 part 'app_database_todo_tag_ops.dart';
 part 'app_database_todo_section_ops.dart';
+part 'app_database_todo_focus_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -104,6 +107,7 @@ part 'app_database_todo_section_ops.dart';
     AiResults,
     TodoLists,
     Todos,
+    TodoFocusSessions,
   ],
 )
 class AppDatabase extends _$AppDatabase
@@ -143,6 +147,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseTodoDetailOps,
         _AppDatabaseTodoTagOps,
         _AppDatabaseTodoSectionOps,
+        _AppDatabaseTodoFocusOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -161,7 +166,7 @@ class AppDatabase extends _$AppDatabase
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -234,6 +239,11 @@ class AppDatabase extends _$AppDatabase
       // 分支之后（理由同 v18）。
       if (from < 23) {
         await _migrateDiaryCommentsAddDelta(m);
+      }
+      // v24 专注记录表只存待办的业务 id、与其他表都无关联，同样排在 v1
+      // 分支之前。
+      if (from < 24) {
+        await _migrateAddTodoFocus(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

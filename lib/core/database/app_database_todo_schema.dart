@@ -109,6 +109,42 @@ class Todos extends Table {
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
 }
 
+/// 一段专注（schema v24）：结束时写一行，写完即不可变（口径见
+/// `todo_focus.dart`）。
+///
+/// 1. 以业务 id `session_id` 为唯一标识，同步与备份合并按它取并集；
+/// 2. `todo_id` 存待办的业务 id、不建外键；删除待办时不清空（撤销删除后累计
+///    照旧），指向不存在的待办时按“没有关联”算；NULL 为只计时；
+/// 3. 时长以秒存：计划时长（含中途加时）与实际专注的秒数（扣掉暂停）；开始 /
+///    结束是绝对时刻，统计按本地日期归到哪一天。
+@DataClassName('TodoFocusRow')
+@TableIndex(name: 'idx_todo_focus_todo', columns: <Symbol>{#todoId})
+@TableIndex(name: 'idx_todo_focus_started', columns: <Symbol>{#startedAt})
+class TodoFocusSessions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get sessionId => text().named('session_id').unique()();
+
+  /// 专注的待办业务 id；NULL 为没有关联待办。
+  TextColumn get todoId => text().named('todo_id').nullable()();
+
+  DateTimeColumn get startedAt => dateTime().named('started_at')();
+
+  DateTimeColumn get endedAt => dateTime().named('ended_at')();
+
+  /// 计划时长（秒，含中途加时）。
+  IntColumn get plannedSeconds => integer().named('planned_seconds')();
+
+  /// 实际专注的秒数（扣掉暂停）。
+  IntColumn get focusedSeconds => integer().named('focused_seconds')();
+
+  /// 结束方式（[TodoFocusOutcome] 的名字）。
+  TextColumn get outcome => text()();
+
+  /// 扩展字段（JSON 对象字符串）。
+  TextColumn get metadata => text().withDefault(const Constant('{}'))();
+}
+
 /// `metadata` 里用到的键。
 abstract final class TodoMetadataKeys {
   /// 从哪篇日记转来（日记业务 id）。

@@ -175,6 +175,8 @@ int _recordTime(SyncEntity entity, String facet, Map<String, Object?> facets) {
     SyncEntity.dayMood ||
     SyncEntity.todoList ||
     SyncEntity.todo => field(SyncFacet.main, 'updatedAt'),
+    // 不可变的记录：两侧的同一条相同，这个时刻只在坏数据时才用得上。
+    SyncEntity.todoFocus => field(SyncFacet.main, 'endedAt'),
     SyncEntity.tag ||
     SyncEntity.orderList ||
     SyncEntity.settings ||

@@ -29,6 +29,7 @@ class BackupPayload {
     this.aiResults = const <AiResultRow>[],
     this.todoLists = const <TodoListRow>[],
     this.todos = const <TodoRow>[],
+    this.todoFocusSessions = const <TodoFocusRow>[],
     this.settings,
   });
 
@@ -77,6 +78,10 @@ class BackupPayload {
   /// [_withRestorableRelations]）。
   final List<TodoListRow> todoLists;
   final List<TodoRow> todos;
+
+  /// 专注记录（schema v24 起）。只随完整备份导出；写完即不可变，合并时按
+  /// 业务 id 取并集。指向的待办不在载荷里时照样保留（按“没有关联”算）。
+  final List<TodoFocusRow> todoFocusSessions;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -214,6 +219,14 @@ class BackupPayload {
               });
             })
             .toList(growable: false),
+        todoFocusSessions: _optionalRows(database, 'todoFocusSessions')
+            .map(
+              (row) => TodoFocusRow.fromJson(<String, dynamic>{
+                'metadata': '{}',
+                ...row,
+              }),
+            )
+            .toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -295,6 +308,13 @@ class BackupPayload {
     _unique(todoLists.map((row) => row.listId));
     _unique(todos.map((row) => row.id));
     _unique(todos.map((row) => row.todoId));
+    _unique(todoFocusSessions.map((row) => row.id));
+    _unique(todoFocusSessions.map((row) => row.sessionId));
+    for (final row in todoFocusSessions) {
+      if (row.plannedSeconds < 0 || row.focusedSeconds < 0) {
+        throw const FormatException('备份中的专注记录数据无效');
+      }
+    }
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -409,6 +429,7 @@ class BackupPayload {
               ? row
               : row.copyWith(listId: const Value(null)),
       ],
+      todoFocusSessions: todoFocusSessions,
       settings: settings,
     );
   }
@@ -476,6 +497,10 @@ class BackupPayload {
         'todos': (await database.select(database.todos).get())
             .map((row) => row.toJson())
             .toList(),
+        'todoFocusSessions':
+            (await database.select(database.todoFocusSessions).get())
+                .map((row) => row.toJson())
+                .toList(),
       },
     );
     return {
@@ -635,6 +660,7 @@ class BackupPayload {
       aiResults: aiResults,
       todoLists: todoLists,
       todos: todos,
+      todoFocusSessions: todoFocusSessions,
       settings: settings,
     );
   }
@@ -759,6 +785,7 @@ class BackupPayload {
     await database.delete(database.aiResults).go();
     await database.delete(database.todos).go();
     await database.delete(database.todoLists).go();
+    await database.delete(database.todoFocusSessions).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -827,6 +854,11 @@ class BackupPayload {
       batch.insertAll(
         database.todos,
         todos.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 专注记录只按业务 id 引用待办，没有外键。
+      batch.insertAll(
+        database.todoFocusSessions,
+        todoFocusSessions.map((row) => row.toCompanion(false)).toList(),
       );
     });
     // 上级按业务 id 引用，文件里的层级可能指向不在文件里的本子（旧版本手改、

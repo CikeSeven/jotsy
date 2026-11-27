@@ -33,7 +33,10 @@ import 'package:meta/meta.dart';
 /// - 5：prefs 多出心情符号 `moodOptions` 与心情颜色 `moodColors`。已有记录
 ///   的规范值不变，历史哈希仍有效；提升版本让旧版设备拒绝同步——它认不出
 ///   这两个分面，写入时不会应用，两边的心情符号永远对不上。
-const int kSyncFormatVersion = 5;
+/// - 6：新增专注记录 `todoFocus` 实体；settings 的界面类功能开关多出
+///   `todoFocus`（专注计时）。已有记录的规范值不变，历史哈希仍有效；提升
+///   版本让旧版设备以“版本不同”拒绝、提示升级，而不是含糊地报实体集合不符。
+const int kSyncFormatVersion = 6;
 
 /// 规范值里托管媒体引用的前缀：`jotsy-media:diary_images/media_x/a.jpg`。
 const String kSyncMediaRefPrefix = 'jotsy-media:';
@@ -56,6 +59,9 @@ enum SyncEntity {
 
   /// 待办（`listId` 为 null 即收集箱）。
   todo,
+
+  /// 专注记录：写完即不可变，按 id 取并集（`todoId` 不随待办删除置空）。
+  todoFocus,
 
   /// 只在两端都开启“同步设置”时参与的设置（界面与编辑器偏好）。
   settings,
@@ -84,7 +90,8 @@ abstract final class SyncFacet {
   // notebook
   static const String definition = 'definition';
 
-  // membership / comment / template / anniversary / dayMood / todoList / todo
+  // membership / comment / template / anniversary / dayMood / todoList / todo /
+  // todoFocus
   static const String main = 'main';
 
   // orderList

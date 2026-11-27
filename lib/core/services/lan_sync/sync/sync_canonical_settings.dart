@@ -26,7 +26,7 @@ import 'sync_settings_fonts.dart';
 ///   `AppFeatures.decode` 之后的值（没存过开关时即默认值）；
 /// - settings 记录（[syncSettingsRecord]，只在两端都开启“同步设置”时）：其余
 ///   每个键一个分面 `{"value": …}`；`appFeaturesRaw` 只留界面类开关
-///   （[kSyncUiFeatures]：日历 Tab、探索 Tab、侧滑归档），值为字段 → bool 的
+///   （[kSyncUiFeatures]：日历 Tab、探索 Tab、侧滑归档、AI 助手、专注计时），值为字段 → bool 的
 ///   对象；`appSurfaceRaw` 里的背景文件名换成媒体引用
 ///   `jotsy-media:app_backgrounds/<文件名>`；排版与代码块样式里导入字体的
 ///   本机 id 换成按文件内容的引用 `jotsy-font:<sha256>`（见
@@ -60,12 +60,20 @@ const List<String> kSyncDataFeatures = <String>[
 /// 随“同步设置”同步的界面类功能（`AppFeatures` 的字段名）。
 ///
 /// AI 助手算界面类：AI 记录与服务商配置都不同步，开关只决定入口是否出现。
+/// 专注计时同样算界面类：专注记录照常同步，开关只决定入口与累计时长是否
+/// 出现（格式版本 6 起）。
 const List<String> kSyncUiFeatures = <String>[
   'calendar',
   'explore',
   'swipeArchive',
   'ai',
+  'todoFocus',
 ];
+
+/// 格式版本 6 起加入的界面类开关：与默认相同时不写进规范值——已有设备的
+/// 功能开关分面逐字节不变，历史哈希仍有效，升级后不会被当成两边都改过；
+/// 读取时没有即默认值。
+const Set<String> _kSyncUiFeaturesOmittedWhenDefault = <String>{'todoFocus'};
 
 const String _kTagOrderRawKey = 'tagOrderRaw';
 
@@ -155,9 +163,13 @@ SyncRecord syncSettingsRecord(
     if (entry.key == kSyncMoodColorsRawKey) continue;
     if (entry.key == _kAppFeaturesRawKey) {
       final features = _decodeFeatures(entry.value);
+      final defaults = _decodeFeatures(null);
       facets[entry.key] = <String, Object?>{
         'value': <String, Object?>{
-          for (final name in kSyncUiFeatures) name: features[name],
+          for (final name in kSyncUiFeatures)
+            if (!_kSyncUiFeaturesOmittedWhenDefault.contains(name) ||
+                features[name] != defaults[name])
+              name: features[name],
         },
       };
       continue;
@@ -206,9 +218,13 @@ Map<String, Object?> syncSettingsRestoreNode(
       if (value is! Map) {
         throw FormatException('设置分面 ${entry.key} 格式不对', value);
       }
+      final defaults = _decodeFeatures(null);
       final merged = _mergeFeatures(localAppFeaturesRaw, {
         for (final name in kSyncUiFeatures)
-          if (value[name] case final bool on) name: on,
+          if (value[name] case final bool on)
+            name: on
+          else if (_kSyncUiFeaturesOmittedWhenDefault.contains(name))
+            name: defaults[name]!,
       }, onlyEnable: false);
       if (merged != null) node[entry.key] = merged;
       continue;
@@ -335,6 +351,7 @@ Map<String, bool> _decodeFeatures(Object? raw) {
     'swipeArchive': features.swipeArchive,
     'comments': features.comments,
     'ai': features.ai,
+    'todoFocus': features.todoFocus,
   };
 }
 
@@ -364,6 +381,7 @@ String? _mergeFeatures(
     swipeArchive: next('swipeArchive', local.swipeArchive),
     comments: next('comments', local.comments),
     ai: next('ai', local.ai),
+    todoFocus: next('todoFocus', local.todoFocus),
   );
   return merged == local ? null : merged.encode();
 }

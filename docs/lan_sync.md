@@ -15,7 +15,7 @@
 | 路径 | 职责 |
 |---|---|
 | `lib/core/services/lan_sync/sync/sync_model.dart` | `SyncEntity`、`SyncKey`、`SyncRecord`、`SyncManifest`、规范 JSON 与哈希 |
-| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,todo,settings,support}.dart`、`sync_media_refs.dart`、`sync_settings_fonts.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一、设置里导入字体的本机 id ↔ 内容引用；可送进 isolate 的纯 Dart 原始行 |
+| `lib/core/services/lan_sync/sync/sync_canonical_{diary,notebook,misc,todo,todo_focus,settings,support}.dart`、`sync_media_refs.dart`、`sync_settings_fonts.dart`；原始行 `lib/core/database/sync_rows.dart` | 数据库行 ↔ 规范记录（含反向列值）、媒体路径归一、设置里导入字体的本机 id ↔ 内容引用；可送进 isolate 的纯 Dart 原始行 |
 | `lib/core/services/lan_sync/sync/sync_local_state.dart`、`sync_state_model.dart`（纯 Dart）、`sync_state_fold.dart`（纯 Dart）、`sync_state_json.dart`、`sync_state_files.dart`、`sync_manifest_builder.dart`、`sync_hash_cache.dart`、`sync_media_index.dart` | 检查点、分面历史、墓碑、标签改名、哈希缓存、媒体索引 |
 | `lib/core/services/lan_sync/sync/sync_planner.dart`（+ `_keys` / `_decide` / `_merge` / `_revive` / `_copies` / `_tags` / `_notebooks` / `_lists` / `_output` / `_values`）、`sync_plan.dart`、`sync_plan_side.dart`；本机一侧适配器 `sync_local_plan_side.dart` | 合并判定（纯函数）：按需取数、产出双方的写入计划 |
 | `lib/core/database/app_database_sync_ops.dart`（读）、`app_database_sync_writes.dart`（`_AppDatabaseSyncWrites`：按原值写入、关联清理）、`app_database_sync_order.dart`（`_AppDatabaseSyncOrder`：顺序列表重排） | 读规范行；由写入层放进同一个事务的按原值写入与关联清理 |
@@ -38,9 +38,9 @@
 ### 2.1 基本类型（`sync_model.dart`）
 
 ```dart
-const int kSyncFormatVersion = 4;
+const int kSyncFormatVersion = 6;
 
-enum SyncEntity { diary, tag, notebook, membership, orderList, comment, template, anniversary, dayMood, todoList, todo, settings, prefs }
+enum SyncEntity { diary, tag, notebook, membership, orderList, comment, template, anniversary, dayMood, todoList, todo, todoFocus, settings, prefs }
 
 /// 记录身份：实体 + 业务 id。字符串形式 `<entity>:<id>`（entity 用枚举名）。
 class SyncKey { final SyncEntity entity; final String id; }
@@ -63,7 +63,7 @@ class SyncManifest {
 - **哈希**：`sha256(utf8(规范 JSON))` 取前 16 字节，小写十六进制（32 字符）。
 - 规范化必须是**幂等且跨设备确定**的：A 的记录写入 B 后，B 读出的规范记录与 A 的逐字节相同（测试兜底，含历史 Delta / 旧节点格式的正文、胶囊、带附件的 metadata）。
 - 规范形式（分面组成、归一规则、哈希）一旦改变必须提升 `kSyncFormatVersion`（版本不同的设备握手时互相拒绝）；只修正本机实现、不改协议时提升 `kSyncCanonicalRevision`（`sync_hash_cache.dart`），让哈希缓存整份作废重算。
-- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。3 为新增待办清单 `todoList` 与待办 `todo` 两类实体、prefs 多出 `feature.todos`：已有记录的规范值不变（prefs 多出的分面按 4.1 第 2 条“有值的一侧胜出”），历史哈希仍有效；旧版设备的实体集合本来也对不上，提升版本让双方在 `sync.hello` 就明确拒绝、提示升级。4 为留言多出 `delta`（留言文字的格式）：只在有格式时出现，没有格式的留言与版本 3 的规范值逐字节相同，历史哈希仍有效；提升版本让认不出它的旧版设备拒绝同步（理由同 2）。5 为 prefs 多出 `moodOptions`（心情符号）与 `moodColors`（心情颜色）：已有记录的规范值不变，历史哈希仍有效；提升版本让认不出它们的旧版设备拒绝同步（它不会应用这两个分面，两边的心情符号永远对不上）。
+- 格式版本历史：1 为首版；2 为留言多出 `images`。新字段只在有值时出现，已有记录的规范值不变，升级后历史哈希仍有效；提升版本只为让认不出新字段的旧版设备拒绝同步（它写入时会丢掉图片，下次再把丢了图片的版本当作冲突一方传回来）。3 为新增待办清单 `todoList` 与待办 `todo` 两类实体、prefs 多出 `feature.todos`：已有记录的规范值不变（prefs 多出的分面按 4.1 第 2 条“有值的一侧胜出”），历史哈希仍有效；旧版设备的实体集合本来也对不上，提升版本让双方在 `sync.hello` 就明确拒绝、提示升级。4 为留言多出 `delta`（留言文字的格式）：只在有格式时出现，没有格式的留言与版本 3 的规范值逐字节相同，历史哈希仍有效；提升版本让认不出它的旧版设备拒绝同步（理由同 2）。5 为 prefs 多出 `moodOptions`（心情符号）与 `moodColors`（心情颜色）：已有记录的规范值不变，历史哈希仍有效；提升版本让认不出它们的旧版设备拒绝同步（它不会应用这两个分面，两边的心情符号永远对不上）。6 为新增专注记录 `todoFocus` 实体、settings 的 `appFeaturesRaw` 多出界面类开关 `todoFocus`（专注计时）：`todoFocus` 开关与默认（开）相同时不写进规范值，已有设备的开关分面逐字节不变、历史哈希仍有效，读回时没有即默认；提升版本让旧版设备以“版本不同”拒绝、提示升级。
 
 ### 2.2 实体与分面
 
@@ -80,7 +80,8 @@ class SyncManifest {
 | dayMood | `YYYY-MM-DD` | **main**：`mood`（原始字符串，认不出的枚举名原样）、`updatedAt` |
 | todoList | `listId` | **main**：全部业务列：`name`、`colorKey`、`iconKey`、`sortOrder`、`metadata`（对象）、`createdAt`、`updatedAt`。手动顺序就是每行的 `sortOrder`（REAL，拖动只改被拖的一行），随记录整条同步，不另设顺序列表 |
 | todo | `todoId` | **main**：全部业务列：`listId`（清单业务 id，null = 收集箱）、`title`、`note`、`priority`、`dueDate`（`YYYY-MM-DD` 原文）、`dueMinute`、`reminders`、`repeat`、`steps`、`completedAt`、`snoozedUntil`、`linkedDiaryId`、`sortOrder`、`metadata`、`createdAt`、`updatedAt`。`reminders` / `steps` 为 JSON 列解析后的数组、`repeat` 与 `metadata` 为解析后的对象（`repeat` 为 null 即不重复）——不经 `todo_rules.dart` 的模型重新编码（它会丢掉认不出的字段与条目）。`sortOrder` 为 JSON 浮点数（`1.0`，与整数 `1` 的规范串不同；读出时一律转成浮点），非有限值按 `0.0` |
-| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw` 与 `tagOrderRaw`、`moodOptionsRaw`、`moodColorsRaw`（这三个在 prefs 里）；`appFeaturesRaw` 只留界面类开关（日历 Tab `calendar`、探索 Tab `explore`、侧滑归档 `swipeArchive`、AI 助手 `ai`），值为字段 → bool 的对象（取 `AppFeatures.decode` 之后的值），写入时合进本机开关、数据类开关保持本机值；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码；导入字体（`diaryTypography.fontId` 与 `diaryCodeBlockStyleRaw` 里的 `fontId`）的本机 id 换成按文件内容的引用 `jotsy-font:<sha256>`（`sync_settings_fonts.dart`，指纹由 `DiaryFontStorageService.contentFingerprints` 给出、补算后写回字体清单），`diaryCodeBlockStyleRaw` 只在换了 id 时按规范 JSON 重新编码；写入时引用换回本机同一文件的字体 id（同一文件导入了两份取 id 较小的），本机没有这款字体时原样存下引用（界面回落内置字体，再取值仍是同一个引用、不会来回改）；内置 / 系统 / 等宽字体与本机已没有文件的 id 原样同步。只在两端都开启“同步设置”时参与。 |
+| settings | `settings` | 每个设置键一个分面，值为 `{ "value": … }`；键集合 = `BackupSettings.capture` 的键，去掉 `appLockEnabled`、`rememberedTagFilterIdsRaw` 与 `tagOrderRaw`、`moodOptionsRaw`、`moodColorsRaw`（这三个在 prefs 里）；`appFeaturesRaw` 只留界面类开关（日历 Tab `calendar`、探索 Tab `explore`、侧滑归档 `swipeArchive`、AI 助手 `ai`、专注计时 `todoFocus`（只在关掉时出现，见格式版本 6）），值为字段 → bool 的对象（取 `AppFeatures.decode` 之后的值），写入时合进本机开关、数据类开关保持本机值；`appSurfaceRaw` 里的背景文件名（`global.image` 与 `areas.<区域>.background.image`，与 `referencedImages` 同一范围）换成媒体引用 `jotsy-media:app_backgrounds/<文件名>`，整串按规范 JSON 重新编码；导入字体（`diaryTypography.fontId` 与 `diaryCodeBlockStyleRaw` 里的 `fontId`）的本机 id 换成按文件内容的引用 `jotsy-font:<sha256>`（`sync_settings_fonts.dart`，指纹由 `DiaryFontStorageService.contentFingerprints` 给出、补算后写回字体清单），`diaryCodeBlockStyleRaw` 只在换了 id 时按规范 JSON 重新编码；写入时引用换回本机同一文件的字体 id（同一文件导入了两份取 id 较小的），本机没有这款字体时原样存下引用（界面回落内置字体，再取值仍是同一个引用、不会来回改）；内置 / 系统 / 等宽字体与本机已没有文件的 id 原样同步。只在两端都开启“同步设置”时参与。 |
+| todoFocus | `sessionId` | **main**：全部业务列：`todoId`（待办业务 id，null = 只计时）、`startedAt`、`endedAt`、`plannedSeconds`、`focusedSeconds`、`outcome`、`metadata`（对象）。记录写完即不可变（见 `todo_focus.dart`），两侧的同一条永远相同，合并实际只是取并集；`todoId` 不随待办删除置空、规划器也不置空（撤销删除后累计照旧，指向不存在的待办时界面按“没有关联”算）。整条后写者胜的时刻取 `endedAt`，只在坏数据时用得上 |
 | prefs | `prefs` | 始终参与（不受“同步设置”控制）。**tagOrderNames**：`value`（标签顺序：`tagOrderRaw` 的本地 id 换成标签名，查不到的丢掉；历史记录值，按列表三方合并）<br>**feature.&lt;字段&gt;**（`notebooks` / `anniversaries` / `templates` / `timeCapsules` / `comments` / `todos`，即数据类功能开关）：`on`（`AppFeatures.decode` 之后的值，没存过开关时为默认值）<br>**moodOptions**：`value`（心情符号 `app.settings.mood_options`：经 `decodeMoodOptions` 规整的 10 个符号，与默认符号相同（含没存过、读不出来）时为 null）<br>**moodColors**：`value`（心情颜色 `app.settings.mood_colors`：去掉首尾空白的原文，没存过（即全部为内置色）时为 null）。两者都在 `BackupSettings` 里（随备份），写入经 `BackupSettings.restore`，null 即恢复默认。为什么拆出来：标签顺序与这些开关决定同步过来的数据看不看得到——“同步设置”默认关闭时，两边标签栏顺序不同，对方没开留言就看不到同步过去的留言；日记里存的是心情符号本身，没有对方的心情符号就认不出自定义符号的槽位（心情色、统计、日历都按无心情），心情颜色与符号在同一页编辑、按同一组槽位配色，一起同步。 |
 
 - `content_text` 由正文推出、不参与哈希；写入时由（还原路径后的）正文经 `diaryBlocksPlainText` 重新生成（与预览页待办保存、导入写库同一口径）。
@@ -109,7 +110,7 @@ class SyncManifest {
 | `history.json.gz` | 分面历史：`SyncKey → 分面 → [{hash, value?, seenAt}]`，每分面最多 8 条，新的在前；diary.tags、orderList.items 与 prefs.tagOrderNames 分面同时记录值 |
 | `tombstones.json.gz` | 墓碑：`SyncKey → {deletedAt, known: 分面 → [哈希…]}`（删除时的当前哈希 + 历史）；超过 365 天或超过 50 000 条时按时间淘汰 |
 | `renames.json.gz` | 标签改名记录：旧名 → 新名、时间（随墓碑同样淘汰） |
-| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日、待办清单、待办），其余每次现算 |
+| `hash_cache.json.gz` | 记录键 → [原始列指纹（行原始列值的 sha256 前 16 字节）, 规范分面哈希]；按键索引、整份重写，天然只留当前存在的行；带 `kSyncFormatVersion` 与 `kSyncCanonicalRevision`，不符即作废。只缓存要解码的行（日记的行分面、日记本、模板、纪念日、待办清单、待办、专注记录），其余每次现算 |
 | `media_index.json.gz` | 媒体键 → 大小、修改时间、sha256（大小或修改时间变了就重算） |
 | `sessions.json` | 最近 50 次同步记录（时间、用时（不含等用户确认）、自动与否、收到 / 发出的日记篇数与其他变化条数、媒体字节数、冲突副本数、是否首次、失败原因） |
 

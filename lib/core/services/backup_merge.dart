@@ -194,6 +194,7 @@ class BackupMerge {
       todos: payload.todos,
       mode: mode,
     );
+    await BackupTodoMerge.writeFocusSessions(db, payload.todoFocusSessions);
 
     return BackupImportResult(
       mode: mode,

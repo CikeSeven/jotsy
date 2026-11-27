@@ -82,4 +82,30 @@ abstract final class BackupTodoMerge {
     }
     return (added: added, replaced: replaced, skipped: skipped);
   }
+
+  /// 专注记录写完即不可变：按 sessionId 取并集，本机没有的新增（去掉文件里
+  /// 的本地 id），已有的不论哪种合并方式都不动——两边的同一条本来就相同。
+  /// 返回新增的条数。
+  static Future<int> writeFocusSessions(
+    AppDatabase db,
+    List<TodoFocusRow> sessions,
+  ) async {
+    if (sessions.isEmpty) return 0;
+    final table = db.todoFocusSessions;
+    final local = <String>{
+      for (final row in await (db.selectOnly(
+        table,
+      )..addColumns([table.sessionId])).get())
+        row.read(table.sessionId)!,
+    };
+    var added = 0;
+    for (final row in sessions) {
+      if (!local.add(row.sessionId)) continue;
+      await db
+          .into(table)
+          .insert(row.toCompanion(false).copyWith(id: const Value.absent()));
+      added++;
+    }
+    return added;
+  }
 }

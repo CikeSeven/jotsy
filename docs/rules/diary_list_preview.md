@@ -41,6 +41,7 @@
 - 必须：标签筛选单击只选这一个、再点取消，长按（桌面 Ctrl / ⌘ 点击）进多选；禁止让单击恢复成增减（#196）。
 - 必须：列表整体切换只经 `DiaryListSwitchMotion`，禁止给列表套整块淡入淡出。
 - 必须：列表就在眼前换数据（增删、换位、改高）的动效只经 `DiariesListSection(animateChanges:)`（首页与归档页开启），宿主刻意直接拿掉的日记经 `hiddenDiaryIds` 传入；禁止让瀑布流卡片逐帧改高（会换列乱跳）。
+- 必须：日记列表与瀑布流均经 `findChildIndexCallback` 按日记 id 复用存活卡片并经稳定键保持视口锚点；禁止通过给瀑布流 sliver 换 key 整棵重建来清旧布局（会导致整表闪烁并在下滑后弹回上半部分）。
 - 必须：切换标签后只经 `jumpDiaryListToStart` 回到列表开头，禁止跳到最顶（刊头会弹出）。
 - 必须：标签子页排序只存 `app.settings.tag_picker_sort`（随备份导出），检索词只在内存里。
 - 必须：拼音归组、排序与检索只经 `NameIndexKey`；拼音表由脚本生成、禁止手改，禁止引入整本字典的库。

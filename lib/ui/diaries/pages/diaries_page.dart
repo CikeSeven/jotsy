@@ -421,8 +421,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final brightness = theme.brightness;
     // 页面底色（Scaffold、列表底）与实色顶栏（刊头、标签栏）的底色分开取：
     // 日记区域设了背景时页面底透明、露出首页画的背景，实色顶栏仍是不透明
     // 的栏色（纯色背景时与背景同色）；没有背景时两者都是 surface，与接入
@@ -781,7 +779,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     enabled: !_tagFiltersExpanded,
                     child: CustomScrollView(
                       key: PageStorageKey<String>(
-                        'diaries_scroll_${brightness.name}_${_layoutMode.name}',
+                        'diaries_scroll_${_layoutMode.name}',
                       ),
                       scrollBehavior: ScrollConfiguration.of(
                         context,

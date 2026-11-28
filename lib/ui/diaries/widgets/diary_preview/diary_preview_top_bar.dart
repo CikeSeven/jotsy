@@ -134,7 +134,7 @@ DiaryPreviewTitleChip? diaryPreviewTitleChip(
 }
 
 /// 右侧动作胶囊：分享、编辑与“更多”。阅读式编辑页的胶囊另有一份（编辑
-/// 中变形为 [更多 | 完成]）。
+/// 中变形为 [完成 · 更多]）。
 class DiaryPreviewActionsIsland extends StatelessWidget {
   const DiaryPreviewActionsIsland({super.key, required this.actions});
 

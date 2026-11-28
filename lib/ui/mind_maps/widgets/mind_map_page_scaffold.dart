@@ -15,7 +15,7 @@ import 'mind_map_view_switch.dart';
 /// 导图全屏页（导图日记的编辑页、嵌入导图的编辑页与查看页）共用的外框：
 /// 编辑区背景与浮岛顶栏——左返回岛、中间“画布 / 大纲”切换岛
 /// （[MindMapViewSwitch]，不显示导图名）、右动作胶囊（撤销 / 重做、宿主的
-/// 按钮、“更多”与其后的主色胶囊）。
+/// 图标按钮与“更多”，“更多”始终在最右侧）。
 ///
 /// 画布铺满整页，浮岛压在画布上（不画整条栏），[body] 拿到被状态栏与浮岛
 /// 盖住的高度作为 `topInset`，据此把适配视图与大纲留在岛的下面。
@@ -23,8 +23,8 @@ import 'mind_map_view_switch.dart';
 /// 显隐：浮岛随大纲往下滚收起；画布平移缩放时、点空白时由工作区冒泡
 /// [FloatingTopBarRevealNotification] 收起或浮出（见 `MindMapWorkspace`）。
 ///
-/// 窄屏：右侧动作多（新建页的“发布”、手动保存的“保存”、长文案语言）时
-/// 中间放不下切换岛，切换改为“更多”里的一项（中间留空，不溢出）。
+/// 窄屏：右侧动作多（新建页的“发布”、手动保存的“保存”）时中间放不下
+/// 切换岛，切换改为“更多”里的一项（中间留空，不溢出）。
 class MindMapPageScaffold extends StatefulWidget {
   const MindMapPageScaffold({
     super.key,
@@ -34,7 +34,6 @@ class MindMapPageScaffold extends StatefulWidget {
     this.actions = const <Widget>[],
     this.menuItems = const <Widget>[],
     this.menuTooltip,
-    this.trailingActions = const <Widget>[],
     this.paintBackground = true,
   });
 
@@ -50,9 +49,6 @@ class MindMapPageScaffold extends StatefulWidget {
 
   /// “更多”的提示文字，缺省为导图的“更多”。
   final String? menuTooltip;
-
-  /// “更多”之后的按钮（新建页的“发布”胶囊）。
-  final List<Widget> trailingActions;
   final Widget Function(BuildContext context, double topInset) body;
 
   /// 是否自己画编辑区背景；宿主外面已经画了（日记编辑页）时传 false。
@@ -183,7 +179,6 @@ class _MindMapPageScaffoldState extends State<MindMapPageScaffold> {
                 if (!widget.controller.readOnly) _buildUndoRedo(context),
                 ...widget.actions,
                 _buildMore(),
-                ...widget.trailingActions,
               ],
             ),
             child: SizedBox.expand(child: widget.body(context, topInset)),

@@ -13,6 +13,10 @@ import 'lan_sync/lan_sync_state_directory.dart';
 /// 桌面端托管数据位置配置文件（位于系统默认应用支持目录下）。
 const String dataLocationConfigFileName = 'data_location.json';
 
+/// 桌面端窗口大小与位置记忆文件（位于系统默认应用支持目录下，纯本机状态、
+/// 不随自定义数据目录迁移、不随备份导出、不参与同步）。
+const String windowStateFileName = 'window_state.json';
+
 /// 可执行文件同级目录下的可选数据位置配置：
 /// - 安装程序（`jotsy.iss`）在用户自定义路径时写入 `defaultPath`，供当前系统下
 ///   首次启动的用户账号继承；
@@ -549,6 +553,8 @@ class AppDataLocationStore {
       'shared_preferences.json',
       dataLocationConfigFileName,
       boundRootMarkerFileName,
+      windowStateFileName,
+      '$windowStateFileName.tmp',
     };
     await for (final entity in dir.list(followLinks: false)) {
       final name = p.basename(entity.path);

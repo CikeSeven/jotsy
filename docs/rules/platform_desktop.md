@@ -11,6 +11,7 @@
 - 必须：Linux 无录音；熄屏 / 后台继续录音只在 Android。局域网同步不支持 iOS；扫码配对与其他应用的文字操作只在 Android。
 - 必须：Linux 应用锁只能用应用密码（见 `app_lock.md`）；生物识别只在 Android / iOS / macOS；锁屏时上锁与防截屏只在 Android，桌面改为闲置时上锁。
 - 必须：待办提醒在桌面只在应用运行期间弹出、锁屏隐藏通知内容只在 Android（见 `todos.md`）；屏幕圆角只在 Android 读取；桌面小组件只在 Android（见 `home_widgets.md`）。
+- 必须：桌面端窗口大小、位置与最大化状态在原生 runner 创建窗口前恢复，运行期防抖并在关闭前落盘；纯本机状态（Linux / Windows 存于系统默认应用支持目录 `window_state.json`，macOS 经 `NSWindow.frameAutosaveName`），不随自定义数据目录迁移、不随备份导出、不参与局域网同步；最小化与全屏不得覆写普通态几何；恢复时校验当前显示器工作区与 DPI（外接屏断开居中回主屏），Linux Wayland 不记录也不调用全局窗口定位。
 
 ## 宽窗口
 

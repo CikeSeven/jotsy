@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_features.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -467,25 +468,57 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('editing the body shows Done, which ends editing', (
-    tester,
-  ) async {
-    await prepare();
-    await openEditor(tester);
-    final l10n = l10nOf(tester);
-    editorOf(tester).focusNode!.requestFocus();
-    await tester.pumpAndSettle();
-    // 右岛原地变形为 [更多 | 完成]：分享收起，“完成”是主色文字胶囊。
-    expect(find.text(l10n.diaryReadingDone), findsOneWidget);
-    expect(find.byTooltip(l10n.previewShare), findsNothing);
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'editing the body shows Done icon left of More and ends editing '
+      '(${brightness.name})',
+      (tester) async {
+        await prepare();
+        await openEditor(tester, brightness: brightness);
+        final l10n = l10nOf(tester);
+        final more = find.byTooltip(l10n.autoT0125);
+        final moreRightBefore = tester.getRect(more).right;
+        // 平时为 [分享 · 更多]，“更多”在最右侧。
+        expect(
+          tester.getRect(find.byTooltip(l10n.previewShare)).center.dx,
+          lessThan(tester.getRect(more).center.dx),
+        );
 
-    await tester.tap(find.text(l10n.diaryReadingDone));
-    await tester.pumpAndSettle();
-    expect(editorOf(tester).focusNode!.hasFocus, isFalse);
-    expect(find.text(l10n.diaryReadingDone), findsNothing);
-    expect(find.byTooltip(l10n.previewShare), findsOneWidget);
-    await unmount(tester);
-  });
+        editorOf(tester).focusNode!.requestFocus();
+        await tester.pumpAndSettle();
+        // 右岛原地变形为 [完成 · 更多]：分享收起，“完成”是无填充 check 图标且
+        // 在“更多”左侧，“更多”保持在最右侧不动。
+        final done = find.byTooltip(l10n.diaryReadingDone);
+        expect(done, findsOneWidget);
+        expect(find.byType(FilledButton), findsNothing);
+        expect(
+          find.descendant(
+            of: done,
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is FaIcon &&
+                  widget.icon == FontAwesomeIcons.check.data,
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.byTooltip(l10n.previewShare), findsNothing);
+        expect(
+          tester.getRect(done).center.dx,
+          lessThan(tester.getRect(more).center.dx),
+        );
+        expect(tester.getRect(more).right, closeTo(moreRightBefore, 0.5));
+
+        await tester.tap(done);
+        await tester.pumpAndSettle();
+        expect(editorOf(tester).focusNode!.hasFocus, isFalse);
+        expect(done, findsNothing);
+        expect(find.byTooltip(l10n.previewShare), findsOneWidget);
+        expect(tester.getRect(more).right, closeTo(moreRightBefore, 0.5));
+        await unmount(tester);
+      },
+    );
+  }
 
   testWidgets('More → Delete saves the last edit, moves the diary to the '
       'recycle bin and ends with true', (tester) async {

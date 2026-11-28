@@ -3,7 +3,10 @@
 #include <dwmapi.h>
 #include <flutter_windows.h>
 
+#include <vector>
+
 #include "resource.h"
+#include "window_state_store.h"
 
 namespace {
 
@@ -31,6 +34,17 @@ constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme"
 // physical pixels with the DPI of the monitor the window is on.
 constexpr int kMinWindowWidth = 400;
 constexpr int kMinWindowHeight = 600;
+
+// Timer ID and debounce interval for persisting window geometry after moves,
+// keyboard snaps, or maximize toggles without writing every drag frame.
+constexpr UINT_PTR kSaveWindowStateTimerId = 0x4A545753;
+constexpr UINT kSaveWindowStateDelayMs = 300;
+
+bool WindowStatesEqual(const WindowState& a, const WindowState& b) {
+  return a.has_position == b.has_position && a.x == b.x && a.y == b.y &&
+         a.width == b.width && a.height == b.height &&
+         a.maximized == b.maximized && a.dpi == b.dpi;
+}
 
 // The number of Win32Window objects that currently exist.
 static int g_active_window_count = 0;
@@ -130,6 +144,12 @@ bool Win32Window::Create(const std::wstring& title,
                          const Point& origin,
                          const Size& size) {
   Destroy();
+  persist_window_state_ = false;
+  start_maximized_ = false;
+  has_shown_ = false;
+  in_size_move_ = false;
+  has_tracked_state_ = false;
+  has_last_saved_state_ = false;
 
   const wchar_t* window_class =
       WindowClassRegistrar::GetInstance()->GetWindowClass();
@@ -155,8 +175,90 @@ bool Win32Window::Create(const std::wstring& title,
   return OnCreate();
 }
 
+bool Win32Window::CreateWithRestoredState(const std::wstring& title,
+                                          const Point& default_origin,
+                                          const Size& default_size) {
+  Destroy();
+  persist_window_state_ = true;
+  has_shown_ = false;
+  in_size_move_ = false;
+  has_tracked_state_ = false;
+  has_last_saved_state_ = false;
+
+  const std::vector<MonitorWorkArea> monitors = EnumerateWindowsMonitors();
+  WindowState saved;
+  WindowState initial;
+  if (LoadWindowsWindowState(&saved)) {
+    has_last_saved_state_ = true;
+    last_saved_state_ = saved;
+    initial = ResolveWindowStateForMonitors(
+        saved, monitors, kMinWindowWidth, kMinWindowHeight);
+  } else {
+    initial = BuildDefaultWindowStateForMonitors(
+        static_cast<int>(default_origin.x), static_cast<int>(default_origin.y),
+        static_cast<int>(default_size.width),
+        static_cast<int>(default_size.height), kMinWindowWidth,
+        kMinWindowHeight, monitors);
+  }
+
+  start_maximized_ = initial.maximized;
+  tracked_state_ = initial;
+  has_tracked_state_ = true;
+
+  const wchar_t* window_class =
+      WindowClassRegistrar::GetInstance()->GetWindowClass();
+  HWND window = CreateWindow(
+      window_class, title.c_str(), WS_OVERLAPPEDWINDOW, initial.x, initial.y,
+      initial.width, initial.height, nullptr, nullptr, GetModuleHandle(nullptr),
+      this);
+
+  if (!window) {
+    return false;
+  }
+
+  // Re-apply physical bounds before creating the Flutter surface in case
+  // cross-DPI creation adjusted the initial frame to the primary monitor's DPI.
+  RECT actual{};
+  if (GetWindowRect(window, &actual)) {
+    const int actual_w = static_cast<int>(actual.right - actual.left);
+    const int actual_h = static_cast<int>(actual.bottom - actual.top);
+    if (actual.left != initial.x || actual.top != initial.y ||
+        actual_w != initial.width || actual_h != initial.height) {
+      SetWindowPos(window, nullptr, initial.x, initial.y, initial.width,
+                   initial.height, SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+  }
+
+  UpdateTheme(window);
+
+  return OnCreate();
+}
+
 bool Win32Window::Show() {
-  return ShowWindow(window_handle_, SW_SHOWNORMAL);
+  const int show_cmd = start_maximized_ ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL;
+  const bool shown = ShowWindow(window_handle_, show_cmd) != FALSE;
+  has_shown_ = true;
+  return shown;
+}
+
+void Win32Window::FlushWindowState() {
+  if (!persist_window_state_ || !has_shown_ || window_handle_ == nullptr) {
+    return;
+  }
+  CancelWindowStateSaveTimer(window_handle_);
+  if (IsIconic(window_handle_)) {
+    WINDOWPLACEMENT wp{};
+    wp.length = sizeof(wp);
+    if (GetWindowPlacement(window_handle_, &wp)) {
+      tracked_state_.maximized = (wp.flags & WPF_RESTORETOMAXIMIZED) != 0;
+    }
+  } else if (IsZoomed(window_handle_)) {
+    tracked_state_.maximized = true;
+    has_tracked_state_ = true;
+  } else {
+    CaptureNormalWindowState(window_handle_);
+  }
+  CommitWindowStateToDisk();
 }
 
 void Win32Window::ActivateExisting(const std::wstring& title) {
@@ -194,12 +296,44 @@ Win32Window::MessageHandler(HWND hwnd,
                             LPARAM const lparam) noexcept {
   switch (message) {
     case WM_DESTROY:
+      CancelWindowStateSaveTimer(hwnd);
+      if (persist_window_state_ && has_shown_) {
+        CommitWindowStateToDisk();
+      }
       window_handle_ = nullptr;
       Destroy();
       if (quit_on_close_) {
         PostQuitMessage(0);
       }
       return 0;
+
+    case WM_ENTERSIZEMOVE:
+      in_size_move_ = true;
+      break;
+
+    case WM_EXITSIZEMOVE:
+      in_size_move_ = false;
+      if (persist_window_state_ && has_shown_) {
+        CancelWindowStateSaveTimer(hwnd);
+        if (IsZoomed(hwnd)) {
+          // Preserve pre-drag normal bounds when Aero Snap maximizes on drop.
+          tracked_state_.maximized = true;
+          has_tracked_state_ = true;
+        } else if (!IsIconic(hwnd)) {
+          CaptureNormalWindowState(hwnd);
+        }
+        CommitWindowStateToDisk();
+      }
+      break;
+
+    case WM_MOVE:
+      if (persist_window_state_ && has_shown_ && !in_size_move_ &&
+          !IsIconic(hwnd) && !IsZoomed(hwnd)) {
+        if (CaptureNormalWindowState(hwnd)) {
+          ScheduleWindowStateSave(hwnd);
+        }
+      }
+      break;
 
     case WM_DPICHANGED: {
       auto newRectSize = reinterpret_cast<RECT*>(lparam);
@@ -208,6 +342,13 @@ Win32Window::MessageHandler(HWND hwnd,
 
       SetWindowPos(hwnd, nullptr, newRectSize->left, newRectSize->top, newWidth,
                    newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+
+      if (persist_window_state_ && has_shown_ && !in_size_move_ &&
+          !IsIconic(hwnd) && !IsZoomed(hwnd)) {
+        if (CaptureNormalWindowState(hwnd)) {
+          ScheduleWindowStateSave(hwnd);
+        }
+      }
 
       return 0;
     }
@@ -228,8 +369,35 @@ Win32Window::MessageHandler(HWND hwnd,
         MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,
                    rect.bottom - rect.top, TRUE);
       }
+      if (persist_window_state_ && has_shown_) {
+        if (wparam == SIZE_MINIMIZED) {
+          WINDOWPLACEMENT wp{};
+          wp.length = sizeof(wp);
+          if (GetWindowPlacement(hwnd, &wp)) {
+            tracked_state_.maximized =
+                (wp.flags & WPF_RESTORETOMAXIMIZED) != 0;
+          }
+        } else if (wparam == SIZE_MAXIMIZED) {
+          tracked_state_.maximized = true;
+          has_tracked_state_ = true;
+          ScheduleWindowStateSave(hwnd);
+        } else if (wparam == SIZE_RESTORED && !in_size_move_ &&
+                   !IsIconic(hwnd) && !IsZoomed(hwnd)) {
+          if (CaptureNormalWindowState(hwnd)) {
+            ScheduleWindowStateSave(hwnd);
+          }
+        }
+      }
       return 0;
     }
+
+    case WM_TIMER:
+      if (wparam == kSaveWindowStateTimerId) {
+        CancelWindowStateSaveTimer(hwnd);
+        CommitWindowStateToDisk();
+        return 0;
+      }
+      break;
 
     case WM_ACTIVATE:
       if (child_content_ != nullptr) {
@@ -309,4 +477,54 @@ void Win32Window::UpdateTheme(HWND const window) {
     DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE,
                           &enable_dark_mode, sizeof(enable_dark_mode));
   }
+}
+
+bool Win32Window::CaptureNormalWindowState(HWND hwnd) {
+  RECT rect{};
+  if (!GetWindowRect(hwnd, &rect)) {
+    return false;
+  }
+  const int width = static_cast<int>(rect.right - rect.left);
+  const int height = static_cast<int>(rect.bottom - rect.top);
+  if (width <= 0 || height <= 0) {
+    return false;
+  }
+  HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+  const UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
+
+  tracked_state_.has_position = true;
+  tracked_state_.x = static_cast<int>(rect.left);
+  tracked_state_.y = static_cast<int>(rect.top);
+  tracked_state_.width = width;
+  tracked_state_.height = height;
+  tracked_state_.maximized = false;
+  tracked_state_.dpi = dpi > 0 ? static_cast<int>(dpi) : 96;
+  has_tracked_state_ = true;
+  return true;
+}
+
+void Win32Window::ScheduleWindowStateSave(HWND hwnd) {
+  if (!persist_window_state_ || hwnd == nullptr) {
+    return;
+  }
+  SetTimer(hwnd, kSaveWindowStateTimerId, kSaveWindowStateDelayMs, nullptr);
+}
+
+void Win32Window::CancelWindowStateSaveTimer(HWND hwnd) {
+  if (hwnd != nullptr) {
+    KillTimer(hwnd, kSaveWindowStateTimerId);
+  }
+}
+
+void Win32Window::CommitWindowStateToDisk() {
+  if (!persist_window_state_ || !has_tracked_state_) {
+    return;
+  }
+  if (has_last_saved_state_ &&
+      WindowStatesEqual(tracked_state_, last_saved_state_)) {
+    return;
+  }
+  SaveWindowsWindowState(tracked_state_);
+  last_saved_state_ = tracked_state_;
+  has_last_saved_state_ = true;
 }

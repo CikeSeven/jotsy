@@ -102,6 +102,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_platform.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/expressive_entrance.dart';
+import '../../widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
 import 'package:node_diary/ui/widgets/container_transform/morph_landing.dart';
 import 'package:node_diary/ui/widgets/container_transform/morph_page_route.dart';
@@ -1822,8 +1823,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       );
 
   /// 把正文放到浮岛顶栏下面：阅读式版式见 [_wrapReadingIslands]；新建页
-  /// （表单式）为返回岛 + [更多 | 发布]，常驻、不随滚动隐藏，没有标题胶囊
-  /// （页头就是标题输入框）。
+  /// （表单式）为返回岛 + [发布 · 更多]（“更多”在最右侧），常驻、不随滚动
+  /// 隐藏，没有标题胶囊（页头就是标题输入框）。
   Widget _wrapEditorIslands(
     BuildContext context,
     _ReadingFrame? reading,
@@ -1844,6 +1845,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       leading: FloatingBackIsland(onPressed: _controller.attemptExit),
       trailing: FloatingActionIsland(
         children: <Widget>[
+          if (widget.entryMode == EditDiaryEntryMode.create)
+            IconButton(
+              tooltip: l10n.autoT0136,
+              onPressed: busy ? null : _controller.openPublishPage,
+              icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 16),
+            ),
           ExpressiveMenuButton(
             tooltip: l10n.diaryEditorMoreActions,
             icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
@@ -1853,11 +1860,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               aiSuggest: aiSuggest,
             ),
           ),
-          if (widget.entryMode == EditDiaryEntryMode.create)
-            FloatingIslandPill(
-              label: l10n.autoT0136,
-              onPressed: busy ? null : _controller.openPublishPage,
-            ),
         ],
       ),
       child: editor,

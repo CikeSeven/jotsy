@@ -283,7 +283,7 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(MindMapWorkspace)),
     );
-    expect(find.widgetWithText(FilledButton, l10n.autoT0136), findsNothing);
+    expect(find.byTooltip(l10n.autoT0136), findsNothing);
 
     final original = (await tester.runAsync(
       () => database.getDiaryWithTagsByDiaryId(diaryId),

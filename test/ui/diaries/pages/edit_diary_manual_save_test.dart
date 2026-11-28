@@ -94,16 +94,16 @@ void main() {
   AppLocalizations l10nOf(WidgetTester tester) =>
       tester.element(find.byType(EditDiaryPage)).l10n;
 
-  // 浮岛右端的“保存”胶囊（主色文字按钮），保存成功后换成“✓ 已保存”。
+  // 浮岛“更多”左侧的“保存”图标按钮，保存成功后短暂换成主色对勾。
   Finder saveButton(WidgetTester tester, {bool saved = false}) => find.ancestor(
-    of: find.text(
+    of: find.byTooltip(
       saved ? l10nOf(tester).diaryEditSaved : l10nOf(tester).commonSave,
     ),
-    matching: find.byType(FilledButton),
+    matching: find.byType(IconButton),
   );
 
   bool saveEnabled(WidgetTester tester) =>
-      tester.widget<FilledButton>(saveButton(tester)).onPressed != null;
+      tester.widget<IconButton>(saveButton(tester)).onPressed != null;
 
   Finder titleField() => find.widgetWithText(TextField, 'Original title');
 
@@ -141,6 +141,22 @@ void main() {
       final l10n = l10nOf(tester);
       expect(saveButton(tester), findsOneWidget);
       expect(saveEnabled(tester), isFalse);
+      // “保存”改为图标按钮并放在“更多”左侧，不使用主色填充文字胶囊。
+      expect(
+        find.descendant(
+          of: saveButton(tester),
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is FaIcon &&
+                widget.icon == FontAwesomeIcons.floppyDisk.data,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.getRect(saveButton(tester)).center.dx,
+        lessThan(tester.getRect(find.byTooltip(l10n.autoT0125)).center.dx),
+      );
 
       await typeTitle(tester, 'Saved by hand');
       expect((await storedDiary(tester)).diary.title, 'Original title');
@@ -153,16 +169,16 @@ void main() {
         ),
       );
       expect(titleEditable.focusNode.hasFocus, isTrue);
-      expect(find.text(l10n.diaryReadingDone), findsNothing);
+      expect(find.byTooltip(l10n.diaryReadingDone), findsNothing);
 
       await tester.tap(saveButton(tester));
       await tester.pump();
       await tester.pump();
       expect((await storedDiary(tester)).diary.title, 'Saved by hand');
       await tester.pump(const Duration(milliseconds: 300));
-      // 保存成功：“✓ 已保存”停留 1 秒再换回停用的保存按钮。
+      // 保存成功：切换为主色对勾停留 1 秒再换回停用的保存图标。
       expect(saveButton(tester, saved: true), findsOneWidget);
-      expect(
+      final checkIcon = tester.widget<FaIcon>(
         find.descendant(
           of: saveButton(tester, saved: true),
           matching: find.byWidgetPredicate(
@@ -170,7 +186,12 @@ void main() {
                 widget is FaIcon && widget.icon == FontAwesomeIcons.check.data,
           ),
         ),
-        findsOneWidget,
+      );
+      expect(
+        checkIcon.color,
+        Theme.of(
+          tester.element(saveButton(tester, saved: true)),
+        ).colorScheme.primary,
       );
       await tester.pump(const Duration(seconds: 1));
       await settle(tester);

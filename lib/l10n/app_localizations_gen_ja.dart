@@ -18020,4 +18020,49 @@ class AppLocalizationsJa extends AppLocalizations {
   String todoFocusRounds(int count) {
     return '$count 回';
   }
+
+  @override
+  String todoFocusEndsAt(String time) {
+    return '$time に終了予定';
+  }
+
+  @override
+  String todoFocusTodayTotal(String duration) {
+    return '今日 · $duration';
+  }
+
+  @override
+  String get todoFocusReadyHint => '集中の準備';
+
+  @override
+  String get todoFocusFreeSession => 'フリー集中';
+
+  @override
+  String get todoFocusPickTodo => 'To-Do を選ぶ';
+
+  @override
+  String get todoFocusNoOpenTodos => '未完了の To-Do はありません';
+
+  @override
+  String get todoFocusRhythm => '集中リズム';
+
+  @override
+  String get todoFocusZenEnter => 'ミニマル表示';
+
+  @override
+  String get todoFocusZenExit => '詳細を表示';
+
+  @override
+  String todoFocusRhythmSummary(int focus, int shortBreak, int every) {
+    return '集中 $focus分 · 休憩 $shortBreak分 · $every回ごとに長休憩';
+  }
+
+  @override
+  String get todoFocusExtendShort => '+5分';
+
+  @override
+  String get todoFocusKeyboardHint => 'Space 一時停止/再開 · + 5分追加 · Esc 戻る';
+
+  @override
+  String get todoFocusOpenTodoDetails => 'To-Do の詳細を開く';
 }

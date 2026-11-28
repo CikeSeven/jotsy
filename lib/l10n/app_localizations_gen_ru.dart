@@ -21117,4 +21117,50 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String todoFocusEndsAt(String time) {
+    return 'До $time';
+  }
+
+  @override
+  String todoFocusTodayTotal(String duration) {
+    return 'Сегодня · $duration';
+  }
+
+  @override
+  String get todoFocusReadyHint => 'Готово к фокусу';
+
+  @override
+  String get todoFocusFreeSession => 'Свободный фокус';
+
+  @override
+  String get todoFocusPickTodo => 'Выбрать задачу';
+
+  @override
+  String get todoFocusNoOpenTodos => 'Нет активных задач';
+
+  @override
+  String get todoFocusRhythm => 'Ритм фокуса';
+
+  @override
+  String get todoFocusZenEnter => 'Минимальный вид';
+
+  @override
+  String get todoFocusZenExit => 'Показать детали';
+
+  @override
+  String todoFocusRhythmSummary(int focus, int shortBreak, int every) {
+    return 'Фокус $focus мин · отдых $shortBreak мин · длинный каждые $every';
+  }
+
+  @override
+  String get todoFocusExtendShort => '+5 м';
+
+  @override
+  String get todoFocusKeyboardHint =>
+      'Пробел пауза/старт · + ещё 5 мин · Esc назад';
+
+  @override
+  String get todoFocusOpenTodoDetails => 'Открыть детали задачи';
 }

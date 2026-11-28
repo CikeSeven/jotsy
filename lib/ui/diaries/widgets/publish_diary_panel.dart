@@ -20,6 +20,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
 import '../../app_surface/widgets/app_glass_surface.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import 'publish_panel/publish_capsule_picker_page.dart';
 import 'publish_panel/publish_notebook_tiles.dart';
 import 'publish_panel/publish_panel_chrome.dart';
@@ -332,38 +333,43 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
                     // softShadow——普通 BoxShadow 会从半透明底下透出来，把面板
                     // 中间压暗；投影改由玻璃表面只画在外侧。底色 Material 由
                     // 玻璃表面提供，面板里的水波纹照样画在它上面。
+                    final Widget card;
                     if (AppGlass.of(
                       context,
                     ).isGlass(AppGlassComponent.toolbar)) {
-                      return AppGlassSurface(
+                      card = AppGlassSurface(
                         component: AppGlassComponent.toolbar,
                         borderRadius: BorderRadius.circular(AppRadii.nav),
                         blur: AppGlassBlur.always,
                         shadow: true,
                         child: child,
                       );
-                    }
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppRadii.nav),
-                        boxShadow: AppEffects.softShadow(colorScheme),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadii.nav),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: ExpressiveSurfaces.cardColor(colorScheme),
-                            border: Border.fromBorderSide(
-                              ExpressiveSurfaces.cardBorderSide(colorScheme),
+                    } else {
+                      card = Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppRadii.nav),
+                          boxShadow: AppEffects.softShadow(colorScheme),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppRadii.nav),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: ExpressiveSurfaces.cardColor(colorScheme),
+                              border: Border.fromBorderSide(
+                                ExpressiveSurfaces.cardBorderSide(colorScheme),
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: child,
                             ),
                           ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: child,
-                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+                    // 上报可见面板卡片顶边，使发布页与编辑页的信息面板不被
+                    // 浮动提示条挡住；收起到屏底之外时由宿主自动忽略。
+                    return SnackBarClearanceArea(child: card);
                   },
                 ),
                 child: SizedBox(

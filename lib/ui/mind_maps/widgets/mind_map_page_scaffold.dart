@@ -9,6 +9,7 @@ import '../../widgets/floating_top_bar/floating_action_island.dart';
 import '../../widgets/floating_top_bar/floating_island.dart';
 import '../../widgets/floating_top_bar/floating_top_bar.dart';
 import '../../widgets/floating_top_bar/floating_top_bar_host.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../controllers/mind_map_editing_controller.dart';
 import 'mind_map_view_switch.dart';
 
@@ -166,22 +167,25 @@ class _MindMapPageScaffoldState extends State<MindMapPageScaffold> {
       builder: (BuildContext context) {
         final topInset =
             MediaQuery.viewPaddingOf(context).top + FloatingTopBar.extent;
-        return Scaffold(
-          backgroundColor: AppPageBackdrop.pageColorOf(context),
+        return SnackBarClearanceHost(
           resizeToAvoidBottomInset: false,
-          body: FloatingTopBarHost(
-            statusBarColor: AppPageBackdrop.solidBarColorOf(context),
-            hideOnScroll: true,
-            leading: FloatingBackIsland(onPressed: widget.onBack),
-            middle: _buildMiddle(),
-            trailing: FloatingActionIsland(
-              children: <Widget>[
-                if (!widget.controller.readOnly) _buildUndoRedo(context),
-                ...widget.actions,
-                _buildMore(),
-              ],
+          child: Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            resizeToAvoidBottomInset: false,
+            body: FloatingTopBarHost(
+              statusBarColor: AppPageBackdrop.solidBarColorOf(context),
+              hideOnScroll: true,
+              leading: FloatingBackIsland(onPressed: widget.onBack),
+              middle: _buildMiddle(),
+              trailing: FloatingActionIsland(
+                children: <Widget>[
+                  if (!widget.controller.readOnly) _buildUndoRedo(context),
+                  ...widget.actions,
+                  _buildMore(),
+                ],
+              ),
+              child: SizedBox.expand(child: widget.body(context, topInset)),
             ),
-            child: SizedBox.expand(child: widget.body(context, topInset)),
           ),
         );
       },

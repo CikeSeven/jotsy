@@ -1,4 +1,4 @@
-# 文字选区菜单、软键盘与拖动手柄
+# 文字选区菜单、提示条避让、软键盘与拖动手柄
 
 > 专题约束，与 AGENTS.md 同等效力；改动本主题前先读本文件，新规则写在这里。界面规格见 DESIGN.md §5.4。
 
@@ -33,3 +33,13 @@
 
 - 必须：嵌在首页翻页 PageView 里、只要一个方向的横向拖动经 `DirectionalHorizontalDragGestureRecognizer`，另一方向留给外层；禁止用 `onHorizontalDrag*` 把两个方向都接下。
 - 必须：日记列表的卡片左滑（`DiarySwipeActionItem`）没有行首动作时开 `releaseStartDrags`，右滑留给日记本卡组。
+
+## 提示条避让底部栏
+
+- 必须：浮动提示条（`SnackBar`）不得遮挡任何底部可交互工具栏、多选操作栏、查找栏、播放栏或底部面板，底缘距其顶缘保留标准间隙（`SnackBarClearanceHost.defaultGap`，16dp，与距 `bottomNavigationBar` 一致）。
+- 必须：非悬浮、非叠层的常规底栏优先放在 `Scaffold.bottomNavigationBar`，由 `Scaffold` 自动把提示条排在其上方。
+- 必须：因悬浮、叠层、进出场动效或独立安全区必须放在 `Scaffold.body` 内的底部可交互区域（如日记编辑页悬浮工具栏 / 查找栏 / 录音与 AI 面板、待办多选操作栏、思维导图工具坞 / 键盘附件条、模板编辑页工具栏、预览页查找栏与回到顶部按钮、发布与编辑信息面板、回收站 / 存储媒体多选栏、全屏视频播放栏、扫码底栏），页面根 `Scaffold` 外包 `SnackBarClearanceHost`（`resizeToAvoidBottomInset` 与 `bottomBarExtent` 与该 `Scaffold` 一致），各底部可交互区域外包 `SnackBarClearanceArea`（常驻树里按开关显隐的传 `enabled`）。
+- 必须：避让经 `SnackBarTheme` 局部调整 `insetPadding.bottom`，不得改整页 `Theme` 引发键盘动画或正文块重建，且保留外层玻璃提示条配色与宽窗口水平居中；极矮窗口或大面板展开时须为提示条本体保留顶部余量，禁止触发 off-screen 断言。
+- 必须：提示条展示期间若有底部操作栏刚收起离场（如待办点击删除后多选栏正在下沉），维持本条提示当前避让高度直到关闭，避免“撤销”按钮中途下跳；停留期间新出现或变高的底部浮层须立即抬高避让。
+- 禁止：在业务调用处手写 `SnackBar(margin: ...)` 补偿某页的底部栏高度，或直接用 `Theme(data: theme.copyWith(snackBarTheme: ...))` 逐帧驱动避让。
+- 必须：由 `snack_bar_clearance_test.dart` 兜底（含核心页面明暗主题与极矮屏边界）。

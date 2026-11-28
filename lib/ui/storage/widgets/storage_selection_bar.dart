@@ -6,6 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_glass_field.dart';
 import '../../widgets/form_width.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../../widgets/width_layout_builder.dart';
 
 /// 媒体页有勾选时从底部升起的操作栏：上面一行“已选 N 项 · 共 X”，下面
@@ -80,62 +81,67 @@ class _Bar extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final onCompress = this.onCompress;
-    return Material(
-      color: scheme.surfaceContainer,
-      child: SafeArea(
-        top: false,
-        child: WidthLayoutBuilder(
-          builder: (BuildContext context, double width) => Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: FormWidth.gutter(width),
-              vertical: AppSpacing.m,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  l10n.storageMgmtSelectionSummary(
-                    count,
-                    l10n.formatByteSize(bytes),
+    return SnackBarClearanceArea(
+      child: Material(
+        color: scheme.surfaceContainer,
+        child: SafeArea(
+          top: false,
+          child: WidthLayoutBuilder(
+            builder: (BuildContext context, double width) => Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: FormWidth.gutter(width),
+                vertical: AppSpacing.m,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    l10n.storageMgmtSelectionSummary(
+                      count,
+                      l10n.formatByteSize(bytes),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.s),
-                Row(
-                  children: <Widget>[
-                    if (onCompress != null) ...<Widget>[
+                  const SizedBox(height: AppSpacing.s),
+                  Row(
+                    children: <Widget>[
+                      if (onCompress != null) ...<Widget>[
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: onCompress,
+                            style: AppGlassField.tonalButtonStyle(context),
+                            icon: const FaIcon(
+                              FontAwesomeIcons.compress,
+                              size: 14,
+                            ),
+                            label: Text(l10n.storageMgmtCompress),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.m),
+                      ],
                       Expanded(
                         child: FilledButton.tonalIcon(
-                          onPressed: onCompress,
-                          style: AppGlassField.tonalButtonStyle(context),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: scheme.errorContainer,
+                            foregroundColor: scheme.onErrorContainer,
+                          ),
+                          onPressed: onDelete,
                           icon: const FaIcon(
-                            FontAwesomeIcons.compress,
+                            FontAwesomeIcons.trashCan,
                             size: 14,
                           ),
-                          label: Text(l10n.storageMgmtCompress),
+                          label: Text(l10n.commonDelete),
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.m),
                     ],
-                    Expanded(
-                      child: FilledButton.tonalIcon(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: scheme.errorContainer,
-                          foregroundColor: scheme.onErrorContainer,
-                        ),
-                        onPressed: onDelete,
-                        icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
-                        label: Text(l10n.commonDelete),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

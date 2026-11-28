@@ -157,6 +157,7 @@ import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/primary_shortcut.dart';
 import 'package:node_diary/ui/widgets/unsaved_changes_dialog.dart';
 import 'package:node_diary/ui/widgets/keyboard_visibility.dart';
+import 'package:node_diary/ui/widgets/snack_bar_clearance.dart';
 import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 
 part '../controllers/edit_diary_controller.dart';
@@ -1409,162 +1410,177 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   _dayPhotos.library.isSupported && _dayPhotosDay != null;
               // 阅读式版式在整页主题（配色基调、纸张深浅）之下构建：下面的
               // 组件都按换过的主题取色。始终包 Theme，主题切换时结构不变。
-              Widget buildScaffold(BuildContext context) => Scaffold(
-                backgroundColor: reading == null
-                    ? pageColor
-                    : diaryPreviewScaffoldColor(context, reading.resolved),
-                // 没有整条顶栏：浮岛叠在正文上（见 _wrapEditorIslands）。
-                // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
-                // 正文底部做避让。
-                body: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
-                    // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
-                    // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
-                    // 返回子树）；面板展开、录音或保存中不接收。
-                    _wrapEditorIslands(
-                      context,
-                      reading,
-                      templatesEnabled: templatesEnabled,
-                      showDayPhotosMenu: showDayPhotosMenu,
-                      aiSuggest: aiSuggest,
-                      DiaryEditorDropTarget(
-                        enabled:
-                            !_saving &&
-                            !_isEditPanelExpanded &&
-                            !_bottomPanelOpen,
-                        onDropFiles: (paths) =>
-                            unawaited(_controller.insertDroppedFiles(paths)),
-                        child: SoftKeyboardSelectionKeys(
-                          child: _buildEditor(
-                            context,
-                            resolveBottomSpacer: resolveEditorBottomSpacer,
-                            contentLocked:
-                                _isEditPanelExpanded || _bottomPanelOpen,
-                            appearance: appearance,
-                            templatesEnabled: templatesEnabled,
-                            reading: reading,
+              // 外包 SnackBarClearanceHost：让浮动提示条避开底部悬浮工具栏、
+              // 查找栏、录音 / AI 面板与信息面板，不遮挡操作。
+              Widget buildScaffold(
+                BuildContext context,
+              ) => SnackBarClearanceHost(
+                child: Scaffold(
+                  backgroundColor: reading == null
+                      ? pageColor
+                      : diaryPreviewScaffoldColor(context, reading.resolved),
+                  // 没有整条顶栏：浮岛叠在正文上（见 _wrapEditorIslands）。
+                  // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
+                  // 正文底部做避让。
+                  body: Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
+                      // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
+                      // 桌面上可以把文件拖进正文（手机上 DiaryEditorDropTarget 原样
+                      // 返回子树）；面板展开、录音或保存中不接收。
+                      _wrapEditorIslands(
+                        context,
+                        reading,
+                        templatesEnabled: templatesEnabled,
+                        showDayPhotosMenu: showDayPhotosMenu,
+                        aiSuggest: aiSuggest,
+                        DiaryEditorDropTarget(
+                          enabled:
+                              !_saving &&
+                              !_isEditPanelExpanded &&
+                              !_bottomPanelOpen,
+                          onDropFiles: (paths) =>
+                              unawaited(_controller.insertDroppedFiles(paths)),
+                          child: SoftKeyboardSelectionKeys(
+                            child: _buildEditor(
+                              context,
+                              resolveBottomSpacer: resolveEditorBottomSpacer,
+                              contentLocked:
+                                  _isEditPanelExpanded || _bottomPanelOpen,
+                              appearance: appearance,
+                              templatesEnabled: templatesEnabled,
+                              reading: reading,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    if (showEditMetaPanel)
-                      // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
-                      // 两个浮层都带 key：面板插在已有的工具栏之前时，按位置匹配会
-                      // 把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」与颜色
-                      // 面板的状态并重播入场动画。面板自己从底边升起（收起即离场），
-                      // 不再套入场动画。
-                      Positioned.fill(
-                        key: const ValueKey<String>('edit-meta-panel'),
-                        child: _metaPanelColumn(
-                          (bool wide) => _buildMetaPanel(fillWidth: wide),
+                      if (showEditMetaPanel)
+                        // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
+                        // 两个浮层都带 key：面板插在已有的工具栏之前时，按位置匹配会
+                        // 把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」与颜色
+                        // 面板的状态并重播入场动画。面板自己从底边升起（收起即离场），
+                        // 不再套入场动画。
+                        Positioned.fill(
+                          key: const ValueKey<String>('edit-meta-panel'),
+                          child: _metaPanelColumn(
+                            (bool wide) => _buildMetaPanel(fillWidth: wide),
+                          ),
                         ),
-                      ),
-                    if (showFloatingSlot)
-                      Positioned(
-                        key: const ValueKey<String>('edit-floating-toolbar'),
-                        left: kDiaryFloatingToolbarInset,
-                        right: kDiaryFloatingToolbarInset,
-                        // Scaffold 已根据键盘缩小 body，高度不需要再叠加键盘高度。
-                        bottom: 0,
-                        // 面板上限按可用高度在布局时写入，工具栏本身不随键盘
-                        // 升降逐帧重建（见 DiaryToolbarPanelLimit）。面板最多
-                        // 铺满工具栏上方的整块正文区，极矮的窗口里改为面板内
-                        // 滚动而不溢出。
-                        child: DiaryToolbarPanelLimit(
-                          limit: _toolbarMaxPanelExtent,
-                          extentOf: (context, constraints) =>
-                              constraints.maxHeight -
-                              math.max(
-                                MediaQuery.paddingOf(context).bottom,
-                                8.0,
-                              ) -
-                              diaryToolbarBarHeight(_toolbarSize.scale),
-                          // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
-                          child: CenteredContent(
-                            maxWidth: AppContentWidth.editor,
-                            // 出现时升起淡入；只剩收起中的查找栏时反向
-                            // 离场，播完拿掉（见 edit_diary_find_flow）。
-                            child: DiaryFloatingPresence(
-                              glass: toolbarGlass,
-                              visible: showFloatingToolbar || findOpen,
-                              onHidden: _onFindCardHidden,
-                              child: SafeArea(
-                                top: false,
-                                minimum: const EdgeInsets.only(bottom: 8),
-                                // 录音面板插入/移除时整列高度平滑变化，工具栏随之
-                                // 上移，不再瞬间跳到 300dp 之上。
-                                child: AnimatedSize(
-                                  duration: ExpressiveMotion.durationNonZero(
-                                    context,
-                                    ExpressiveMotion.medium,
-                                  ),
-                                  curve: ExpressiveMotion.effects,
-                                  alignment: Alignment.bottomCenter,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      DiaryFloatingToolbarSurface(
-                                        // 工具栏与查找栏在同一张卡片里交叉
-                                        // 淡化，卡片高度随外层补间。
-                                        child: DiaryFloatingContentSwap(
-                                          showSecond: findCardShown,
-                                          first: showFloatingToolbar
-                                              ? Focus(
-                                                  focusNode: _toolbarFocusNode,
-                                                  // 焦点在正文与颜色代码输入
-                                                  // 框之间交接时，按新的焦点
-                                                  // 重新判断工具栏是否显示。
-                                                  onFocusChange: (_) =>
-                                                      setState(() {}),
-                                                  child: _buildFloatingToolbar(
-                                                    enabledToolbarOrder,
-                                                  ),
-                                                )
-                                              : null,
-                                          second: _buildFindBar(),
-                                        ),
+                      if (showFloatingSlot)
+                        Positioned(
+                          key: const ValueKey<String>('edit-floating-toolbar'),
+                          left: kDiaryFloatingToolbarInset,
+                          right: kDiaryFloatingToolbarInset,
+                          // Scaffold 已根据键盘缩小 body，高度不需要再叠加键盘高度。
+                          bottom: 0,
+                          // 面板上限按可用高度在布局时写入，工具栏本身不随键盘
+                          // 升降逐帧重建（见 DiaryToolbarPanelLimit）。面板最多
+                          // 铺满工具栏上方的整块正文区，极矮的窗口里改为面板内
+                          // 滚动而不溢出。
+                          child: DiaryToolbarPanelLimit(
+                            limit: _toolbarMaxPanelExtent,
+                            extentOf: (context, constraints) =>
+                                constraints.maxHeight -
+                                math.max(
+                                  MediaQuery.paddingOf(context).bottom,
+                                  8.0,
+                                ) -
+                                diaryToolbarBarHeight(_toolbarSize.scale),
+                            // 宽窗口里与正文列同宽居中（最宽 760）；手机上铺满。
+                            child: CenteredContent(
+                              maxWidth: AppContentWidth.editor,
+                              // 出现时升起淡入；只剩收起中的查找栏时反向
+                              // 离场，播完拿掉（见 edit_diary_find_flow）。
+                              child: DiaryFloatingPresence(
+                                glass: toolbarGlass,
+                                visible: showFloatingToolbar || findOpen,
+                                onHidden: _onFindCardHidden,
+                                child: SafeArea(
+                                  top: false,
+                                  minimum: const EdgeInsets.only(bottom: 8),
+                                  // 录音面板插入/移除时整列高度平滑变化，工具栏随之
+                                  // 上移，不再瞬间跳到 300dp 之上；经
+                                  // SnackBarClearanceArea 上报顶边，提示条停在
+                                  // 工具栏 / 查找栏 / 面板之上。
+                                  child: SnackBarClearanceArea(
+                                    enabled: showFloatingToolbar || findOpen,
+                                    child: AnimatedSize(
+                                      duration:
+                                          ExpressiveMotion.durationNonZero(
+                                            context,
+                                            ExpressiveMotion.medium,
+                                          ),
+                                      curve: ExpressiveMotion.effects,
+                                      alignment: Alignment.bottomCenter,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          DiaryFloatingToolbarSurface(
+                                            // 工具栏与查找栏在同一张卡片里交叉
+                                            // 淡化，卡片高度随外层补间。
+                                            child: DiaryFloatingContentSwap(
+                                              showSecond: findCardShown,
+                                              first: showFloatingToolbar
+                                                  ? Focus(
+                                                      focusNode:
+                                                          _toolbarFocusNode,
+                                                      // 焦点在正文与颜色代码输入
+                                                      // 框之间交接时，按新的焦点
+                                                      // 重新判断工具栏是否显示。
+                                                      onFocusChange: (_) =>
+                                                          setState(() {}),
+                                                      child:
+                                                          _buildFloatingToolbar(
+                                                            enabledToolbarOrder,
+                                                          ),
+                                                    )
+                                                  : null,
+                                              second: _buildFindBar(),
+                                            ),
+                                          ),
+                                          if (_recordingPanelOpen) ...[
+                                            const SizedBox(height: 8),
+                                            ExpressiveEntrance(
+                                              glass: toolbarGlass,
+                                              child: _buildRecordingPanel(),
+                                            ),
+                                          ],
+                                          if (_aiSession
+                                              case final session?) ...[
+                                            const SizedBox(height: 8),
+                                            ExpressiveEntrance(
+                                              glass: toolbarGlass,
+                                              child: _buildAiPanel(session),
+                                            ),
+                                          ],
+                                        ],
                                       ),
-                                      if (_recordingPanelOpen) ...[
-                                        const SizedBox(height: 8),
-                                        ExpressiveEntrance(
-                                          glass: toolbarGlass,
-                                          child: _buildRecordingPanel(),
-                                        ),
-                                      ],
-                                      if (_aiSession case final session?) ...[
-                                        const SizedBox(height: 8),
-                                        ExpressiveEntrance(
-                                          glass: toolbarGlass,
-                                          child: _buildAiPanel(session),
-                                        ),
-                                      ],
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
+                      DiaryMediaImportOverlay(
+                        copying: _mediaImportController.isCopying,
                       ),
-                    DiaryMediaImportOverlay(
-                      copying: _mediaImportController.isCopying,
-                    ),
-                    // 阅读式版式里分享与导出时的加载遮罩（与预览页相同）。
-                    if (reading != null)
-                      Positioned.fill(
-                        key: const ValueKey<String>('edit-reading-loading'),
-                        child: ListenableBuilder(
-                          listenable: _readingExport,
-                          builder: (BuildContext context, Widget? _) =>
-                              ActionLoadingOverlay(
-                                visible: _readingExport.showLoading,
-                                label: _readingExport.loadingLabel,
-                              ),
+                      // 阅读式版式里分享与导出时的加载遮罩（与预览页相同）。
+                      if (reading != null)
+                        Positioned.fill(
+                          key: const ValueKey<String>('edit-reading-loading'),
+                          child: ListenableBuilder(
+                            listenable: _readingExport,
+                            builder: (BuildContext context, Widget? _) =>
+                                ActionLoadingOverlay(
+                                  visible: _readingExport.showLoading,
+                                  label: _readingExport.loadingLabel,
+                                ),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               );
               final scaffold = _mindMapSession != null

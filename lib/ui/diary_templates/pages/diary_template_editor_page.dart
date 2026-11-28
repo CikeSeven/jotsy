@@ -11,6 +11,7 @@ import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/desktop_page_arrows.dart';
 import '../../widgets/keyboard_visibility.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../../diaries/controllers/diary_block_selection.dart';
 import '../controllers/diary_template_editor_controller.dart';
@@ -106,49 +107,51 @@ class _DiaryTemplateEditorPageState
     final scaffold = AppPageBackground(
       area: AppBackgroundArea.editor,
       child: Builder(
-        builder: (BuildContext context) => Scaffold(
-          backgroundColor: AppPageBackdrop.pageColorOf(context),
-          appBar: AppTopBar(
-            contentMaxWidth: AppContentWidth.editor,
-            leading: IconButton(
-              tooltip: l10n.commonBack,
-              onPressed: () => unawaited(_attemptExit()),
-              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-            ),
-            title: Text(
-              _editor.isNew
-                  ? l10n.diaryTemplateEditorNewTitle
-                  : l10n.diaryTemplateEditorEditTitle,
-            ),
-            actions: <Widget>[
-              ListenableBuilder(
-                listenable: _editor,
-                builder: (BuildContext context, Widget? child) => TextButton(
-                  onPressed: _editor.saving
-                      ? null
-                      : () => unawaited(_saveAndClose()),
-                  child: Text(l10n.commonSave),
-                ),
+        builder: (BuildContext context) => SnackBarClearanceHost(
+          child: Scaffold(
+            backgroundColor: AppPageBackdrop.pageColorOf(context),
+            appBar: AppTopBar(
+              contentMaxWidth: AppContentWidth.editor,
+              leading: IconButton(
+                tooltip: l10n.commonBack,
+                onPressed: () => unawaited(_attemptExit()),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
               ),
-            ],
-            bottom: TabBar(
+              title: Text(
+                _editor.isNew
+                    ? l10n.diaryTemplateEditorNewTitle
+                    : l10n.diaryTemplateEditorEditTitle,
+              ),
+              actions: <Widget>[
+                ListenableBuilder(
+                  listenable: _editor,
+                  builder: (BuildContext context, Widget? child) => TextButton(
+                    onPressed: _editor.saving
+                        ? null
+                        : () => unawaited(_saveAndClose()),
+                    child: Text(l10n.commonSave),
+                  ),
+                ),
+              ],
+              bottom: TabBar(
+                controller: _tabs,
+                tabs: <Widget>[
+                  Tab(text: l10n.diaryTemplateEditorTabContent),
+                  Tab(text: l10n.diaryTemplateEditorTabSettings),
+                ],
+              ),
+            ),
+            body: TabBarView(
               controller: _tabs,
-              tabs: <Widget>[
-                Tab(text: l10n.diaryTemplateEditorTabContent),
-                Tab(text: l10n.diaryTemplateEditorTabSettings),
+              physics: const NeverScrollableScrollPhysics(),
+              children: <Widget>[
+                DiaryTemplateEditorContentTab(
+                  controller: _editor,
+                  keyboardVisible: keyboardVisible,
+                ),
+                DiaryTemplateEditorSettingsTab(controller: _editor),
               ],
             ),
-          ),
-          body: TabBarView(
-            controller: _tabs,
-            physics: const NeverScrollableScrollPhysics(),
-            children: <Widget>[
-              DiaryTemplateEditorContentTab(
-                controller: _editor,
-                keyboardVisible: keyboardVisible,
-              ),
-              DiaryTemplateEditorSettingsTab(controller: _editor),
-            ],
           ),
         ),
       ),

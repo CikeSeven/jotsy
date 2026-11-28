@@ -18,6 +18,7 @@ import '../../widgets/empty_hint.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/list_item_presence.dart';
 import '../../widgets/select_all_button.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../controllers/recycle_bin_controller.dart';
 import '../widgets/recycle_bin_selection_bar.dart';
 import '../widgets/recycle_bin_tile.dart';
@@ -211,72 +212,76 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
       child: AppPageBackground(
         area: AppBackgroundArea.settings,
         child: Builder(
-          builder: (BuildContext context) => Scaffold(
-            backgroundColor: AppPageBackdrop.pageColorOf(context),
-            appBar: AppTopBar(
-              contentMaxWidth: FormWidth.maxWidth,
-              leading: ExpressiveIconSwap(
-                switchKey: _hasSelection,
-                child: _hasSelection
-                    ? IconButton(
-                        tooltip: l10n.commonCancel,
-                        onPressed: _clearSelection,
-                        icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-                      )
-                    : IconButton(
-                        tooltip: l10n.commonBack,
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        icon: const FaIcon(
-                          FontAwesomeIcons.angleLeft,
-                          size: 18,
-                        ),
-                      ),
-              ),
-              // 勾选数量变化时标题淡入淡出，而不是硬切。
-              title: AnimatedSwitcher(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  ExpressiveMotion.fast,
-                ),
-                switchInCurve: ExpressiveMotion.effects,
-                switchOutCurve: ExpressiveMotion.exit,
-                child: Text(
-                  _hasSelection
-                      ? l10n.autoT0099(_selectedIds.length.toString())
-                      : l10n.autoT0029,
-                  key: ValueKey<int>(_hasSelection ? _selectedIds.length : -1),
-                ),
-              ),
-              actions: <Widget>[
-                // 回收站清空后全选按钮随列表一起退场。
-                ExpressiveIconSwap(
-                  switchKey: canSelectAll,
-                  child: canSelectAll
-                      ? SelectAllButton(
-                          allSelected: _allSelected,
-                          onPressed: _operating ? null : _toggleSelectAll,
+          builder: (BuildContext context) => SnackBarClearanceHost(
+            child: Scaffold(
+              backgroundColor: AppPageBackdrop.pageColorOf(context),
+              appBar: AppTopBar(
+                contentMaxWidth: FormWidth.maxWidth,
+                leading: ExpressiveIconSwap(
+                  switchKey: _hasSelection,
+                  child: _hasSelection
+                      ? IconButton(
+                          tooltip: l10n.commonCancel,
+                          onPressed: _clearSelection,
+                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                         )
-                      : const SizedBox.shrink(),
+                      : IconButton(
+                          tooltip: l10n.commonBack,
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          icon: const FaIcon(
+                            FontAwesomeIcons.angleLeft,
+                            size: 18,
+                          ),
+                        ),
                 ),
-              ],
-            ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(
-                  child: deletedAsync.when(
-                    loading: () => const DelayedLoadingIndicator(),
-                    error: (error, _) =>
-                        Center(child: Text(l10n.autoT0031(error.toString()))),
-                    data: (diaries) => _buildList(diaries, privateIds),
+                // 勾选数量变化时标题淡入淡出，而不是硬切。
+                title: AnimatedSwitcher(
+                  duration: ExpressiveMotion.duration(
+                    context,
+                    ExpressiveMotion.fast,
+                  ),
+                  switchInCurve: ExpressiveMotion.effects,
+                  switchOutCurve: ExpressiveMotion.exit,
+                  child: Text(
+                    _hasSelection
+                        ? l10n.autoT0099(_selectedIds.length.toString())
+                        : l10n.autoT0029,
+                    key: ValueKey<int>(
+                      _hasSelection ? _selectedIds.length : -1,
+                    ),
                   ),
                 ),
-                RecycleBinSelectionBar(
-                  visible: _hasSelection,
-                  onRestore: _operating ? null : _restoreSelected,
-                  onPurge: _operating ? null : _purgeSelected,
-                ),
-              ],
+                actions: <Widget>[
+                  // 回收站清空后全选按钮随列表一起退场。
+                  ExpressiveIconSwap(
+                    switchKey: canSelectAll,
+                    child: canSelectAll
+                        ? SelectAllButton(
+                            allSelected: _allSelected,
+                            onPressed: _operating ? null : _toggleSelectAll,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(
+                    child: deletedAsync.when(
+                      loading: () => const DelayedLoadingIndicator(),
+                      error: (error, _) =>
+                          Center(child: Text(l10n.autoT0031(error.toString()))),
+                      data: (diaries) => _buildList(diaries, privateIds),
+                    ),
+                  ),
+                  RecycleBinSelectionBar(
+                    visible: _hasSelection,
+                    onRestore: _operating ? null : _restoreSelected,
+                    onPurge: _operating ? null : _purgeSelected,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

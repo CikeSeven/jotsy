@@ -78,7 +78,7 @@
 | 改动涉及 | 先读（`docs/rules/` 下） |
 |---|---|
 | 平台门控与桌面替代、宽窗口与双栏、键鼠快捷键与右键菜单 | `platform_desktop.md` |
-| 文字选区菜单、软键盘升降时的重建、拖动排序手柄、单向横向拖动 | `ui_components.md` |
+| 文字选区菜单、提示条避让底部栏、软键盘升降时的重建、拖动排序手柄、单向横向拖动 | `ui_components.md` |
 | 背景、玻璃材质、页面底色、提示条与小控件的玻璃主题 | `app_surface.md` |
 | 日记卡片样式、心情颜色、预览页样式、导航栏样式、日记页浮岛顶栏 | `appearance_styles.md` |
 | 编辑器与正文（块文档、排版、格式、表格、代码块、工具栏、键盘） | `editor.md` |
@@ -132,6 +132,7 @@
 - 例外：桌面日记卡片右键菜单与首页多选顶栏“更多”菜单最多 5 项，仍用弹出菜单。
 - 必须：文字选区菜单只经 `lib/ui/widgets/text_selection_menu/`（输入框传 `appTextContextMenuBuilder`），禁止在外面使用 SDK 选区工具栏（`text_selection_menu_source_test.dart` 兜底）。
 - 必须：`SnackBar` 只经 `HomeHintVisibilityScope.showTrackedSnackBar`；带 `action` 的必须显式 `persist: false`，禁止另起计时器关闭。
+- 必须：浮动提示条不得遮挡底部悬浮工具栏、多选操作栏或底部面板；优先把底栏放进 `Scaffold.bottomNavigationBar`，放在 `body` 内的底部可交互浮层须经 `SnackBarClearanceHost` + `SnackBarClearanceArea` 避让，禁止在调用处硬编码 `SnackBar(margin: ...)` 补偿（细则见 `ui_components.md`）。
 - 必须：键盘升降时大组件不得逐帧重建：禁止在页面 / 面板 build 里直接读 `MediaQuery.viewInsetsOf`，改用 `ui_components.md` 列出的替代组件。
 
 ### 加载与图片

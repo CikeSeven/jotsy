@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/text_selection_menu/app_text_context_menu.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../../widgets/width_layout_builder.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_platform.dart';
@@ -304,18 +305,20 @@ class _DiaryTemplateEditorContentTabState
                     ),
                     child: CenteredContent(
                       maxWidth: AppContentWidth.editor,
-                      child: DiaryFloatingToolbarSurface(
-                        child: Focus(
-                          focusNode: _toolbarFocus,
-                          child: DiaryFloatingToolbar(
-                            controller: widget.controller.body,
-                            order: order,
-                            maxPanelExtent: _maxPanelExtent,
-                            savedColors: savedColors,
-                            onEditSavedColors: ref
-                                .read(diarySavedColorsProvider.notifier)
-                                .edit,
-                            size: toolbarSize,
+                      child: SnackBarClearanceArea(
+                        child: DiaryFloatingToolbarSurface(
+                          child: Focus(
+                            focusNode: _toolbarFocus,
+                            child: DiaryFloatingToolbar(
+                              controller: widget.controller.body,
+                              order: order,
+                              maxPanelExtent: _maxPanelExtent,
+                              savedColors: savedColors,
+                              onEditSavedColors: ref
+                                  .read(diarySavedColorsProvider.notifier)
+                                  .edit,
+                              size: toolbarSize,
+                            ),
                           ),
                         ),
                       ),

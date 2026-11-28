@@ -35,20 +35,6 @@ enum NotebookSwitcherPhase {
   closing,
 }
 
-/// 面板悬浮的位置（全局 y）：右滑拉出时以武装那一刻手指的高度为中心，
-/// 从切换胶囊打开时顶边贴在胶囊下方。浮层第一次见到某个锚点时据此定下
-/// 面板顶边，之后面板变高只往下长、碰到底边才往上让。
-@immutable
-class NotebookPanelAnchor {
-  const NotebookPanelAnchor.center(this.y) : top = false;
-  const NotebookPanelAnchor.top(this.y) : top = true;
-
-  final double y;
-
-  /// [y] 是面板顶边（true）还是中心（false）。
-  final bool top;
-}
-
 /// 页面给卡组的接口：几何、当前范围、验证与提交切换。
 abstract interface class NotebookSwitcherHost {
   /// 页面的 context（读减少动画设置、触发触觉）。
@@ -56,6 +42,10 @@ abstract interface class NotebookSwitcherHost {
 
   /// 列表栏（右滑手势层）的全局矩形。
   Rect? get paneRect;
+
+  /// 搜索栏此刻在屏幕上的底边全局 y（随列表滚动收起而上移）；尚未布局时
+  /// 为 null。
+  double? get searchBarBottom;
 
   /// 切换胶囊此刻完整显示在屏幕上时的全局矩形，否则为 null。
   Rect? get chipRect;
@@ -151,9 +141,6 @@ class NotebookSwitcherController extends ChangeNotifier {
   static const double maxSpan = 200;
   static const double shortestSpan = 72;
 
-  /// 从切换胶囊打开时面板顶边与胶囊下缘的间距。
-  static const double panelGap = 8;
-
   NotebookSwitcherPhase _phase = NotebookSwitcherPhase.idle;
   NotebookSwitcherOrigin _origin = NotebookSwitcherOrigin.edge;
 
@@ -171,11 +158,6 @@ class NotebookSwitcherController extends ChangeNotifier {
   bool _dragSelecting = false;
   double? _openAnchorY;
   NotebookDeckEntry? _hovered;
-
-  NotebookPanelAnchor? _panelAnchor;
-
-  /// 面板悬浮的位置；右滑还没武装时为 null（只有左缘胶囊）。
-  NotebookPanelAnchor? get panelAnchor => _panelAnchor;
 
   /// 这次拖动是在打开的卡组上往回收（[closeDragStart]），不是从列表上拉出：
   /// 不进拖选，松手按进度与甩动方向决定收回还是弹回。
@@ -264,11 +246,6 @@ class NotebookSwitcherController extends ChangeNotifier {
     );
     _pull = caught ? _pullForStage(stage.value) : 0;
     _armed = _pull >= armDistance;
-    // 收回途中被新的手指接住算重新唤出：面板悬浮到这根手指的高度（浮层把
-    // 位置变化做成滑过去）；没接住时等武装再定。
-    _panelAnchor = caught && _armed
-        ? NotebookPanelAnchor.center(position.dy)
-        : null;
     _fingerY = position.dy;
     _setPhase(NotebookSwitcherPhase.dragging);
     if (!caught) {
@@ -286,7 +263,8 @@ class NotebookSwitcherController extends ChangeNotifier {
   ///
   /// 从切换胶囊打开的卡组：完全打开时起手改为收向左缘（胶囊此刻露回原处，
   /// 进度在 2 上换起点不会跳）；正收向胶囊途中被接住则仍以胶囊为起点，
-  /// 往回拉最多回到胶囊处，松手收回时也收进胶囊。纵向中心跟着手指。
+  /// 往回拉最多回到胶囊处，松手收回时也收进胶囊。左缘胶囊的纵向中心跟着
+  /// 手指。
   void closeDragStart(Offset position) {
     final closing = _phase == NotebookSwitcherPhase.closing;
     final catchable =
@@ -295,12 +273,6 @@ class NotebookSwitcherController extends ChangeNotifier {
     final pane = _pane;
     if (!catchable || pane == null) return;
     stage.stop();
-    // 收回途中被接住：多半是想重新拉开，算在这根手指处重新唤出——面板悬浮
-    // 到手指的高度（浮层把位置变化做成滑过去），不再停在上次打开的地方；
-    // 打开着时起手只是往回收，位置不动。以切换胶囊为起点时仍贴在胶囊下方。
-    if (closing && _origin == NotebookSwitcherOrigin.edge) {
-      _panelAnchor = NotebookPanelAnchor.center(position.dy);
-    }
     if (_origin == NotebookSwitcherOrigin.chip) {
       _span = (pane.width * 0.4).clamp(minSpan, maxSpan);
       if (stage.value >= 1.98) {
@@ -437,11 +409,6 @@ class NotebookSwitcherController extends ChangeNotifier {
   void _setArmed(bool armed) {
     if (armed == _armed) return;
     _armed = armed;
-    // 右滑拉出：武装那一刻手指的高度定下面板悬浮的位置；拉回阈值以内再
-    // 换个高度武装，面板跟着换位置。往回收时位置不动。
-    if (_phase == NotebookSwitcherPhase.dragging && !_reverse) {
-      _panelAnchor = armed ? NotebookPanelAnchor.center(_fingerY) : null;
-    }
     if (armed) {
       // 只在越过阈值的那一下震；拉回去不震。
       unawaited(HapticFeedback.lightImpact());
@@ -464,7 +431,7 @@ class NotebookSwitcherController extends ChangeNotifier {
   // ==================== 打开、选择与收起 ====================
 
   /// 从切换胶囊打开：容器从胶囊的矩形长成面板。胶囊被标签条横向滚出一截
-  /// （不完整）时改从左缘长出，纵向对着列表栏中间。
+  /// （不完整）时改从左缘长出，左缘胶囊的纵向中心对着列表栏中间。
   void openFromChip({required TextDirection textDirection}) {
     if (_phase != NotebookSwitcherPhase.idle) return;
     final pane = host.paneRect;
@@ -478,13 +445,11 @@ class NotebookSwitcherController extends ChangeNotifier {
     if (chip != null) {
       _origin = NotebookSwitcherOrigin.chip;
       _fingerY = chip.center.dy;
-      _panelAnchor = NotebookPanelAnchor.top(chip.bottom + panelGap);
       stage.value = 1;
       chipHidden.value = true;
     } else {
       _origin = NotebookSwitcherOrigin.edge;
       _fingerY = pane.center.dy;
-      _panelAnchor = NotebookPanelAnchor.center(_fingerY);
       stage.value = 0;
     }
     _setPhase(NotebookSwitcherPhase.open);
@@ -664,7 +629,6 @@ class NotebookSwitcherController extends ChangeNotifier {
     _reverse = false;
     _hovered = null;
     _openAnchorY = null;
-    _panelAnchor = null;
     armPop.value = 0;
     stage.value = 0;
     _stageTarget = 0;

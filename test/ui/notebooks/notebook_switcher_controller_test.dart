@@ -183,6 +183,9 @@ class _FakeHost implements NotebookSwitcherHost {
   Rect? get paneRect => const Rect.fromLTWH(0, 0, 400, 800);
 
   @override
+  double? get searchBarBottom => 50;
+
+  @override
   Rect? get chipRect => chip;
 
   @override

@@ -277,35 +277,201 @@ void main() {
         id,
         now: DateTime(2026, 11, 2, 20),
       ))!.copyId!;
-      final reopened = (await db.completeTodo(
+      final second = (await db.completeTodo(
         id,
         now: DateTime(2026, 11, 3, 20),
       ))!.copyId!;
-      // 取消完成的那一次已是一条普通待办，不再跟着这一串。
-      await db.uncompleteTodo(reopened);
+      // 更早的历史记录取消完成后成为普通单次待办，不再跟着这一串（原待办在
+      // 11-04，仍保留最新那次 second）。
+      final standalone = (await db.uncompleteTodo(first))!;
+      expect(standalone.rolledBack, isFalse);
 
       await db.setTodoLinkedDiary(id, 'diary-a');
       expect((await db.getTodo(id))!.linkedDiaryId, 'diary-a');
-      expect((await db.getTodo(first))!.linkedDiaryId, 'diary-a');
-      expect((await db.getTodo(reopened))!.linkedDiaryId, isNull);
+      expect((await db.getTodo(second))!.linkedDiaryId, 'diary-a');
+      expect((await db.getTodo(first))!.linkedDiaryId, isNull);
 
       // 改某一次只改它自己。
-      await db.setTodoLinkedDiary(first, 'diary-b');
+      await db.setTodoLinkedDiary(second, 'diary-b');
       expect((await db.getTodo(id))!.linkedDiaryId, 'diary-a');
 
       // 关联本来就相同的那一次不写（updated_at 不动，同步不会多发一条）。
       final old = DateTime(2020);
-      await (db.update(db.todos)..where((t) => t.todoId.equals(first))).write(
+      await (db.update(db.todos)..where((t) => t.todoId.equals(second))).write(
         TodosCompanion(updatedAt: Value(old)),
       );
       await db.setTodoLinkedDiary(id, 'diary-b');
-      expect((await db.getTodo(first))!.updatedAt, old);
+      expect((await db.getTodo(second))!.updatedAt, old);
 
       // 取消关联同样带上各次。
       await db.setTodoLinkedDiary(id, null);
-      expect((await db.getTodo(first))!.linkedDiaryId, isNull);
-      expect((await db.getTodo(first))!.updatedAt.isAfter(old), isTrue);
+      expect((await db.getTodo(second))!.linkedDiaryId, isNull);
+      expect((await db.getTodo(second))!.updatedAt.isAfter(old), isTrue);
     });
+
+    test(
+      'uncompleting the latest occurrence rolls back the repeating series and can be undone',
+      () async {
+        final id = await db.createTodo(
+          TodoInput(
+            title: '浇花',
+            dueDate: DateTime(2026, 11, 2),
+            repeat: TodoRepeatRule(
+              frequency: TodoRepeatFrequency.daily,
+              interval: 3,
+              basis: TodoRepeatBasis.completion,
+              anchor: DateTime(2026, 11, 2),
+            ),
+            steps: const <TodoStep>[
+              TodoStep(id: 's0', title: '阳台', done: true),
+            ],
+          ),
+        );
+        final first = (await db.completeTodo(
+          id,
+          now: DateTime(2026, 11, 2, 18),
+        ))!;
+        final second = (await db.completeTodo(
+          id,
+          now: DateTime(2026, 11, 5, 18),
+        ))!;
+        expect((await db.getTodo(id))!.dueDate, '2026-11-08');
+
+        // 连续取消最近两次完成：逐级回滚，且重复规则、锚点与步骤都复原。
+        final rollbackSecond = (await db.uncompleteTodo(second.copyId!))!;
+        expect(rollbackSecond.rolledBack, isTrue);
+        expect(rollbackSecond.resultingTodoId, id);
+        expect(await db.getTodo(second.copyId!), isNull);
+        expect((await db.getTodo(id))!.dueDate, '2026-11-05');
+        expect(
+          decodeTodoRepeat((await db.getTodo(id))!.repeat)!.anchor,
+          DateTime(2026, 11, 5),
+        );
+
+        // 撤销这次取消完成：原待办与第二次已完成副本一起恢复。
+        await db.undoTodoUncompletion(rollbackSecond);
+        expect((await db.getTodo(id))!.dueDate, '2026-11-08');
+        expect((await db.getTodo(second.copyId!))!.completedAt, isNotNull);
+
+        // 再次倒序逐级回滚到最初的一天。
+        await db.uncompleteTodo(second.copyId!);
+        final rollbackFirst = (await db.uncompleteTodo(first.copyId!))!;
+        expect(rollbackFirst.rolledBack, isTrue);
+        final restored = (await db.getTodo(id))!;
+        expect(restored.dueDate, '2026-11-02');
+        expect(
+          decodeTodoRepeat(restored.repeat)!.anchor,
+          DateTime(2026, 11, 2),
+        );
+        expect(decodeTodoSteps(restored.steps).single.done, isTrue);
+        expect(
+          decodeTodoMetadata(restored.metadata)[TodoMetadataKeys.repeatDone],
+          0,
+        );
+        expect(await db.getTodo(first.copyId!), isNull);
+      },
+    );
+
+    test(
+      'legacy occurrences without repeatNextDue still roll back when latest',
+      () async {
+        final id = await db.createTodo(
+          TodoInput(
+            title: '背单词',
+            dueDate: DateTime(2026, 11, 2),
+            repeat: TodoRepeatRule(
+              frequency: TodoRepeatFrequency.daily,
+              anchor: DateTime(2026, 11, 2),
+            ),
+          ),
+        );
+        final completed = (await db.completeTodo(
+          id,
+          now: DateTime(2026, 11, 2, 12),
+        ))!;
+        // 模拟升级前只含 repeatOf 的旧副本 metadata。
+        await (db.update(
+          db.todos,
+        )..where((t) => t.todoId.equals(completed.copyId!))).write(
+          TodosCompanion(
+            metadata: Value('{"${TodoMetadataKeys.repeatOf}":"$id"}'),
+          ),
+        );
+        final result = (await db.uncompleteTodo(completed.copyId!))!;
+        expect(result.rolledBack, isTrue);
+        expect((await db.getTodo(id))!.dueDate, '2026-11-02');
+        expect(await db.getTodo(completed.copyId!), isNull);
+      },
+    );
+
+    test(
+      'reopening a standalone historical occurrence and adding repeat detaches it',
+      () async {
+        final id = await db.createTodo(
+          TodoInput(
+            title: '写总结',
+            dueDate: DateTime(2026, 11, 2),
+            repeat: TodoRepeatRule(
+              frequency: TodoRepeatFrequency.daily,
+              anchor: DateTime(2026, 11, 2),
+            ),
+          ),
+        );
+        final first = (await db.completeTodo(
+          id,
+          now: DateTime(2026, 11, 2, 10),
+        ))!.copyId!;
+        await db.completeTodo(id, now: DateTime(2026, 11, 3, 10));
+        final reopened = (await db.uncompleteTodo(first))!;
+        expect(reopened.rolledBack, isFalse);
+        await db.setTodoRepeat(
+          first,
+          TodoRepeatRule(
+            frequency: TodoRepeatFrequency.weekly,
+            anchor: DateTime(2026, 11, 2),
+          ),
+        );
+        final detached = (await db.getTodo(first))!;
+        expect(
+          decodeTodoMetadata(detached.metadata)[TodoMetadataKeys.repeatOf],
+          isNull,
+        );
+      },
+    );
+
+    test(
+      'uncompleting the final occurrence of a counted series decrements repeatDone',
+      () async {
+        final id = await db.createTodo(
+          TodoInput(
+            title: '吃药',
+            dueDate: DateTime(2026, 11, 2),
+            repeat: TodoRepeatRule(
+              frequency: TodoRepeatFrequency.daily,
+              anchor: DateTime(2026, 11, 2),
+              count: 2,
+            ),
+          ),
+        );
+        await db.completeTodo(id, now: DateTime(2026, 11, 2));
+        await db.completeTodo(id, now: DateTime(2026, 11, 3));
+        expect((await db.getTodo(id))!.completedAt, isNotNull);
+        expect(
+          decodeTodoMetadata(
+            (await db.getTodo(id))!.metadata,
+          )[TodoMetadataKeys.repeatDone],
+          2,
+        );
+        final result = (await db.uncompleteTodo(id))!;
+        expect(result.rolledBack, isFalse);
+        final after = (await db.getTodo(id))!;
+        expect(after.completedAt, isNull);
+        expect(
+          decodeTodoMetadata(after.metadata)[TodoMetadataKeys.repeatDone],
+          1,
+        );
+      },
+    );
   });
 
   group('schema v19 migration', () {

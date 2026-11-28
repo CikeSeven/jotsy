@@ -397,4 +397,52 @@ void main() {
       }),
     );
   });
+
+  testWidgets(
+    'completing a repeating todo that stays in view resets tile check state',
+    (tester) async {
+      late String seriesId;
+      final db = await pumpTodosPage(
+        tester,
+        todoSettings: const TodoSettings(
+          defaultViewKey: 'inbox',
+          showCompleted: false,
+        ),
+        seed: (db) async {
+          seriesId = await db.createTodo(
+            TodoInput(
+              title: '每日拉伸',
+              dueDate: todoToday,
+              repeat: TodoRepeatRule(
+                frequency: TodoRepeatFrequency.daily,
+                anchor: todoToday,
+              ),
+            ),
+          );
+        },
+      );
+      await tick(tester, '每日拉伸');
+      await settleMotion(tester);
+      expect(
+        (await db.getTodo(seriesId))!.dueDate,
+        formatAnniversaryDate(todoToday.add(const Duration(days: 1))),
+      );
+      final box = tester.widget<TodoCheckBoxVisual>(
+        find.descendant(
+          of: find.byType(TodoTile),
+          matching: find.byType(TodoCheckBoxVisual),
+        ),
+      );
+      // 推到明天后行仍在收集箱里展示，方框必须复位为未勾选并可再次完成。
+      expect(box.checked, isFalse);
+
+      await tick(tester, '每日拉伸');
+      await settleMotion(tester);
+      expect(
+        (await db.getTodo(seriesId))!.dueDate,
+        formatAnniversaryDate(todoToday.add(const Duration(days: 2))),
+      );
+      await unmountTodos(tester);
+    },
+  );
 }

@@ -729,6 +729,30 @@ void main() {
       expect((await db.getTodo(id))!.completedAt, isNull);
       await undo('reopen_todos', reopened);
       expect((await db.getTodo(id))!.completedAt, isNotNull);
+
+      // 重复待办最近一次的已完成副本：reopen_todos 回滚原计划，撤销再恢复。
+      final seriesId = await db.createTodo(
+        TodoInput(
+          title: '喝水',
+          dueDate: DateTime(2026, 11, 10),
+          repeat: TodoRepeatRule(
+            frequency: TodoRepeatFrequency.daily,
+            anchor: DateTime(2026, 11, 10),
+          ),
+        ),
+      );
+      final copyId = (await db.completeTodo(
+        seriesId,
+        now: DateTime(2026, 11, 10, 9),
+      ))!.copyId!;
+      final rolled = await run('reopen_todos', {
+        'ids': [copyId],
+      });
+      expect((await db.getTodo(seriesId))!.dueDate, '2026-11-10');
+      expect(await db.getTodo(copyId), isNull);
+      await undo('reopen_todos', rolled);
+      expect((await db.getTodo(seriesId))!.dueDate, '2026-11-11');
+      expect((await db.getTodo(copyId))!.completedAt, isNotNull);
       final open = await db.createTodo(const TodoInput(title: '没完成'));
       expect(
         () => run('reopen_todos', {

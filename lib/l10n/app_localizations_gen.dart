@@ -26126,6 +26126,42 @@ abstract class AppLocalizations {
   /// **'Completions over the last {weeks} weeks'**
   String todoStreakGridLabel(int weeks);
 
+  /// Footer caption under the streak heatmap showing how many recent weeks are displayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {weeks} weeks'**
+  String todoStreakRangeWeeks(int weeks);
+
+  /// Legend label on the streak heatmap for days with no completions.
+  ///
+  /// In en, this message translates to:
+  /// **'Not done'**
+  String get todoStreakLegendNotDone;
+
+  /// Legend label on the streak heatmap for days with completions.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get todoStreakLegendDone;
+
+  /// Focused day caption on the streak heatmap when completed once on {date}.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · Completed'**
+  String todoStreakDayCompleted(String date);
+
+  /// Focused day caption on the streak heatmap when completed {count} times (>1) on {date}.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · Completed {count} times'**
+  String todoStreakDayCompletedTimes(String date, int count);
+
+  /// Focused day caption on the streak heatmap when not completed on {date}.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · Not completed'**
+  String todoStreakDayMissed(String date);
+
   /// Button under the steps once every step is ticked.
   ///
   /// In en, this message translates to:
@@ -26180,11 +26216,35 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Done once} other{Done {count} times}}'**
   String todoSeriesDoneCount(int count);
 
-  /// Pill in the details of one done occurrence of a repeating to-do; tapping it opens the repeating to-do itself.
+  /// Context strip in the details of a completed occurrence of an active repeating to-do; {date} is the next scheduled due date.
   ///
   /// In en, this message translates to:
-  /// **'Part of “{title}”'**
-  String todoSeriesOf(String title);
+  /// **'Completed this cycle · Next: {date}'**
+  String todoOccurrenceContext(String date);
+
+  /// Context strip in the details of a completed occurrence when the repeating series has no upcoming due date.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed occurrence of a repeating to-do'**
+  String get todoOccurrenceContextEnded;
+
+  /// Action in a completed occurrence's details that switches in place to the upcoming repeating to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'View next'**
+  String get todoViewNextOccurrence;
+
+  /// Undoable notice after uncompleting the latest occurrence of a repeating to-do and rolling the series back to that date.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored to this cycle'**
+  String get todoUncompletedRolledBackNotice;
+
+  /// Undoable notice after uncompleting an older occurrence of a repeating to-do without rolling back the active series.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopened as a one-time to-do; repeating schedule unchanged'**
+  String get todoUncompletedStandaloneNotice;
 
   /// Header of the stack of to-dos just added in the quick add sheet.
   ///

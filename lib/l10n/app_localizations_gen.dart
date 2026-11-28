@@ -31528,6 +31528,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 round} other{{count} rounds}}'**
   String todoFocusRounds(int count);
+
+  /// Focus page: estimated wall-clock finish time shown inside the dial.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends at {time}'**
+  String todoFocusEndsAt(String time);
+
+  /// Focus page: total focus time logged today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today · {duration}'**
+  String todoFocusTodayTotal(String duration);
+
+  /// Focus page idle state: quiet eyebrow label above the preview duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to focus'**
+  String get todoFocusReadyHint;
+
+  /// Focus page idle state: label when focusing without a linked to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Free focus'**
+  String get todoFocusFreeSession;
+
+  /// Focus page idle state: action and sheet title to pick a to-do to focus on.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a to-do'**
+  String get todoFocusPickTodo;
+
+  /// Focus page to-do picker: empty message when there are no unfinished to-dos.
+  ///
+  /// In en, this message translates to:
+  /// **'No open to-dos yet'**
+  String get todoFocusNoOpenTodos;
+
+  /// Focus page: tooltip and bottom sheet title for focus/break duration settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus rhythm'**
+  String get todoFocusRhythm;
+
+  /// Focus page: tooltip to hide extra details and keep only the timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal view'**
+  String get todoFocusZenEnter;
+
+  /// Focus page: tooltip to exit minimal view and show task details.
+  ///
+  /// In en, this message translates to:
+  /// **'Show details'**
+  String get todoFocusZenExit;
+
+  /// Focus page idle state: one-line summary of the configured Pomodoro rhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'{focus}m focus · {shortBreak}m break · long break every {every}'**
+  String todoFocusRhythmSummary(int focus, int shortBreak, int every);
+
+  /// Focus page: compact label on the quick +5 minutes button.
+  ///
+  /// In en, this message translates to:
+  /// **'+5m'**
+  String get todoFocusExtendShort;
+
+  /// Focus page on desktop: subtle keyboard shortcut hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Space pause/resume · + add 5 min · Esc back'**
+  String get todoFocusKeyboardHint;
+
+  /// Focus page task card: tooltip for opening the linked to-do's detail sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to-do details'**
+  String get todoFocusOpenTodoDetails;
 }
 
 class _AppLocalizationsDelegate

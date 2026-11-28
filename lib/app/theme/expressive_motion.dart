@@ -29,10 +29,14 @@ abstract final class ExpressiveMotion {
   /// 也不经 [duration] 解析。
   /// - [pulseLoop]：雷达波纹一圈（局域网同步英雄卡，三圈各差三分之一周期）；
   /// - [flowLoop]：连线跑道上的圆点走完一程；
-  /// - [scanLoop]：扫码页扫描线往返一次。
+  /// - [scanLoop]：扫码页扫描线往返一次；
+  /// - [focusWaveLoop]：专注计时器波形弧的相位流动周期；
+  /// - [focusOrbitLoop]：专注计时器有机底盘缓慢旋转一圈的周期。
   static const pulseLoop = Duration(milliseconds: 3600);
   static const flowLoop = Duration(milliseconds: 1800);
   static const scanLoop = Duration(milliseconds: 2400);
+  static const focusWaveLoop = Duration(milliseconds: 4200);
+  static const focusOrbitLoop = Duration(milliseconds: 48000);
 
   /// 弹出菜单（移植自 NexioSchedule 的 ListPopup / LiquidGlassDropdownMenu），
   /// 与原实现逐值一致；面板的长大与二级菜单的展开是弹簧，见

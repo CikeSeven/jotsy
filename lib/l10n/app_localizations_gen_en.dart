@@ -20303,4 +20303,50 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String todoFocusEndsAt(String time) {
+    return 'Ends at $time';
+  }
+
+  @override
+  String todoFocusTodayTotal(String duration) {
+    return 'Today · $duration';
+  }
+
+  @override
+  String get todoFocusReadyHint => 'Ready to focus';
+
+  @override
+  String get todoFocusFreeSession => 'Free focus';
+
+  @override
+  String get todoFocusPickTodo => 'Choose a to-do';
+
+  @override
+  String get todoFocusNoOpenTodos => 'No open to-dos yet';
+
+  @override
+  String get todoFocusRhythm => 'Focus rhythm';
+
+  @override
+  String get todoFocusZenEnter => 'Minimal view';
+
+  @override
+  String get todoFocusZenExit => 'Show details';
+
+  @override
+  String todoFocusRhythmSummary(int focus, int shortBreak, int every) {
+    return '${focus}m focus · ${shortBreak}m break · long break every $every';
+  }
+
+  @override
+  String get todoFocusExtendShort => '+5m';
+
+  @override
+  String get todoFocusKeyboardHint =>
+      'Space pause/resume · + add 5 min · Esc back';
+
+  @override
+  String get todoFocusOpenTodoDetails => 'Open to-do details';
 }

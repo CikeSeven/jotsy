@@ -53,6 +53,8 @@ class _TodoFocusBannerState extends ConsumerState<TodoFocusBanner> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final enabled = ref.watch(
       appFeaturesProvider.select((features) => features.todoFocusEnabled),
     );
@@ -61,6 +63,7 @@ class _TodoFocusBannerState extends ConsumerState<TodoFocusBanner> {
     final run = enabled ? state.run : null;
     _schedule(run);
     final visible = enabled && !state.idle;
+    final ended = visible && run == null;
     if (visible) {
       _label = switch (run) {
         null => l10n.todoFocusBannerEnded,
@@ -73,12 +76,52 @@ class _TodoFocusBannerState extends ConsumerState<TodoFocusBanner> {
         ),
       };
     }
+
+    final dotColor = run == null
+        ? scheme.onPrimary
+        : run.paused
+        ? scheme.outline
+        : run.phase.isBreak
+        ? scheme.tertiary
+        : scheme.primary;
+
     // 等宽数字：每秒变化时胶囊宽度不跟着抖。
     final own = FilledButton.styleFrom(
-      textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+      textStyle: theme.textTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w600,
         fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
       ),
     );
+    final button = ended
+        ? FilledButton.icon(
+            style: own,
+            onPressed: () => unawaited(openTodoFocusPage(context)),
+            icon: const FaIcon(FontAwesomeIcons.bell, size: 13),
+            label: Text(_label),
+          )
+        : FilledButton.tonalIcon(
+            style: AppGlassField.tonalButtonStyle(context)?.merge(own) ?? own,
+            onPressed: visible
+                ? () => unawaited(openTodoFocusPage(context))
+                : null,
+            icon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 7),
+                const FaIcon(FontAwesomeIcons.stopwatch, size: 13),
+              ],
+            ),
+            label: Text(_label),
+          );
+
     return ListItemPresence(
       visible: visible,
       appearing: visible,
@@ -87,14 +130,7 @@ class _TodoFocusBannerState extends ConsumerState<TodoFocusBanner> {
         padding: const EdgeInsets.only(bottom: AppSpacing.s),
         child: Align(
           alignment: AlignmentDirectional.centerStart,
-          child: FilledButton.tonalIcon(
-            style: AppGlassField.tonalButtonStyle(context)?.merge(own) ?? own,
-            onPressed: visible
-                ? () => unawaited(openTodoFocusPage(context))
-                : null,
-            icon: const FaIcon(FontAwesomeIcons.stopwatch, size: 14),
-            label: Text(_label),
-          ),
+          child: button,
         ),
       ),
     );

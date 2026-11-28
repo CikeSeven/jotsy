@@ -17700,4 +17700,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String todoFocusRounds(int count) {
     return '$count 轮';
   }
+
+  @override
+  String todoFocusEndsAt(String time) {
+    return '预计 $time 结束';
+  }
+
+  @override
+  String todoFocusTodayTotal(String duration) {
+    return '今日已专注 $duration';
+  }
+
+  @override
+  String get todoFocusReadyHint => '准备开始';
+
+  @override
+  String get todoFocusFreeSession => '自由专注';
+
+  @override
+  String get todoFocusPickTodo => '选择待办';
+
+  @override
+  String get todoFocusNoOpenTodos => '暂无未完成的待办';
+
+  @override
+  String get todoFocusRhythm => '专注节奏';
+
+  @override
+  String get todoFocusZenEnter => '纯净模式';
+
+  @override
+  String get todoFocusZenExit => '显示详情';
+
+  @override
+  String todoFocusRhythmSummary(int focus, int shortBreak, int every) {
+    return '专注 $focus 分 · 休息 $shortBreak 分 · 每 $every 轮长休';
+  }
+
+  @override
+  String get todoFocusExtendShort => '+5 分';
+
+  @override
+  String get todoFocusKeyboardHint => '空格 暂停/继续 · + 加 5 分钟 · Esc 返回';
+
+  @override
+  String get todoFocusOpenTodoDetails => '查看待办详情';
 }

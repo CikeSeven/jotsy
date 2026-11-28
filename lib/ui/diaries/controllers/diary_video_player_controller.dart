@@ -28,6 +28,7 @@ class DiaryVideoPlayerController extends ChangeNotifier
   Future<void>? _initialization;
   Future<void>? _disposal;
   bool _disposed = false;
+  bool _trackReleaseOnDispose = false;
   bool _loading = true;
   bool _failed = false;
   bool _changingPlayback = false;
@@ -169,11 +170,21 @@ class DiaryVideoPlayerController extends ChangeNotifier
 
   /// 释放控制器并等待底层原生 `VideoPlayerController.dispose()` 完成。
   /// [trackPendingRelease] 为 true 时纳入全局租约等待，确保紧接着激活的
-  /// 下一段视频等待旧硬件解码器归还；组件同步 `dispose()` 卸载时传 false，
+  /// 下一段视频等待旧硬件解码器归还；组件同步 `dispose()` 卸载时为 false，
   /// 避免在已结束的异步区域残留未消费的微任务。
   Future<void> disposeAsync({bool trackPendingRelease = true}) {
     if (_disposed) return _disposal ?? Future<void>.value();
+    _trackReleaseOnDispose = trackPendingRelease;
+    dispose();
+    return _disposal ?? Future<void>.value();
+  }
+
+  @override
+  void dispose() {
+    if (_disposed) return;
     _disposed = true;
+    final trackPendingRelease = _trackReleaseOnDispose;
+    _trackReleaseOnDispose = false;
     if (_active == this) _active = null;
     WidgetsBinding.instance.removeObserver(this);
     player.removeListener(_onPlayerChanged);
@@ -192,13 +203,6 @@ class DiaryVideoPlayerController extends ChangeNotifier
       );
     }
     super.dispose();
-    return disposal;
-  }
-
-  @override
-  void dispose() {
-    if (_disposed) return;
-    unawaited(disposeAsync(trackPendingRelease: false));
   }
 
   /// [source] 可以是本地路径、`file://` / `http(s)://` 地址，或 Android 的

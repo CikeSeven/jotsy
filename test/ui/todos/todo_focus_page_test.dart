@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -226,8 +225,6 @@ void main() {
   testWidgets('desktop wide workbench and keyboard shortcuts work', (
     tester,
   ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     await pump(
       tester,
       width: 1200,
@@ -269,7 +266,7 @@ void main() {
     expect(find.byType(TodoFocusBanner), findsOneWidget);
 
     await unmountTodos(tester);
-  });
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets('extend button disables at 240 minute cap and respects break', (
     tester,

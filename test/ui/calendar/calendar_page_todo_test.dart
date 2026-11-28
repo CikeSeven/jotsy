@@ -33,7 +33,7 @@ TodoRow _todo(String title, DateTime due, {DateTime? completedAt}) => TodoRow(
 );
 
 void main() {
-  final today = DateUtils.dateOnly(DateTime.now());
+  DateTime currentToday() => DateUtils.dateOnly(DateTime.now());
 
   Finder cellOn(DateTime day) => find.byWidgetPredicate(
     (Widget widget) =>
@@ -45,6 +45,7 @@ void main() {
   testWidgets('with to-dos on, days are marked and the timeline lists them', (
     tester,
   ) async {
+    final today = currentToday();
     await pumpCalendarPage(
       tester,
       prefs: const <String, Object>{_featuresKey: '{"todos":true}'},
@@ -71,6 +72,7 @@ void main() {
   });
 
   testWidgets('today also lists overdue to-dos', (tester) async {
+    final today = currentToday();
     await pumpCalendarPage(
       tester,
       prefs: const <String, Object>{_featuresKey: '{"todos":true}'},
@@ -97,6 +99,7 @@ void main() {
   testWidgets('the card style lists to-dos above the diary cards', (
     tester,
   ) async {
+    final today = currentToday();
     await pumpCalendarPage(
       tester,
       prefs: const <String, Object>{
@@ -142,6 +145,7 @@ void main() {
   });
 
   testWidgets('checking a to-do on the calendar completes it', (tester) async {
+    final today = currentToday();
     final database = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     final id = await tester.runAsync(
@@ -166,6 +170,7 @@ void main() {
   });
 
   testWidgets('the long-press sheet offers adding a to-do', (tester) async {
+    final today = currentToday();
     await pumpCalendarPage(
       tester,
       prefs: const <String, Object>{_featuresKey: '{"todos":true}'},
@@ -182,6 +187,7 @@ void main() {
   testWidgets('with the feature off nothing about to-dos shows', (
     tester,
   ) async {
+    final today = currentToday();
     await pumpCalendarPage(tester, openTodos: <TodoRow>[_todo('交周报', today)]);
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
     expect(
@@ -196,6 +202,7 @@ void main() {
   });
 
   testWidgets('the display option turns the to-dos off', (tester) async {
+    final today = currentToday();
     await pumpCalendarPage(
       tester,
       prefs: const <String, Object>{

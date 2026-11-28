@@ -240,18 +240,158 @@ jobs:
       - name: Build release APK (arm64)
         run: flutter build apk --release --target-platform android-arm64
 
+      # 键只取 Robolectric 版本与测试声明的 SDK 列表（见 tool/robolectric_cache_key.dart）：
+      # 修改测试逻辑、fixture JSON 或无关 Gradle 依赖时缓存不失效。
+      - name: Resolve Robolectric cache key
+        id: robolectric-key
+        run: dart run tool/robolectric_cache_key.dart --output "$GITHUB_OUTPUT"
+
       # Robolectric 在测试 JVM 里自己从 Maven Central 下载 @Config 列出的各 SDK 的
-      # android-all-instrumented（SDK 29 + 33 约 270 MB），落在 ~/.m2 而不是
-      # ~/.gradle，Gradle 缓存管不到；下载偶发 IOException 就会让整个 job 失败
-      # （2026-11-07 main 上的 MavenArtifactFetcher 报错即此）。所需 jar 只取决于
-      # Robolectric 版本（build.gradle.kts）与 SDK 列表（测试源码），键就取这两处
-      # 的哈希。不设 restore-keys：键变了就整份重新下载，避免旧版本的 jar 随缓存
-      # 一代代累积。
+      # android-all-instrumented（SDK 29/30/33/34 合计约 557 MB），落在 ~/.m2 而不是
+      # ~/.gradle，Gradle 缓存管不到；下载没有重试，偶发 HTTP 报错就会让整个 job 失败
+      # （2026-11-07、2026-11-27 main 上的 MavenArtifactFetcher 报错即此）。同版本下
+      # 设 restore-keys，新增 SDK 时复用已有 jar；升级 Robolectric 时前缀变化整份重建，
+      # 避免旧版本的 jar 随缓存一代代累积。
       - name: Cache Robolectric Android jars
+        id: robolectric-cache
         uses: ./.github/actions/main-cache
         with:
           path: ~/.m2/repository/org/robolectric
-          key: robolectric-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/app/src/test/**') }}
+          key: robolectric-${{ runner.os }}-${{ steps.robolectric-key.outputs.version }}-${{ steps.robolectric-key.outputs.key_suffix }}
+          restore-keys: robolectric-${{ runner.os }}-${{ steps.robolectric-key.outputs.version }}-
+
+      # 缓存未命中时（换键、新增 SDK、升级 Robolectric 或缓存被淘汰），Robolectric 的
+      # MavenArtifactFetcher 用裸 HttpURLConnection 直连 repo1.maven.org 且无重试、无超时，
+      # 在共享出口 IP 上易遇限流或瞬断而失败（2026-11-27 main 连续两次失败即此）。
+      # 这里借 Robolectric 自身的 DefaultSdkProvider 解析精确坐标（不硬编码内部版本），
+      # 优先走 Google Maven Central 镜像、失败退回 repo1.maven.org，带重试并校验 SHA-512
+      # 后写入 ~/.m2；只是尽力而为，异常时只告警并交给下一步 Robolectric 自行处理。
+      - name: Prefetch Robolectric Android jars
+        if: >-
+          steps.robolectric-cache.outputs.cache-hit != 'true' &&
+          steps.robolectric-key.outputs.sdks != ''
+        env:
+          ROBOLECTRIC_VERSION: ${{ steps.robolectric-key.outputs.version }}
+          ROBOLECTRIC_SDKS: ${{ steps.robolectric-key.outputs.sdks }}
+        run: |
+          read -r -a sdks <<< "$ROBOLECTRIC_SDKS"
+          find_robolectric_cp() {
+            local root="$HOME/.gradle/caches/modules-2/files-2.1/org.robolectric"
+            [[ -d "$root" ]] || return 0
+            find "$root" -type f -name "*-${ROBOLECTRIC_VERSION}.jar" | paste -sd: -
+          }
+          cp="$(find_robolectric_cp)"
+          if [[ "$cp" != *"robolectric-${ROBOLECTRIC_VERSION}.jar"* ]]; then
+            # 冷 Gradle 缓存下先编译单测以解析 testImplementation 依赖，产物供下一步复用。
+            (cd android && ./gradlew :app:compileDebugUnitTestKotlin --console=plain) || {
+              echo '::warning::Could not resolve Robolectric jars via Gradle; leaving downloads to Robolectric'
+              exit 0
+            }
+            cp="$(find_robolectric_cp)"
+          fi
+          if [[ "$cp" != *"robolectric-${ROBOLECTRIC_VERSION}.jar"* ]]; then
+            echo "::warning::Robolectric ${ROBOLECTRIC_VERSION} jars not found in Gradle cache; leaving downloads to Robolectric"
+            exit 0
+          fi
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+          resolver_src="$tmp_dir/ResolveRobolectricSdks.java"
+          cat > "$resolver_src" <<'JAVA'
+          import java.nio.file.Path;
+          import java.util.ArrayList;
+          import java.util.List;
+          import java.util.Set;
+          import java.util.TreeSet;
+          import org.robolectric.internal.dependency.DependencyJar;
+          import org.robolectric.internal.dependency.DependencyResolver;
+          import org.robolectric.pluginapi.Sdk;
+          import org.robolectric.plugins.DefaultSdkProvider;
+
+          public class ResolveRobolectricSdks {
+            public static void main(String[] args) {
+              Path existing = Path.of(args[0]);
+              Set<Integer> wanted = new TreeSet<>();
+              for (int i = 1; i < args.length; i++) {
+                wanted.add(Integer.parseInt(args[i]));
+              }
+              List<DependencyJar> captured = new ArrayList<>();
+              DependencyResolver resolver = dep -> {
+                captured.add(dep);
+                try {
+                  return existing.toUri().toURL();
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
+              };
+              DefaultSdkProvider provider = new DefaultSdkProvider(resolver);
+              for (Sdk sdk : provider.getSdks()) {
+                if (wanted.contains(sdk.getApiLevel())) {
+                  captured.clear();
+                  sdk.getJarPath();
+                  for (DependencyJar dep : captured) {
+                    System.out.println(
+                        dep.getGroupId() + " " + dep.getArtifactId() + " " + dep.getVersion());
+                  }
+                }
+              }
+            }
+          }
+          JAVA
+          if ! coords="$(java -cp "$cp" "$resolver_src" "$resolver_src" "${sdks[@]}")"; then
+            echo '::warning::Could not query Robolectric DefaultSdkProvider; leaving downloads to Robolectric'
+            exit 0
+          fi
+          mirrors=(
+            'https://maven-central.storage-download.googleapis.com/maven2'
+            'https://repo1.maven.org/maven2'
+          )
+          download_file() {
+            local rel="$1" out="$2" mirror
+            for mirror in "${mirrors[@]}"; do
+              if curl -sSfL --connect-timeout 15 --max-time 180 --retry 3 \
+                  --retry-all-errors --retry-delay 5 --retry-max-time 300 \
+                  -o "$out" "${mirror}/${rel}"; then
+                return 0
+              fi
+              rm -f "$out"
+            done
+            return 1
+          }
+          verify_sha512() {
+            local file="$1" sha_file="$2" expected actual
+            expected="$(tr -d '[:space:]' < "$sha_file" | tr '[:upper:]' '[:lower:]')"
+            actual="$(sha512sum "$file" | cut -d' ' -f1)"
+            [[ -n "$expected" && "$actual" == "$expected" ]]
+          }
+          while IFS=' ' read -r group artifact version; do
+            [[ -z "${group:-}" ]] && continue
+            rel_dir="${group//.//}/${artifact}/${version}"
+            base="${artifact}-${version}"
+            dest_dir="$HOME/.m2/repository/${rel_dir}"
+            if [[ -f "${dest_dir}/${base}.jar" ]]; then
+              echo "${base}.jar: cached"
+              continue
+            fi
+            stage="${tmp_dir}/stage/${rel_dir}"
+            mkdir -p "$stage" "$dest_dir"
+            if download_file "${rel_dir}/${base}.pom.sha512" "${stage}/${base}.pom.sha512" &&
+               download_file "${rel_dir}/${base}.pom" "${stage}/${base}.pom" &&
+               verify_sha512 "${stage}/${base}.pom" "${stage}/${base}.pom.sha512" &&
+               download_file "${rel_dir}/${base}.jar.sha512" "${stage}/${base}.jar.sha512" &&
+               download_file "${rel_dir}/${base}.jar" "${stage}/${base}.jar" &&
+               verify_sha512 "${stage}/${base}.jar" "${stage}/${base}.jar.sha512"; then
+              cp "${stage}/${base}.pom.sha512" "${dest_dir}/${base}.pom.sha512"
+              cp "${stage}/${base}.pom" "${dest_dir}/${base}.pom"
+              cp "${stage}/${base}.jar.sha512" "${dest_dir}/${base}.jar.sha512"
+              cp "${stage}/${base}.jar" "${dest_dir}/${base}.jar.part"
+              mv "${dest_dir}/${base}.jar.part" "${dest_dir}/${base}.jar"
+              rm -rf "$stage"
+              echo "${base}.jar: downloaded"
+            else
+              rm -rf "$stage" "${dest_dir}/${base}.jar.part"
+              echo "::warning::Could not prefetch ${base}.jar; leaving download to Robolectric"
+            fi
+          done <<< "$coords"
 
       # Flutter 构建会先生成仓库未跟踪的 gradlew；原生测试复用这份 wrapper。
       - name: Test Android picker permissions and result handling

@@ -44,7 +44,7 @@ GitHub 按最近使用时间淘汰。其中 setup-java 整份缓存 `~/.gradle/c
 | 构建钩子下载（sqlite3 预编译库） | `.dart_tool/hooks_runner/shared` | `hook-downloads-<os>-<android\|host>-<job>-<pubspec.lock 哈希>` | job 成功结束时 |
 | Gradle 发行版 | `~/.gradle/wrapper/dists` | `gradle-wrapper-<os>-<gradle-wrapper.properties 哈希>` | job 成功结束时 |
 | Gradle 依赖、transforms 与构建脚本 | `~/.gradle/caches`（除锁文件与 `gc.properties`） | `gradle-<os>-<Flutter 版本>-<Gradle 脚本与 pubspec.lock 哈希>` | job 成功结束时 |
-| Robolectric 的 Android jar | `~/.m2/repository/org/robolectric` | `robolectric-<os>-<build.gradle.kts 与原生测试源码哈希>` | job 成功结束时 |
+| Robolectric 的 Android jar | `~/.m2/repository/org/robolectric` | `robolectric-<os>-<Robolectric 版本>-<SDK 声明摘要>`，同版本按前缀回退 | job 成功结束时 |
 | actionlint | `~/.cache/actionlint` | `actionlint-<版本>-linux-amd64` | job 成功结束时 |
 
 **只有 main 写入缓存。** 缓存只能被同一 ref 及其基准分支读取。PR 写下的缓存
@@ -88,7 +88,9 @@ transforms（jetifier、AAR 解包等）与编译好的构建脚本每次重新�
 含冷缓存的下载，无法完全区分），而整份缓存恢复只要约 66 秒，所以仍整份缓存，
 只去掉锁文件与 `gc.properties`。键带 Flutter 版本（引擎以 maven 包形式提供），
 只在同一 Flutter 版本内退回旧缓存，升级 Flutter 时整份重建，旧依赖与旧
-transforms 不会一代代累积；Robolectric 的键不设回退，原因相同。发行版单独
+transforms 不会一代代累积；Robolectric 的键带 Robolectric 版本与测试声明的 SDK
+列表（`tool/robolectric_cache_key.dart`），只在同一 Robolectric 版本内回退，修改
+测试逻辑、夹具或无关 Gradle 配置不失效，升级 Robolectric 时同样整份重建。发行版单独
 缓存、只随 Gradle 版本变：services.gradle.org 会跳转到 GitHub Releases 下载，
 同样会遇到 504，升级 Flutter 时不必跟着重新下载。
 
@@ -126,10 +128,14 @@ transforms 不会一代代累积；Robolectric 的键不设回退，原因相同
 成功。这个 token 是工作流 `contents: read` 权限下的只读 token，不是仓库
 secrets，fork 的 PR 里也有，不违反“CI 门禁不读 secrets”。
 
-**其余下载有重试。** pub get 最多 3 次，apt 最多重试 3 次。actionlint 与 sqlite3
-预取的 curl 单次限 30 秒、重试总时长限 3 分钟：故障时下载服务常挂起约 130 秒
-才回 504，不限单次时长时，#197 一次运行里 Windows 的预取就等了 4.5 分钟。
-2026-11-08 本地复现时，actionlint 的下载连续 5 次 504 后第 6 次成功。
+**其余下载有重试与预取。** pub get 最多 3 次，apt 最多重试 3 次。actionlint 与
+sqlite3 预取的 curl 单次限 30 秒、重试总时长限 3 分钟：故障时下载服务常挂起约
+130 秒才回 504，不限单次时长时，#197 一次运行里 Windows 的预取就等了 4.5 分钟。
+2026-11-08 本地复现时，actionlint 的下载连续 5 次 504 后第 6 次成功。Robolectric
+缓存未命中时（原键哈希整份 `android/app/src/test/**` 且无回退，2026-11-27 #396
+仅新增单测就触发冷下载，导致 main 连续两次 `MavenArtifactFetcher` `IOException`），
+通过 Robolectric 自身的 `DefaultSdkProvider` 解析所需 SDK 坐标，优先走 Google
+Maven Central 镜像、失败退回 `repo1.maven.org`，带重试并校验 SHA-512 后写入 `~/.m2`。
 
 **没有缓存的部分：**
 

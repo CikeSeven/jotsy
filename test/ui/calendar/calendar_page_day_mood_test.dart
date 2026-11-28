@@ -18,21 +18,21 @@ const _optionsKey = 'app.settings.calendar_display_options';
 /// 长按日期设定这天的心情：日期格整格换成心情，清除可撤销；显示选项关掉后
 /// 日期格与长按面板都不再出现心情。
 void main() {
-  final today = DateUtils.dateOnly(DateTime.now());
-  final otherDay = today.day == 1 ? 2 : 1;
+  DateTime currentToday() => DateUtils.dateOnly(DateTime.now());
+  int otherDayOf(DateTime day) => day.day == 1 ? 2 : 1;
 
-  Finder cellOn(int day) => find.byWidgetPredicate(
+  Finder cellOn(DateTime month, int day) => find.byWidgetPredicate(
     (Widget widget) =>
         widget is CalendarDayCell &&
-        widget.day.month == today.month &&
+        widget.day.month == month.month &&
         widget.day.day == day,
   );
 
   AppLocalizations l10nOf(WidgetTester tester) =>
       tester.element(find.byType(CalendarPage)).l10n;
 
-  DayMood? moodOn(WidgetTester tester, int day) =>
-      tester.widget<CalendarDayCell>(cellOn(day)).dayMood;
+  DayMood? moodOn(WidgetTester tester, DateTime month, int day) =>
+      tester.widget<CalendarDayCell>(cellOn(month, day)).dayMood;
 
   /// 等 drift 的写入与 watch 推送落地（真实异步）再重建页面。
   Future<void> settle(WidgetTester tester) async {
@@ -56,20 +56,22 @@ void main() {
     testWidgets('a recorded mood fills its date cell (${brightness.name})', (
       tester,
     ) async {
+      final today = currentToday();
+      final otherDay = otherDayOf(today);
       await pumpCalendarPage(
         tester,
         brightness: brightness,
         dayMoods: <DateTime, DayMood>{today: DayMood.great},
       );
-      expect(moodOn(tester, today.day), DayMood.great);
+      expect(moodOn(tester, today, today.day), DayMood.great);
       expect(
         find.descendant(
-          of: cellOn(today.day),
+          of: cellOn(today, today.day),
           matching: find.byType(CalendarMoodTile),
         ),
         findsOneWidget,
       );
-      expect(moodOn(tester, otherDay), isNull);
+      expect(moodOn(tester, today, otherDay), isNull);
       expect(tester.takeException(), isNull);
     });
   }
@@ -77,6 +79,8 @@ void main() {
   testWidgets('switching day moods off hides the tiles and the picker', (
     tester,
   ) async {
+    final today = currentToday();
+    final otherDay = otherDayOf(today);
     await pumpCalendarPage(
       tester,
       dayMoods: <DateTime, DayMood>{today: DayMood.great},
@@ -84,10 +88,10 @@ void main() {
         _optionsKey: const CalendarDisplayOptions(showDayMoods: false).encode(),
       },
     );
-    expect(moodOn(tester, today.day), isNull);
+    expect(moodOn(tester, today, today.day), isNull);
     expect(find.byType(CalendarMoodTile), findsNothing);
 
-    await tester.longPress(cellOn(otherDay));
+    await tester.longPress(cellOn(today, otherDay));
     await tester.pumpAndSettle();
     expect(find.byType(DayMoodPicker), findsNothing);
     expect(find.text(l10nOf(tester).calendarDayActionWrite), findsOneWidget);
@@ -96,6 +100,8 @@ void main() {
   testWidgets('long-press picks a mood, and clearing it can be undone', (
     tester,
   ) async {
+    final today = currentToday();
+    final otherDay = otherDayOf(today);
     final database = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     await pumpCalendarPage(
@@ -110,7 +116,7 @@ void main() {
     );
 
     // 设定：点“不错”即收起面板，日期格换成心情格。
-    await tester.longPress(cellOn(otherDay));
+    await tester.longPress(cellOn(today, otherDay));
     await tester.pumpAndSettle();
     expect(find.text(l10n.calendarDayMoodTitle), findsOneWidget);
     expect(find.text(l10n.calendarDayMoodClear), findsNothing);
@@ -118,10 +124,10 @@ void main() {
     await settle(tester);
     expect(find.byType(DayMoodPicker), findsNothing);
     expect(await stored(), <DateTime, DayMood>{day: DayMood.good});
-    expect(moodOn(tester, otherDay), DayMood.good);
+    expect(moodOn(tester, today, otherDay), DayMood.good);
 
     // 换一个：面板里标出当前心情，选别的即覆盖。
-    await tester.longPress(cellOn(otherDay));
+    await tester.longPress(cellOn(today, otherDay));
     await tester.pumpAndSettle();
     expect(
       tester.widget<DayMoodPicker>(find.byType(DayMoodPicker)).selected,
@@ -129,19 +135,19 @@ void main() {
     );
     await tester.tap(find.text(l10n.dayMoodAwful));
     await settle(tester);
-    expect(moodOn(tester, otherDay), DayMood.awful);
+    expect(moodOn(tester, today, otherDay), DayMood.awful);
 
     // 清除后撤销：原样写回。
-    await tester.longPress(cellOn(otherDay));
+    await tester.longPress(cellOn(today, otherDay));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.calendarDayMoodClear));
     await settle(tester);
-    expect(moodOn(tester, otherDay), isNull);
+    expect(moodOn(tester, today, otherDay), isNull);
     expect(find.text(l10n.calendarDayMoodCleared), findsOneWidget);
     await tester.tap(find.text(l10n.commonUndo));
     await settle(tester);
     expect(await stored(), <DateTime, DayMood>{day: DayMood.awful});
-    expect(moodOn(tester, otherDay), DayMood.awful);
+    expect(moodOn(tester, today, otherDay), DayMood.awful);
     await unmount(tester);
   });
 }

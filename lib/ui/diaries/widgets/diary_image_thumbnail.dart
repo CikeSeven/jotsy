@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_fallback.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_media_viewport_gate.dart';
 import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_cover_alignment.dart';
@@ -44,44 +45,62 @@ class DiaryImageThumbnail extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(kDiaryImageThumbnailRadius);
     final pixels = (extent * MediaQuery.devicePixelRatioOf(context)).ceil();
-    return ImageViewerHeroSource(
-      tag: heroTag,
-      borderRadius: radius,
-      child: CoverCroppedImage(
-        image: boundedImageProvider(
-          provider,
-          width: pixels,
-          height: pixels,
-          cover: true,
-        ),
-        width: extent,
-        height: extent,
-        // 原图在小格子里缩得很多，low 档的采样会出锯齿。
-        filterQuality: FilterQuality.medium,
-        // 裁切与描边只包画面：失败时的说明占位按原样铺开，不被挤进小方格。
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          return expressiveImageFrameBuilder(
-            context,
-            ClipRRect(
-              borderRadius: radius,
-              child: DecoratedBox(
-                position: DecorationPosition.foreground,
-                decoration: BoxDecoration(
-                  borderRadius: radius,
-                  border: Border.fromBorderSide(
-                    ExpressiveSurfaces.cardBorderSide(colors),
-                  ),
+    return DiaryMediaViewportGate(
+      builder: (context, active) {
+        if (!active) {
+          return SizedBox.square(
+            dimension: extent,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHighest,
+                borderRadius: radius,
+                border: Border.fromBorderSide(
+                  ExpressiveSurfaces.cardBorderSide(colors),
                 ),
-                child: child,
               ),
             ),
-            frame,
-            wasSynchronouslyLoaded,
           );
-        },
-        errorBuilder: (context, error, stackTrace) =>
-            DiaryImageFallback(source: source),
-      ),
+        }
+        return ImageViewerHeroSource(
+          tag: heroTag,
+          borderRadius: radius,
+          child: CoverCroppedImage(
+            image: boundedImageProvider(
+              provider,
+              width: pixels,
+              height: pixels,
+              cover: true,
+            ),
+            width: extent,
+            height: extent,
+            // 原图在小格子里缩得很多，low 档的采样会出锯齿。
+            filterQuality: FilterQuality.medium,
+            // 裁切与描边只包画面：失败时的说明占位按原样铺开，不被挤进小方格。
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              return expressiveImageFrameBuilder(
+                context,
+                ClipRRect(
+                  borderRadius: radius,
+                  child: DecoratedBox(
+                    position: DecorationPosition.foreground,
+                    decoration: BoxDecoration(
+                      borderRadius: radius,
+                      border: Border.fromBorderSide(
+                        ExpressiveSurfaces.cardBorderSide(colors),
+                      ),
+                    ),
+                    child: child,
+                  ),
+                ),
+                frame,
+                wasSynchronouslyLoaded,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) =>
+                DiaryImageFallback(source: source),
+          ),
+        );
+      },
     );
   }
 }

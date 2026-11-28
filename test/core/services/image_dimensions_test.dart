@@ -73,4 +73,20 @@ void main() {
     expect(ImageDimensions.isResolved(missing), isTrue);
     expect(ImageDimensions.isResolved(junk), isTrue);
   });
+
+  test(
+    'concurrent header probes all resolve cleanly under throttling',
+    () async {
+      final paths = <String>[];
+      final raw = base64Decode(pngBase64);
+      for (var i = 0; i < 12; i++) {
+        paths.add(await write('img_$i.png', raw));
+      }
+      final results = await Future.wait(paths.map(ImageDimensions.resolve));
+      expect(results, everyElement(const Size(3, 2)));
+      for (final path in paths) {
+        expect(ImageDimensions.isResolved(path), isTrue);
+      }
+    },
+  );
 }

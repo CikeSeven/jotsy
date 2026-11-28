@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/video_export_service.dart';
 import 'package:node_diary/core/services/video_poster_cache.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_file_open_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_export_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/pages/diary_video_fullscreen_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_playback_interaction_guard.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_embed_menu.dart';
@@ -91,6 +92,9 @@ class _DiaryVideoThumbnailBlockState extends State<DiaryVideoThumbnailBlock> {
       );
       return;
     }
+    // 进入全屏播放前先释放正文中可能存活的内嵌播放器，避免抢占硬件解码器。
+    await DiaryVideoPlayerController.releaseInlineLease();
+    if (!mounted) return;
     await openDiaryVideoFullscreen(
       context,
       video: widget.video,

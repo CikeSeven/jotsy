@@ -212,7 +212,13 @@ void main() {
         expect(diaryImageIsThumbnail(_block(controller, 0)), isFalse);
         expect(find.byType(DiaryVideoThumbnail), findsNothing);
         expect(find.byType(DiaryVideoPlayer), findsOneWidget);
+        // 恢复卡片后按需懒加载：点按播放前仍不创建原生播放器。
+        expect(players.created, isEmpty);
+
+        await tester.tap(find.byTooltip('播放视频').last);
+        await tester.pumpAndSettle();
         expect(players.created, hasLength(1));
+        expect(players.created.single.value.isPlaying, isTrue);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
       },
@@ -224,6 +230,12 @@ void main() {
     final players = _Players();
     final controller = _document([_video(), _p()]);
     await _pumpEditor(tester, controller, players);
+    expect(players.created, isEmpty);
+
+    // 先播放一次以创建原生播放器，再验证切回小图时会释放它。
+    await tester.tap(find.byTooltip('播放视频').last);
+    await tester.pumpAndSettle();
+    expect(players.created, hasLength(1));
 
     await tester.tap(find.byTooltip('更多操作'));
     await tester.pumpAndSettle();

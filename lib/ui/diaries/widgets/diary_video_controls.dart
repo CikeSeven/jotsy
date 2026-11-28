@@ -17,7 +17,8 @@ import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 /// 导出（只读正文）或 ⋮ 菜单（编辑页，[menu]）、全屏。不再显示文件名。
 ///
 /// 卡片调窄后（“调整大小”，最窄 `kDiaryVideoMinWidth`）时间文字放不下，
-/// 宽度不足 [timeMinWidth] 时只留进度条；按钮始终在。
+/// 宽度不足 [timeMinWidth] 时只留进度条；按钮始终在。懒加载封面态下
+/// [controller] 为 null，点按播放经 [onIdlePlay] 按需初始化并开始播放。
 class DiaryVideoControls extends StatelessWidget {
   const DiaryVideoControls({
     super.key,
@@ -26,21 +27,32 @@ class DiaryVideoControls extends StatelessWidget {
     required this.exportController,
     required this.onFullscreen,
     this.menu,
+    this.onIdlePlay,
+    this.idlePosition = Duration.zero,
+    this.idleDuration = Duration.zero,
   });
 
   final DiaryFileAttachment video;
-  final DiaryVideoPlayerController controller;
+  final DiaryVideoPlayerController? controller;
   final DiaryVideoExportController exportController;
   final VoidCallback? onFullscreen;
   final DiaryVideoEmbedMenu? menu;
+  final VoidCallback? onIdlePlay;
+  final Duration idlePosition;
+  final Duration idleDuration;
 
   /// 控件行宽于此才显示时间文字。
   static const double timeMinWidth = 300;
 
   @override
   Widget build(BuildContext context) {
-    final value = controller.player.value;
-    final ready = !controller.isLoading && !controller.hasFailed;
+    final controller = this.controller;
+    final playing = controller?.player.value.isPlaying ?? false;
+    final ready =
+        controller != null && !controller.isLoading && !controller.hasFailed;
+    final VoidCallback? onPlayTap = controller == null
+        ? onIdlePlay
+        : (ready ? () => unawaited(controller.toggle()) : null);
     final menu = this.menu;
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 2),
@@ -50,27 +62,31 @@ class DiaryVideoControls extends StatelessWidget {
             SizedBox.square(
               dimension: 44,
               child: IconButton(
-                tooltip: value.isPlaying
+                tooltip: playing
                     ? context.l10n.videoPause
                     : context.l10n.videoPlay,
-                onPressed: ready ? () => unawaited(controller.toggle()) : null,
+                onPressed: onPlayTap,
                 icon: ExpressiveIconSwap(
-                  switchKey: value.isPlaying,
+                  switchKey: playing,
                   child: FaIcon(
-                    value.isPlaying
-                        ? FontAwesomeIcons.pause
-                        : FontAwesomeIcons.play,
+                    playing ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
                     size: 16,
                   ),
                 ),
               ),
             ),
             Expanded(
-              child: DiaryVideoProgressBar(
-                controller: controller,
-                enabled: ready,
-                showTime: width >= timeMinWidth,
-              ),
+              child: controller == null
+                  ? _IdleVideoProgressBar(
+                      position: idlePosition,
+                      duration: idleDuration,
+                      showTime: width >= timeMinWidth,
+                    )
+                  : DiaryVideoProgressBar(
+                      controller: controller,
+                      enabled: ready,
+                      showTime: width >= timeMinWidth,
+                    ),
             ),
             if (menu != null)
               DiaryVideoMenuButton(
@@ -94,6 +110,52 @@ class DiaryVideoControls extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _IdleVideoProgressBar extends StatelessWidget {
+  const _IdleVideoProgressBar({
+    required this.position,
+    required this.duration,
+    required this.showTime,
+  });
+
+  final Duration position;
+  final Duration duration;
+  final bool showTime;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final durationMs = duration.inMilliseconds;
+    final positionMs = durationMs <= 0
+        ? 0.0
+        : position.inMilliseconds.clamp(0, durationMs).toDouble();
+    final displayedPosition = Duration(milliseconds: positionMs.round());
+    return Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            label: context.l10n.videoProgress,
+            child: Slider(
+              min: 0,
+              max: durationMs <= 0 ? 1 : durationMs.toDouble(),
+              value: positionMs
+                  .clamp(0, durationMs <= 0 ? 1 : durationMs)
+                  .toDouble(),
+              onChanged: null,
+            ),
+          ),
+        ),
+        if (showTime)
+          Text(
+            '${formatRecordingDuration(displayedPosition)} / ${formatRecordingDuration(duration)}',
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: colors.onSurfaceVariant),
+          ),
+      ],
     );
   }
 }

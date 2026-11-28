@@ -248,7 +248,8 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
             ? DiaryVideoPlayer(
                 key: ValueKey(video.path),
                 video: video,
-                player: widget.videoPlayerFactory?.call(video.path),
+                playerFactory: widget.videoPlayerFactory,
+                posters: widget.videoPosters,
                 exportService: widget.videoExportService,
                 maxWidth: maxWidth,
                 menu: menu,

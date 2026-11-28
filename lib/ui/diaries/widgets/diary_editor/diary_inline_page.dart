@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart' show Drag;
 import 'package:flutter/rendering.dart';
 
 import '../../models/diary_thumbnail_rows.dart';
+import '../diary_media_viewport_gate.dart';
 import 'diary_thumbnail_row.dart';
 
 /// AppFlowy 的服务 Overlay 要求有限高度；阅读页的正文则在外部滚动视图中。
@@ -83,7 +84,7 @@ class _InlinePage extends af.BlockComponentStatelessWidget {
     child: SingleChildScrollView(
       primary: false,
       physics: const NeverScrollableScrollPhysics(),
-      child: _MeasureHeight(
+      child: _InlineViewportScope(
         onHeight: onHeight,
         // 分排变了（某张图片设为 / 取消小图）也要重建，见该组件。
         child: DiaryThumbnailRowsBuilder(
@@ -127,6 +128,43 @@ class _InlineScrollProxyState extends State<_InlineScrollProxy> {
           onVerticalDragCancel: () => _drag?.cancel(),
           child: widget.child,
         );
+}
+
+class _InlineLayoutNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
+/// 包装高度测量并向子树广播布局高度变化，供内联正文里的 [DiaryMediaViewportGate]
+/// 在上方图片/块尺寸确定后重新测量与外层视口的相对位置。
+class _InlineViewportScope extends StatefulWidget {
+  const _InlineViewportScope({required this.onHeight, required this.child});
+
+  final ValueChanged<double> onHeight;
+  final Widget child;
+
+  @override
+  State<_InlineViewportScope> createState() => _InlineViewportScopeState();
+}
+
+class _InlineViewportScopeState extends State<_InlineViewportScope> {
+  final _InlineLayoutNotifier _layoutChanges = _InlineLayoutNotifier();
+
+  void _handleHeight(double height) {
+    widget.onHeight(height);
+    _layoutChanges.notify();
+  }
+
+  @override
+  void dispose() {
+    _layoutChanges.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => DiaryMediaViewportScope(
+    layoutChanges: _layoutChanges,
+    child: _MeasureHeight(onHeight: _handleHeight, child: widget.child),
+  );
 }
 
 class _MeasureHeight extends SingleChildRenderObjectWidget {

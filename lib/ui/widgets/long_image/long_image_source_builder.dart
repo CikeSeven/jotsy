@@ -42,11 +42,16 @@ class LongImageSourceBuilder extends StatefulWidget {
     super.key,
     required this.source,
     required this.builder,
+    this.enabled = true,
   });
 
   final String source;
   final Widget Function(BuildContext context, LongImageSnapshot snapshot)
   builder;
+
+  /// 是否允许发起异步文件头探测与长图切片。为 false 时（离屏媒体）仍会同步
+  /// 复用已缓存的结果以维持占位尺寸，但不会为未探测过的来源触发磁盘 I/O。
+  final bool enabled;
 
   @override
   State<LongImageSourceBuilder> createState() => _LongImageSourceBuilderState();
@@ -67,6 +72,8 @@ class _LongImageSourceBuilderState extends State<LongImageSourceBuilder> {
     if (oldWidget.source != widget.source) {
       _snapshot = LongImageSnapshot.pending;
       _resolve();
+    } else if (!oldWidget.enabled && widget.enabled) {
+      _resolve();
     }
   }
 
@@ -74,6 +81,9 @@ class _LongImageSourceBuilderState extends State<LongImageSourceBuilder> {
     final source = widget.source;
     if (ImageDimensions.isResolved(source)) {
       _applySize(source, ImageDimensions.peek(source), synchronous: true);
+      return;
+    }
+    if (!widget.enabled) {
       return;
     }
     ImageDimensions.resolve(source).then((size) {
@@ -105,6 +115,9 @@ class _LongImageSourceBuilderState extends State<LongImageSourceBuilder> {
         _withTiles(size, service.peek(source) ?? fallback()),
         synchronous: synchronous,
       );
+      return;
+    }
+    if (!widget.enabled) {
       return;
     }
     service.tilesFor(source).then((tiles) {

@@ -36,6 +36,9 @@ class LongImageTilesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (visibleEnd < visibleStart) {
+      return const SizedBox.shrink();
+    }
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final height = constraints.maxHeight;

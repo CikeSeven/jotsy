@@ -22,21 +22,23 @@ const _featuresKey = 'app.settings.app_features';
 const _featuresOn = <String, Object>{_featuresKey: '{"anniversaries":true}'};
 
 void main() {
-  final today = DateUtils.dateOnly(DateTime.now());
+  // 按用例现取当天：若在 main() 顶层冻结 today，CI 恰好跨过 UTC 零点时后续用例
+  // 的纪念日仍停在昨天，与 CalendarPage 初始化选中的今天错位。
+  DateTime currentToday() => DateUtils.dateOnly(DateTime.now());
+
   // 四年前的今天：闰日也存在，今天就是第 4 周年。
-  final together = testAnniversary(
+  Anniversary togetherOn(DateTime day) => testAnniversary(
     id: 1,
     title: '在一起',
-    baseDate: formatAnniversaryDate(
-      DateTime(today.year - 4, today.month, today.day),
-    ),
+    baseDate: formatAnniversaryDate(DateTime(day.year - 4, day.month, day.day)),
   );
-  final otherDay = today.day == 1 ? 2 : 1;
 
-  Finder cellOn(int day) => find.byWidgetPredicate(
+  int otherDayOf(DateTime day) => day.day == 1 ? 2 : 1;
+
+  Finder cellOn(DateTime month, int day) => find.byWidgetPredicate(
     (Widget widget) =>
         widget is CalendarDayCell &&
-        widget.day.month == today.month &&
+        widget.day.month == month.month &&
         widget.day.day == day,
   );
 
@@ -44,15 +46,16 @@ void main() {
     testWidgets('the card follows the selected day (${brightness.name})', (
       tester,
     ) async {
+      final today = currentToday();
       await pumpCalendarPage(
         tester,
         brightness: brightness,
         prefs: _featuresOn,
-        anniversaries: <Anniversary>[together],
+        anniversaries: <Anniversary>[togetherOn(today)],
       );
       final l10n = tester.element(find.byType(CalendarPage)).l10n;
       expect(
-        tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
+        tester.widget<CalendarDayCell>(cellOn(today, today.day)).anniversary,
         '在一起',
       );
       final section = find.byType(CalendarAnniversarySection);
@@ -69,7 +72,7 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(cellOn(otherDay));
+      await tester.tap(cellOn(today, otherDayOf(today)));
       await tester.pumpAndSettle();
       expect(section, findsNothing);
       expect(tester.takeException(), isNull);
@@ -79,9 +82,10 @@ void main() {
   testWidgets('switching anniversaries off hides marks and the card', (
     tester,
   ) async {
+    final today = currentToday();
     await pumpCalendarPage(
       tester,
-      anniversaries: <Anniversary>[together],
+      anniversaries: <Anniversary>[togetherOn(today)],
       prefs: <String, Object>{
         ..._featuresOn,
         _optionsKey: const CalendarDisplayOptions(
@@ -90,7 +94,7 @@ void main() {
       },
     );
     expect(
-      tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
+      tester.widget<CalendarDayCell>(cellOn(today, today.day)).anniversary,
       isNull,
     );
     expect(find.byType(CalendarAnniversarySection), findsNothing);
@@ -99,9 +103,10 @@ void main() {
   testWidgets('long-pressing a day offers to add an anniversary', (
     tester,
   ) async {
+    final today = currentToday();
     await pumpCalendarPage(tester, prefs: _featuresOn);
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
-    await tester.longPress(cellOn(otherDay));
+    await tester.longPress(cellOn(today, otherDayOf(today)));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.calendarDayActionAnniversary));
     await tester.pumpAndSettle();
@@ -112,7 +117,10 @@ void main() {
   testWidgets('the card opens the details; a linked diary gets a shortcut', (
     tester,
   ) async {
-    final linked = together.copyWith(linkedDiaryId: const Value('diary-1'));
+    final today = currentToday();
+    final linked = togetherOn(
+      today,
+    ).copyWith(linkedDiaryId: const Value('diary-1'));
     await pumpCalendarPage(
       tester,
       prefs: _featuresOn,
@@ -143,7 +151,10 @@ void main() {
   });
 
   testWidgets('no shortcut when the linked diary is gone', (tester) async {
-    final linked = together.copyWith(linkedDiaryId: const Value('gone'));
+    final today = currentToday();
+    final linked = togetherOn(
+      today,
+    ).copyWith(linkedDiaryId: const Value('gone'));
     await pumpCalendarPage(
       tester,
       prefs: _featuresOn,
@@ -167,13 +178,14 @@ void main() {
     testWidgets('the grid has no marks and there is no day card', (
       tester,
     ) async {
+      final today = currentToday();
       await pumpCalendarPage(
         tester,
-        anniversaries: <Anniversary>[together],
+        anniversaries: <Anniversary>[togetherOn(today)],
         prefs: featuresOff,
       );
       expect(
-        tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
+        tester.widget<CalendarDayCell>(cellOn(today, today.day)).anniversary,
         isNull,
       );
       expect(find.byType(CalendarAnniversarySection), findsNothing);
@@ -189,9 +201,10 @@ void main() {
     testWidgets('long-pressing a day offers no anniversary action', (
       tester,
     ) async {
+      final today = currentToday();
       await pumpCalendarPage(tester, prefs: featuresOff);
       final l10n = tester.element(find.byType(CalendarPage)).l10n;
-      await tester.longPress(cellOn(otherDay));
+      await tester.longPress(cellOn(today, otherDayOf(today)));
       await tester.pumpAndSettle();
       expect(find.text(l10n.calendarDayActionWrite), findsOneWidget);
       expect(find.text(l10n.calendarDayActionRange), findsOneWidget);
@@ -212,12 +225,16 @@ void main() {
   testWidgets('by default the feature is off: no menu item or marks', (
     tester,
   ) async {
-    await pumpCalendarPage(tester, anniversaries: <Anniversary>[together]);
+    final today = currentToday();
+    await pumpCalendarPage(
+      tester,
+      anniversaries: <Anniversary>[togetherOn(today)],
+    );
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
     await openCalendarMoreMenu(tester);
     expect(find.text(l10n.anniversaryListTitle), findsNothing);
     expect(
-      tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
+      tester.widget<CalendarDayCell>(cellOn(today, today.day)).anniversary,
       isNull,
     );
     expect(find.byType(CalendarAnniversarySection), findsNothing);

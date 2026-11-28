@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "window_state.h"
+
 // A class abstraction for a high DPI-aware Win32 Window. Intended to be
 // inherited from by classes that wish to specialize with custom
 // rendering and input handling
@@ -35,6 +37,19 @@ class Win32Window {
   // as appropriate for the default monitor. The window is invisible until
   // |Show| is called. Returns true if the window was created successfully.
   bool Create(const std::wstring& title, const Point& origin, const Size& size);
+
+  // Creates a win32 window restoring its saved size, position, and maximized
+  // state from disk (falling back to |default_origin| and |default_size|
+  // clamped to the primary monitor's work area), and persists subsequent
+  // changes across restarts.
+  bool CreateWithRestoredState(const std::wstring& title,
+                               const Point& default_origin,
+                               const Size& default_size);
+
+  // Captures the latest valid window geometry and flushes it to disk
+  // immediately. Safe to call when observing WM_CLOSE / WM_ENDSESSION before
+  // Flutter's exit-guard decides whether to close the window.
+  void FlushWindowState();
 
   // Show the current window. Returns true if the window was successfully shown.
   bool Show();
@@ -93,7 +108,20 @@ class Win32Window {
   // Update the window frame's theme to match the system theme.
   static void UpdateTheme(HWND const window);
 
+  bool CaptureNormalWindowState(HWND hwnd);
+  void ScheduleWindowStateSave(HWND hwnd);
+  void CancelWindowStateSaveTimer(HWND hwnd);
+  void CommitWindowStateToDisk();
+
   bool quit_on_close_ = false;
+  bool persist_window_state_ = false;
+  bool start_maximized_ = false;
+  bool has_shown_ = false;
+  bool in_size_move_ = false;
+  bool has_tracked_state_ = false;
+  bool has_last_saved_state_ = false;
+  WindowState tracked_state_;
+  WindowState last_saved_state_;
 
   // window handle for top level window.
   HWND window_handle_ = nullptr;

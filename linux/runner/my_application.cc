@@ -6,6 +6,7 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "window_state_gtk.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -79,14 +80,15 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "Jotsy");
   }
 
-  gtk_window_set_default_size(window, kDefaultWindowWidth,
-                              kDefaultWindowHeight);
   // Geometry hints are honoured by both X11 window managers and Wayland
   // compositors (GTK forwards them as xdg_toplevel min size).
   GdkGeometry geometry = {};
   geometry.min_width = kMinWindowWidth;
   geometry.min_height = kMinWindowHeight;
   gtk_window_set_geometry_hints(window, nullptr, &geometry, GDK_HINT_MIN_SIZE);
+  RestoreAndTrackLinuxWindowState(window, kDefaultWindowWidth,
+                                  kDefaultWindowHeight, kMinWindowWidth,
+                                  kMinWindowHeight);
   set_window_icon(window);
   gtk_widget_show(GTK_WIDGET(window));
 

@@ -304,12 +304,19 @@ void main() {
           AppDataLocationTargetStatus.validEmpty,
         );
 
-        // Default support directory with only shared_preferences & data_location is validEmpty.
+        // Default support directory with only shared_preferences, data_location,
+        // and window_state files is validEmpty.
         File(
           p.join(supportDir.path, 'shared_preferences.json'),
         ).writeAsStringSync('{}');
         File(
           p.join(supportDir.path, dataLocationConfigFileName),
+        ).writeAsStringSync('{}');
+        File(
+          p.join(supportDir.path, windowStateFileName),
+        ).writeAsStringSync('{"version":1,"width":1280,"height":800}');
+        File(
+          p.join(supportDir.path, '$windowStateFileName.tmp'),
         ).writeAsStringSync('{}');
         expect(
           (await store.inspectTarget(
@@ -318,6 +325,22 @@ void main() {
             defaultRoot: supportDir.path,
           )).status,
           AppDataLocationTargetStatus.validEmpty,
+        );
+
+        // Outside the default support directory, window_state.json still blocks.
+        final nonDefaultWithWindowState = Directory(
+          p.join(tempRoot.path, 'non_default_window_state'),
+        )..createSync();
+        File(
+          p.join(nonDefaultWithWindowState.path, windowStateFileName),
+        ).writeAsStringSync('{}');
+        expect(
+          (await store.inspectTarget(
+            nonDefaultWithWindowState.path,
+            currentRoot: current.path,
+            defaultRoot: supportDir.path,
+          )).status,
+          AppDataLocationTargetStatus.invalidNonEmptyOther,
         );
 
         final nonEmptyOther = Directory(p.join(tempRoot.path, 'other_files'))

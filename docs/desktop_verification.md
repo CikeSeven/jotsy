@@ -5,6 +5,8 @@
 ## 自动回归
 
 - `test/core/services/desktop_exit_guard_test.dart`：等待保存、重复关闭共用任务、失败/异常取消、注销和手机行为。
+- `test/core/services/desktop_window_state_native_test.dart`：Linux 与 Windows 原生 C++ 窗口状态 JSON 编解码、Wayland 无位置序列化、Per-Monitor DPI 缩放、DWM 贴边容差、最小尺寸约束与外接屏断开回退主屏。
+- `test/core/services/app_data_location_test.dart`：默认应用支持目录存在 `window_state.json` / `.tmp` 时不阻塞恢复默认数据位置。
 - `test/ui/diaries/pages/desktop_exit_save_test.dart`：桌面平台下输入后立即关闭、只读数据库导致的失败与重试、新建草稿只保存一份。
 - `test/ui/diaries/controllers/publish_diary_controller_test.dart`：发布面板最后改动的关闭补存、写入失败与重试。
 - `test/ui/diaries/controllers/diary_todo_autosave_controller_test.dart`：退出补存、写入期间勾回原状态、保存失败与卸载时的串行尾写入。
@@ -24,6 +26,9 @@
 | 在编辑页输入后，再启动应用；Linux 可从菜单和终端分别启动，Windows 可交替运行安装版和便携版。 | 仍只有原来的应用进程/窗口，回到当前编辑会话，不产生另一份数据库连接。 |
 | 最小化应用，再次启动。 | 原窗口恢复，当前内容和窗口大小保留。 |
 | 正常关闭后再次启动。 | 能正常重新运行，不残留单实例锁。 |
+| 拖动并缩放窗口至自定义大小与位置后关闭，再重新启动（明暗主题均测）。 | 窗口直接以关闭前的大小与位置打开，首帧不跳动（Linux Wayland 恢复大小）。 |
+| 最大化窗口后关闭，再重新启动并点击还原按钮。 | 启动时直接最大化，点还原后回到最大化前的普通大小与位置。 |
+| 将窗口拖至外接屏关闭，断开外接屏后重启；或最小化时从任务栏关闭再重启。 | 断屏后窗口自动居中回到主屏可见工作区；最小化关闭不覆盖正常位置且重启正常显示。 |
 
 数据库写入失败由内存数据库的 `PRAGMA query_only` 与拒绝更新的触发器在自动测试中模拟，无需改动真实日记目录权限。
 

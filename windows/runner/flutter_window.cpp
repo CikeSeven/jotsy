@@ -51,6 +51,12 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  // Observe close/shutdown before Flutter's lifecycle handler intercepts
+  // WM_CLOSE for DesktopExitGuard, without consuming the message.
+  if (message == WM_CLOSE || (message == WM_ENDSESSION && wparam != 0)) {
+    FlushWindowState();
+  }
+
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =

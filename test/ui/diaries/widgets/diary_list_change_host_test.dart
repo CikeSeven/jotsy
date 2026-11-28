@@ -150,6 +150,30 @@ void main() {
     expect(frame.exiting, isEmpty);
   });
 
+  testWidgets(
+    'items still in pendingHide stay exiting until host finishes hiding',
+    (tester) async {
+      await pumpList(tester, <String>['a', 'b', 'c'], pendingHide: {'b'});
+      final cBefore = topOf(tester, 'c');
+
+      // 数据流先一步移走 b，但宿主仍在播收起动画（pendingHide 仍含 b）：
+      // 继续保留在原位并标为 exiting，避免收起动画刚开播就被截断。
+      await pumpList(tester, <String>['a', 'c'], pendingHide: {'b'});
+      expect(idsOf(frame), <String>['a', 'b', 'c']);
+      expect(frame.exiting, <String>{'b'});
+      expect(topOf(tester, 'c'), moreOrLessEquals(cBefore));
+
+      // 宿主收起计时结束，从 pendingHide 移出 b：同帧拿掉并让后续项让位。
+      await pumpList(tester, <String>['a', 'c']);
+      expect(idsOf(frame), <String>['a', 'c']);
+      expect(frame.exiting, isEmpty);
+      expect(frame.makeRoom!.isActive, isTrue);
+
+      await tester.pumpAndSettle();
+      expect(topOf(tester, 'c'), lessThan(cBefore));
+    },
+  );
+
   testWidgets('new items in the built range enter; the marks clear later', (
     tester,
   ) async {
@@ -161,6 +185,22 @@ void main() {
     await tester.pump(duration);
     expect(frame.entering, isEmpty);
   });
+
+  testWidgets(
+    'off-screen items above a scrolled viewport are not marked as entering',
+    (tester) async {
+      final ids = <String>[for (var i = 0; i < 40; i++) 'd$i'];
+      await pumpList(tester, ids);
+      scroll.jumpTo(1800);
+      await tester.pumpAndSettle();
+
+      // 视口已经滚到 d18 附近；往顶部插入一条屏外日记不应把 d0..d15 标成入场。
+      await pumpList(tester, <String>['new-top', ...ids]);
+      expect(frame.entering, isNot(contains('new-top')));
+      expect(frame.entering, isNot(contains('d0')));
+      expect(frame.entering, isNot(contains('d10')));
+    },
+  );
 
   testWidgets('appending a page neither moves nor enters anything', (
     tester,

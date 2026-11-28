@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -278,7 +279,8 @@ final pagedDiariesProvider = StreamProvider.autoDispose
               limit: query.limit,
               hasMore: hasMore,
             );
-          });
+          })
+          .distinct(_samePagedDiariesResult);
     });
 
 /// 日记页首屏窗口大小：日记页的初始窗口与启动预热共用，保证命中同一个查询。
@@ -365,7 +367,8 @@ final searchDiariesProvider = StreamProvider.autoDispose
               limit: query.limit,
               hasMore: hasMore,
             );
-          });
+          })
+          .distinct(_samePagedDiariesResult);
     });
 
 /// 搜索结果的总篇数（“共 N 篇”）：与 [searchDiariesProvider] 同一筛选与范围，
@@ -383,3 +386,25 @@ final searchDiaryCountProvider = StreamProvider.autoDispose
         filter: query.filter,
       );
     });
+
+/// 比较两次分页流发射的结果是否完全一致：避免无关表写入（草稿自动保存、
+/// 归档或其它日记本内的修改）引起当前可见列表反复重建与让位重绘。
+bool _samePagedDiariesResult(PagedDiariesResult a, PagedDiariesResult b) {
+  if (identical(a, b)) return true;
+  if (a.hasMore != b.hasMore ||
+      a.limit != b.limit ||
+      a.items.length != b.items.length) {
+    return false;
+  }
+  for (var i = 0; i < a.items.length; i++) {
+    final left = a.items[i];
+    final right = b.items[i];
+    if (identical(left, right)) continue;
+    if (left.diary != right.diary ||
+        !listEquals(left.tags, right.tags) ||
+        !listEquals(left.notebooks, right.notebooks)) {
+      return false;
+    }
+  }
+  return true;
+}

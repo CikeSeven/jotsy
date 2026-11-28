@@ -1,10 +1,14 @@
+import 'dart:collection';
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../app/theme/expressive_motion.dart';
+import 'sliver_stable_masonry_grid.dart';
 
 part 'list_make_room_slivers.dart';
 
@@ -154,6 +158,22 @@ class MakeRoomController extends ChangeNotifier {
     return from.keys.toSet();
   }
 
+  /// 列表 sliver 因视口上方条目增删而校正滚动偏移（[correction] 加在
+  /// `scrollOffset` 上）时调用：视口内未动的项其内容坐标会同幅平移
+  /// [correction]，同步平移 [_pending] 里的起点，避免把坐标系重算误判成全屏
+  /// 让位动画。
+  void adjustPendingForScrollCorrection(
+    double correction, {
+    Axis axis = Axis.vertical,
+  }) {
+    final pending = _pending;
+    if (pending == null || correction == 0) return;
+    final shift = axis == Axis.vertical
+        ? Offset(0, correction)
+        : Offset(correction, 0);
+    pending.updateAll((_, Offset origin) => origin + shift);
+  }
+
   /// 量出 [_pending] 里各项的新位置（绘制阶段调用，此时布局都已排好）。
   void _measurePending() {
     final from = _pending;
@@ -287,8 +307,14 @@ class _RenderMakeRoomItem extends RenderProxyBox {
     markNeedsPaint();
   }
 
-  /// 只在让位途中重画（平移图层）；平时进度变化与它无关。
-  void _changed() => markNeedsPaint();
+  /// 只在等待测量、自身正在位移或需要归零时重画；让位途中未移动的卡片不跟着重画。
+  void _changed() {
+    if (_controller._pending != null ||
+        _controller._deltas.containsKey(tag) ||
+        _current != Offset.zero) {
+      markNeedsPaint();
+    }
+  }
 
   @override
   void attach(PipelineOwner owner) {

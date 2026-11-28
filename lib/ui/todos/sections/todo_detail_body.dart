@@ -24,6 +24,7 @@ import '../controllers/todo_focus_flow.dart';
 import '../controllers/todo_field_editors.dart';
 import '../providers/todo_providers.dart';
 import '../viewmodels/todo_focus_format.dart';
+import '../viewmodels/todo_series_rows.dart';
 import '../widgets/todo_detail_pills.dart';
 import '../widgets/todo_note_extras.dart';
 import '../widgets/todo_streak_card.dart';
@@ -184,6 +185,22 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
     );
   }
 
+  Future<void> _toggleDone(TodoRow row) {
+    final written = Completer<void>();
+    unawaited(
+      toggleTodoDone(
+        context,
+        _database,
+        row,
+        onWritten: () {
+          if (!written.isCompleted) written.complete();
+        },
+        onSwitchedTodoId: widget.onOpenTodo,
+      ),
+    );
+    return written.future;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -205,7 +222,13 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
     final focusSeconds = focusOn
         ? ref.watch(todoFocusSecondsProvider(row.todoId)).value ?? 0
         : 0;
+    final seriesId = TodoSeriesRows.seriesOf(row);
+    final series = seriesId == null
+        ? null
+        : ref.watch(todoProvider(seriesId)).value;
     final repeating = decodeTodoRepeat(row.repeat) != null;
+    final streakTodoId = seriesId ?? (repeating ? row.todoId : null);
+    final streakMaster = series ?? (repeating ? row : null);
     // 内容错峰入场：每一块比上一块晚一点（只在打开时演一次，之后数据
     // 变化不再演）。
     var order = 0;
@@ -221,7 +244,7 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
             controller: _title,
             focusNode: _titleFocus,
             onChanged: () => _titleWriter.schedule(_title.text),
-            onToggle: () => unawaited(toggleTodoDone(context, _database, row)),
+            onToggle: () => _toggleDone(row),
             onDelete: _delete,
             onDuplicate: () => unawaited(_duplicate(row, today)),
             onFocus: focusOn && row.completedAt == null
@@ -229,14 +252,18 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
                 : null,
           ),
         ),
-        const SizedBox(height: AppSpacing.m),
-        enter(
-          TodoDetailPills(
-            row: row,
-            today: today,
-            onOpenTodo: widget.onOpenTodo,
+        if (series != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.s),
+          enter(
+            TodoOccurrenceBanner(
+              series: series,
+              today: today,
+              onOpenNext: () => widget.onOpenTodo(series.todoId),
+            ),
           ),
-        ),
+        ],
+        const SizedBox(height: AppSpacing.m),
+        enter(TodoDetailPills(row: row, today: today, series: series)),
         const SizedBox(height: AppSpacing.xl),
         enter(
           TodoStepsCard(
@@ -248,7 +275,7 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
                 unawaited(_database.setTodoStepDone(row.todoId, stepId, value)),
             onConvert: (String stepId) => unawaited(_convertStep(stepId)),
             onCompleteTodo: row.completedAt == null
-                ? () => unawaited(toggleTodoDone(context, _database, row))
+                ? () => unawaited(_toggleDone(row))
                 : null,
           ),
         ),
@@ -288,9 +315,15 @@ class _TodoDetailBodyState extends ConsumerState<TodoDetailBody>
             ),
           ),
         ),
-        if (repeating) ...<Widget>[
+        if (streakTodoId != null) ...<Widget>[
           const SizedBox(height: AppSpacing.m),
-          enter(TodoStreakCard(todoId: row.todoId, today: today)),
+          enter(
+            TodoStreakCard(
+              todoId: streakTodoId,
+              today: today,
+              masterRow: streakMaster,
+            ),
+          ),
         ],
         const SizedBox(height: AppSpacing.l),
         enter(

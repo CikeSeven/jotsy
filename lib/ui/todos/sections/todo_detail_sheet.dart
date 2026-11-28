@@ -32,10 +32,10 @@ Future<void> showTodoDetailSheet(BuildContext context, String todoId) {
         : null,
     builder: (BuildContext sheetContext) => _TodoDetailSheet(
       todoId: todoId,
-      onDelete: () {
+      onDeleteTodo: (String id) {
         Navigator.of(sheetContext).pop();
         if (navigatorContext.mounted) {
-          unawaited(deleteTodoWithUndo(navigatorContext, database, todoId));
+          unawaited(deleteTodoWithUndo(navigatorContext, database, id));
         }
       },
     ),
@@ -43,10 +43,10 @@ Future<void> showTodoDetailSheet(BuildContext context, String todoId) {
 }
 
 class _TodoDetailSheet extends StatefulWidget {
-  const _TodoDetailSheet({required this.todoId, required this.onDelete});
+  const _TodoDetailSheet({required this.todoId, required this.onDeleteTodo});
 
   final String todoId;
-  final VoidCallback onDelete;
+  final ValueChanged<String> onDeleteTodo;
 
   @override
   State<_TodoDetailSheet> createState() => _TodoDetailSheetState();
@@ -56,6 +56,7 @@ class _TodoDetailSheetState extends State<_TodoDetailSheet> {
   static const double _initialSize = 0.62;
 
   final DraggableScrollableController _sheet = DraggableScrollableController();
+  late String _todoId = widget.todoId;
 
   @override
   void dispose() {
@@ -83,6 +84,14 @@ class _TodoDetailSheetState extends State<_TodoDetailSheet> {
     }
   }
 
+  /// 在同一个面板内原地切换到另一条待办（如已完成副本跳到下一次循环、或取消
+  /// 完成触发回滚后切到原待办），不叠加第二层底部面板；切换后把滚动归零，
+  /// 新的 [TodoDetailBody] 按自己的错峰入场过渡。
+  void _switchTodo(String id) {
+    if (id == _todoId || !mounted) return;
+    setState(() => _todoId = id);
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -98,11 +107,11 @@ class _TodoDetailSheetState extends State<_TodoDetailSheet> {
               backgroundColor: Colors.transparent,
               body: KeyboardInsetPadding(
                 child: TodoDetailBody(
-                  todoId: widget.todoId,
+                  key: ValueKey<String>('todo_detail_$_todoId'),
+                  todoId: _todoId,
                   scrollController: scrollController,
-                  onDelete: widget.onDelete,
-                  onOpenTodo: (String id) =>
-                      unawaited(showTodoDetailSheet(context, id)),
+                  onDelete: () => widget.onDeleteTodo(_todoId),
+                  onOpenTodo: _switchTodo,
                   onEditingFocus: _expand,
                 ),
               ),

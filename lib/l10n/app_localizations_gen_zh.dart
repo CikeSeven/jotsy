@@ -14543,6 +14543,32 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String todoStreakRangeWeeks(int weeks) {
+    return '最近 $weeks 周';
+  }
+
+  @override
+  String get todoStreakLegendNotDone => '未完成';
+
+  @override
+  String get todoStreakLegendDone => '已完成';
+
+  @override
+  String todoStreakDayCompleted(String date) {
+    return '$date · 已完成';
+  }
+
+  @override
+  String todoStreakDayCompletedTimes(String date, int count) {
+    return '$date · 完成 $count 次';
+  }
+
+  @override
+  String todoStreakDayMissed(String date) {
+    return '$date · 未完成';
+  }
+
+  @override
   String get todoStepsAllDoneComplete => '顺便完成这条待办';
 
   @override
@@ -14578,9 +14604,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String todoSeriesOf(String title) {
-    return '属于「$title」';
+  String todoOccurrenceContext(String date) {
+    return '已完成本次循环 · 下一次：$date';
   }
+
+  @override
+  String get todoOccurrenceContextEnded => '已完成本次循环';
+
+  @override
+  String get todoViewNextOccurrence => '查看下一次';
+
+  @override
+  String get todoUncompletedRolledBackNotice => '已取消完成，恢复到本次循环';
+
+  @override
+  String get todoUncompletedStandaloneNotice => '已恢复为单次待办，原重复计划不受影响';
 
   @override
   String todoQuickAddedCount(int count) {

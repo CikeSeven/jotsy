@@ -115,8 +115,9 @@ class ReopenTodosTool extends AiTool {
 
   @override
   String get description =>
-      'Mark completed to-dos (by id) as not done again. A completed '
-      'occurrence of a repeating to-do becomes a separate open to-do.';
+      'Mark completed to-dos (by id) as not done again. Reopening the latest '
+      'completed occurrence of a repeating to-do rolls the series back to that '
+      'date; an older occurrence reopens as a one-time to-do.';
 
   @override
   AiObjectSchema get schema => const AiObjectSchema(
@@ -152,18 +153,26 @@ class ReopenTodosTool extends AiTool {
     if (done.isEmpty) {
       throw const AiToolFailure('None of these to-dos is completed.');
     }
+    final uncompletions = <TodoUncompletion>[];
     for (final row in done) {
-      await database.uncompleteTodo(row.todoId);
+      final result = await database.uncompleteTodo(row.todoId);
+      if (result != null) uncompletions.add(result);
     }
     return AiToolOutcome(
-      data: <String, Object?>{'ok': true, 'reopened': done.length},
+      data: <String, Object?>{'ok': true, 'reopened': uncompletions.length},
       summary: context.l10n.aiToolDone,
-      subjects: [for (final row in done) aiTodoSubject(row)],
+      subjects: [
+        for (final item in uncompletions)
+          aiTodoSubject(item.rolledBackSeriesBefore ?? item.before),
+      ],
       undo: <String, Object?>{
-        'completed': <String, Object?>{
-          for (final row in done)
-            row.todoId: row.completedAt!.millisecondsSinceEpoch,
-        },
+        'uncompletions': [
+          for (final item in uncompletions)
+            <String, Object?>{
+              'before': item.before.toJson(),
+              'seriesBefore': ?item.rolledBackSeriesBefore?.toJson(),
+            },
+        ],
       },
     );
   }
@@ -175,7 +184,27 @@ class ReopenTodosTool extends AiTool {
     bool force = false,
   }) async {
     final database = container.read(appDatabaseProvider);
-    final completed = (data['completed']! as Map).cast<String, Object?>();
+    final rawList = data['uncompletions'] as List?;
+    if (rawList != null) {
+      // 倒序撤：若连续回滚了多期，先撤后回滚的那一期。
+      for (final raw in rawList.reversed) {
+        final map = (raw as Map).cast<String, Object?>();
+        final seriesRaw = map['seriesBefore'];
+        await database.undoTodoUncompletion(
+          TodoUncompletion(
+            before: TodoRow.fromJson(
+              (map['before']! as Map).cast<String, dynamic>(),
+            ),
+            rolledBackSeriesBefore: seriesRaw is Map
+                ? TodoRow.fromJson(seriesRaw.cast<String, dynamic>())
+                : null,
+          ),
+        );
+      }
+      return;
+    }
+    final completed = (data['completed'] as Map?)?.cast<String, Object?>();
+    if (completed == null) return;
     for (final MapEntry(:key, :value) in completed.entries) {
       await database.restoreTodoCompletedAt(
         key,

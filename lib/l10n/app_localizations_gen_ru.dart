@@ -17251,6 +17251,48 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String todoStreakRangeWeeks(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: 'Последние $weeks недели',
+      many: 'Последние $weeks недель',
+      few: 'Последние $weeks недели',
+      one: 'Последняя $weeks неделя',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todoStreakLegendNotDone => 'Нет';
+
+  @override
+  String get todoStreakLegendDone => 'Готово';
+
+  @override
+  String todoStreakDayCompleted(String date) {
+    return '$date · Выполнено';
+  }
+
+  @override
+  String todoStreakDayCompletedTimes(String date, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$date · Выполнено $count раза',
+      many: '$date · Выполнено $count раз',
+      few: '$date · Выполнено $count раза',
+      one: '$date · Выполнено $count раз',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todoStreakDayMissed(String date) {
+    return '$date · Не выполнено';
+  }
+
+  @override
   String get todoStepsAllDoneComplete => 'Завершить и эту задачу';
 
   @override
@@ -17302,9 +17344,23 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String todoSeriesOf(String title) {
-    return 'Из серии «$title»';
+  String todoOccurrenceContext(String date) {
+    return 'Этот раз выполнен · Следующий: $date';
   }
+
+  @override
+  String get todoOccurrenceContextEnded => 'Выполненный повтор задачи';
+
+  @override
+  String get todoViewNextOccurrence => 'Следующий';
+
+  @override
+  String get todoUncompletedRolledBackNotice =>
+      'Выполнение отменено, задача возвращена к этому повтору';
+
+  @override
+  String get todoUncompletedStandaloneNotice =>
+      'Восстановлено как разовая задача; расписание повторов не изменено';
 
   @override
   String todoQuickAddedCount(int count) {

@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/database/app_database.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_modal/app_dialog.dart';
+import '../viewmodels/todo_series_rows.dart';
 import '../widgets/todo_labels.dart';
 import 'todo_completion_undo.dart';
 
@@ -19,18 +20,38 @@ const Duration _undoDuration = Duration(seconds: 5);
 
 /// 勾选 / 取消勾选一条待办。完成时给出可撤销的提示：重复待办写明下一次的
 /// 日子；给了 [undo]（待办页的列表）时经它与接连完成的几条合并成一条提示。
-/// 取消完成不提示（再点一下就回去了）。[onWritten] 在写库之后、弹提示之前
-/// 调用（待办页据此结束“收起中”，不必等提示关闭）。
+/// 取消完成重复待办的已完成副本时：若回滚到了原待办，经 [onSwitchedTodoId]
+/// 让详情面板原地切回原待办并给出可撤销提示；若为更早的历史记录恢复为单次
+/// 待办，明确提示不影响原重复计划。普通待办取消完成不提示（再点一下就回
+/// 去了）。[onWritten] 在写库之后、弹提示之前调用（待办页据此结束“收起中”，
+/// 详情头部据此释放勾选动画锁，不必等提示关闭）。
 Future<void> toggleTodoDone(
   BuildContext context,
   AppDatabase database,
   TodoRow row, {
   VoidCallback? onWritten,
   TodoCompletionUndo? undo,
+  ValueChanged<String>? onSwitchedTodoId,
 }) async {
   if (row.completedAt != null) {
-    await database.uncompleteTodo(row.todoId);
+    final uncompletion = await database.uncompleteTodo(row.todoId);
     onWritten?.call();
+    if (uncompletion == null) return;
+    if (uncompletion.rolledBack) {
+      onSwitchedTodoId?.call(uncompletion.resultingTodoId);
+    }
+    if (!context.mounted) return;
+    if (TodoSeriesRows.seriesOf(uncompletion.before) == null) return;
+    final l10n = context.l10n;
+    final message = uncompletion.rolledBack
+        ? l10n.todoUncompletedRolledBackNotice
+        : l10n.todoUncompletedStandaloneNotice;
+    final undone = await showTodoUndoHint(context, message);
+    if (!undone) return;
+    await database.undoTodoUncompletion(uncompletion);
+    if (uncompletion.rolledBack) {
+      onSwitchedTodoId?.call(uncompletion.before.todoId);
+    }
     return;
   }
   final completion = await database.completeTodo(row.todoId);

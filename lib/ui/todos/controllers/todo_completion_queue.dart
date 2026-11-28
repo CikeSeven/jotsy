@@ -28,8 +28,12 @@ class TodoCompletionQueue {
   /// 接连完成的几条合并成一条撤销提示。
   final TodoCompletionUndo undo;
 
-  /// 收起中的行 → 开始时这一行的 `updated_at`。
-  final Map<String, DateTime> _leaving = <String, DateTime>{};
+  /// 收起中的行 → 开始时的快照（截止日、metadata 与 `updated_at`）。
+  /// SQLite / Drift 时间精度为秒，同一秒内连续完成重复待办时 `updated_at`
+  /// 可能相同，所以同时比对 `dueDate` 与 `metadata`（`repeatDone` 会递增）。
+  final Map<String, ({String? dueDate, String metadata, DateTime updatedAt})>
+  _leaving =
+      <String, ({String? dueDate, String metadata, DateTime updatedAt})>{};
 
   /// 已经写库、等新数据到达再去掉的行。
   final Set<String> _written = <String>{};
@@ -48,7 +52,11 @@ class TodoCompletionQueue {
       context,
       TodoCompleteMotion.collapse,
     );
-    _leaving[id] = row.updatedAt;
+    _leaving[id] = (
+      dueDate: row.dueDate,
+      metadata: row.metadata,
+      updatedAt: row.updatedAt,
+    );
     onChanged();
     _pending[id] = (
       timer: Timer(collapse, () async {
@@ -84,7 +92,13 @@ class TodoCompletionQueue {
     final byId = <String, TodoRow>{for (final row in open) row.todoId: row};
     _written.removeWhere((String id) {
       final current = byId[id];
-      final settled = current == null || current.updatedAt != _leaving[id];
+      final before = _leaving[id];
+      final settled =
+          current == null ||
+          before == null ||
+          current.dueDate != before.dueDate ||
+          current.metadata != before.metadata ||
+          current.updatedAt != before.updatedAt;
       if (settled) _leaving.remove(id);
       return settled;
     });

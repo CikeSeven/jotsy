@@ -145,8 +145,16 @@ class _TodoTileState extends State<TodoTile>
   void didUpdateWidget(TodoTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     final wasDone = oldWidget.row.completedAt != null;
-    if (wasDone != _done || oldWidget.row.todoId != widget.row.todoId) {
-      // 数据说了算：写库完成、撤销或同步改了完成状态时复位动效。
+    final advanced =
+        _checking &&
+        !_done &&
+        (oldWidget.row.dueDate != widget.row.dueDate ||
+            oldWidget.row.updatedAt != widget.row.updatedAt);
+    if (wasDone != _done ||
+        oldWidget.row.todoId != widget.row.todoId ||
+        advanced) {
+      // 数据说了算：写库完成（含重复待办推进到下一次）、撤销或同步改动时复位
+      // 动效，避免重复待办留在同一列表视图里时方框与删除线永久卡死。
       _checking = false;
       _check.value = _done ? 1 : 0;
     }

@@ -153,6 +153,14 @@ abstract final class TodoMetadataKeys {
   /// 重复待办的已完成副本：原待办的业务 id。
   static const String repeatOf = 'repeatOf';
 
+  /// 重复待办的已完成副本：这次完成把原待办推进到的下一个截止日（`YYYY-MM-DD`），
+  /// 供取消完成时判断原待办是否仍停在那一天、能否安全回滚。
+  static const String repeatNextDue = 'repeatNextDue';
+
+  /// 重复待办的已完成副本：按完成日重复时，推进前原重复规则的起点（`YYYY-MM-DD`），
+  /// 供取消完成回滚时一并恢复。
+  static const String repeatPrevAnchor = 'repeatPrevAnchor';
+
   /// 重复待办：已经完成的次数（含已结束的那次），用于“一共重复 N 次”。
   static const String repeatDone = 'repeatDone';
 

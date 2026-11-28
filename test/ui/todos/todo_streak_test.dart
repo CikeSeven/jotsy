@@ -36,6 +36,27 @@ void main() {
     // 最后一列是本周：周一（11-23）起，周四完成一次，周六、周日还没到。
     final week = streak.days.sublist(streak.days.length - 7);
     expect(week, <int>[0, 0, 0, 1, 0, -1, -1]);
+    expect(streak.dateAt(streak.weeks - 1, 3), DateTime(2026, 11, 26));
+    expect(streak.countAt(streak.weeks - 1, 3), 1);
+  });
+
+  test('streak includes completed master row for finite repeating series', () {
+    final today = DateTime(2026, 11, 27);
+    final master = _copy('2026-11-27', DateTime(2026, 11, 27, 9));
+    final streak = TodoStreak.build(
+      <TodoRow>[_copy('2026-11-26', DateTime(2026, 11, 26, 9))],
+      today,
+      masterRow: master,
+    );
+    expect(streak.total, 2);
+    expect(streak.streak, 2);
+    expect(streak.countAt(streak.weeks - 1, 4), 1);
+  });
+
+  test('weeksForWidth scales cleanly between 12 and 24 weeks', () {
+    expect(TodoStreak.weeksForWidth(200), 12);
+    expect(TodoStreak.weeksForWidth(300), greaterThanOrEqualTo(15));
+    expect(TodoStreak.weeksForWidth(900), 24);
   });
 
   test('note links are found once each, without trailing punctuation', () {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app_surface/models/app_surface_enums.dart';
 import '../../../app_surface/widgets/app_page_backdrop.dart';
+import '../../../widgets/snack_bar_clearance.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import 'diary_preview_host.dart';
@@ -122,54 +123,56 @@ class DiaryPreviewSurface extends StatelessWidget {
     final overlay = this.overlay;
     final bottomBar = this.bottomBar;
     final chrome = this.chrome;
-    final scaffold = Scaffold(
-      backgroundColor: diaryPreviewScaffoldColor(context, resolved),
-      body: SafeArea(
-        top: false,
-        child: Stack(
-          children: <Widget>[
-            if (chrome == null)
-              content
-            else
-              DiaryPreviewTopBarHost(
-                entry: DiaryPreviewChromeEntry(
-                  chrome: chrome,
-                  resolved: resolved,
-                  barColor: diaryPreviewPageColors(context, resolved).bar,
-                  scrollController: scrollController,
+    final scaffold = SnackBarClearanceHost(
+      child: Scaffold(
+        backgroundColor: diaryPreviewScaffoldColor(context, resolved),
+        body: SafeArea(
+          top: false,
+          child: Stack(
+            children: <Widget>[
+              if (chrome == null)
+                content
+              else
+                DiaryPreviewTopBarHost(
+                  entry: DiaryPreviewChromeEntry(
+                    chrome: chrome,
+                    resolved: resolved,
+                    barColor: diaryPreviewPageColors(context, resolved).bar,
+                    scrollController: scrollController,
+                  ),
+                  child: content,
                 ),
-                child: content,
-              ),
-            // 叠层带 key：开关某一层时其余层的状态不会错位复用。
-            if (page.progress == DiaryPreviewProgress.line)
-              Positioned(
-                key: const ValueKey<String>('progress'),
-                top: MediaQuery.paddingOf(context).top,
-                left: 0,
-                right: 0,
-                child: DiaryPreviewProgressLine(controller: scrollController),
-              ),
-            if (page.backToTop && bottomBar == null)
-              PositionedDirectional(
-                key: const ValueKey<String>('backToTop'),
-                end: 16,
-                bottom: 16,
-                child: DiaryPreviewBackToTop(controller: scrollController),
-              ),
-            if (bottomBar != null)
-              Positioned(
-                key: const ValueKey<String>('bottomBar'),
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: bottomBar,
-              ),
-            if (overlay != null)
-              Positioned.fill(
-                key: const ValueKey<String>('overlay'),
-                child: overlay,
-              ),
-          ],
+              // 叠层带 key：开关某一层时其余层的状态不会错位复用。
+              if (page.progress == DiaryPreviewProgress.line)
+                Positioned(
+                  key: const ValueKey<String>('progress'),
+                  top: MediaQuery.paddingOf(context).top,
+                  left: 0,
+                  right: 0,
+                  child: DiaryPreviewProgressLine(controller: scrollController),
+                ),
+              if (page.backToTop && bottomBar == null)
+                PositionedDirectional(
+                  key: const ValueKey<String>('backToTop'),
+                  end: 16,
+                  bottom: 16,
+                  child: DiaryPreviewBackToTop(controller: scrollController),
+                ),
+              if (bottomBar != null)
+                Positioned(
+                  key: const ValueKey<String>('bottomBar'),
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: SnackBarClearanceArea(child: bottomBar),
+                ),
+              if (overlay != null)
+                Positioned.fill(
+                  key: const ValueKey<String>('overlay'),
+                  child: overlay,
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -15,6 +15,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_video_export_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_surface.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/desktop_page_arrows.dart';
+import 'package:node_diary/ui/widgets/snack_bar_clearance.dart';
 import 'package:node_diary/ui/widgets/swipe_dismiss_viewer.dart';
 import 'package:video_player/video_player.dart';
 
@@ -213,36 +214,45 @@ class _DiaryVideoFullscreenPageState extends State<DiaryVideoFullscreenPage> {
           enabled: !_zoomed,
           onDismiss: () => Navigator.of(context).pop(),
           child: picture,
-          // 页面没有 Scaffold：Material 给滑条、按钮提供墨水层与默认文字样式。
-          builder: (context, swipeOpacity, content) => Material(
+          // 用透明 Scaffold 承载页面内提示条（导出成功/失败），并避让底部播放栏，
+          // 与看图页（ImageViewerPage）的结构一致。
+          builder: (context, swipeOpacity, content) => ColoredBox(
             color: Theme.of(
               context,
             ).colorScheme.surface.withValues(alpha: swipeOpacity),
-            child: Stack(
-              children: <Widget>[
-                Positioned.fill(child: content),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: _ChromeFade(
-                    visible: chrome,
-                    swipeOpacity: swipeOpacity,
-                    child: _buildTopBar(context),
-                  ),
-                ),
-                if (!failed)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: _ChromeFade(
-                      visible: chrome,
-                      swipeOpacity: swipeOpacity,
-                      child: _buildBottomBar(context),
+            child: SnackBarClearanceHost(
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: Stack(
+                  children: <Widget>[
+                    Positioned.fill(child: content),
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: _ChromeFade(
+                        visible: chrome,
+                        swipeOpacity: swipeOpacity,
+                        child: _buildTopBar(context),
+                      ),
                     ),
-                  ),
-              ],
+                    if (!failed)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: SnackBarClearanceArea(
+                          enabled: chrome,
+                          child: _ChromeFade(
+                            visible: chrome,
+                            swipeOpacity: swipeOpacity,
+                            child: _buildBottomBar(context),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         );

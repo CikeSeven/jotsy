@@ -18,6 +18,11 @@ class HomeHintVisibilityController {
   /// FAB 据此决定上移距离：固定 60dp 只够单行提示，双行或大字号会被遮挡。
   final ValueNotifier<double> hintExtentNotifier = ValueNotifier<double>(0);
 
+  /// 每次新提示即将展示时递增（早于 `ScaffoldMessenger.showSnackBar`）。
+  /// 供 `SnackBarClearanceHost` 在首帧前即时量取底部浮层并重设本条提示的
+  /// 避让底线，避免多选栏收起离场时提示条中途下跳。
+  final ValueNotifier<int> hintShownCountNotifier = ValueNotifier<int>(0);
+
   /// 上报测得的提示高度；提示已全部关闭时忽略迟到的测量结果。
   void reportHintExtent(double extent) {
     if (_visibleCount > 0 && extent > 0) {
@@ -35,6 +40,7 @@ class HomeHintVisibilityController {
     if (!isHintVisibleNotifier.value) {
       isHintVisibleNotifier.value = true;
     }
+    hintShownCountNotifier.value += 1;
   }
 
   void onHintClosed() {
@@ -56,6 +62,7 @@ class HomeHintVisibilityController {
     _hideDebounceTimer?.cancel();
     isHintVisibleNotifier.dispose();
     hintExtentNotifier.dispose();
+    hintShownCountNotifier.dispose();
   }
 }
 

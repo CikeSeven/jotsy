@@ -14,6 +14,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import 'lan_sync_scan_overlay.dart';
 import 'lan_sync_scan_parts.dart';
 
@@ -145,11 +146,13 @@ class LanSyncScanView extends StatelessWidget {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: _BottomBar(
-                    hint: failure == null ? hint : null,
-                    torch: failure == null ? torch : null,
-                    onToggleTorch: onToggleTorch,
-                    onManualAddress: onManualAddress,
+                  child: SnackBarClearanceArea(
+                    child: _BottomBar(
+                      hint: failure == null ? hint : null,
+                      torch: failure == null ? torch : null,
+                      onToggleTorch: onToggleTorch,
+                      onManualAddress: onManualAddress,
+                    ),
                   ),
                 ),
               ),

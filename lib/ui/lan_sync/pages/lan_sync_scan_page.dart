@@ -28,6 +28,7 @@ import '../../../app/theme/seeded_theme_cache.dart';
 import '../../../core/services/day_photo_library.dart';
 import '../../../core/services/lan_sync/lan_sync_qr_payload.dart';
 import '../../diaries/providers/diary_preview_style_provider.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../controllers/lan_sync_scan_detector.dart';
 import '../widgets/lan_sync_scan_view.dart';
 
@@ -182,9 +183,11 @@ class _LanSyncScanPageState extends ConsumerState<LanSyncScanPage> {
       data: theme,
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
-        child: Scaffold(
-          backgroundColor: theme.colorScheme.surfaceContainerLowest,
-          body: body,
+        child: SnackBarClearanceHost(
+          child: Scaffold(
+            backgroundColor: theme.colorScheme.surfaceContainerLowest,
+            body: body,
+          ),
         ),
       ),
     );

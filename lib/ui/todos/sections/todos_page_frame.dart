@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../app_surface/widgets/app_page_backdrop.dart';
+import '../../widgets/snack_bar_clearance.dart';
 
 /// 待办页的外框：页面底色、内容 [body]、叠在上面的页头 [header]（多选时由
 /// 页面换成“已选 N”的页头）与多选操作栏 [actionBar]（底部居中、最宽 480）。
@@ -150,21 +151,26 @@ class _ActionBarDockState extends State<_ActionBarDock>
   Widget build(BuildContext context) {
     final last = _last;
     if (last == null) return const SizedBox.shrink();
-    return IgnorePointer(
-      ignoring: widget.bar == null,
-      child: AnimatedBuilder(
-        animation: _shown,
-        builder: (BuildContext context, Widget? child) {
-          final hidden = 1 - _shown.value;
-          return Transform.translate(
-            offset: Offset(0, hidden * widget.sink),
-            child: FractionalTranslation(
-              translation: Offset(0, hidden * 1.5),
-              child: child,
-            ),
-          );
-        },
-        child: last,
+    // 挂在平移动画外面：提示条始终按操作栏静止时的顶边避让，升起与沉下途中
+    // 不逐帧改边距；点击删除后操作栏正往下沉时，刚弹出的撤销提示条也直接
+    // 停在操作栏之上。
+    return SnackBarClearanceArea(
+      child: IgnorePointer(
+        ignoring: widget.bar == null,
+        child: AnimatedBuilder(
+          animation: _shown,
+          builder: (BuildContext context, Widget? child) {
+            final hidden = 1 - _shown.value;
+            return Transform.translate(
+              offset: Offset(0, hidden * widget.sink),
+              child: FractionalTranslation(
+                translation: Offset(0, hidden * 1.5),
+                child: child,
+              ),
+            );
+          },
+          child: last,
+        ),
       ),
     );
   }

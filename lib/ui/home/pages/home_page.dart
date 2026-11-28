@@ -57,6 +57,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/glass/glass_reveal.dart';
 import '../../widgets/launch_reveal.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../../ai/controllers/ai_chat_return_flow.dart';
 import '../../../core/services/home_widgets/home_widget_launch.dart';
 import '../../home_widgets/controllers/home_widget_launch_router.dart';
@@ -674,27 +675,33 @@ class _HomePageState extends ConsumerState<HomePage> {
                 // BackdropGroup 共用一次背景读取（两者都 grouped）：原先
                 // 各读一次，滑动时多一次整片回读。
                 builder: (BuildContext context) => BackdropGroup(
-                  child: Scaffold(
-                    backgroundColor: AppPagedBackground.shellColorOf(context),
+                  child: SnackBarClearanceHost(
                     resizeToAvoidBottomInset: false,
-                    // 底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
-                    // 透出。没有底栏时内容止于窗口底部。
-                    extendBody: hasBottomBar,
-                    body: wide
-                        ? _buildWideBody(
-                            navItems: navItems,
-                            barStyle: barStyle,
-                            content: content,
-                          )
-                        : content,
-                    bottomNavigationBar: !hasBottomBar
-                        ? null
-                        : _buildBottomBar(
-                            navItems: navItems,
-                            barStyle: barStyle,
-                            barBehavior: barBehavior,
-                            inlineCreate: inlineCreate,
-                          ),
+                    bottomBarExtent: hasBottomBar
+                        ? HomeBottomBar.floatingSlotExtent(context, barStyle)
+                        : 0,
+                    child: Scaffold(
+                      backgroundColor: AppPagedBackground.shellColorOf(context),
+                      resizeToAvoidBottomInset: false,
+                      // 底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方
+                      // 透出。没有底栏时内容止于窗口底部。
+                      extendBody: hasBottomBar,
+                      body: wide
+                          ? _buildWideBody(
+                              navItems: navItems,
+                              barStyle: barStyle,
+                              content: content,
+                            )
+                          : content,
+                      bottomNavigationBar: !hasBottomBar
+                          ? null
+                          : _buildBottomBar(
+                              navItems: navItems,
+                              barStyle: barStyle,
+                              barBehavior: barBehavior,
+                              inlineCreate: inlineCreate,
+                            ),
+                    ),
                   ),
                 ),
               ),

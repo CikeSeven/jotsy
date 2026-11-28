@@ -25,6 +25,7 @@ import '../../widgets/expressive_menu/expressive_menu_button.dart';
 import '../../widgets/expressive_menu/expressive_menu_item.dart';
 import '../../widgets/form_width.dart';
 import '../../widgets/select_all_button.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../../widgets/width_layout_builder.dart';
 import '../controllers/storage_flows.dart';
 import '../models/storage_media_filter.dart';
@@ -214,138 +215,141 @@ class _StorageMediaPageState extends ConsumerState<StorageMediaPage>
       child: AppPageBackground(
         area: AppBackgroundArea.settings,
         child: Builder(
-          builder: (BuildContext context) => Scaffold(
-            backgroundColor: AppPageBackdrop.pageColorOf(context),
-            appBar: AppTopBar(
-              contentMaxWidth: FormWidth.maxWidth,
-              leading: ExpressiveIconSwap(
-                switchKey: _selecting,
-                child: _selecting
-                    ? IconButton(
-                        tooltip: l10n.commonCancel,
-                        onPressed: _busy ? null : _clearSelection,
-                        icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-                      )
-                    : IconButton(
-                        tooltip: l10n.commonBack,
-                        onPressed: _busy
-                            ? null
-                            : () => Navigator.of(context).maybePop(),
-                        icon: const FaIcon(
-                          FontAwesomeIcons.angleLeft,
-                          size: 18,
-                        ),
-                      ),
-              ),
-              title: AnimatedSwitcher(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  ExpressiveMotion.fast,
-                ),
-                switchInCurve: ExpressiveMotion.effects,
-                switchOutCurve: ExpressiveMotion.exit,
-                child: Text(
-                  _selecting
-                      ? l10n.storageMgmtSelectedCount(_selected.length)
-                      : _filter.unusedOnly
-                      ? l10n.storageMgmtCategoryUnused
-                      : _filter.category?.label(l10n) ??
-                            l10n.storageMgmtAllMedia,
-                  key: ValueKey<int>(_selecting ? _selected.length : -1),
-                ),
-              ),
-              actions: _selecting
-                  ? <Widget>[
-                      SelectAllButton(
-                        allSelected: _allSelected,
-                        onPressed: _busy ? null : _toggleAll,
-                      ),
-                    ]
-                  : <Widget>[
-                      if (_filter.supportsGrid)
-                        IconButton(
-                          tooltip: grid
-                              ? l10n.storageMgmtViewList
-                              : l10n.storageMgmtViewGrid,
-                          onPressed: () => _savePreferences(
-                            preferences.copyWith(
-                              view: grid
-                                  ? StorageMediaView.list
-                                  : StorageMediaView.grid,
-                            ),
-                          ),
-                          icon: ExpressiveIconSwap(
-                            switchKey: grid,
-                            child: FaIcon(
-                              grid
-                                  ? FontAwesomeIcons.list
-                                  : FontAwesomeIcons.tableCells,
-                              size: 16,
-                            ),
+          builder: (BuildContext context) => SnackBarClearanceHost(
+            child: Scaffold(
+              backgroundColor: AppPageBackdrop.pageColorOf(context),
+              appBar: AppTopBar(
+                contentMaxWidth: FormWidth.maxWidth,
+                leading: ExpressiveIconSwap(
+                  switchKey: _selecting,
+                  child: _selecting
+                      ? IconButton(
+                          tooltip: l10n.commonCancel,
+                          onPressed: _busy ? null : _clearSelection,
+                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+                        )
+                      : IconButton(
+                          tooltip: l10n.commonBack,
+                          onPressed: _busy
+                              ? null
+                              : () => Navigator.of(context).maybePop(),
+                          icon: const FaIcon(
+                            FontAwesomeIcons.angleLeft,
+                            size: 18,
                           ),
                         ),
-                      ExpressiveMenuButton(
-                        tooltip: l10n.storageMgmtSort,
-                        icon: const FaIcon(
-                          FontAwesomeIcons.arrowDownWideShort,
-                          size: 16,
-                        ),
-                        items: <Widget>[
-                          for (final sort in StorageMediaSort.values)
-                            ExpressiveMenuItem(
-                              selected: preferences.sort == sort,
-                              onPressed: () => _savePreferences(
-                                preferences.copyWith(sort: sort),
-                              ),
-                              child: Text(_sortLabel(l10n, sort)),
-                            ),
-                        ],
-                      ),
-                    ],
-            ),
-            body: Stack(
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Expanded(
-                      child: reportAsync.when(
-                        skipLoadingOnRefresh: true,
-                        skipLoadingOnReload: true,
-                        loading: () => const DelayedLoadingIndicator(),
-                        error: (error, _) => EmptyHint(
-                          icon: FontAwesomeIcons.triangleExclamation,
-                          message: l10n.storageMgmtScanFailed,
-                        ),
-                        data: (report) => _buildContent(
-                          report,
-                          view!,
-                          grid: grid,
-                          canCompress: compress.supported,
-                        ),
-                      ),
-                    ),
-                    StorageSelectionBar(
-                      visible: _selecting,
-                      count: _selected.length,
-                      bytes: selectedBytes,
-                      onCompress: canCompressSelection && !_busy
-                          ? () => unawaited(_compress(selectedEntries, report))
-                          : null,
-                      onDelete: _busy
-                          ? null
-                          : () => unawaited(_delete(selectedEntries)),
-                    ),
-                  ],
                 ),
-                Positioned.fill(
-                  child: ActionLoadingOverlay(
-                    visible: _busy,
-                    label: _busyText,
-                    revealDelay: DelayedLoadingGate.defaultDelay,
+                title: AnimatedSwitcher(
+                  duration: ExpressiveMotion.duration(
+                    context,
+                    ExpressiveMotion.fast,
+                  ),
+                  switchInCurve: ExpressiveMotion.effects,
+                  switchOutCurve: ExpressiveMotion.exit,
+                  child: Text(
+                    _selecting
+                        ? l10n.storageMgmtSelectedCount(_selected.length)
+                        : _filter.unusedOnly
+                        ? l10n.storageMgmtCategoryUnused
+                        : _filter.category?.label(l10n) ??
+                              l10n.storageMgmtAllMedia,
+                    key: ValueKey<int>(_selecting ? _selected.length : -1),
                   ),
                 ),
-              ],
+                actions: _selecting
+                    ? <Widget>[
+                        SelectAllButton(
+                          allSelected: _allSelected,
+                          onPressed: _busy ? null : _toggleAll,
+                        ),
+                      ]
+                    : <Widget>[
+                        if (_filter.supportsGrid)
+                          IconButton(
+                            tooltip: grid
+                                ? l10n.storageMgmtViewList
+                                : l10n.storageMgmtViewGrid,
+                            onPressed: () => _savePreferences(
+                              preferences.copyWith(
+                                view: grid
+                                    ? StorageMediaView.list
+                                    : StorageMediaView.grid,
+                              ),
+                            ),
+                            icon: ExpressiveIconSwap(
+                              switchKey: grid,
+                              child: FaIcon(
+                                grid
+                                    ? FontAwesomeIcons.list
+                                    : FontAwesomeIcons.tableCells,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ExpressiveMenuButton(
+                          tooltip: l10n.storageMgmtSort,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.arrowDownWideShort,
+                            size: 16,
+                          ),
+                          items: <Widget>[
+                            for (final sort in StorageMediaSort.values)
+                              ExpressiveMenuItem(
+                                selected: preferences.sort == sort,
+                                onPressed: () => _savePreferences(
+                                  preferences.copyWith(sort: sort),
+                                ),
+                                child: Text(_sortLabel(l10n, sort)),
+                              ),
+                          ],
+                        ),
+                      ],
+              ),
+              body: Stack(
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Expanded(
+                        child: reportAsync.when(
+                          skipLoadingOnRefresh: true,
+                          skipLoadingOnReload: true,
+                          loading: () => const DelayedLoadingIndicator(),
+                          error: (error, _) => EmptyHint(
+                            icon: FontAwesomeIcons.triangleExclamation,
+                            message: l10n.storageMgmtScanFailed,
+                          ),
+                          data: (report) => _buildContent(
+                            report,
+                            view!,
+                            grid: grid,
+                            canCompress: compress.supported,
+                          ),
+                        ),
+                      ),
+                      StorageSelectionBar(
+                        visible: _selecting,
+                        count: _selected.length,
+                        bytes: selectedBytes,
+                        onCompress: canCompressSelection && !_busy
+                            ? () =>
+                                  unawaited(_compress(selectedEntries, report))
+                            : null,
+                        onDelete: _busy
+                            ? null
+                            : () => unawaited(_delete(selectedEntries)),
+                      ),
+                    ],
+                  ),
+                  Positioned.fill(
+                    child: ActionLoadingOverlay(
+                      visible: _busy,
+                      label: _busyText,
+                      revealDelay: DelayedLoadingGate.defaultDelay,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

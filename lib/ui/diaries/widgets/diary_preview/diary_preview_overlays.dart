@@ -5,6 +5,7 @@ import '../../../../app/theme/expressive_motion.dart';
 import '../../../app_surface/widgets/app_glass_fab.dart';
 import '../../../app_surface/widgets/app_glass_scope.dart';
 import '../../../widgets/glass/glass_reveal.dart';
+import '../../../widgets/snack_bar_clearance.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 页面顶端的阅读进度细线：宽度 = 已滚动 / 可滚动总长（不可滚动时为满）。
@@ -126,30 +127,33 @@ class _DiaryPreviewBackToTopState extends State<DiaryPreviewBackToTop> {
         final curve = visible
             ? ExpressiveMotion.effects
             : ExpressiveMotion.exit;
-        return IgnorePointer(
-          ignoring: !visible,
-          child: AnimatedScale(
-            scale: visible ? 1 : 0.6,
-            duration: duration,
-            curve: ExpressiveMotion.spatial,
-            // 玻璃按钮不能放进透明度层（模糊会采不到正文），显隐改由
-            // GlassReveal 按同样的时长与曲线补间进度，玻璃表面自己淡入。
-            child: glass
-                ? TweenAnimationBuilder<double>(
-                    tween: Tween<double>(end: visible ? 1 : 0),
-                    duration: duration,
-                    curve: curve,
-                    builder:
-                        (BuildContext context, double value, Widget? child) =>
-                            GlassReveal(progress: value, child: child!),
-                    child: child,
-                  )
-                : AnimatedOpacity(
-                    opacity: visible ? 1 : 0,
-                    duration: duration,
-                    curve: curve,
-                    child: child,
-                  ),
+        return SnackBarClearanceArea(
+          enabled: visible,
+          child: IgnorePointer(
+            ignoring: !visible,
+            child: AnimatedScale(
+              scale: visible ? 1 : 0.6,
+              duration: duration,
+              curve: ExpressiveMotion.spatial,
+              // 玻璃按钮不能放进透明度层（模糊会采不到正文），显隐改由
+              // GlassReveal 按同样的时长与曲线补间进度，玻璃表面自己淡入。
+              child: glass
+                  ? TweenAnimationBuilder<double>(
+                      tween: Tween<double>(end: visible ? 1 : 0),
+                      duration: duration,
+                      curve: curve,
+                      builder:
+                          (BuildContext context, double value, Widget? child) =>
+                              GlassReveal(progress: value, child: child!),
+                      child: child,
+                    )
+                  : AnimatedOpacity(
+                      opacity: visible ? 1 : 0,
+                      duration: duration,
+                      curve: curve,
+                      child: child,
+                    ),
+            ),
           ),
         );
       },

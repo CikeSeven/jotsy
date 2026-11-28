@@ -19,6 +19,7 @@ import '../../settings/widgets/external_link.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../../widgets/floating_top_bar/floating_top_bar_host.dart';
 import '../../widgets/keyboard_visibility.dart';
+import '../../widgets/snack_bar_clearance.dart';
 import '../../ai/models/ai_preference_parts.dart';
 import '../../ai/providers/ai_providers.dart';
 import '../controllers/mind_map_ai_scope.dart';
@@ -572,57 +573,63 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 560),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        if (showStarter) ...<Widget>[
-                          MindMapStarterCard(
-                            onTemplate: _applyTemplate,
-                            onConvertBack: widget.onConvertBack,
-                            onImport: () =>
-                                importMindMapFromFile(context, controller),
-                            onAiGenerate: aiReady
-                                ? () => _openAi(MindMapAiTask.generate)
-                                : null,
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                        if (showFormatBar)
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 380),
-                            child: DiaryFloatingToolbarSurface(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
+                    child: SnackBarClearanceArea(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (showStarter) ...<Widget>[
+                            MindMapStarterCard(
+                              onTemplate: _applyTemplate,
+                              onConvertBack: widget.onConvertBack,
+                              onImport: () =>
+                                  importMindMapFromFile(context, controller),
+                              onAiGenerate: aiReady
+                                  ? () => _openAi(MindMapAiTask.generate)
+                                  : null,
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                          if (showFormatBar)
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 380),
+                              child: DiaryFloatingToolbarSurface(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  child: MindMapFormatBar(
+                                    controller: controller,
+                                  ),
                                 ),
-                                child: MindMapFormatBar(controller: controller),
                               ),
                             ),
-                          ),
-                        if (showDock)
-                          MindMapDock(
-                            controller: controller,
-                            onOpenStyle: _openStyle,
-                            onFit: outline
-                                ? null
-                                : () => _canvas.currentState?.fitToScreen(),
-                            onInsert: _openInsert,
-                            onNodeStyle: _openNodeStyle,
-                            onCopy: _copy,
-                            onCut: _cut,
-                            onPaste: _paste,
-                            onAiGenerate: aiReady
-                                ? () => _openAi(MindMapAiTask.generate)
-                                : null,
-                            onAiSummarize: aiReady
-                                ? () => _openAi(MindMapAiTask.summarize)
-                                : null,
-                            onAiExpand: aiReady
-                                ? (id) =>
-                                      _openAi(MindMapAiTask.expand, nodeId: id)
-                                : null,
-                          ),
-                      ],
+                          if (showDock)
+                            MindMapDock(
+                              controller: controller,
+                              onOpenStyle: _openStyle,
+                              onFit: outline
+                                  ? null
+                                  : () => _canvas.currentState?.fitToScreen(),
+                              onInsert: _openInsert,
+                              onNodeStyle: _openNodeStyle,
+                              onCopy: _copy,
+                              onCut: _cut,
+                              onPaste: _paste,
+                              onAiGenerate: aiReady
+                                  ? () => _openAi(MindMapAiTask.generate)
+                                  : null,
+                              onAiSummarize: aiReady
+                                  ? () => _openAi(MindMapAiTask.summarize)
+                                  : null,
+                              onAiExpand: aiReady
+                                  ? (id) => _openAi(
+                                      MindMapAiTask.expand,
+                                      nodeId: id,
+                                    )
+                                  : null,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -634,9 +641,11 @@ class MindMapWorkspaceState extends ConsumerState<MindMapWorkspace> {
               right: 0,
               bottom: 0,
               child: KeyboardInsetPadding(
-                child: outline
-                    ? MindMapOutlineAccessoryBar(controller: controller)
-                    : MindMapEditingAccessoryBar(controller: controller),
+                child: SnackBarClearanceArea(
+                  child: outline
+                      ? MindMapOutlineAccessoryBar(controller: controller)
+                      : MindMapEditingAccessoryBar(controller: controller),
+                ),
               ),
             ),
           Positioned(

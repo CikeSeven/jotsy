@@ -264,27 +264,42 @@ void main() {
             icon: const Icon(Icons.share),
           ),
         ),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
         FloatingIslandSlot(
           visible: editing,
-          child: FloatingIslandPill(label: '完成', onPressed: () {}),
+          child: IconButton(
+            tooltip: '完成',
+            onPressed: () {},
+            icon: const Icon(Icons.check),
+          ),
+        ),
+        IconButton(
+          tooltip: 'more',
+          onPressed: () {},
+          icon: const Icon(Icons.more_vert),
         ),
       ],
     );
     await tester.pumpWidget(_page(trailing: island(editing: false)));
     final finder = find.byType(FloatingActionIsland);
     expect(tester.getSize(finder).width, 96);
-    expect(find.text('完成'), findsNothing);
+    expect(find.byTooltip('完成'), findsNothing);
+    final moreRightBefore = tester.getRect(find.byTooltip('more')).right;
 
     await tester.pumpWidget(_page(trailing: island(editing: true)));
     await tester.pump(const Duration(milliseconds: 60));
     // 分享在收起、完成在展开：途中两格都在。
     expect(find.byTooltip('share'), findsOneWidget);
-    expect(find.text('完成'), findsOneWidget);
+    expect(find.byTooltip('完成'), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.byTooltip('share'), findsNothing);
-    expect(find.text('完成'), findsOneWidget);
-    expect(tester.getSize(finder).width, greaterThan(48 + 56));
+    expect(find.byTooltip('完成'), findsOneWidget);
+    expect(tester.getSize(finder).width, 96);
+    // “更多”始终固定在最右侧，位置不变。
+    expect(tester.getRect(find.byTooltip('more')).right, moreRightBefore);
+    expect(
+      tester.getRect(find.byTooltip('完成')).center.dx,
+      lessThan(tester.getRect(find.byTooltip('more')).center.dx),
+    );
   });
 
   testWidgets('减少动画时一格直接出现', (WidgetTester tester) async {
@@ -292,7 +307,11 @@ void main() {
       children: <Widget>[
         FloatingIslandSlot(
           visible: visible,
-          child: FloatingIslandPill(label: '完成', onPressed: () {}),
+          child: IconButton(
+            tooltip: '完成',
+            onPressed: () {},
+            icon: const Icon(Icons.check),
+          ),
         ),
       ],
     );
@@ -303,11 +322,11 @@ void main() {
       _page(trailing: island(visible: true), reduceMotion: true),
     );
     await tester.pump();
-    expect(find.text('完成'), findsOneWidget);
+    expect(find.byTooltip('完成'), findsOneWidget);
     // 已停在完全展开：不再套淡入用的 Opacity。
     expect(
       find.ancestor(
-        of: find.text('完成'),
+        of: find.byTooltip('完成'),
         matching: find.descendant(
           of: find.byType(FloatingIslandSlot),
           matching: find.byType(Opacity),

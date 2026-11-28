@@ -5,12 +5,12 @@ import '../../app_surface/widgets/app_glass_scope.dart';
 import '../glass/glass_reveal.dart';
 import 'floating_island.dart';
 
-/// 右侧的动作胶囊：一排图标按钮（可带一颗 [FloatingIslandPill]）。
+/// 右侧的动作胶囊：一排图标按钮。
 ///
 /// 变形：会随状态出现 / 消失的按钮包一层 [FloatingIslandSlot]，它沿横向展开
 /// 或收起并淡入淡出，胶囊宽度随之一起变化；其余按钮原地不动、不重建。看起来
 /// 是同一颗岛原地长成新的样子，而不是换了一颗（编辑页：[分享 · 更多] ⇄
-/// [更多 | 完成]）。
+/// [完成 · 更多]）。
 class FloatingActionIsland extends StatelessWidget {
   const FloatingActionIsland({super.key, required this.children});
 

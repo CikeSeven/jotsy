@@ -149,7 +149,13 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
       controller: controller,
       onBack: () => unawaited(_controller.attemptExit()),
       actions: <Widget>[
-        if (!_isCreateEntry && _controller.manualEditSave)
+        if (_isCreateEntry)
+          IconButton(
+            tooltip: l10n.autoT0136,
+            onPressed: busy ? null : _controller.openPublishPage,
+            icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 16),
+          )
+        else if (_controller.manualEditSave)
           _buildReadingSaveButton(),
       ],
       menuTooltip: l10n.diaryEditorMoreActions,
@@ -174,13 +180,6 @@ extension _EditDiaryMindMapFlow on _EditDiaryPageState {
           child: Text(l10n.mindMapImport),
         ),
         if (reading != null) ..._mindMapDiaryMoreItems(reading),
-      ],
-      trailingActions: <Widget>[
-        if (_isCreateEntry)
-          FloatingIslandPill(
-            label: l10n.autoT0136,
-            onPressed: busy ? null : _controller.openPublishPage,
-          ),
       ],
       body: (BuildContext context, double topInset) => MindMapReveal(
         origin: origin,

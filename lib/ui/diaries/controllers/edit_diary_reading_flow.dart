@@ -412,9 +412,10 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
   }
 
   /// 右侧动作胶囊。平时是 [分享 · 更多]；编辑标题或正文时原地变形为
-  /// [更多 | 完成]（“完成”收起键盘，打字时用不到分享）。手动保存时末尾
-  /// 一直是“保存”而不放“完成”：两个确认并排会让人以为点“完成”也会保存
-  /// （键盘用系统返回收起）。
+  /// [完成 · 更多]（“完成”收起键盘，打字时用不到分享，“更多”始终在最右侧，
+  /// 与预览页一致）。手动保存时在“更多”之前一直是“保存”图标而不放“完成”：
+  /// 对勾读起来像“确认 / 保存”，并排会让人以为点“完成”也会保存（键盘用系统
+  /// 返回收起）。
   Widget _buildReadingIsland(_ReadingFrame frame) {
     final l10n = context.l10n;
     final editing = _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
@@ -428,40 +429,47 @@ extension _EditDiaryReadingFlow on _EditDiaryPageState {
             icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
           ),
         ),
-        DiaryMoreMenuIslandButton(items: _readingMoreItems(frame)),
         if (_controller.manualEditSave)
           _buildReadingSaveButton()
         else
           FloatingIslandSlot(
             visible: editing,
-            child: FloatingIslandPill(
-              label: l10n.diaryReadingDone,
+            child: IconButton(
+              tooltip: l10n.diaryReadingDone,
               onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
+              icon: const FaIcon(FontAwesomeIcons.check, size: 16),
             ),
           ),
+        DiaryMoreMenuIslandButton(items: _readingMoreItems(frame)),
       ],
     );
   }
 
-  /// 手动保存时的“保存”胶囊：有未保存的修改时可点（只随 `unsaved` 局部
-  /// 重建，不牵动整页），没有修改与写库期间停用；保存成功后换成“✓ 已保存”
-  /// 停留 1 秒（[_EditDiaryPageState._flashEditSaved]），这 1 秒里看起来可点、
-  /// 点了不做事，免得停用的灰色读成“没保存上”。
+  /// 手动保存时的“保存”图标：有未保存的修改时可点（只随 `unsaved` 局部
+  /// 重建，不牵动整页），没有修改与写库期间停用；保存成功后换成主色对勾
+  /// 停留 1 秒（[_EditDiaryPageState._flashEditSaved]），显式着主色免得
+  /// 停用的灰色读成“没保存上”。
   Widget _buildReadingSaveButton() {
     final l10n = context.l10n;
     final saved = _editSavedFlash;
     return ValueListenableBuilder<bool>(
       valueListenable: _controller._editAutoSave.unsaved,
-      builder: (BuildContext context, bool unsaved, Widget? _) =>
-          FloatingIslandPill(
-            label: saved ? l10n.diaryEditSaved : l10n.commonSave,
-            icon: saved ? const FaIcon(FontAwesomeIcons.check, size: 14) : null,
-            onPressed: saved
-                ? () {}
-                : unsaved && !_saving
-                ? () => unawaited(_controller.saveEditManually())
-                : null,
-          ),
+      builder: (BuildContext context, bool unsaved, Widget? _) => IconButton(
+        tooltip: saved ? l10n.diaryEditSaved : l10n.commonSave,
+        onPressed: unsaved && !_saving
+            ? () => unawaited(_controller.saveEditManually())
+            : null,
+        icon: ExpressiveIconSwap(
+          switchKey: saved,
+          child: saved
+              ? FaIcon(
+                  FontAwesomeIcons.check,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : const FaIcon(FontAwesomeIcons.floppyDisk, size: 16),
+        ),
+      ),
     );
   }
 }

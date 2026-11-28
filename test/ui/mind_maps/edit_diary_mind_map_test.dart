@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';
 import 'package:node_diary/core/database/mind_map/mind_map_blocks.dart';
@@ -16,6 +17,7 @@ import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mind_map_entry_chip.dart';
 import 'package:node_diary/ui/mind_maps/widgets/mind_map_workspace.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
+import 'package:node_diary/ui/widgets/floating_top_bar/floating_action_island.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -255,6 +257,101 @@ void main() {
       l10n.settingsEditorTitle,
       l10n.commonDelete,
     ]);
+    await unmount(tester);
+  });
+
+  testWidgets('new mind map diary puts the paper-plane publish icon left of '
+      'More; manual-save mind map puts the save icon left of More', (
+    tester,
+  ) async {
+    await setUpStores(tester);
+    await open(
+      tester,
+      const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+    );
+    await tester.tap(find.text('Mind map'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byType(MindMapWorkspace), findsOneWidget);
+
+    final createL10n = AppLocalizations.of(
+      tester.element(find.byType(MindMapWorkspace)),
+    );
+    final publish = find.ancestor(
+      of: find.byTooltip(createL10n.autoT0136),
+      matching: find.byType(IconButton),
+    );
+    final createMore = find.byTooltip(createL10n.diaryEditorMoreActions);
+    expect(publish, findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(FloatingActionIsland),
+        matching: find.byType(FilledButton),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: publish,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FaIcon &&
+              widget.icon == FontAwesomeIcons.paperPlane.data,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.getRect(publish).center.dx,
+      lessThan(tester.getRect(createMore).center.dx),
+    );
+    await unmount(tester);
+
+    // 手动保存模式编辑已有导图日记：保存图标在“更多”左侧。
+    await settings.setDiaryEditPrefsRaw('{"save":"manual"}');
+    final map = MindMapDocument.blank().copyWith(
+      root: mindMapNodeFromOutline('Plan\n  Work')!,
+    );
+    final diaryId = (await tester.runAsync(
+      () => database.createDiary(
+        title: 'Plan',
+        contentDocJson: encodeDiaryBlocks(mindMapDiaryDocument(map)),
+        contentText: mindMapPlainText(map),
+        metadataJson: '{}',
+      ),
+    ))!;
+    await open(tester, EditDiaryPage(diaryId: diaryId));
+    final editL10n = AppLocalizations.of(
+      tester.element(find.byType(MindMapWorkspace)),
+    );
+    final save = find.ancestor(
+      of: find.byTooltip(editL10n.commonSave),
+      matching: find.byType(IconButton),
+    );
+    final editMore = find.byTooltip(editL10n.diaryEditorMoreActions);
+    expect(save, findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(FloatingActionIsland),
+        matching: find.byType(FilledButton),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: save,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FaIcon &&
+              widget.icon == FontAwesomeIcons.floppyDisk.data,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.getRect(save).center.dx,
+      lessThan(tester.getRect(editMore).center.dx),
+    );
     await unmount(tester);
   });
 }

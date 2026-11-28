@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_effects.dart';
-import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_surface/widgets/app_glass_scope.dart';
@@ -90,65 +89,5 @@ class FloatingBackIsland extends StatelessWidget {
         icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
       ),
     );
-  }
-}
-
-/// 动作胶囊里的主色文字按钮（“完成”“保存”“发布”）：比图标按钮矮一截，
-/// 嵌在 48 高的胶囊里上下各留 4。文字样式取主题的按钮字阶（不传裸
-/// TextStyle，免得丢应用字体）。
-class FloatingIslandPill extends StatelessWidget {
-  const FloatingIslandPill({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.icon,
-    this.tooltip,
-  });
-
-  final String label;
-
-  /// null 时停用（没有可保存的修改、写库中）。
-  final VoidCallback? onPressed;
-
-  /// 文字前的小图标（如保存成功后的对勾）。
-  final Widget? icon;
-  final String? tooltip;
-
-  static final ButtonStyle _style = FilledButton.styleFrom(
-    minimumSize: const Size(56, 40),
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    visualDensity: VisualDensity.standard,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    final icon = this.icon;
-    // 文字变化（“保存” ⇄ “✓ 已保存”）时宽度补间，胶囊跟着平滑伸缩。
-    final content = AnimatedSize(
-      duration: ExpressiveMotion.durationNonZero(
-        context,
-        ExpressiveMotion.medium,
-      ),
-      curve: ExpressiveMotion.spatial,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (icon != null) ...<Widget>[icon, const SizedBox(width: 6)],
-          Text(label),
-        ],
-      ),
-    );
-    final button = FilledButton(
-      onPressed: onPressed,
-      style: _style,
-      child: content,
-    );
-    final tooltip = this.tooltip;
-    final padded = Padding(
-      padding: const EdgeInsetsDirectional.only(start: 2, end: 4),
-      child: button,
-    );
-    return tooltip == null ? padded : Tooltip(message: tooltip, child: padded);
   }
 }

@@ -80,7 +80,7 @@
 - `assets/`：内置字体、天气图标、应用图标、示例与收款图片、AI 使用指南 `ai_guide/zh|en/`（`docs/releases/` 也作为资源打进应用）。
 - `test/`：按 `lib/` 镜像组织；源码约束 `ui/source_rules_test.dart` 与 `ui/widgets/*_source_test.dart`；`support/` 为假实现与夹具（如 `fake_ai.dart`、`lan_sync_two_devices.dart`）；`performance/` 为手动启用的微基准。
 - `integration_test/`：实机录音 / 播放集成测试。
-- `tool/`：`check_arb.dart`、`merge_lcov.dart`、`write_update_manifest.dart`、`generate_pinyin_table.dart`、`write_cloud_backup_keys.dart`、`ai_mock_server.dart`（本地模拟 AI 流式接口）。
+- `tool/`：`check_arb.dart`、`merge_lcov.dart`、`robolectric_cache_key.dart`、`write_update_manifest.dart`、`generate_pinyin_table.dart`、`write_cloud_backup_keys.dart`、`ai_mock_server.dart`（本地模拟 AI 流式接口）。
 - `docs/`：项目文档与验证记录、`rules/` 专题约束、`releases/` 版本说明、官网静态页（`index.html` 等，资源在 `docs/assets/`）。
 - `.github/`：`workflows/`（`ci.yml` 门禁、`release-apk.yml` 发布、`download-stats.yml` 下载统计）、`actions/setup-flutter`（唯一定义 Flutter 版本）、`actions/main-cache`、`dependabot.yml`。
 - `android/`：主平台工程；`app/src/main/kotlin/com/jotsy/diary/` 下为原生通道（局域网同步、图片转码、拍摄、应用锁、录音前台服务等）与 `widgets/`（Jetpack Glance 桌面小组件）；`app/src/test/` 为原生回归测试；`app/proguard-rules.pro` 为 R8 规则。

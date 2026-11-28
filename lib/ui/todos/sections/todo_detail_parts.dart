@@ -13,19 +13,22 @@ import '../../widgets/text_selection_menu/app_text_context_menu.dart';
 import '../viewmodels/todo_priority_colors.dart';
 import '../widgets/todo_bare_input.dart';
 import '../widgets/todo_complete_motion.dart';
+import '../widgets/todo_labels.dart';
 import '../widgets/todo_progress_ring.dart';
 import '../widgets/todo_tile_check.dart';
 
 /// 待办详情（[TodoDetailBody] 所在的 `todo_detail_body.dart`）的几块版式：
-/// 头部、步骤 / 备注卡片与创建 / 完成时间。只负责排版，写库与状态都在
-/// 详情内容里。
+/// 头部、已完成循环记录提示条、步骤 / 备注卡片与创建 / 完成时间。只负责排
+/// 版，写库与状态都在详情内容里。
 
 /// 头部：28dp 方框（勾选完成，按优先级着色同列表行）+ `titleLarge` w700
 /// 标题输入框 + “更多”。
 ///
 /// 勾选未完成的这条时演勾选三拍的前两拍（按下压小、弹起、对勾描出，节拍
 /// 见 `TodoCompleteMotion`，轻震一次），播完才交给 [onToggle] 写库；取消
-/// 勾选直接交出。减少动画时直接交出。
+/// 勾选直接交出。重复待办完成一次后原行仍未完成（截止日推进到下一次），
+/// 收到新行时复位 [_checking] 并让方框平滑回到未勾选态，绝不卡死。减少动
+/// 画时直接交出。
 class TodoDetailHeader extends StatefulWidget {
   const TodoDetailHeader({
     super.key,
@@ -43,7 +46,10 @@ class TodoDetailHeader extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final VoidCallback onChanged;
-  final VoidCallback onToggle;
+
+  /// 触发勾选 / 取消勾选；返回在数据库写入完成即结束的 Future（不等撤销提
+  /// 示关闭），用于写库无变化时及时释放 [_checking]。
+  final Future<void> Function() onToggle;
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
 
@@ -67,10 +73,18 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
   @override
   void didUpdateWidget(TodoDetailHeader oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if ((oldWidget.row.completedAt != null) != _done ||
-        oldWidget.row.todoId != widget.row.todoId) {
+    final wasDone = oldWidget.row.completedAt != null;
+    final advanced =
+        _checking &&
+        !_done &&
+        (oldWidget.row.dueDate != widget.row.dueDate ||
+            oldWidget.row.updatedAt != widget.row.updatedAt);
+    if (wasDone != _done || oldWidget.row.todoId != widget.row.todoId) {
       _checking = false;
       _check.value = _done ? 1 : 0;
+    } else if (advanced) {
+      _checking = false;
+      _resetCheckSmoothly();
     }
   }
 
@@ -80,10 +94,25 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
     super.dispose();
   }
 
+  void _resetCheckSmoothly() {
+    final duration = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    if (duration == Duration.zero) {
+      _check.value = 0;
+    } else {
+      unawaited(
+        _check.animateTo(
+          0,
+          duration: duration,
+          curve: ExpressiveMotion.effects,
+        ),
+      );
+    }
+  }
+
   Future<void> _toggle() async {
     if (_checking) return;
     if (_done) {
-      widget.onToggle();
+      await widget.onToggle();
       return;
     }
     unawaited(HapticFeedback.lightImpact());
@@ -92,13 +121,24 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
       TodoCompleteMotion.check,
     );
     if (duration == Duration.zero) {
-      widget.onToggle();
+      await widget.onToggle();
       return;
     }
+    final beforeDue = widget.row.dueDate;
+    final beforeUpdated = widget.row.updatedAt;
     setState(() => _checking = true);
     await _check.animateTo(1, duration: duration, curve: Curves.linear);
     if (!mounted || !_checking) return;
-    widget.onToggle();
+    await widget.onToggle();
+    // 兜底：若写库无变化（如已被另一端完成），避免方框永久锁在勾选态。
+    if (mounted &&
+        _checking &&
+        !_done &&
+        widget.row.dueDate == beforeDue &&
+        widget.row.updatedAt == beforeUpdated) {
+      setState(() => _checking = false);
+      _resetCheckSmoothly();
+    }
   }
 
   @override
@@ -155,7 +195,7 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
         ),
         ExpressiveMenuButton(
           tooltip: l10n.todoMore,
-          icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 18),
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
           items: <Widget>[
             if (widget.onFocus case final onFocus?)
               ExpressiveMenuItem(
@@ -177,6 +217,85 @@ class _TodoDetailHeaderState extends State<TodoDetailHeader>
           ],
         ),
       ],
+    );
+  }
+}
+
+/// 重复待办已完成记录（副本）的上下文提示条：明确说明当前查看的是已完成
+/// 的这一次，并在原循环计划仍有下一次时给出原地跳转入口（不叠第二层面板）。
+class TodoOccurrenceBanner extends StatelessWidget {
+  const TodoOccurrenceBanner({
+    super.key,
+    required this.series,
+    required this.today,
+    required this.onOpenNext,
+  });
+
+  final TodoRow series;
+  final DateTime today;
+  final VoidCallback onOpenNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final hasNext = series.completedAt == null;
+    final nextDue = hasNext
+        ? TodoLabels.dueOfRow(context, series, today)
+        : null;
+    final summary = nextDue != null
+        ? l10n.todoOccurrenceContext(nextDue)
+        : l10n.todoOccurrenceContextEnded;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(
+          start: AppSpacing.m,
+          end: hasNext ? AppSpacing.xs : AppSpacing.m,
+          top: hasNext ? 2 : AppSpacing.s,
+          bottom: hasNext ? 2 : AppSpacing.s,
+        ),
+        child: Row(
+          children: <Widget>[
+            FaIcon(FontAwesomeIcons.repeat, size: 13, color: scheme.primary),
+            const SizedBox(width: AppSpacing.s),
+            Expanded(
+              child: Text(
+                summary,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            if (hasNext)
+              TextButton(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+                  foregroundColor: scheme.primary,
+                  textStyle: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: onOpenNext,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(l10n.todoViewNextOccurrence),
+                    const SizedBox(width: 4),
+                    const FaIcon(FontAwesomeIcons.angleRight, size: 11),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

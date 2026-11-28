@@ -130,8 +130,7 @@ void main() {
         expect(find.byTooltip(l10n.calendarSummaryEntries(3)), findsOneWidget);
         expect(find.byType(CalendarFilterBar), findsNothing);
 
-        await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
         await tester.tap(_inSheet(find.text(_moods[0])));
         await tester.pumpAndSettle();
 
@@ -159,13 +158,13 @@ void main() {
         expect(find.byType(CalendarFilterBar), findsOneWidget);
         expect(
           tester
-              .widget<IconButton>(
-                find.ancestor(
-                  of: find.byTooltip(l10n.calendarFilterTooltip),
-                  matching: find.byType(IconButton),
+              .widget<Badge>(
+                find.descendant(
+                  of: find.byTooltip(l10n.autoT0125),
+                  matching: find.byType(Badge),
                 ),
               )
-              .isSelected,
+              .isLabelVisible,
           isTrue,
         );
 
@@ -177,6 +176,17 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.byType(CalendarFilterBar), findsNothing);
+        expect(
+          tester
+              .widget<Badge>(
+                find.descendant(
+                  of: find.byTooltip(l10n.autoT0125),
+                  matching: find.byType(Badge),
+                ),
+              )
+              .isLabelVisible,
+          isFalse,
+        );
         expect(_hasEntries(tester, 6), isTrue);
         expect(find.byTooltip(l10n.calendarSummaryEntries(3)), findsOneWidget);
       });
@@ -192,8 +202,7 @@ void main() {
           notebooks: const <NotebookView>[],
         );
         final l10n = _l10n(tester);
-        await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
         await tester.tap(_inSheet(find.text(_work.name)));
         await tester.pumpAndSettle();
         await _closeSheet(tester);
@@ -211,8 +220,7 @@ void main() {
           notebooks: const <NotebookView>[],
         );
         final l10n = _l10n(tester);
-        await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
         expect(_inSheet(find.text(l10n.calendarFilterNoTags)), findsOneWidget);
         expect(
           tester
@@ -236,8 +244,7 @@ void main() {
           notebooks: _shelf,
         );
         final l10n = _l10n(tester);
-        await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
 
         // 只列普通、非私密的本子；合上的仍可选，排在最后并变淡。
         expect(_inSheet(find.text(l10n.calendarFilterNotebooks)), findsOne);
@@ -318,8 +325,7 @@ void main() {
           ],
         );
         final l10n = _l10n(tester);
-        await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
         expect(_inSheet(find.text(l10n.calendarFilterMoods)), findsOneWidget);
         expect(_inSheet(find.text(l10n.calendarFilterNotebooks)), findsNothing);
         expect(_inSheet(find.text('秘密本')), findsNothing);

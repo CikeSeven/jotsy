@@ -179,10 +179,11 @@ void main() {
       expect(find.byType(CalendarAnniversarySection), findsNothing);
     });
 
-    testWidgets('the header has no anniversaries button', (tester) async {
+    testWidgets('the header menu has no anniversaries item', (tester) async {
       await pumpCalendarPage(tester, prefs: featuresOff);
       final l10n = tester.element(find.byType(CalendarPage)).l10n;
-      expect(find.byTooltip(l10n.anniversaryListTitle), findsNothing);
+      await openCalendarMoreMenu(tester);
+      expect(find.text(l10n.anniversaryListTitle), findsNothing);
     });
 
     testWidgets('long-pressing a day offers no anniversary action', (
@@ -202,19 +203,19 @@ void main() {
     ) async {
       await pumpCalendarPage(tester, prefs: featuresOff);
       final l10n = tester.element(find.byType(CalendarPage)).l10n;
-      await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
-      await tester.pumpAndSettle();
+      await tapCalendarMoreAction(tester, l10n.calendarDisplayOptionsTooltip);
       expect(find.text(l10n.calendarShowOnThisDay), findsOneWidget);
       expect(find.text(l10n.calendarShowAnniversaries), findsNothing);
     });
   });
 
-  testWidgets('by default the feature is off: no header button or marks', (
+  testWidgets('by default the feature is off: no menu item or marks', (
     tester,
   ) async {
     await pumpCalendarPage(tester, anniversaries: <Anniversary>[together]);
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
-    expect(find.byTooltip(l10n.anniversaryListTitle), findsNothing);
+    await openCalendarMoreMenu(tester);
+    expect(find.text(l10n.anniversaryListTitle), findsNothing);
     expect(
       tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
       isNull,
@@ -222,13 +223,14 @@ void main() {
     expect(find.byType(CalendarAnniversarySection), findsNothing);
   });
 
-  testWidgets('with the feature on, the header button and option are there', (
+  testWidgets('with the feature on, the menu item and option are there', (
     tester,
   ) async {
     await pumpCalendarPage(tester, prefs: _featuresOn);
     final l10n = tester.element(find.byType(CalendarPage)).l10n;
-    expect(find.byTooltip(l10n.anniversaryListTitle), findsOneWidget);
-    await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
+    await openCalendarMoreMenu(tester);
+    expect(find.text(l10n.anniversaryListTitle), findsOneWidget);
+    await tester.tap(find.text(l10n.calendarDisplayOptionsTooltip));
     await tester.pumpAndSettle();
     expect(find.text(l10n.calendarShowAnniversaries), findsOneWidget);
   });

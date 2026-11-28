@@ -395,7 +395,7 @@ class _AnswerFooter extends StatelessWidget {
                         ),
                     ],
                     builder: (context, menu, _) => _ActionIcon(
-                      icon: FontAwesomeIcons.ellipsis,
+                      icon: FontAwesomeIcons.ellipsisVertical,
                       tooltip: l10n.aiChatMore,
                       onPressed: menu.toggle,
                     ),

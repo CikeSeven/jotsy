@@ -160,3 +160,17 @@ Future<void> swipeCalendarPage(
   );
   if (settle) await tester.pumpAndSettle();
 }
+
+/// 打开日历页头最右侧的“更多”（⋮）菜单。
+Future<void> openCalendarMoreMenu(WidgetTester tester) async {
+  final l10n = tester.element(find.byType(CalendarPage)).l10n;
+  await tester.tap(find.byTooltip(l10n.autoT0125));
+  await tester.pumpAndSettle();
+}
+
+/// 打开日历页头“更多”（⋮）菜单并点按指定条目。
+Future<void> tapCalendarMoreAction(WidgetTester tester, String label) async {
+  await openCalendarMoreMenu(tester);
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}

@@ -16610,6 +16610,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todoStreakRangeWeeks(int weeks) {
+    return 'Last $weeks weeks';
+  }
+
+  @override
+  String get todoStreakLegendNotDone => 'Not done';
+
+  @override
+  String get todoStreakLegendDone => 'Done';
+
+  @override
+  String todoStreakDayCompleted(String date) {
+    return '$date · Completed';
+  }
+
+  @override
+  String todoStreakDayCompletedTimes(String date, int count) {
+    return '$date · Completed $count times';
+  }
+
+  @override
+  String todoStreakDayMissed(String date) {
+    return '$date · Not completed';
+  }
+
+  @override
   String get todoStepsAllDoneComplete => 'Complete this to-do too';
 
   @override
@@ -16657,9 +16683,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String todoSeriesOf(String title) {
-    return 'Part of “$title”';
+  String todoOccurrenceContext(String date) {
+    return 'Completed this cycle · Next: $date';
   }
+
+  @override
+  String get todoOccurrenceContextEnded =>
+      'Completed occurrence of a repeating to-do';
+
+  @override
+  String get todoViewNextOccurrence => 'View next';
+
+  @override
+  String get todoUncompletedRolledBackNotice => 'Restored to this cycle';
+
+  @override
+  String get todoUncompletedStandaloneNotice =>
+      'Reopened as a one-time to-do; repeating schedule unchanged';
 
   @override
   String todoQuickAddedCount(int count) {

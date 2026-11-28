@@ -30,7 +30,7 @@ class DiaryToolbarOverflowDivider extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 FaIcon(
-                  FontAwesomeIcons.ellipsis,
+                  FontAwesomeIcons.ellipsisVertical,
                   size: 12,
                   color: colors.onSurfaceVariant,
                 ),

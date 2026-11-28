@@ -138,7 +138,7 @@ class TodosPageMenu extends ConsumerWidget {
     ].where((List<Widget> group) => group.isNotEmpty).toList();
     return ExpressiveMenuButton(
       tooltip: l10n.todoMore,
-      icon: const FaIcon(FontAwesomeIcons.ellipsis, size: 18),
+      icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
       items: <Widget>[
         for (final (index, group) in groups.indexed) ...<Widget>[
           if (index > 0) const ExpressiveMenuDivider(),

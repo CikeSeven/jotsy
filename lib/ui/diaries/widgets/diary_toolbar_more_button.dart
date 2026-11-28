@@ -13,7 +13,7 @@ import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// 悬浮工具栏最后一格的「更多」开关。
 ///
-/// - 收起时显示 ⋯；展开时换成向下箭头，并过渡到与已选中工具相同的容器色和
+/// - 收起时显示 ⋮；展开时换成向下箭头，并过渡到与已选中工具相同的容器色和
 ///   小圆角，表明面板正开着、再点一下收起；
 /// - 面板收起时，若收进面板的某个工具正在生效（光标在引用、列表里，或正在
 ///   录音），右上角亮一个小圆点，状态不会因为工具被收起来而看不见。圆点只
@@ -54,7 +54,9 @@ class DiaryToolbarMoreButton extends StatelessWidget {
       child: ExpressiveIconSwap(
         switchKey: expanded,
         child: FaIcon(
-          expanded ? FontAwesomeIcons.angleDown : FontAwesomeIcons.ellipsis,
+          expanded
+              ? FontAwesomeIcons.angleDown
+              : FontAwesomeIcons.ellipsisVertical,
           size: 14,
         ),
       ),
@@ -104,7 +106,7 @@ class DiaryToolbarMoreButton extends StatelessWidget {
             clipBehavior: Clip.none,
             children: <Widget>[
               button!,
-              // 40dp 触控区里可见按钮占 4~36，圆点落在 ⋯ 图标的右上方。
+              // 40dp 触控区里可见按钮占 4~36，圆点落在 ⋮ 图标的右上方。
               Positioned(
                 top: 6,
                 right: 6,

@@ -50,8 +50,7 @@ void main() {
       (tester) async {
         await pumpCalendarPage(tester, prefs: prefs);
         final l10n = _l10n(tester);
-        await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarDisplayOptionsTooltip);
         expect(find.text(l10n.calendarBadgeCount), findsOneWidget);
         expect(find.text(l10n.calendarBadgeCapsule), expected);
       },

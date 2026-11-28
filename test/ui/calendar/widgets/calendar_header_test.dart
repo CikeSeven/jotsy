@@ -82,42 +82,81 @@ void main() {
     expect(offset, lessThan(0));
   });
 
-  testWidgets('the anniversary button fits a 320dp English header', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 700);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    var opened = 0;
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Stack(
-            children: <Widget>[
-              CalendarHeader(
-                title: 'October 2026',
-                month: DateTime(2026, 10),
-                onJumpToToday: () {},
-                onPreviousMonth: () {},
-                onNextMonth: () {},
-                onPickDate: () {},
-                onOpenDisplayOptions: () {},
-                onOpenFilter: () {},
-                onOpenAnniversaries: () => opened++,
-              ),
-            ],
+  testWidgets(
+    '320dp English header keeps Today standalone and folds other actions into '
+    'the rightmost More menu',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var anniversaries = 0;
+      var filter = 0;
+      var options = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Stack(
+              children: <Widget>[
+                CalendarHeader(
+                  title: 'October 2026',
+                  month: DateTime(2026, 10),
+                  onJumpToToday: () {},
+                  onPreviousMonth: () {},
+                  onNextMonth: () {},
+                  onPickDate: () {},
+                  onOpenDisplayOptions: () => options++,
+                  onOpenFilter: () => filter++,
+                  onOpenAnniversaries: () => anniversaries++,
+                  filterActive: true,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-    final l10n = tester.element(find.byType(CalendarHeader)).l10n;
-    await tester.tap(find.byTooltip(l10n.anniversaryListTitle));
-    expect(opened, 1);
-    expect(tester.takeException(), isNull);
-  });
+      );
+      final l10n = tester.element(find.byType(CalendarHeader)).l10n;
+      final todayButton = find.byTooltip(l10n.autoT0180);
+      final moreButton = find.byTooltip(l10n.autoT0125);
+      expect(todayButton, findsOneWidget);
+      expect(moreButton, findsOneWidget);
+      expect(
+        tester.getRect(moreButton).left,
+        greaterThanOrEqualTo(tester.getRect(todayButton).right),
+      );
+      // 筛选生效时，更多图标右上角亮起提示圆点。
+      final badge = tester.widget<Badge>(
+        find.descendant(of: moreButton, matching: find.byType(Badge)),
+      );
+      expect(badge.isLabelVisible, isTrue);
+
+      // 纪念日、筛选与显示选项均已收进“更多”菜单。
+      expect(find.byTooltip(l10n.anniversaryListTitle), findsNothing);
+      expect(find.byTooltip(l10n.calendarFilterTooltip), findsNothing);
+      expect(find.byTooltip(l10n.calendarDisplayOptionsTooltip), findsNothing);
+
+      await tester.tap(moreButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.anniversaryListTitle));
+      await tester.pumpAndSettle();
+      expect(anniversaries, 1);
+
+      await tester.tap(moreButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.calendarFilterTooltip));
+      await tester.pumpAndSettle();
+      expect(filter, 1);
+
+      await tester.tap(moreButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.calendarDisplayOptionsTooltip));
+      await tester.pumpAndSettle();
+      expect(options, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('without a home scope the header stays a plain surface block', (
     tester,

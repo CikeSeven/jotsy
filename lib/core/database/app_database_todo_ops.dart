@@ -156,8 +156,31 @@ mixin _AppDatabaseTodoOps on _$AppDatabase, _AppDatabaseTodoQueries {
       );
 
   /// 设定重复（null 为不重复）。调用方保证待办已有截止日。
-  Future<void> setTodoRepeat(String todoId, TodoRepeatRule? rule) =>
-      _writeTodo(todoId, TodosCompanion(repeat: Value(encodeTodoRepeat(rule))));
+  /// 若这条曾是从更早的历史副本恢复出的单次待办，重新设上重复时清掉旧的
+  /// `repeatOf` 等副本标记，使其成为独立的新重复系列。
+  Future<void> setTodoRepeat(String todoId, TodoRepeatRule? rule) {
+    return transaction(() async {
+      Value<String> metadata = const Value.absent();
+      if (rule != null) {
+        final row = await getTodo(todoId);
+        if (row != null) {
+          final map = decodeTodoMetadata(row.metadata);
+          final removed =
+              map.remove(TodoMetadataKeys.repeatOf) != null ||
+              map.remove(TodoMetadataKeys.repeatNextDue) != null ||
+              map.remove(TodoMetadataKeys.repeatPrevAnchor) != null;
+          if (removed) metadata = Value(jsonEncode(map));
+        }
+      }
+      await _writeTodo(
+        todoId,
+        TodosCompanion(
+          repeat: Value(encodeTodoRepeat(rule)),
+          metadata: metadata,
+        ),
+      );
+    });
+  }
 
   Future<void> setTodoSteps(String todoId, List<TodoStep> steps) =>
       _writeTodo(todoId, TodosCompanion(steps: Value(encodeTodoSteps(steps))));

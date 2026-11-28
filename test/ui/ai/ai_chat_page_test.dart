@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/ai/ai_models.dart';
 import 'package:node_diary/core/services/ai/ai_provider_store.dart';
@@ -12,6 +11,7 @@ import 'package:node_diary/ui/ai/pages/ai_chat_page.dart';
 import 'package:node_diary/ui/ai/pages/ai_recap_page.dart';
 import 'package:node_diary/ui/ai/models/ai_conversation_options.dart';
 import 'package:node_diary/ui/ai/providers/ai_providers.dart';
+import 'package:node_diary/ui/ai/sections/ai_chat_message_view.dart';
 import 'package:node_diary/ui/ai/viewmodels/ai_task_prompts.dart';
 
 import '../../support/diary_drafts_harness.dart';
@@ -106,8 +106,13 @@ void main() {
     expect(find.byTooltip(h.l10n.aiPanelCopy), findsOneWidget);
     expect(find.byTooltip(h.l10n.aiReplyRegenerate), findsOneWidget);
     expect(find.text(h.l10n.aiRecapSaveAsDiary), findsNothing);
-    // 顶栏的 ⋮ 也叫“更多”：按图标找回答这一行的（横排三点）。
-    await tester.tap(find.byIcon(FontAwesomeIcons.ellipsis.data));
+    // 顶栏与回答行都用竖向 ⋮ 且提示均为“更多”：限定在消息视图内定位回答这一行。
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AiChatMessageView),
+        matching: find.byTooltip(h.l10n.aiChatMore),
+      ),
+    );
     await settleMany(h, 2);
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(h.l10n.aiRecapSaveAsDiary), findsOneWidget);

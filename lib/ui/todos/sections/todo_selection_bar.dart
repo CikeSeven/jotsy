@@ -133,7 +133,7 @@ class TodoSelectionActionBar extends StatelessWidget {
                       ExpressiveMenuAnchorState menu,
                       Widget? _,
                     ) => _BarAction(
-                      icon: FontAwesomeIcons.ellipsis,
+                      icon: FontAwesomeIcons.ellipsisVertical,
                       label: l10n.todoMore,
                       expand: false,
                       onPressed: enabled ? menu.toggle : null,

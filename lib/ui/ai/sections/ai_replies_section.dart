@@ -263,7 +263,7 @@ class _ReplyCardState extends ConsumerState<_ReplyCard> {
             trailing: ExpressiveMenuButton(
               tooltip: persona.name,
               icon: FaIcon(
-                FontAwesomeIcons.ellipsis,
+                FontAwesomeIcons.ellipsisVertical,
                 size: 14,
                 color: widget.textColor.withValues(alpha: 0.6),
               ),

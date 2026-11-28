@@ -14800,6 +14800,32 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String todoStreakRangeWeeks(int weeks) {
+    return '直近 $weeks 週間';
+  }
+
+  @override
+  String get todoStreakLegendNotDone => '未完了';
+
+  @override
+  String get todoStreakLegendDone => '完了';
+
+  @override
+  String todoStreakDayCompleted(String date) {
+    return '$date · 完了';
+  }
+
+  @override
+  String todoStreakDayCompletedTimes(String date, int count) {
+    return '$date · $count 回完了';
+  }
+
+  @override
+  String todoStreakDayMissed(String date) {
+    return '$date · 未完了';
+  }
+
+  @override
   String get todoStepsAllDoneComplete => 'このToDoも完了にする';
 
   @override
@@ -14835,9 +14861,21 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String todoSeriesOf(String title) {
-    return '「$title」の繰り返し';
+  String todoOccurrenceContext(String date) {
+    return '今回分は完了 · 次回：$date';
   }
+
+  @override
+  String get todoOccurrenceContextEnded => '繰り返しタスクの完了記録';
+
+  @override
+  String get todoViewNextOccurrence => '次回を見る';
+
+  @override
+  String get todoUncompletedRolledBackNotice => '完了を取り消し、今回の予定に戻しました';
+
+  @override
+  String get todoUncompletedStandaloneNotice => '単発のToDoとして戻しました（繰り返し予定はそのまま）';
 
   @override
   String todoQuickAddedCount(int count) {

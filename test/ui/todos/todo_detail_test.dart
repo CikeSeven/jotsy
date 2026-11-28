@@ -7,6 +7,7 @@ import 'package:node_diary/ui/todos/sections/todo_detail_body.dart';
 import 'package:node_diary/ui/todos/widgets/todo_complete_motion.dart';
 import 'package:node_diary/ui/todos/widgets/todo_step_row.dart';
 import 'package:node_diary/ui/todos/widgets/todo_streak_card.dart';
+import 'package:node_diary/ui/todos/widgets/todo_streak_grid.dart';
 import 'package:node_diary/ui/widgets/reorder_handle.dart';
 import 'package:node_diary/ui/widgets/todo_check_box.dart';
 
@@ -235,39 +236,131 @@ void main() {
   }
 
   for (final (label, width) in <(String, double)>[
-    ('a stacked sheet', 400),
+    ('the sheet', 400),
     ('the detail pane', 1400),
   ]) {
-    testWidgets('a done occurrence opens its series in $label', (tester) async {
+    testWidgets(
+      'a done occurrence shows streak and switches in place in $label',
+      (tester) async {
+        late String seriesId;
+        await pumpTodosPage(
+          tester,
+          width: width,
+          height: 1200,
+          todoSettings: const TodoSettings(defaultViewKey: 'completed'),
+          seed: (db) async => seriesId = await seedDoneOccurrence(db),
+        );
+        final l10n = todoL10n(tester);
+        // 已完成视图里只有这一次（原待办已推到明天）。
+        await tester.tap(find.text('浇花'));
+        await settle(tester);
+        final copy = tester.widget<TodoDetailBody>(find.byType(TodoDetailBody));
+        expect(copy.todoId, isNot(seriesId));
+        // 已完成副本直接展示真实的重复规则与完整坚持记录热力图，不再显示“属于xxx”。
+        expect(find.text(l10n.todoRepeatDaily), findsOneWidget);
+        expect(find.byType(TodoStreakCard), findsOneWidget);
+        expect(find.text(l10n.todoStreakSummary(1, 1)), findsOneWidget);
+        final gridSize = tester.getSize(find.byType(TodoStreakGrid));
+        expect(gridSize.width, greaterThan(240));
+
+        await tester.tap(find.text(l10n.todoViewNextOccurrence));
+        await settle(tester);
+        final bodies = tester
+            .widgetList<TodoDetailBody>(find.byType(TodoDetailBody))
+            .map((body) => body.todoId)
+            .toList();
+        // 无论手机底部面板还是宽窗口详情栏，都原地切换，绝不叠两层面板。
+        expect(bodies, <String>[seriesId]);
+        expect(find.byType(TodoStreakCard), findsOneWidget);
+        await unmountTodos(tester);
+      },
+    );
+  }
+
+  testWidgets(
+    'unchecking a done occurrence in detail rolls back the series in place',
+    (tester) async {
       late String seriesId;
-      await pumpTodosPage(
+      final db = await pumpTodosPage(
         tester,
-        width: width,
+        width: 400,
         height: 1200,
         todoSettings: const TodoSettings(defaultViewKey: 'completed'),
         seed: (db) async => seriesId = await seedDoneOccurrence(db),
       );
       final l10n = todoL10n(tester);
-      // 已完成视图里只有这一次（原待办已推到明天）。
       await tester.tap(find.text('浇花'));
       await settle(tester);
-      final copy = tester.widget<TodoDetailBody>(find.byType(TodoDetailBody));
-      expect(copy.todoId, isNot(seriesId));
-      expect(find.text(l10n.todoFieldRepeat), findsNothing);
-
-      await tester.tap(find.text(l10n.todoSeriesOf('浇花')));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(TodoDetailBody),
+          matching: find.byType(TodoCheckBoxVisual),
+        ),
+      );
       await settle(tester);
-      final bodies = tester
-          .widgetList<TodoDetailBody>(find.byType(TodoDetailBody))
-          .map((body) => body.todoId)
-          .toList();
-      // 手机在这一次的面板上再叠一层；宽窗口的详情栏原地换成原待办。
-      expect(bodies.last, seriesId);
-      expect(bodies, hasLength(width < 1024 ? 2 : 1));
-      expect(find.byType(TodoStreakCard), findsOneWidget);
+      // 回滚后原地切回原待办：不会闪现“已被删除”，重复规则完好，方框变为未勾选。
+      expect(find.text(l10n.todoNotFound), findsNothing);
+      final body = tester.widget<TodoDetailBody>(find.byType(TodoDetailBody));
+      expect(body.todoId, seriesId);
+      expect(find.text(l10n.todoRepeatDaily), findsOneWidget);
+      final box = tester.widget<TodoCheckBoxVisual>(
+        find.descendant(
+          of: find.byType(TodoDetailBody),
+          matching: find.byType(TodoCheckBoxVisual),
+        ),
+      );
+      expect(box.checked, isFalse);
+      final series = (await db.getTodo(seriesId))!;
+      expect(series.dueDate, formatAnniversaryDate(todoToday));
+      expect(decodeTodoRepeat(series.repeat), isNotNull);
       await unmountTodos(tester);
-    });
-  }
+    },
+  );
+
+  testWidgets(
+    'completing a repeating todo in detail resets the checkbox and allows next tick',
+    (tester) async {
+      late String seriesId;
+      final db = await openDetail(tester, '浇花', (db) async {
+        seriesId = await db.createTodo(
+          TodoInput(
+            title: '浇花',
+            dueDate: todoToday,
+            repeat: TodoRepeatRule(
+              frequency: TodoRepeatFrequency.daily,
+              anchor: todoToday,
+            ),
+          ),
+        );
+      });
+      final checkbox = find.descendant(
+        of: find.byType(TodoDetailBody),
+        matching: find.byType(TodoCheckBoxVisual),
+      );
+      // 第一次完成：推进到明天，方框平滑复位为未勾选而不是卡死在已勾选。
+      await tester.tap(checkbox);
+      await tester.pump();
+      await tester.pump(TodoCompleteMotion.check);
+      await settle(tester);
+      expect(
+        (await db.getTodo(seriesId))!.dueDate,
+        formatAnniversaryDate(todoToday.add(const Duration(days: 1))),
+      );
+      expect(tester.widget<TodoCheckBoxVisual>(checkbox).checked, isFalse);
+
+      // 第二次依然可以直接点按完成，推进到后天。
+      await tester.tap(checkbox);
+      await tester.pump();
+      await tester.pump(TodoCompleteMotion.check);
+      await settle(tester);
+      expect(
+        (await db.getTodo(seriesId))!.dueDate,
+        formatAnniversaryDate(todoToday.add(const Duration(days: 2))),
+      );
+      expect(tester.widget<TodoCheckBoxVisual>(checkbox).checked, isFalse);
+      await unmountTodos(tester);
+    },
+  );
 
   testWidgets('the big checkbox plays before it writes', (tester) async {
     final db = await openDetail(tester, '写周报', (db) async {

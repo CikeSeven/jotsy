@@ -11,6 +11,7 @@ import 'package:appflowy_editor/src/flutter/scrollable_positioned_list/scrollabl
 import 'package:flutter/material.dart';
 
 import '../../models/diary_thumbnail_rows.dart';
+import '../diary_media_viewport_gate.dart';
 import 'diary_thumbnail_row.dart';
 
 /// 可滚动编辑器的页面块：与上游 `PageBlockComponent` 的滚动分支逐项相同，
@@ -142,18 +143,21 @@ class _DiaryScrollPage extends af.BlockComponentStatelessWidget {
       );
     }
 
-    return ScrollablePositionedList.builder(
-      shrinkWrap: scroll.shrinkWrap,
-      itemCount: itemCount,
-      itemBuilder: (BuildContext context, int index) {
-        // 与上游相同，每次取项都把当前的滚动视图交给自动滚动。
-        state.updateAutoScroller(Scrollable.of(context));
-        return built[index] ??= buildItem(context, index);
-      },
-      itemScrollController: scroll.itemScrollController,
-      scrollOffsetController: scroll.scrollOffsetController,
-      itemPositionsListener: scroll.itemPositionsListener,
-      scrollOffsetListener: scroll.scrollOffsetListener,
+    return DiaryMediaViewportScope(
+      layoutChanges: scroll.itemPositionsListener.itemPositions,
+      child: ScrollablePositionedList.builder(
+        shrinkWrap: scroll.shrinkWrap,
+        itemCount: itemCount,
+        itemBuilder: (BuildContext context, int index) {
+          // 与上游相同，每次取项都把当前的滚动视图交给自动滚动。
+          state.updateAutoScroller(Scrollable.of(context));
+          return built[index] ??= buildItem(context, index);
+        },
+        itemScrollController: scroll.itemScrollController,
+        scrollOffsetController: scroll.scrollOffsetController,
+        itemPositionsListener: scroll.itemPositionsListener,
+        scrollOffsetListener: scroll.scrollOffsetListener,
+      ),
     );
   }
 }

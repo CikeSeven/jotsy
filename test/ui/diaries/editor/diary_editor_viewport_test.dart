@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/image_dimensions.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor_viewport.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 
 import '../../../support/diary_content_test_helpers.dart';
@@ -154,4 +155,49 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('caps revealPath retries when selection rects remain empty', (
+    tester,
+  ) async {
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
+        {'insert': 'line 1\nline 2\n'},
+      ]),
+      selection: af.Selection.collapsed(af.Position(path: [0])),
+    );
+    addTearDown(controller.dispose);
+    var revealCalls = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Focus(
+            focusNode: focus,
+            child: DiaryEditorViewport(
+              controller: controller,
+              coveredHeight: 0,
+              focusNode: focus,
+              revealPath: (_) => revealCalls++,
+              // 不挂 AppFlowyEditor，使 selectionRects() 始终为空。
+              child: const SizedBox(width: 300, height: 300),
+            ),
+          ),
+        ),
+      ),
+    );
+    focus.requestFocus();
+    for (var i = 0; i < 20; i++) {
+      await tester.pump();
+    }
+    // 单次揭示最多重试 6 次（首帧 + 6 次重试 = 7 次），不会每帧无限循环。
+    expect(revealCalls, lessThanOrEqualTo(7));
+    expect(revealCalls, greaterThan(0));
+    final settledCalls = revealCalls;
+    for (var i = 0; i < 10; i++) {
+      await tester.pump();
+    }
+    expect(revealCalls, settledCalls);
+  });
 }

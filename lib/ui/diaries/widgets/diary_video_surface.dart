@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,6 +8,9 @@ import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/double_tap_zoom_viewer.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
+import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
+import 'package:node_diary/ui/widgets/width_layout_builder.dart';
 import 'package:video_player/video_player.dart';
 
 /// 视频画面：按视频比例 contain 居中，点按画面播放 / 暂停，暂停时中央有大
@@ -92,6 +96,66 @@ class DiaryVideoSurface extends StatelessWidget {
                 : const SizedBox.shrink(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 正文视频卡片尚未激活播放时的轻量封面画面：不创建原生播放器，只在视口附近
+/// 解码缓存的封面帧；点按画面或中央播放按钮后由外层申请租约并开始播放。
+class DiaryVideoIdleSurface extends StatelessWidget {
+  const DiaryVideoIdleSurface({
+    super.key,
+    required this.posterPath,
+    required this.onPlay,
+  });
+
+  final String? posterPath;
+  final VoidCallback? onPlay;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final poster = posterPath;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onPlay,
+      child: ColoredBox(
+        color: colors.surfaceContainerHighest,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (poster != null)
+              WidthLayoutBuilder(
+                builder: (context, width) {
+                  final screenWidth = MediaQuery.sizeOf(context).width;
+                  final logicalWidth = width.isFinite && width > 0
+                      ? width
+                      : screenWidth;
+                  final decodeWidth =
+                      (logicalWidth * MediaQuery.devicePixelRatioOf(context))
+                          .ceil();
+                  return Image(
+                    image: boundedImageProvider(
+                      FileImage(File(poster)),
+                      width: decodeWidth,
+                    ),
+                    fit: BoxFit.contain,
+                    gaplessPlayback: true,
+                    frameBuilder: expressiveImageFrameBuilder,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  );
+                },
+              ),
+            Center(
+              child: IconButton.filledTonal(
+                tooltip: context.l10n.videoPlay,
+                onPressed: onPlay,
+                icon: const FaIcon(FontAwesomeIcons.play, size: 24),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -18,7 +18,8 @@
 - 必须：正文顶层连续小图（图片与视频可混排）三张一排只是显示分组，每张仍是独立块；分排只经 `diaryThumbnailRows`。
 - 必须：编辑页长按小图只在它所在的那一串连续小图里拖动排序，经 `DiaryThumbnailReorderLayer`；写入只经 `moveDiaryThumbnail`（一步撤销、不把页面拉向光标）；只读正文与独自一张的小图不能拖。
 - 必须：紧跟小图插入的图片与视频也设为小图（附件除外）；编辑器设置开启“插入图片和视频时默认小图”时，新插入的图片、视频与粘贴的外部图片默认设为小图（复制正文已有图片保留原状态）；导出、分享与复制出去的仍是原图。
-- 必须：视频宽度上限只存于 `data.width`；小图的帧只经 `VideoPosterCache`，禁止为小图创建播放器。
+- 必须：视频宽度上限只存于 `data.width`；小图与未播放卡片的封面帧只经 `VideoPosterCache`，禁止为小图或尚未点按播放的正文视频卡片提前创建原生播放器。
+- 必须：正文内嵌图片与视频经 `DiaryMediaViewportGate` 按视口距离与 `TickerMode` 门控解码与原生播放器；正文图片在尺寸探测前、解码前与离屏时保留非零占位高度；同一时刻全局至多持有一个懒加载正文视频的原生播放器（经 `DiaryVideoPlayerController` 租约释放后再新建）。
 - 必须：导出视频只经 `runDiaryVideoExport`，全屏只经 `openDiaryVideoFullscreen`。
 
 ## 这天的照片

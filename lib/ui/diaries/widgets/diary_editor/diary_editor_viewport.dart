@@ -45,9 +45,14 @@ class DiaryEditorViewport extends StatefulWidget {
 
 class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     with WidgetsBindingObserver {
+  /// 单次揭示请求最多连续重试的帧数：避免目标块迟迟无法拿到选区矩形或
+  /// 多媒体布局抖动时陷入每帧 `jumpTo` / `revealPath` 死循环。
+  static const int _maxRevealAttempts = 6;
+
   StreamSubscription<af.EditorTransactionValue>? _transactions;
   af.Selection? _selection;
   bool _scheduled = false;
+  int _attempts = 0;
   double _keyboard = 0;
 
   /// 遮挡变高后待核对一次：这一次连选中的文字也要让开（见类注释）。
@@ -96,7 +101,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
                     _text(op.oldAttributes['delta'])),
       )) {
         _resume.cancel();
-        _schedule();
+        _requestReveal();
       }
     });
   }
@@ -114,7 +119,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
   }
 
   void _focusChanged() {
-    if (widget.focusNode?.hasFocus == true) _schedule();
+    if (widget.focusNode?.hasFocus == true) _requestReveal();
   }
 
   void _selectionChanged() {
@@ -122,7 +127,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     if (next == _selection) return;
     _selection = next;
     _resume.cancel();
-    _schedule();
+    _requestReveal();
   }
 
   @override
@@ -135,7 +140,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     if (_resume.keyboardChanged(inset)) return;
     if (grew) {
       _coverGrew = true;
-      _schedule();
+      _requestReveal();
     }
   }
 
@@ -151,7 +156,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     if (!mounted) return;
     _coverGrew = true;
     _animate = false;
-    _schedule();
+    _requestReveal();
   }
 
   @override
@@ -165,7 +170,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     if (widget.coveredHeight > old.coveredHeight) {
       _coverGrew = true;
       _animate = true;
-      _schedule();
+      _requestReveal();
     }
   }
 
@@ -175,6 +180,17 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
             ?.findAncestorWidgetOfExactType<af.AppFlowyEditor>()
             ?.editorState ==
         widget.controller.state;
+  }
+
+  void _requestReveal() {
+    _attempts = 0;
+    _schedule();
+  }
+
+  void _retryReveal() {
+    if (_attempts >= _maxRevealAttempts) return;
+    _attempts++;
+    _schedule();
   }
 
   void _schedule() {
@@ -207,8 +223,8 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
       // 选中的文字不在已布局的范围里：用户把它滚远了，不拉回。
       if (!selection.isCollapsed) return;
       widget.revealPath(selection.end.path);
-      // 虚拟列表要等目标块布局后才有光标几何；下一帧再精确校正。
-      _schedule();
+      // 虚拟列表要等目标块布局后才有光标几何；在重试上限内下一帧再核对。
+      _retryReveal();
       return;
     }
     final box = state.renderBox;
@@ -231,12 +247,18 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
     final delta = selection.isCollapsed
         ? _revealDelta(rects.first, top, bottom)
         : _revealSelectionDelta(rects, top, bottom, screen);
-    if (delta.abs() < 0.5) return;
+    if (delta.abs() < 0.5) {
+      _attempts = 0;
+      return;
+    }
     final target = (position.pixels + delta).clamp(
       position.minScrollExtent,
       position.maxScrollExtent,
     );
-    if ((target - position.pixels).abs() <= 0.5) return;
+    if ((target - position.pixels).abs() <= 0.5) {
+      _attempts = 0;
+      return;
+    }
     final duration = animate
         ? ExpressiveMotion.duration(context, ExpressiveMotion.medium)
         : Duration.zero;
@@ -268,7 +290,7 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
   /// （选中的文字也让开）。
   void _recheck(bool coverGrew) {
     _coverGrew = _coverGrew || coverGrew;
-    _schedule();
+    _retryReveal();
   }
 
   /// 让被遮挡盖住的选中文字（各行矩形 [rects]，全局坐标）露到可见区域

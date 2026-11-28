@@ -143,50 +143,62 @@ void main() {
     );
   }
 
-  testWidgets('calendar header keeps all actions separate on narrow screens', (
-    tester,
-  ) async {
-    _phone(tester, const Size(320, 640));
-    var pick = 0;
-    var filter = 0;
-    var today = 0;
-    await tester.pumpWidget(
-      _app(
-        child: Scaffold(
-          body: Stack(
-            children: [
-              CalendarHeader(
-                title: 'September 2026',
-                onJumpToToday: () => today++,
-                onPreviousMonth: () {},
-                onNextMonth: () {},
-                onPickDate: () => pick++,
-                onOpenFilter: () => filter++,
-                onOpenDisplayOptions: () {},
-                onOpenAnniversaries: () {},
-              ),
-            ],
+  testWidgets(
+    'calendar header keeps Today and More separate on narrow screens',
+    (tester) async {
+      _phone(tester, const Size(320, 640));
+      var pick = 0;
+      var filter = 0;
+      var today = 0;
+      await tester.pumpWidget(
+        _app(
+          child: Scaffold(
+            body: Stack(
+              children: [
+                CalendarHeader(
+                  title: 'September 2026',
+                  onJumpToToday: () => today++,
+                  onPreviousMonth: () {},
+                  onNextMonth: () {},
+                  onPickDate: () => pick++,
+                  onOpenFilter: () => filter++,
+                  onOpenDisplayOptions: () {},
+                  onOpenAnniversaries: () {},
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CalendarHeader)),
-    );
-    // 手机页头没有翻月箭头：月份标题（可省略）与四个操作互不重叠。
-    expect(find.byTooltip(l10n.autoT0184), findsNothing);
-    await tester.tap(find.text('September 2026'));
-    await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-    await tester.tap(find.byTooltip(l10n.autoT0180));
-    expect([pick, filter, today], [1, 1, 1]);
-    expect(
-      tester.getRect(find.text('September 2026')).right,
-      lessThanOrEqualTo(
-        tester.getRect(find.byTooltip(l10n.anniversaryListTitle)).left,
-      ),
-    );
-    expect(tester.takeException(), isNull);
-  });
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CalendarHeader)),
+      );
+      final todayButton = find.byTooltip(l10n.autoT0180);
+      final moreButton = find.byTooltip(l10n.autoT0125);
+      // 手机页头没有翻月箭头：月份标题（可省略）与“回到今天”“更多”互不重叠，
+      // 其余操作收进“更多”弹出菜单。
+      expect(find.byTooltip(l10n.autoT0184), findsNothing);
+      expect(find.byTooltip(l10n.anniversaryListTitle), findsNothing);
+      expect(find.byTooltip(l10n.calendarFilterTooltip), findsNothing);
+      expect(find.byTooltip(l10n.calendarDisplayOptionsTooltip), findsNothing);
+      await tester.tap(find.text('September 2026'));
+      await tester.tap(todayButton);
+      await tester.tap(moreButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.calendarFilterTooltip));
+      await tester.pumpAndSettle();
+      expect([pick, filter, today], [1, 1, 1]);
+      expect(
+        tester.getRect(find.text('September 2026')).right,
+        lessThanOrEqualTo(tester.getRect(todayButton).left),
+      );
+      expect(
+        tester.getRect(todayButton).right,
+        lessThanOrEqualTo(tester.getRect(moreButton).left),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 void _phone(WidgetTester tester, Size size) {

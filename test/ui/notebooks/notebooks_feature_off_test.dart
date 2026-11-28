@@ -428,8 +428,7 @@ void main() {
           notebooks: <NotebookView>[trip],
         );
         final l10n = l10nOf(tester);
-        await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-        await tester.pumpAndSettle();
+        await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
         expect(inSheet(find.text(l10n.calendarFilterMoods)), findsOneWidget);
         expect(
           inSheet(find.text(l10n.calendarFilterNotebooks)),
@@ -472,8 +471,7 @@ void main() {
         notebooks: <NotebookView>[trip],
       );
       final l10n = l10nOf(tester);
-      await tester.tap(find.byTooltip(l10n.calendarFilterTooltip));
-      await tester.pumpAndSettle();
+      await tapCalendarMoreAction(tester, l10n.calendarFilterTooltip);
       await tester.tap(inSheet(find.text('旅行本')));
       await tester.pumpAndSettle();
       await tester.tapAt(const Offset(200, 40));

@@ -277,7 +277,9 @@ begin
         if IsDefaultDir and
            ((LowerName = 'shared_preferences.json') or
             (LowerName = 'data_location.json') or
-            (LowerName = '.jotsy_data_root.json')) then
+            (LowerName = '.jotsy_data_root.json') or
+            (LowerName = 'window_state.json') or
+            (LowerName = 'window_state.json.tmp')) then
           Continue;
         Result := True;
         Break;

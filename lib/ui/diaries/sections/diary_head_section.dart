@@ -34,6 +34,11 @@ class DiaryHeadSection extends StatelessWidget {
   static const double _headerContentHeight = 52;
   static const double _searchPreviewHeight = 40;
 
+  /// 搜索条底边到整个刊头底边的距离：52dp 内容行内垂直居中 40dp 搜索条，
+  /// 下方留白 6dp（日记本卡组按它换算搜索栏底边）。
+  static const double searchBarBottomInset =
+      (_headerContentHeight - _searchPreviewHeight) / 2;
+
   const DiaryHeadSection({
     super.key,
     required this.isSelectionMode,

@@ -299,8 +299,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 卡组是否在屏上：看得见时系统返回先收起它（PopScope），拉动提示暂停。
   bool _switcherVisible = false;
 
-  /// 列表栏（卡组的手势层与左缘）与切换胶囊（卡组的起点 / 落点）。
+  /// 列表栏（卡组的手势层与左缘）、刊头（搜索栏位置）与切换胶囊（卡组的
+  /// 起点 / 落点）。
   final GlobalKey _switcherPaneKey = GlobalKey(debugLabel: 'diaries_pane');
+  final GlobalKey _switcherHeaderKey = GlobalKey(debugLabel: 'diaries_head');
   final GlobalKey _switcherChipKey = GlobalKey(debugLabel: 'notebook_chip');
 
   bool get _isSelectionMode =>
@@ -794,6 +796,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                           // 宽度下都距左缘 16，切换 Tab 时停在同一位置
                           // （#308）。
                           child: SizedBox(
+                            key: _switcherHeaderKey,
                             height: _headerCollapsibleHeight,
                             child: LaunchReveal(
                               slot: LaunchRevealSlot.masthead,

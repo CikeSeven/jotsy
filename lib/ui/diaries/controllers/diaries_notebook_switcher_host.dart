@@ -55,6 +55,16 @@ class DiariesNotebookSwitcherHost implements NotebookSwitcherHost {
   @override
   Rect? get paneRect => _globalRect(_state._switcherPaneKey.currentContext);
 
+  /// 搜索栏此刻在屏幕上的底边全局 y：由刊头可见底边扣去搜索条下方留白
+  /// 换算，实色 / 玻璃顶栏与滚动收起途中都一致，且不受入场位移或多选态
+  /// 切换影响。
+  @override
+  double? get searchBarBottom {
+    final rect = _globalRect(_state._switcherHeaderKey.currentContext);
+    if (rect == null || rect.isEmpty) return null;
+    return rect.bottom - DiaryHeadSection.searchBarBottomInset;
+  }
+
   /// 切换胶囊完整显示时的矩形：被标签条横向滚出一截、标签栏收起（零尺寸）
   /// 时为 null，卡组改回左缘。
   @override

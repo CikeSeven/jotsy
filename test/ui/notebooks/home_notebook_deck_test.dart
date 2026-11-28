@@ -4,9 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_presets.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_header_card.dart';
-import 'package:node_diary/ui/notebooks/controllers/notebook_switcher_controller.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_deck.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_switcher_overlay.dart';
 import 'package:node_diary/ui/notebooks/widgets/notebook_switcher/notebook_switcher_panel.dart';
@@ -25,11 +27,15 @@ void main() {
     FakeDeviceAuth? auth,
     bool listLayout = false,
     bool notebooksOff = false,
+    double topPadding = 0,
     Widget Function(Widget page)? wrap,
   }) async {
-    // 手机竖屏：卡组贴左缘、竖直居中。
+    // 手机竖屏：卡组贴左缘、顶边在搜索栏下方。
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
+    if (topPadding > 0) {
+      tester.view.padding = FakeViewPadding(top: topPadding);
+    }
     addTearDown(tester.view.reset);
     final h = await DiaryDraftsHarness.create(tester);
     if (listLayout) await h.settings.setDiaryLayoutModeRaw('list');
@@ -140,70 +146,148 @@ void main() {
   Rect panelRect(WidgetTester tester) =>
       tester.getRect(find.byType(NotebookSwitcherPanel));
 
-  testWidgets('a short deck floats where the pull armed it', (tester) async {
-    final h = await pumpHome(tester, seed: seedTwo);
-    await pull(tester, 120, y: 360);
-    await h.settleAll();
-    final rect = panelRect(tester);
-    // 面板比屏幕矮：中心对着武装时手指的高度，而不是屏幕正中。
-    expect(rect.height, lessThan(600));
-    expect(rect.center.dy, closeTo(360, 1));
+  Rect searchBarRect(WidgetTester tester) =>
+      tester.getRect(find.byKey(const ValueKey<String>('search_preview')));
 
-    // 靠近底边起手：整块往上让，不超出下方安全区。
-    expect(await systemBackLeavesApp(tester), isFalse);
-    await h.settleAll();
-    final screen = MediaQuery.sizeOf(tester.element(find.byType(DiariesPage)));
-    await pull(tester, 120, y: screen.height - 30);
-    await h.settleAll();
-    expect(
-      panelRect(tester).bottom,
-      closeTo(screen.height - NotebookSwitcherOverlay.margin, 1),
+  testWidgets(
+    'deck top sits below the search bar whether opened from chip or pull',
+    (tester) async {
+      final h = await pumpHome(tester, seed: seedTwo);
+      final searchBottom = searchBarRect(tester).bottom;
+      final expectedTop = searchBottom + NotebookSwitcherOverlay.searchBarGap;
+
+      // 点切换胶囊打开：顶边落在搜索栏底边下方 8dp。
+      await tester.tap(find.byType(NotebookSwitcherChip));
+      await h.settleAll();
+      expect(panelRect(tester).top, closeTo(expectedTop, 1));
+      expect(panelRect(tester).height, lessThan(600));
+
+      // 无论在屏幕上方、中间还是底部右滑拉出，顶边都固定在搜索栏下方。
+      final screen = MediaQuery.sizeOf(
+        tester.element(find.byType(DiariesPage)),
+      );
+      for (final y in <double>[160, 360, screen.height - 40]) {
+        expect(await systemBackLeavesApp(tester), isFalse);
+        await h.settleAll();
+        await pull(tester, 120, y: y);
+        await h.settleAll();
+        expect(panelRect(tester).top, closeTo(expectedTop, 1));
+      }
+
+      // 收回途中在下方重新右滑：顺利重新打开且顶边仍在搜索栏下方。
+      expect(await systemBackLeavesApp(tester), isFalse);
+      await tester.pump(const Duration(milliseconds: 60));
+      await pull(tester, 120, y: screen.height - 40);
+      await h.settleAll();
+      expect(panelRect(tester).top, closeTo(expectedTop, 1));
+      await h.unmount();
+    },
+  );
+
+  testWidgets(
+    'a tall deck stays below the search bar and inside bottom margin',
+    (tester) async {
+      final h = await pumpHome(
+        tester,
+        seed: (h) async {
+          for (var i = 0; i < 15; i++) {
+            await h.notebook('本子 $i');
+          }
+          await h.diary('上班路上');
+        },
+      );
+      final screen = MediaQuery.sizeOf(
+        tester.element(find.byType(DiariesPage)),
+      );
+      final expectedTop =
+          searchBarRect(tester).bottom + NotebookSwitcherOverlay.searchBarGap;
+
+      await tester.tap(find.byType(NotebookSwitcherChip));
+      await h.settleAll();
+      final rect = panelRect(tester);
+      expect(rect.top, closeTo(expectedTop, 1));
+      expect(
+        rect.bottom,
+        closeTo(screen.height - NotebookSwitcherOverlay.margin, 1),
+      );
+      await h.unmount();
+    },
+  );
+
+  for (final glass in <bool>[false, true]) {
+    testWidgets(
+      'deck top follows the visible search bar on scroll (glass: $glass)',
+      (tester) async {
+        const statusBar = 36.0;
+        final h = await pumpHome(
+          tester,
+          listLayout: true,
+          topPadding: statusBar,
+          seed: (h) async {
+            await h.notebook('旅行');
+            await h.notebook('读书');
+            for (var i = 0; i < 20; i++) {
+              await h.diary('第 $i 篇日记\n多行内容撑开列表高度便于滚动验证');
+            }
+          },
+          wrap: glass
+              ? (Widget page) => Builder(
+                  builder: (BuildContext context) => HomeChromeScope(
+                    style: HomeBarResolvedStyle.resolve(
+                      HomeBarPreset.glass.style,
+                      Theme.of(context).colorScheme,
+                    ),
+                    child: page,
+                  ),
+                )
+              : null,
+        );
+
+        final initialTop =
+            searchBarRect(tester).bottom + NotebookSwitcherOverlay.searchBarGap;
+        await tester.tap(find.byType(NotebookSwitcherChip));
+        await h.settleAll();
+        expect(panelRect(tester).top, closeTo(initialTop, 1));
+
+        expect(await systemBackLeavesApp(tester), isFalse);
+        await h.settleAll();
+
+        // 向下滚动让搜索栏完全收起：面板顶边顺势上移到状态栏下方安全边距。
+        await tester.drag(find.byType(CustomScrollView), const Offset(0, -600));
+        await h.settleAll();
+        const collapsedTop = statusBar + NotebookSwitcherOverlay.margin;
+
+        await tester.tap(find.byType(NotebookSwitcherChip));
+        await h.settleAll();
+        expect(panelRect(tester).top, closeTo(collapsedTop, 1));
+
+        expect(await systemBackLeavesApp(tester), isFalse);
+        await h.settleAll();
+        await pull(tester, 120, y: 420);
+        await h.settleAll();
+        expect(panelRect(tester).top, closeTo(collapsedTop, 1));
+
+        // 向上滚动让搜索栏重新浮出：面板顶边回到搜索栏下方。
+        expect(await systemBackLeavesApp(tester), isFalse);
+        await h.settleAll();
+        final gesture = await tester.startGesture(const Offset(200, 300));
+        for (var i = 0; i < 4; i++) {
+          await gesture.moveBy(const Offset(0, 40));
+          await tester.pump();
+        }
+        await gesture.up();
+        await h.settleAll();
+
+        final restoredTop =
+            searchBarRect(tester).bottom + NotebookSwitcherOverlay.searchBarGap;
+        await tester.tap(find.byType(NotebookSwitcherChip));
+        await h.settleAll();
+        expect(panelRect(tester).top, closeTo(restoredTop, 1));
+        expect(restoredTop, closeTo(initialTop, 1));
+        await h.unmount();
+      },
     );
-    await h.unmount();
-  });
-
-  testWidgets('re-pulling while it closes floats to the new finger', (
-    tester,
-  ) async {
-    final h = await pumpHome(tester, seed: seedTwo);
-    final screen = MediaQuery.sizeOf(tester.element(find.byType(DiariesPage)));
-    await pull(tester, 120, y: 160);
-    await h.settleAll();
-    expect(panelRect(tester).top, closeTo(NotebookSwitcherOverlay.margin, 1));
-
-    // 返回后收回动画还在走，马上在靠下的地方再右滑：面板滑到下面去，
-    // 而不是停在上一次打开的位置。
-    expect(await systemBackLeavesApp(tester), isFalse);
-    await tester.pump(const Duration(milliseconds: 60));
-    await pull(tester, 120, y: screen.height - 40);
-    await h.settleAll();
-    expect(
-      panelRect(tester).bottom,
-      closeTo(screen.height - NotebookSwitcherOverlay.margin, 1),
-    );
-
-    // 再反过来：从下面回到上面。
-    expect(await systemBackLeavesApp(tester), isFalse);
-    await tester.pump(const Duration(milliseconds: 60));
-    await pull(tester, 120, y: 160);
-    await h.settleAll();
-    expect(panelRect(tester).top, closeTo(NotebookSwitcherOverlay.margin, 1));
-    await h.unmount();
-  });
-
-  testWidgets('a deck opened from the chip hangs below the chip', (
-    tester,
-  ) async {
-    final h = await pumpHome(tester, seed: seedTwo);
-    final chip = tester.getRect(find.byType(NotebookSwitcherChip));
-    await tester.tap(find.byType(NotebookSwitcherChip));
-    await h.settleAll();
-    expect(
-      panelRect(tester).top,
-      closeTo(chip.bottom + NotebookSwitcherController.panelGap, 1),
-    );
-    await h.unmount();
-  });
+  }
 
   testWidgets('a left pull does not open the deck', (tester) async {
     final h = await pumpHome(tester, seed: seedTwo);

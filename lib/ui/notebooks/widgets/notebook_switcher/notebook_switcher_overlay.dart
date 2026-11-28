@@ -29,7 +29,8 @@ import 'notebook_switcher_panel.dart';
 /// 之下）：遮罩、从起点形变成面板的容器、落进切换胶囊时的胶囊副本。
 ///
 /// 几何逐帧按 [NotebookSwitcherController.stage] 计算（见控制器的类注释），
-/// 面板竖直方向悬浮在唤出的位置（[NotebookSwitcherController.panelAnchor]）：
+/// 面板顶边固定落在搜索栏下方 [NotebookSwitcherOverlay.searchBarGap]（随搜索
+/// 栏滚动收起而上移，夹在上下安全区内）：
 /// - 0 → 1：左缘胶囊，左端藏在屏外，纵向中心跟着手指；
 /// - 1 → 2：容器从起点（左缘胶囊 / 切换胶囊）插值到面板，圆角插值到 28；
 ///   面板内容始终按最终尺寸排版、由容器裁切露出；
@@ -54,6 +55,9 @@ class NotebookSwitcherOverlay extends ConsumerStatefulWidget {
 
   /// 面板与列表栏边缘、屏幕上下安全区的间距。
   static const double margin = 12;
+
+  /// 面板顶边与搜索栏底边的间距。
+  static const double searchBarGap = 8;
   static const double maxWidth = 360;
 
   /// 窄窗口里面板右侧至少露出的列表宽度（点它关闭）。
@@ -112,24 +116,7 @@ class _NotebookSwitcherOverlayState
   bool _precached = false;
 
   @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(_handleAnchorChanged);
-  }
-
-  @override
-  void didUpdateWidget(covariant NotebookSwitcherOverlay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.controller, widget.controller)) {
-      oldWidget.controller.removeListener(_handleAnchorChanged);
-      widget.controller.addListener(_handleAnchorChanged);
-    }
-  }
-
-  @override
   void dispose() {
-    widget.controller.removeListener(_handleAnchorChanged);
-    _topShift.dispose();
     _height.dispose();
     super.dispose();
   }
@@ -188,18 +175,16 @@ class _NotebookSwitcherOverlayState
     });
   }
 
-  /// 面板的矩形（全局坐标）：贴列表栏行首，竖直方向悬浮在唤出的位置
-  /// （[NotebookPanelAnchor]：右滑以武装时手指的高度为中心，切换胶囊时顶边
-  /// 贴在胶囊下方；还没武装时以手指为中心），夹在上下安全区之内。面板比
-  /// 可用高度还高时铺满（中宽窗口最高 640）。
+  /// 面板的矩形（全局坐标）：贴列表栏行首，顶边落在搜索栏底边下方
+  /// [NotebookSwitcherOverlay.searchBarGap]（搜索栏随列表滚动收起时顺势上移，
+  /// 不越过顶部安全边距），高度向下延伸；比可用高度还高时铺满（中宽窗口
+  /// 最高 640）。
   Rect _panelRect({
     required Rect pane,
     required double height,
     required MediaQueryData view,
     required double sign,
-    required NotebookPanelAnchor? anchor,
-    required double fallbackY,
-    bool record = false,
+    required double? searchBarBottom,
   }) {
     const margin = NotebookSwitcherOverlay.margin;
     final padding = view.padding;
@@ -217,79 +202,20 @@ class _NotebookSwitcherOverlayState
                 view.size.width - padding.right - margin,
               ) -
               width;
-    final topBound = padding.top + margin;
+    final safeTop = padding.top + margin;
+    final top = searchBarBottom == null
+        ? safeTop
+        : math.max(
+            safeTop,
+            searchBarBottom + NotebookSwitcherOverlay.searchBarGap,
+          );
     final bottomBound = view.size.height - padding.bottom - margin;
-    final room = bottomBound - topBound;
+    final room = math.max(0.0, bottomBound - top);
     final h = math.min(
-      height,
+      math.max(0.0, height),
       compact ? room : math.min(NotebookSwitcherOverlay.wideMaxHeight, room),
     );
-    final maxTop = math.max(topBound, bottomBound - h);
-    final double settled;
-    if (anchor == null) {
-      settled = (fallbackY - h / 2).clamp(topBound, maxTop);
-    } else {
-      // 第一次见到的锚点（从切换胶囊打开时一开始就有）直接定下顶边；之后
-      // 的更换由 [_handleAnchorChanged] 在构建之外处理。
-      if (!identical(anchor, _topAnchor)) _adoptAnchor(anchor, h);
-      settled = _anchorTop.clamp(topBound, maxTop);
-    }
-    final top = settled + _topShift.value;
-    if (record) {
-      _lastTop = top;
-      _lastHeight = h;
-      _lastTopBound = topBound;
-      _lastMaxTop = maxTop;
-    }
     return Rect.fromLTWH(left, top, width, h);
-  }
-
-  /// 当前锚点与它换算出的面板顶边（未夹取）。以中心定位的锚点只在第一次
-  /// 见到时按当时的高度换算并记住：之后展开子本、面板变高时顶边不动、只
-  /// 往下长（手指刚点的角标不会被推走），碰到底边才由夹取往上让。
-  NotebookPanelAnchor? _topAnchor;
-  double _anchorTop = 0;
-
-  void _adoptAnchor(NotebookPanelAnchor anchor, double height) {
-    _topAnchor = anchor;
-    _anchorTop = anchor.top ? anchor.y : anchor.y - height / 2;
-  }
-
-  /// 锚点更换时面板顶边的过渡位移：从旧位置出发，弹簧归零。
-  late final AnimationController _topShift = AnimationController.unbounded(
-    vsync: this,
-  );
-
-  /// 上一帧面板的顶边、高度与顶边的夹取范围（锚点更换时据此算出位移）。
-  double? _lastTop;
-  double _lastHeight = 0;
-  double _lastTopBound = 0;
-  double _lastMaxTop = 0;
-
-  /// 控制器换了锚点（收回途中在别处被手指接住、拉回阈值内换个高度再武装）：
-  /// 面板已经在屏上时从原来的位置滑到新位置，而不是瞬移。在监听回调里
-  /// 处理（不在构建中启动动画）。
-  void _handleAnchorChanged() {
-    final anchor = widget.controller.panelAnchor;
-    if (identical(anchor, _topAnchor)) return;
-    if (anchor == null) {
-      _topAnchor = null;
-      return;
-    }
-    final hadAnchor = _topAnchor != null;
-    final previous = _lastTop;
-    _adoptAnchor(anchor, _lastHeight);
-    if (!hadAnchor || previous == null || !mounted) return;
-    final next = _anchorTop.clamp(_lastTopBound, _lastMaxTop);
-    final shift = previous - next;
-    if (shift.abs() < 0.5) return;
-    _topShift.value = shift;
-    ExpressiveMotion.springTo(
-      context,
-      _topShift,
-      0,
-      spring: ExpressiveMotion.springSpatial,
-    );
   }
 
   /// 左缘胶囊在进度 [t]（0–1）时的矩形。
@@ -350,8 +276,7 @@ class _NotebookSwitcherOverlayState
       height: contentHeight,
       view: view,
       sign: sign,
-      anchor: controller.panelAnchor,
-      fallbackY: controller.fingerY,
+      searchBarBottom: controller.host.searchBarBottom,
     );
     final heightTarget = _heightTarget;
     if (heightTarget == null) {
@@ -383,7 +308,10 @@ class _NotebookSwitcherOverlayState
         layout: layout,
         controller: controller,
         reveal: _reveal,
-        viewportHeight: target.height - NotebookSwitcherPanel.headerHeight,
+        viewportHeight: math.max(
+          0.0,
+          target.height - NotebookSwitcherPanel.headerHeight,
+        ),
         isCurrent: (NotebookDeckEntry entry) => _isCurrent(entry, scope),
         onToggle: _toggle,
       ),
@@ -435,7 +363,6 @@ class _NotebookSwitcherOverlayState
             controller.stage,
             controller.armPop,
             _height,
-            _topShift,
           ]),
           child: panel,
           builder: (BuildContext context, Widget? panel) =>
@@ -470,9 +397,7 @@ class _NotebookSwitcherOverlayState
       height: _height.value,
       view: view,
       sign: sign,
-      anchor: controller.panelAnchor,
-      fallbackY: controller.fingerY,
-      record: true,
+      searchBarBottom: controller.host.searchBarBottom,
     );
     final useChip = fromChip && chip != null;
     final anchor = useChip

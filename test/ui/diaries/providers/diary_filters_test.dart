@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -160,4 +162,81 @@ void main() {
     await tester.pump(diaryQueryIdleRetention);
     expect(container.exists(provider), isFalse);
   });
+
+  test(
+    'pagedDiariesProvider deduplicates identical consecutive emissions',
+    () async {
+      final controller = StreamController<List<DiaryWithTags>>();
+      addTearDown(controller.close);
+      final database = _StreamDatabase(controller.stream);
+      addTearDown(database.close);
+      final container = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+      );
+      addTearDown(container.dispose);
+
+      const query = DiaryPageQuery(
+        keyword: '',
+        requiredTagIds: <int>[],
+        limit: 20,
+        sortMode: DiarySortMode.updatedDesc,
+      );
+      final received = <PagedDiariesResult>[];
+      final sub = container.listen(pagedDiariesProvider(query), (_, next) {
+        if (next.asData?.value case final value?) {
+          received.add(value);
+        }
+      });
+      addTearDown(sub.close);
+
+      DiaryWithTags sample(String title) => DiaryWithTags(
+        diary: Diary(
+          id: 1,
+          diaryId: 'd1',
+          title: title,
+          content: '[]',
+          contentText: title,
+          metadata: '{}',
+          createdAt: DateTime(2026, 11, 1),
+          updatedAt: DateTime(2026, 11, 1),
+          isArchived: false,
+          isPinned: false,
+          isDeleted: false,
+        ),
+        tags: const <Tag>[Tag(id: 1, name: 'Daily', color: 0xff112233)],
+      );
+
+      controller.add(<DiaryWithTags>[sample('First')]);
+      await Future<void>.delayed(Duration.zero);
+      // 相同内容的新列表实例被去重，不重复发射。
+      controller.add(<DiaryWithTags>[sample('First')]);
+      await Future<void>.delayed(Duration.zero);
+      // 内容真正变化时正常发射。
+      controller.add(<DiaryWithTags>[sample('Updated')]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(received.length, 2);
+      expect(received.first.items.single.diary.title, 'First');
+      expect(received.last.items.single.diary.title, 'Updated');
+    },
+  );
+}
+
+class _StreamDatabase extends AppDatabase {
+  _StreamDatabase(this._stream) : super.forTesting(NativeDatabase.memory());
+
+  final Stream<List<DiaryWithTags>> _stream;
+
+  @override
+  Stream<List<DiaryWithTags>> watchDiaries({
+    String keyword = '',
+    List<int> requiredTagIds = const <int>[],
+    int? limit,
+    int offset = 0,
+    DiarySortMode sortMode = DiarySortMode.updatedDesc,
+    DiaryListScope scope = DiaryListScope.all,
+    bool matchComments = false,
+    bool includeArchived = false,
+    DiaryScopePredicate? filter,
+  }) => _stream;
 }

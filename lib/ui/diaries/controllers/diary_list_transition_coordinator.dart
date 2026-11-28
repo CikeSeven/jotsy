@@ -247,6 +247,14 @@ class DiaryListTransitionCoordinator {
     if (targetIds.isEmpty) {
       return;
     }
+    final duration = ExpressiveMotion.duration(
+      _state.context,
+      _DiariesPage._listItemTransitionDuration,
+    );
+    if (duration == Duration.zero) {
+      hideDiariesImmediately(targetIds);
+      return;
+    }
 
     final batch = _HideBatch(<String>{...targetIds});
     for (final diaryId in targetIds) {
@@ -254,7 +262,7 @@ class DiaryListTransitionCoordinator {
       _state._pendingHideTimers.remove(diaryId)?.release(diaryId);
       _state._pendingHideTimers[diaryId] = batch;
     }
-    batch.timer = Timer(_DiariesPage._listItemTransitionDuration, () {
+    batch.timer = Timer(duration, () {
       // 期间被撤销 / 清理的 id 已从 batch.ids 里释放，剩下的才转为隐藏。
       final fired = batch.ids.toList(growable: false);
       for (final diaryId in fired) {

@@ -340,7 +340,7 @@ class DiariesListSection extends StatelessWidget {
           final diary = items[index];
           final diaryId = diary.diary.diaryId;
           return KeyedSubtree(
-            key: ValueKey<String>('waterfall_$diaryId'),
+            key: DiaryWaterfallSliver.itemKey(diaryId),
             child: _makeRoom(
               frame.makeRoom,
               diaryId,
@@ -364,62 +364,76 @@ class DiariesListSection extends StatelessWidget {
 
     // 普通列表同样使用独立圆角表面；间距代替粗分割线，和瀑布流共享视觉层级。
     // 每项都挂启动编排槽位（结构恒定）；首屏之后的项落在同一槽位，编排结束
-    // 后它们本就是落定态。
+    // 后它们本就是落定态。通过 findChildIndexCallback 按日记 id 复用元素、
+    // 通过 itemKeys 保持视口锚点稳定，删改条目时后续卡片不再整批重挂闪烁。
+    final listItemKeys = <Object>[for (final item in items) item.diary.diaryId];
+    final listIndexByKey = <String, int>{
+      for (var i = 0; i < items.length; i++)
+        'list_${items[i].diary.diaryId}': i,
+    };
     return MakeRoomSliverList(
       makeRoom: frame.makeRoom,
-      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        final diary = items[index];
-        final diaryId = diary.diary.diaryId;
-        final isLast = index == items.length - 1;
-        // 分组标题按宿主列表的下标取；退场项没有。
-        final sourceIndex = frame.sourceIndexOf(index);
-        final sectionHeader = sourceIndex == null
-            ? null
-            : sectionHeaderBuilder?.call(context, sourceIndex);
-        final presence = presenceOf(diaryId);
-        return KeyedSubtree(
-          key: ValueKey<String>('list_$diaryId'),
-          child: _makeRoom(
-            frame.makeRoom,
-            diaryId,
-            _launchReveal(
-              index,
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: modeStyle.sideMargin),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    if (sectionHeader != null)
-                      _revealPlain(index, sectionHeader),
-                    _revealItem(
-                      index,
-                      _buildDiaryItem(
-                        context,
-                        diary: diary,
-                        resolved: resolved,
-                        presence: presence,
-                      ),
-                    ),
-                    // 卡片间距随卡片一起收起 / 展开：收起结束时下方的卡片
-                    // 已经贴上来，不再跳一下。
-                    if (!isLast)
-                      ListItemPresence(
-                        key: const ValueKey<String>('card_gap'),
-                        visible: !presence.exiting,
-                        appearing: presence.appearing,
-                        duration: presence.duration,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: modeStyle.cardGap,
+      itemKeys: listItemKeys,
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          final diary = items[index];
+          final diaryId = diary.diary.diaryId;
+          final isLast = index == items.length - 1;
+          // 分组标题按宿主列表的下标取；退场项没有。
+          final sourceIndex = frame.sourceIndexOf(index);
+          final sectionHeader = sourceIndex == null
+              ? null
+              : sectionHeaderBuilder?.call(context, sourceIndex);
+          final presence = presenceOf(diaryId);
+          return KeyedSubtree(
+            key: ValueKey<String>('list_$diaryId'),
+            child: _makeRoom(
+              frame.makeRoom,
+              diaryId,
+              _launchReveal(
+                index,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: modeStyle.sideMargin,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (sectionHeader != null)
+                        _revealPlain(index, sectionHeader),
+                      _revealItem(
+                        index,
+                        _buildDiaryItem(
+                          context,
+                          diary: diary,
+                          resolved: resolved,
+                          presence: presence,
                         ),
                       ),
-                  ],
+                      // 卡片间距随卡片一起收起 / 展开：收起结束时下方的卡片
+                      // 已经贴上来，不再跳一下。
+                      if (!isLast)
+                        ListItemPresence(
+                          key: const ValueKey<String>('card_gap'),
+                          visible: !presence.exiting,
+                          appearing: presence.appearing,
+                          duration: presence.duration,
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: modeStyle.cardGap,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      }, childCount: items.length),
+          );
+        },
+        childCount: items.length,
+        findChildIndexCallback: (Key key) =>
+            key is ValueKey<String> ? listIndexByKey[key.value] : null,
+      ),
     );
   }
 

@@ -21,8 +21,9 @@ import 'list_make_room.dart';
 ///   从原位置以弹簧滑到新位置；
 /// - 移除：数据里没了、此前挂在树上的项先留在原位置退场（由调用方按
 ///   [ListChangeFrame.exiting] 收起或淡出），`duration` 后再拿掉，其余项随之
-///   让位。宿主自己收起过的（pendingHide）与刻意直接拿掉的（`hiddenKeys`）
-///   直接拿掉、只让位；
+///   让位。宿主正在演收起、数据流抢先移走时继续留在原位，等宿主移出
+///   `pendingHideKeys` 后立刻拿掉并让位；宿主已播完收起（移出
+///   `pendingHideKeys`）或刻意直接拿掉（`hiddenKeys`）的直接拿掉、只让位；
 /// - 插入：落在此前已挂载区间里、此前不在树上的项（新项，或从屏外换位进来
 ///   的）入场（[ListChangeFrame.entering]）。宿主自己在演出现的（appearing）
 ///   不重复。
@@ -118,6 +119,11 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
   late List<T> _items = widget.items;
   final Set<String> _exiting = <String>{};
 
+  /// 宿主正在演收起（仍在 `pendingHideKeys` 里）时数据流抢先删掉的项：
+  /// 留在此处继续完成收起，不另起计时器，等宿主移出 `pendingHideKeys` 时
+  /// 拿掉并触发其余项让位。
+  final Set<String> _hostHiding = <String>{};
+
   /// 入场标记不经 setState 清除：它只在条目首次构建时起作用，清除后新建
   /// 的条目（滚出再滚回来）不再重演；[ListChangeFrame.entering] 是它的只读
   /// 视图。
@@ -125,12 +131,25 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
   final Set<Timer> _timers = <Timer>{};
 
   String _keyOf(T item) => widget.keyOf(item);
+  bool _isExiting(String key) =>
+      _exiting.contains(key) || _hostHiding.contains(key);
 
   @override
   void didUpdateWidget(covariant ListChangeHost<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.items, widget.items)) {
+    final itemsChanged = !identical(oldWidget.items, widget.items);
+    if (itemsChanged) {
       _sync(oldWidget);
+      return;
+    }
+    if (_hostHiding.isNotEmpty) {
+      final released = <String>{
+        for (final key in _hostHiding)
+          if (!widget.pendingHideKeys.contains(key)) key,
+      };
+      if (released.isNotEmpty) {
+        _releaseHostHiding(released);
+      }
     }
   }
 
@@ -152,7 +171,7 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
   void _sync(ListChangeHost<T> oldWidget) {
     final previous = _items;
     final next = widget.items;
-    if (_exiting.isEmpty && _isAppend(previous, next)) {
+    if (_exiting.isEmpty && _hostHiding.isEmpty && _isAppend(previous, next)) {
       // 翻页：后面接上的项在屏外，已有的项不动。
       _items = next;
       return;
@@ -160,6 +179,7 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
     if (previous.isEmpty || !_canAnimate) {
       _items = next;
       _exiting.clear();
+      _hostHiding.clear();
       _entering.clear();
       return;
     }
@@ -168,34 +188,69 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
     final captured = _makeRoom.animateLayoutChange();
     final nextKeys = <String>{for (final item in next) _keyOf(item)};
 
-    // 退场途中又回来的：照常排在新位置，撤掉退场标记后自己展开回来。
+    // 退场途中又回来的：照常排在新位置，撤掉退场标记后自己展开回来；
+    // 宿主已结束收起（移出 pendingHideKeys）的同步释放。
     _exiting.removeWhere(nextKeys.contains);
+    _hostHiding.removeWhere(
+      (String key) =>
+          nextKeys.contains(key) || !widget.pendingHideKeys.contains(key),
+    );
     final removed = <String>{};
+    final startedHostHiding = <String>{};
     var allCaptured = true;
     for (final item in previous) {
       final key = _keyOf(item);
       if (!captured.contains(key)) allCaptured = false;
-      if (nextKeys.contains(key) || _exiting.contains(key)) continue;
-      // 宿主收起过的已经看不见了；没挂在树上的本来就看不见。
-      if (oldWidget.pendingHideKeys.contains(key) ||
-          widget.pendingHideKeys.contains(key) ||
-          widget.hiddenKeys.contains(key) ||
-          !captured.contains(key)) {
+      if (nextKeys.contains(key) || _isExiting(key)) continue;
+      // 刻意直接拿掉的或没挂在树上的直接跳过。
+      if (widget.hiddenKeys.contains(key) || !captured.contains(key)) {
+        continue;
+      }
+      if (widget.pendingHideKeys.contains(key)) {
+        // 宿主正在收起、数据流抢先移走：保留原位直到宿主移出 pendingHideKeys，
+        // 避免收起动画播到一半被直接截断。
+        startedHostHiding.add(key);
+        continue;
+      }
+      if (oldWidget.pendingHideKeys.contains(key)) {
+        // 宿主已播完收起并移出 pendingHideKeys：直接拿掉、只让位。
         continue;
       }
       removed.add(key);
     }
-    if (_exiting.length + removed.length <= _maxExiting) {
+    if (_exiting.length + _hostHiding.length + startedHostHiding.length <=
+        _maxExiting) {
+      _hostHiding.addAll(startedHostHiding);
+    }
+    if (_exiting.length + _hostHiding.length + removed.length <= _maxExiting) {
       _exiting.addAll(removed);
       if (removed.isNotEmpty) _later(() => _dropExiting(removed));
     }
-    _items = _exiting.isEmpty ? next : _withExiting(previous, next, nextKeys);
+    _items = _exiting.isEmpty && _hostHiding.isEmpty
+        ? next
+        : _withExiting(previous, next, nextKeys);
 
-    final entering = _enteringKeys(next, captured, allCaptured: allCaptured);
+    final leadingCaptured = captured.contains(_keyOf(previous.first));
+    final entering = _enteringKeys(
+      next,
+      captured,
+      allCaptured: allCaptured,
+      leadingCaptured: leadingCaptured,
+    );
     if (entering.isNotEmpty) {
       _entering.addAll(entering);
       _later(() => _entering.removeAll(entering));
     }
+  }
+
+  /// 宿主收起计时结束并移出 `pendingHideKeys`：拿掉这些项，其余项让位补上。
+  void _releaseHostHiding(Set<String> released) {
+    if (_canAnimate) _makeRoom.animateLayoutChange();
+    _hostHiding.removeAll(released);
+    _items = <T>[
+      for (final item in _items)
+        if (!released.contains(_keyOf(item))) item,
+    ];
   }
 
   /// [next] 是否只是在 [previous] 末尾接上了更多项。
@@ -207,25 +262,37 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
     return true;
   }
 
-  /// 要入场的项：此前不在树上、落在此前已挂载的区间里（最后一个挂载过的
-  /// 项之前；此前整张列表都挂载着时不限位置）。此后的项本来就在屏外。
+  /// 要入场的项：此前不在树上、落在此前已挂载的区间里（[start, end)）。
+  ///
+  /// - 此前整张列表都挂载着（[allCaptured]）时不限区间；
+  /// - 列表已向下滚动（首项不在树上，[leadingCaptured] 为 false）时，区间起点
+  ///   从第一个仍挂载在树上的项算起，视口上方的屏外项不标入场——否则上滑或
+  ///   锚点校正刚拉出的前导项会从高度 0 展开、把列表拉跳。
   Set<String> _enteringKeys(
     List<T> next,
     Set<Object> captured, {
     required bool allCaptured,
+    required bool leadingCaptured,
   }) {
+    var start = 0;
     var end = next.length;
     if (!allCaptured) {
-      end = 0;
+      var first = -1;
+      var last = 0;
       for (var index = 0; index < next.length; index++) {
-        if (captured.contains(_keyOf(next[index]))) end = index;
+        if (captured.contains(_keyOf(next[index]))) {
+          if (first < 0) first = index;
+          last = index;
+        }
       }
+      start = leadingCaptured || first < 0 ? 0 : first;
+      end = last;
     }
     return <String>{
-      for (final item in next.take(end))
-        if (!captured.contains(_keyOf(item)) &&
-            !widget.appearingKeys.contains(_keyOf(item)))
-          _keyOf(item),
+      for (var index = start; index < end; index++)
+        if (!captured.contains(_keyOf(next[index])) &&
+            !widget.appearingKeys.contains(_keyOf(next[index])))
+          _keyOf(next[index]),
     };
   }
 
@@ -237,7 +304,7 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
     String? anchor;
     for (final item in previous) {
       final key = _keyOf(item);
-      if (_exiting.contains(key)) {
+      if (_isExiting(key)) {
         final at = anchor == null ? 0 : mergedKeys.indexOf(anchor) + 1;
         merged.insert(at, item);
         mergedKeys.insert(at, key);
@@ -277,23 +344,27 @@ class _ListChangeHostState<T> extends State<ListChangeHost<T>>
   /// [_items] 里每一项在宿主列表里的下标，退场项为 -1；没有退场项时为
   /// null（下标不变）。
   List<int>? _sourceIndexes() {
-    if (_exiting.isEmpty) return null;
+    if (_exiting.isEmpty && _hostHiding.isEmpty) return null;
     var source = 0;
     return <int>[
-      for (final item in _items)
-        _exiting.contains(_keyOf(item)) ? -1 : source++,
+      for (final item in _items) _isExiting(_keyOf(item)) ? -1 : source++,
     ];
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(
-    context,
-    ListChangeFrame<T>(
-      items: _items,
-      exiting: UnmodifiableSetView<String>(_exiting),
-      entering: UnmodifiableSetView<String>(_entering),
-      makeRoom: _makeRoom,
-      sourceIndexes: _sourceIndexes(),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final exiting = _hostHiding.isEmpty
+        ? UnmodifiableSetView<String>(_exiting)
+        : UnmodifiableSetView<String>(<String>{..._exiting, ..._hostHiding});
+    return widget.builder(
+      context,
+      ListChangeFrame<T>(
+        items: _items,
+        exiting: exiting,
+        entering: UnmodifiableSetView<String>(_entering),
+        makeRoom: _makeRoom,
+        sourceIndexes: _sourceIndexes(),
+      ),
+    );
+  }
 }

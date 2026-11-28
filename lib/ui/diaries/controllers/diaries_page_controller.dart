@@ -823,6 +823,19 @@ class DiariesPageController {
     if (hiddenIds.isEmpty) {
       return items;
     }
+    // 数据库流已把删除/归档项移走后，隐藏集合里的 id 不再出现在源列表里：
+    // 直接复用源列表引用，避免收起计时到期或撤销条关闭时产生新列表实例、
+    // 触发不必要的列表变化同步与让位重绘。
+    var anyHidden = false;
+    for (final item in items) {
+      if (hiddenIds.contains(item.diary.diaryId)) {
+        anyHidden = true;
+        break;
+      }
+    }
+    if (!anyHidden) {
+      return items;
+    }
     return items
         .where((DiaryWithTags item) => !hiddenIds.contains(item.diary.diaryId))
         .toList(growable: false);
